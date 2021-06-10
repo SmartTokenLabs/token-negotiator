@@ -10,14 +10,10 @@
     "type": "git",
     "url": "git+https://github.com/TokenScript/token-negotiator.git"
   },
-  "author": "Alphawallet <webteam@alphawallet.com>",
+  "author": "Alphawallet <info@alphawallet.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/TokenScript/token-negotiator/issues"
   },
-  "homepage": "https://github.com/TokenScript/token-negotiator#readme",
-  "funding": {
-    "type" : "patreon",
-    "url" : "https://www.patreon.com/my-account"
-  }
+  "homepage": "https://github.com/TokenScript/token-negotiator#readme"
 }
