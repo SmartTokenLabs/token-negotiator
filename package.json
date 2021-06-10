@@ -1,7 +1,7 @@
 {
   "name": "token-negotiator",
   "version": "0.0.0",
-  "description": "token-negotiator - a library for enriching the functionality of your tokens within dapps",
+  "description": "a library for enriching the functionality of your tokens within dapps",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
