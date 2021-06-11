@@ -74,8 +74,6 @@ Trigger the authentication event
 A [guide for contributors](TBC)
 covers reporting bugs, requesting features and submitting code changes.
 
-[![Test Coverage](TBC)
-
 ## Licensing
 
 TBC
