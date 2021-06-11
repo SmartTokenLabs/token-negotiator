@@ -22,7 +22,7 @@ import { Negotiator, Authenticator } from 'token-negotiator';
 
 ### Negotiator
 
-Create a new instance of the Negotiator module.
+Creates a new instance of the Negotiator module.
 
 ```javascript
   /**
@@ -34,7 +34,7 @@ Create a new instance of the Negotiator module.
   });
 ```
 
-Resolve the tokens with filter applied.
+Resolves the tokens with filter applied.
 
 ```javascript
 /**
@@ -46,13 +46,13 @@ Resolve the tokens with filter applied.
 
 ### Authenticator
 
-Create a new instance of the Authenticator module.
+Creates a new instance of the Authenticator module.
 
 ```javascript
   const authenticator = new Authenticator();
 ```
 
-Trigger the authentication event
+Triggers an attestation request event
 
 ```javascript
   /**
