@@ -35,6 +35,10 @@ Create a new instance of the Negotiator module.
 Resolve the tokens with filter applied.
 
 ```javascript
+/**
+  *
+  * @returns {object} token data 
+  */
   const tokens = await negotiator.getTokenInstances();
 ```
 
@@ -51,9 +55,9 @@ Trigger the authentication event
 ```javascript
   /**
   *
-  * @param {string} base64ticket from the source provider e.g. received email
-  * @param {string} ticketSecret from the source provider e.g. received email
-  * @param {string} attestationOrigin url to attestation website
+  * @param {string} base64ticket provided to the end user
+  * @param {string} ticketSecret provided to the end user
+  * @param {string} attestationOrigin url to attest the base64ticket + ticketSecret
   * @returns {string} ticket in hex format
   */
   authenticator.getAuthenticationBlob({
