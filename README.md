@@ -8,7 +8,7 @@ For more information please visit: [https://tokenscript.org/](tokenscript.org).
 
 [guides and deployment](https://tokenscript.org/guides/Intro.html)
 
-## Examples
+## Usage
 
 ```sh
 npm install tokenscript
