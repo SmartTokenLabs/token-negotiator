@@ -1,4 +1,6 @@
-# tokenscript-js
+# token-negotiator 
+
+The token-negotiator is an NPM package designed for use with TokenScript. 
 
 TokenScript is a framework which improves functionality, security and usability of blockchain token. It creates a layer between a blockchain and user devices, adding information, rules and functionalites both onchain and offchain. 
 
@@ -8,19 +10,19 @@ For more information please visit: [https://tokenscript.org/](tokenscript.org).
 
 [guides and deployment](https://tokenscript.org/guides/Intro.html)
 
-## Examples
+## Usage
 
 ```sh
 npm install tokenscript
 ```
 
 ```javascript
-import { Negotiator, Authenticator } from './TokenScript';
+import { Negotiator, Authenticator } from 'token-negotiator';
 ```
 
-### Getting Started with the Token Negotiator
+### Negotiator
 
-Create a new instance of the Negotiator module.
+Creates a new instance of the Negotiator module.
 
 ```javascript
   /**
@@ -32,28 +34,32 @@ Create a new instance of the Negotiator module.
   });
 ```
 
-Resolve the tokens with filter applied.
+Resolves the tokens with filter applied.
 
 ```javascript
+/**
+  *
+  * @returns {object} token data 
+  */
   const tokens = await negotiator.getTokenInstances();
 ```
 
-### Getting Started with the Token Authenticator
+### Authenticator
 
-Create a new instance of the Authenticator module.
+Creates a new instance of the Authenticator module.
 
 ```javascript
   const authenticator = new Authenticator();
 ```
 
-Trigger the authentication event
+Triggers an attestation request event
 
 ```javascript
   /**
   *
-  * @param {string} base64ticket from the source provider e.g. received email
-  * @param {string} ticketSecret from the source provider e.g. received email
-  * @param {string} attestationOrigin url to attestation website
+  * @param {string} base64ticket provided to the end user
+  * @param {string} ticketSecret provided to the end user
+  * @param {string} attestationOrigin url to attest the base64ticket + ticketSecret
   * @returns {string} ticket in hex format
   */
   authenticator.getAuthenticationBlob({
@@ -69,8 +75,6 @@ Trigger the authentication event
 
 A [guide for contributors](TBC)
 covers reporting bugs, requesting features and submitting code changes.
-
-[![Test Coverage](TBC)
 
 ## Licensing
 
