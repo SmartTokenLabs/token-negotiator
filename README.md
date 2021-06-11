@@ -1,7 +1,5 @@
 # tokenscript-js
 
-<img src="https://raw.githubusercontent.com/TokenScript/token-negotiator/main/tokenscript-logo.png" width="312" height="170" alt="sharp logo" align="right">
-
 TokenScript is a framework which improves functionality, security and usability of blockchain token. It creates a layer between a blockchain and user devices, adding information, rules and functionalites both onchain and offchain. 
 
 For more information please visit: [https://tokenscript.org/](tokenscript.org).
