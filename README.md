@@ -18,7 +18,7 @@ npm install tokenscript
 import { Negotiator, Authenticator } from './TokenScript';
 ```
 
-### Getting Started with the Token Negotiator
+### Negotiator
 
 Create a new instance of the Negotiator module.
 
@@ -38,7 +38,7 @@ Resolve the tokens with filter applied.
   const tokens = await negotiator.getTokenInstances();
 ```
 
-### Getting Started with the Token Authenticator
+### Authenticator
 
 Create a new instance of the Authenticator module.
 
