@@ -1,4 +1,6 @@
-# tokenscript 
+# token-negotiator 
+
+The token-negotiator is an NPM package designed for use with TokenScript. 
 
 TokenScript is a framework which improves functionality, security and usability of blockchain token. It creates a layer between a blockchain and user devices, adding information, rules and functionalites both onchain and offchain. 
 
@@ -15,7 +17,7 @@ npm install tokenscript
 ```
 
 ```javascript
-import { Negotiator, Authenticator } from './TokenScript';
+import { Negotiator, Authenticator } from 'token-negotiator';
 ```
 
 ### Negotiator
