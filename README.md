@@ -13,7 +13,7 @@ For more information please visit: [https://tokenscript.org/](tokenscript.org).
 ## Usage
 
 ```sh
-npm install tokenscript
+npm install token-negotiator
 ```
 
 ```javascript
