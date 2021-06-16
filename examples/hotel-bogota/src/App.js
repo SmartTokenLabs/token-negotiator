@@ -64,7 +64,7 @@ function App() {
 
   useEffect(() => {
     // Get tokens with applied filter
-    negotiator.getTokenInstances(data => {
+    negotiator.negotiate(data => {
       // assign tokens to react local state
       setTokens(data.tokens);
       // assign any upfront discounts 
