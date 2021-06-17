@@ -37,7 +37,7 @@ export default function BookingModal({ roomType, applyDiscount, discount, price,
   // handle form submission.
   const handleSubmit = evt => {
     evt.preventDefault();
-    book(formInput);
+    book({ formInput, roomType });
   };
 
   // Open Modal
@@ -49,13 +49,14 @@ export default function BookingModal({ roomType, applyDiscount, discount, price,
   const handleClose = () => {
     setOpen(false);
   };
+  
+  // apply discount
+  const discountPerc = discount.value ? discount.value : 0;
+  const discountOfferValue = (discountPerc / 100) * price;
+  const viewPrice = price - discountOfferValue;
 
-  // Discount price calculation
-  const discountValue = discount.value ? price * discount.value / 100 : 0;
-  const viewPrice = price - discountValue;
-
-  // Tickets that can be used to apply a discount
-  const discountTicketClasess = [0n];
+  // example of application of tickets that can be used to apply a discount
+  const discountTicketClasses = [0n];
 
   // Text to accompany the tickets (only shown when there are tickets)
   const TicketCopy = (index) => {
@@ -84,13 +85,13 @@ export default function BookingModal({ roomType, applyDiscount, discount, price,
             className="title"
             disableTypography={true}
           >
-            {roomType}
+            {roomType} 
           </DialogTitle>
           <DialogTitle
             className="subTitle"
             disableTypography={true}
           >
-            {viewPrice} ETH per night.
+            {viewPrice} ETH per night. { discount.value ? `(${discount.value}% discount applied)` : ""}
         </DialogTitle>
           <DialogContent>
             <form onSubmit={handleSubmit}>
@@ -98,7 +99,7 @@ export default function BookingModal({ roomType, applyDiscount, discount, price,
                 autoFocus
                 margin="dense"
                 id="booking-name"
-                label="Booking Reference Name"
+                label="Booking check-in reference name"
                 type="text"
                 fullWidth
                 name="reference"
@@ -106,7 +107,7 @@ export default function BookingModal({ roomType, applyDiscount, discount, price,
               />
               {tokens &&
                 tokens
-                  .filter(_token => discountTicketClasess.indexOf(_token.ticketClass) > -1)
+                  .filter(_token => discountTicketClasses.indexOf(_token.ticketClass) > -1)
                   .map((token, index) => (
                     <div key={index}>
                       {TicketCopy(index)}

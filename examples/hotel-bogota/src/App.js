@@ -5,7 +5,13 @@ import TokenNotificationCard from './TokenNotificationCard';
 import Typography from '@material-ui/core/Typography';
 import EthereumLogo from './EthereumLogo';
 import BookingDate from './BookingDate';
+import { Negotiator } from 'token-negotiator';
 import './App.css';
+
+// mock data e.g. server side hotel room price database
+const mockRoomData = [{"type":"Deluxe Room","price": 0.5,"frequency":"per night","image":"./hotel_3.jpg"},{"type":"King Suite","price": 0.4,"frequency":"per night","image":"./hotel_2.png"},{"type":"Superior Deluxe Suite","price": 0.6,"frequency":"per night","image":"./hotel_1.jpg"}]
+// mock discount of 10% applied to any ticket selected. In a real world scenario, this maybe different per ticket type and retrieved from a backend service.
+const mockRoomDiscountData = 10;
 
 function App() {
 
@@ -21,27 +27,23 @@ function App() {
   // Selected token instance to apply discount, with the discount value on hotel booking.
   let [discount, setDiscount] = useState({ value: undefined, tokenInstance: null });
 
-  // instance of the negotiator
-  const tokensOrigin = "https://devcontickets.herokuapp.com/outlet/";
-
-  // apply 
-  let tokenFilter = {};
+  // const tokensOrigin = "https://devcontickets.herokuapp.com/outlet/";
+  // let tokenFilter = {};
 
   // Create new instance of the Negotiator with params
   let negotiator = new Negotiator(
-    { tokenFilter }, 
-    { tokensOrigin }
+    // { tokenFilter }, 
+    // { tokensOrigin }
   );
 
   // async example of initial hotel data loaded from source
-  // [{"type":"Deluxe Room","price":110.3,"frequency":"per night","image":"./hotel_3.jpg"},{"type":"King Suite","price":89.3,"frequency":"per night","image":"./hotel_2.png"},{"type":"Superior Deluxe Suite","price":55.1,"frequency":"per night","image":"./hotel_1.jpg"}]
-  const getRoomTypesData = async () => {
-    try {
-      const roomTypesEndpoint = await fetch('http://bogotabackend.herokuapp.com/');
-      return roomTypesEndpoint.json();
-    } catch (e) {
-      throw e;
-    }
+  const getRoomTypesData = () => {
+    return mockRoomData;
+  }
+
+  // example to return a discount
+  const getApplicableDiscount = () => {
+    return mockRoomDiscountData;
   }
 
   // When a ticket is present and user applies it, the discount will be shown
@@ -49,35 +51,28 @@ function App() {
     if (!ticket) {
       setDiscount({ value: undefined, tokenInstance: undefined })
     } else {
-      const response = await fetch(`./roomTypesDiscountDataMock${ticket.ticketClass.toString()}.json`)
-      if(response) {
-        const data = await response.json();
-        setDiscount({ value: data.discount, tokenInstance: ticket });
-      }
+      setDiscount({ value: getApplicableDiscount(), tokenInstance: ticket });
     }
   }
 
-  // attest booking
+  // apply discount
   const book = async (form) => {
     // TODO add web3 transaction here to use ticket
+    // Ticket can be acquired from discount object
+    console.log(form);
   }
 
   useEffect(() => {
-    // Get tokens with applied filter
-    negotiator.negotiate(data => {
-      // assign tokens to react local state
-      setTokens(data.tokens);
-      // assign any upfront discounts 
-      // (e.g. by having a token a free shuttle service is available)
-      data.tokens.map(token => {
-        setFreeShuttle(true);
-      });
+    // assign tokens to react local state
+    negotiator.getTokenInstances().then((tokens) => {
+      // example offer when user has a single ticket
+      if(tokens.length) setFreeShuttle(true);
+      setTokens(tokens);
+    }, (error) => {
+      console.log(error);
     });
-    // Get mock rooms initial data (before token discounts are applied)
-    getRoomTypesData().then((data) => {
-      // assign room data to react local state
-      setRoomTypesData(data);
-    })
+    // assign room data to react local state
+    setRoomTypesData(getRoomTypesData());
   }, []);
 
   return (
@@ -111,7 +106,7 @@ function App() {
             gutterBottom
             variant="body2"
             component="p">
-            Free shuttle service available as a Devcon Ticket holder! Enjoy the event.
+            Free shuttle service available to you as a Devcon Ticket holder! Enjoy the event.
           </Typography>
         </div>
       }
