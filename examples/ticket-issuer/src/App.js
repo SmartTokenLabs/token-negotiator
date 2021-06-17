@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Negotiator } from './TokenScript';
+import { Negotiator } from 'token-negotiator';
 import Card from './Card';
 import './App.css';
 
@@ -26,6 +26,9 @@ function App() {
         tokens.length > 0 && tokens.map((tokenInstance, index) => {
           return <Card key={index} tokenInstance={tokenInstance} />
         })
+      }
+      {
+        !tokens.length && <p>No tickets found.</p>
       }
     </div>
   );
