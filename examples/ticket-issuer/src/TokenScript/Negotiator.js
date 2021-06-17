@@ -1,4 +1,3 @@
-// https://github.com/TokenScript/attestation/blob/main/src/main/javascript/SignedDevonTicket.js
 import { SignedDevconTicket } from './Attestation/SignedDevonTicket';
 
 export class Negotiator {

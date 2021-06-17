@@ -1,7 +1,7 @@
-import { Authenticator } from './Authenticator';
-import { Negotiator } from './Negotiator';
+// import { Authenticator } from './Authenticator';
+import { Negotiator } from './negotiator';
 
 export {
-  Authenticator,
+  // Authenticator,
   Negotiator,
 };
