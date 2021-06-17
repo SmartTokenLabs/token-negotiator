@@ -19,3 +19,7 @@ https://ticket.devcon.org/?ticket=MIGbMA0CAQYCBWE3ap3-AgEABEEEEjVknVv9Kf7F2Ftt6Q
 ### to build the application 
 
 1. build `npm build` or `yarn build`
+
+### Connecting with the backend
+
+1. Go to www. to find the source code for the attestation library. Find within examples: ticket-issuer

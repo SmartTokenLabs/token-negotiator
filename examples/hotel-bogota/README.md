@@ -10,5 +10,6 @@ Shows capabilities of tokenScript within a Dapp to display tickets from the thir
 2. run `npm start` or `yarn start`
 3. build `npm build` or `yarn build`
 
+### Connecting with the backend
 
-
+1. Go to www. to find the source code for the attestation library. Find within examples: hotel-bogota
