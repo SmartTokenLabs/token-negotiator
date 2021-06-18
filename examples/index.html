@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link type="css/text" src="./style.css">
+  <title>TokenScript: Token Negotiator Examples</title>
+  <style>
+    body {
+      font-family: 'helvetica', san-serif;
+      background: #262a2b;
+    }
+    a {
+      position: relative;
+      z-index: 100;
+    }
+    .tilesWrap {
+      padding: 0;
+      margin: 50px auto;
+      list-style: none;
+      text-align: center;
+    }
+    .tilesWrap li {
+      display: inline-block;
+      width: 20%;
+      min-width: 200px;
+      max-width: 230px;
+      padding: 80px 20px 40px;
+      position: relative;
+      vertical-align: top;
+      margin: 10px;
+      font-family: 'helvetica', san-serif;
+      min-height: 25vh;
+      background: #262a2b;
+      border: 1px solid #252727;
+      text-align: left;
+    }
+    .tilesWrap li h2 {
+      font-size: 24px;
+      margin: 0;
+      position: absolute;
+      opacity: 0.2;
+      top: 50px;
+      right: 10px;
+      transition: all 0.3s ease-in-out;
+    }
+    .tilesWrap li h3 {
+      font-size: 20px;
+      color: #b7b7b7;
+      margin-bottom: 5px;
+    }
+    .tilesWrap li p {
+      font-size: 16px;
+      line-height: 18px;
+      color: #b7b7b7;
+      margin-top: 5px;
+    }
+    .tilesWrap li a {
+      background: transparent;
+      border: 1px solid #b7b7b7;
+      padding: 10px 20px;
+      color: #b7b7b7;
+      border-radius: 3px;
+      position: relative;
+      transition: all 0.3s ease-in-out;
+      transform: translateY(-40px);
+      opacity: 0;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    .tilesWrap li a:before {
+      content: '';
+      position: absolute;
+      height: 100%;
+      width: 100%;
+      background: #b7b7b7;
+      top: 0;
+      opacity: 0;
+      left: -140px;
+      z-index: -1;
+      transition: all 0.3s ease-in-out;
+      
+    }
+    .tilesWrap li.active:hover a {
+      transform: translateY(5px);
+      opacity: 1;
+    }
+    .tilesWrap li.active a:hover {
+      color: #262a2b;
+    }
+    .tilesWrap li.active a:hover:before {
+      left: 0;
+      opacity: 1;
+    }
+    .tilesWrap li.active:hover h2 {
+      top: 0px;
+      opacity: 0.6;
+    }
+
+    .tilesWrap li:before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      z-index: -1;
+      background: #fff;
+      transform: skew(2deg, 2deg);
+    }
+    .tilesWrap li:after {
+      content: '';
+      position: absolute;
+      width: 40%;
+      height: 100%;
+      left: 0;
+      top: 0;
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .tilesWrap li:nth-child(1):before {
+      background: #C9FFBF;
+      background: -webkit-linear-gradient(to right, #FFAFBD, #C9FFBF);
+      background: linear-gradient(to right, #FFAFBD, #C9FFBF);
+    }
+    .tilesWrap li:nth-child(2):before {
+      background: #f2709c;
+      background: -webkit-linear-gradient(to right, #ff9472, #f2709c);
+      background: linear-gradient(to right, #ff9472, #f2709c);
+    }
+    .tilesWrap li:nth-child(3):before {
+      background: #c21500;
+      background: -webkit-linear-gradient(to right, #ffc500, #c21500);
+      background: linear-gradient(to right, #ffc500, #c21500);
+    }
+    .tilesWrap li:nth-child(4):before {
+      background: #FC354C;
+      background: -webkit-linear-gradient(to right, #0ABFBC, #FC354C);
+      background: linear-gradient(to right, #0ABFBC, #FC354C);
+    }
+    h1 {
+      font-size: 24px;
+      text-align: center;
+      color: grey;
+      font-weight: normal;
+    }
+  </style>
+</head>
+<body>
+  <h1>TokenScript: Token Negotiator Examples</h1>
+  <ul class="tilesWrap">
+    <li class="active">
+      <h2>01</h2>
+      <h3>Devcon Ticket Issuer</h3>
+      <p>
+        A minimal example to read tokens and render them to a view within a react dapp.
+      </p>
+      <a href="ticket-issuer/build/index.html" target="_blank">See example</a>
+    </li>
+    <li class="active">
+      <h2>02</h2>
+      <h3>Hotel Bogota</h3>
+      <p>
+        Shows capabilities of tokenScript within a Dapp to display tickets from the third party website Devcon. 
+        Once connected the end user can access discounts and features not available to a non-ticket holder.
+      </p>
+      <a href="hotel-bogota/build/index.html" target="_blank">See example</a>
+    </li>
+    <li>
+      <h2>03</h2>
+      <h3>Example 3</h3>
+      <p>
+        Coming Soon
+      </p>
+    </li>
+    <li>
+      <h2>04</h2>
+      <h3>Example 4</h3>
+      <p>
+        Coming Soon
+      </p>
+    </li>
+  </ul>
+</body>
+</html>
