@@ -29,9 +29,6 @@ export class Authenticator {
   callContractAuthentication(contractAddress){
     web3[contractAddress].vote("vote", contractAddress);
   }
-  
-}
-
    
 }
 
