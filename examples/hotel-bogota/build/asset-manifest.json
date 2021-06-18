@@ -1,0 +1,22 @@
+{
+  "files": {
+    "main.css": "/TokenScript/token-negotiator/examples/hotel-bogota/build/static/static/css/main.003c97a1.chunk.css",
+    "main.js": "/TokenScript/token-negotiator/examples/hotel-bogota/build/static/static/js/main.2ba7ae67.chunk.js",
+    "main.js.map": "/TokenScript/token-negotiator/examples/hotel-bogota/build/static/static/js/main.2ba7ae67.chunk.js.map",
+    "runtime-main.js": "/TokenScript/token-negotiator/examples/hotel-bogota/build/static/static/js/runtime-main.41044bce.js",
+    "runtime-main.js.map": "/TokenScript/token-negotiator/examples/hotel-bogota/build/static/static/js/runtime-main.41044bce.js.map",
+    "static/js/2.cbf36a0f.chunk.js": "/TokenScript/token-negotiator/examples/hotel-bogota/build/static/static/js/2.cbf36a0f.chunk.js",
+    "static/js/2.cbf36a0f.chunk.js.map": "/TokenScript/token-negotiator/examples/hotel-bogota/build/static/static/js/2.cbf36a0f.chunk.js.map",
+    "static/js/3.bb27d5fd.chunk.js": "/TokenScript/token-negotiator/examples/hotel-bogota/build/static/static/js/3.bb27d5fd.chunk.js",
+    "static/js/3.bb27d5fd.chunk.js.map": "/TokenScript/token-negotiator/examples/hotel-bogota/build/static/static/js/3.bb27d5fd.chunk.js.map",
+    "index.html": "/TokenScript/token-negotiator/examples/hotel-bogota/build/static/index.html",
+    "static/css/main.003c97a1.chunk.css.map": "/TokenScript/token-negotiator/examples/hotel-bogota/build/static/static/css/main.003c97a1.chunk.css.map",
+    "static/js/2.cbf36a0f.chunk.js.LICENSE.txt": "/TokenScript/token-negotiator/examples/hotel-bogota/build/static/static/js/2.cbf36a0f.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.41044bce.js",
+    "static/js/2.cbf36a0f.chunk.js",
+    "static/css/main.003c97a1.chunk.css",
+    "static/js/main.2ba7ae67.chunk.js"
+  ]
+}

@@ -49,5 +49,6 @@
   },
   "devDependencies": {
     "gh-pages": "^3.2.1"
-  }
+  },
+  "homepage": "https://github.com/TokenScript/token-negotiator/examples/hotel-bogota/build/static/"
 }
