@@ -1,20 +1,20 @@
 {
   "files": {
-    "main.css": "/TokenScript/token-negotiator/tree/examples/examples/ticket-issuer/build/static/css/main.006b3d6c.chunk.css",
-    "main.js": "/TokenScript/token-negotiator/tree/examples/examples/ticket-issuer/build/static/js/main.e4f57f0b.chunk.js",
-    "main.js.map": "/TokenScript/token-negotiator/tree/examples/examples/ticket-issuer/build/static/js/main.e4f57f0b.chunk.js.map",
-    "runtime-main.js": "/TokenScript/token-negotiator/tree/examples/examples/ticket-issuer/build/static/js/runtime-main.c1fed472.js",
-    "runtime-main.js.map": "/TokenScript/token-negotiator/tree/examples/examples/ticket-issuer/build/static/js/runtime-main.c1fed472.js.map",
-    "static/js/2.9dfffe57.chunk.js": "/TokenScript/token-negotiator/tree/examples/examples/ticket-issuer/build/static/js/2.9dfffe57.chunk.js",
-    "static/js/2.9dfffe57.chunk.js.map": "/TokenScript/token-negotiator/tree/examples/examples/ticket-issuer/build/static/js/2.9dfffe57.chunk.js.map",
-    "static/js/3.98772b96.chunk.js": "/TokenScript/token-negotiator/tree/examples/examples/ticket-issuer/build/static/js/3.98772b96.chunk.js",
-    "static/js/3.98772b96.chunk.js.map": "/TokenScript/token-negotiator/tree/examples/examples/ticket-issuer/build/static/js/3.98772b96.chunk.js.map",
-    "index.html": "/TokenScript/token-negotiator/tree/examples/examples/ticket-issuer/build/index.html",
-    "static/css/main.006b3d6c.chunk.css.map": "/TokenScript/token-negotiator/tree/examples/examples/ticket-issuer/build/static/css/main.006b3d6c.chunk.css.map",
-    "static/js/2.9dfffe57.chunk.js.LICENSE.txt": "/TokenScript/token-negotiator/tree/examples/examples/ticket-issuer/build/static/js/2.9dfffe57.chunk.js.LICENSE.txt"
+    "main.css": "/hotel-bogota/examples/ticket-issuer/build/static/css/main.006b3d6c.chunk.css",
+    "main.js": "/hotel-bogota/examples/ticket-issuer/build/static/js/main.e4f57f0b.chunk.js",
+    "main.js.map": "/hotel-bogota/examples/ticket-issuer/build/static/js/main.e4f57f0b.chunk.js.map",
+    "runtime-main.js": "/hotel-bogota/examples/ticket-issuer/build/static/js/runtime-main.1cb500be.js",
+    "runtime-main.js.map": "/hotel-bogota/examples/ticket-issuer/build/static/js/runtime-main.1cb500be.js.map",
+    "static/js/2.9dfffe57.chunk.js": "/hotel-bogota/examples/ticket-issuer/build/static/js/2.9dfffe57.chunk.js",
+    "static/js/2.9dfffe57.chunk.js.map": "/hotel-bogota/examples/ticket-issuer/build/static/js/2.9dfffe57.chunk.js.map",
+    "static/js/3.98772b96.chunk.js": "/hotel-bogota/examples/ticket-issuer/build/static/js/3.98772b96.chunk.js",
+    "static/js/3.98772b96.chunk.js.map": "/hotel-bogota/examples/ticket-issuer/build/static/js/3.98772b96.chunk.js.map",
+    "index.html": "/hotel-bogota/examples/ticket-issuer/build/index.html",
+    "static/css/main.006b3d6c.chunk.css.map": "/hotel-bogota/examples/ticket-issuer/build/static/css/main.006b3d6c.chunk.css.map",
+    "static/js/2.9dfffe57.chunk.js.LICENSE.txt": "/hotel-bogota/examples/ticket-issuer/build/static/js/2.9dfffe57.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
-    "static/js/runtime-main.c1fed472.js",
+    "static/js/runtime-main.1cb500be.js",
     "static/js/2.9dfffe57.chunk.js",
     "static/css/main.006b3d6c.chunk.css",
     "static/js/main.e4f57f0b.chunk.js"

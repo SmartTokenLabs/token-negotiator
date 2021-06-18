@@ -50,5 +50,5 @@
   "devDependencies": {
     "gh-pages": "^3.2.1"
   },
-  "homepage": "https://github.com/TokenScript/hotel-bogota/tree/examples/examples/ticket-issuer/build"
+  "homepage": "https://tokenscript.github.io/hotel-bogota/examples/ticket-issuer/build/"
 }
