@@ -13,3 +13,4 @@ Shows capabilities of tokenScript within a Dapp to display tickets from the thir
 ### Connecting with the backend
 
 1. Go to www. to find the source code for the attestation library. Find within examples: hotel-bogota
+
