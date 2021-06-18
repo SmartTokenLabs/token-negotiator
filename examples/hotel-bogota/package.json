@@ -50,5 +50,5 @@
   "devDependencies": {
     "gh-pages": "^3.2.1"
   },
-  "homepage": "./examples"
+  "homepage": "./"
 }
