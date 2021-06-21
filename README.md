@@ -6,6 +6,10 @@ TokenScript is a framework which improves functionality, security and usability 
 
 For more information please visit: [https://tokenscript.org/](tokenscript.org).
 
+## Examples
+
+https://tokenscript.github.io/token-negotiator/examples/
+
 ## Documentation
 
 [guides and deployment](https://tokenscript.org/guides/Intro.html)
