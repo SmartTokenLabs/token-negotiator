@@ -8,18 +8,22 @@ A minimal example to read tokens and render them to a view within a react dapp.
 
 1. install dependancies `npm i` or `yarn`
 2. run `npm start` or `yarn start`
-3. open the following URL
-
-http://localhost:3000/?ticket=MIGbMA0CAQYCBWE3ap3-AgEABEEEEjVknVv9Kf7F2Ftt6QVO3I02eRadiE1kJ6kvr934-TApOLZxrh5GL3jLoEz9Jv42FspPv-LHFa6M9AaOuLAvIgNHADBEAiBwLK_95NPZo0W01HDBfyZisZ2KaNrzoWuxRV-nhjGLMAIgaOP4eVVINH5xM8Cv9OVDdyOG3BxUqyPVQOuDU9PaC9o=&secret=45845870684
-
-### example ticket issued to an end user
-
-https://ticket.devcon.org/?ticket=MIGbMA0CAQYCBWE3ap3-AgEABEEEEjVknVv9Kf7F2Ftt6QVO3I02eRadiE1kJ6kvr934-TApOLZxrh5GL3jLoEz9Jv42FspPv-LHFa6M9AaOuLAvIgNHADBEAiBwLK_95NPZo0W01HDBfyZisZ2KaNrzoWuxRV-nhjGLMAIgaOP4eVVINH5xM8Cv9OVDdyOG3BxUqyPVQOuDU9PaC9o=&secret=45845870684
 
 ### to build the application 
 
 1. build `npm build` or `yarn build`
 
-### Connecting with the backend
+### demo walk through
 
-1. Go to www. to find the source code for the attestation library. Find within examples: ticket-issuer
+1. run the application on localhost or goto `https://tokenscript.github.io/token-negotiator/examples/ticket-issuer/build/index.html`
+2. navigate to `https://devcontickets.herokuapp.com/` and from within your browser application storage clear `dcTokens`
+3. once cleared you will see no tickets inside this Dapp
+4. click on the `create ticket` button
+5. this will open the ticket inside a new window (this process emulates how a ticket page can be used to host the location of where tickets (data) is stored).
+Users may reach this page via receiving an email after ticket purchase.
+6. navigate back to this served Dapp and you will find a ticket has loaded into the view
+7. the ticket is now accessible via this Dapp and also other Dapps / websites that wish to integrate with the tickets (tokens).
+
+### for support, please contact us where we're happy to help or hear any feedback you have to improve this demo and Token-Negotiator
+
+Alphawallet <info@alphawallet.com>

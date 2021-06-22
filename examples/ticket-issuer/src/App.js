@@ -13,7 +13,7 @@ function App() {
   const token = "devcon-ticket";
   const options = {};
   const negotiator = new Negotiator(filter, token, options);
-  // react effect
+  //
   useEffect(() => {
     // on success assign tokens to react state
     negotiator.getTokenInstances(res => {
@@ -21,6 +21,10 @@ function App() {
     });
   }, []);
 
+  // This is one example of how the ticket can be loaded inside a new tab
+  // when navigating back to this page you will find the ticket in view.
+  // Alternative ways include; navigation to the ticket store page, which redirects
+  // back to this page once complete.
   const openTicketInNewTab = ({ticket, secret}) => {
     window.open(
       `https://devcontickets.herokuapp.com/outlet/?ticket=${ticket}&secret=${secret}`,
@@ -32,7 +36,7 @@ function App() {
   }
 
   return (
-    <main className="pageStyles">
+    <main>
       <a href="/"><img className="logo" src="./devcon.svg"></img></a>
       <div className="flexCenter">
         <p>[DEMO Ticket Issuer Website]</p>

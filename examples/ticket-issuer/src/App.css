@@ -2,9 +2,10 @@ html, body {
   background: rgb(229,196,150);
   background: linear-gradient(90deg, rgba(229,196,150,1) 0%, rgba(255,255,255,1) 42%, rgba(253,254,254,1) 62%, rgba(131,203,200,1) 100%);
   font-family: 'Roboto', sans-serif;
+  margin-bottom: 20px;
 }
 
-.makeTicket {
+.ticketWrapper .makeTicket {
   cursor: pointer;
   border: 0;
   padding: 11px 10px;
@@ -19,36 +20,9 @@ html, body {
 .ticketWrapper .makeTicket:nth-child(3) { background-color: #f58b77; }
 .ticketWrapper .makeTicket:nth-child(4) { background-color: #0eafd2; }
 
-h2 {
-  margin: 20px;
-  font-weight: 300;
-}
+h2 { margin: 20px; font-weight: 300; }
+p { font-weight: 300; }
 
-p {
-  font-weight: 300;
-}
-
-.pageStyles {
-  margin-bottom: 20px;
-}
-
-.pageStyles {
-  height: 100%;
-  width: 100%;
-}
-
-.logo {
-  width: 32px;
-  margin: 20px;
-}
-
-.devcon_bogota {
-  width: 300px;
-  margin: 5px 0 20px 0;
-}
-
-.flexCenter {
-  display: flex;
-  justify-content: center;
-  text-align: center;
-}
+.logo { width: 32px; margin: 20px; }
+.devcon_bogota { width: 300px; margin: 5px 0 20px 0; }
+.flexCenter { display: flex; justify-content: center; text-align: center; }

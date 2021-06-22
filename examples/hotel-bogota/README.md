@@ -10,7 +10,10 @@ Shows capabilities of tokenScript within a Dapp to display tickets from the thir
 2. run `npm start` or `yarn start`
 3. build `npm build` or `yarn build`
 
-### Connecting with the backend
+### demo walk through
 
-1. Go to www. to find the source code for the attestation library. Find within examples: hotel-bogota
 
+
+### for support, please contact us where we're happy to help or hear any feedback you have to improve this demo and Token-Negotiator
+
+Alphawallet <info@alphawallet.com>
