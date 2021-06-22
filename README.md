@@ -32,13 +32,16 @@ Creates a new instance of the Negotiator module.
   /**
   *
   * @param {Object} filter optional filter rules 
+  * @param {Object} options api options (required options shown below)
   * @param {String} attestationOrigin the location of the attestation server
   * @param {String} tokenOrigin the origin location of the tokens
   */
   const negotiator = new Negotiator({
     filter: { 'devconId': 6 },
-    attestationOrigin: "https://stage.attestation.id",
-    tokenOrigin: "https://devcontickets.herokuapp.com/outlet/"
+    options: {
+      attestationOrigin: "https://stage.attestation.id",
+      tokenOrigin: "https://devcontickets.herokuapp.com/outlet/"
+    }
   });
 ```
 
