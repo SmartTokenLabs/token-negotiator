@@ -38,11 +38,7 @@ Creates a new instance of the Negotiator module.
   */
   const negotiator = new Negotiator({
     filter: { 'devconId': 6 },
-    token: "devcon-ticket", //
-    options: {
-      attestationOrigin: "https://stage.attestation.id",
-      tokenOrigin: "https://devcontickets.herokuapp.com/outlet/"
-    }
+    token: "devcon-ticket"
   });
 ```
 
@@ -69,7 +65,7 @@ const negotiator = new Negotiator({
   });
 ```
 
-### Authenticator
+### Authenticator (in Progress)
 
 Creates a new instance of the Authenticator module.
 
