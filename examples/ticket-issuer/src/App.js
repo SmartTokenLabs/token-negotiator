@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Negotiator } from 'token-negotiator';
+// import { Negotiator } from 'token-negotiator';
+import { Negotiator } from './temp/negotiator';
 import Card from './Card';
 import './App.css';
 
@@ -9,15 +10,17 @@ function App() {
   // local State: tokens[], setTokens: Method to update the state of tokens.
   let [tokens, setTokens] = useState([]);
   // create instance of Negotiator.
-  const negotiator = new Negotiator();
+  const filter = {};
+  const options = { 
+    attestationOrigin: "https://stage.attestation.id",
+    tokenOrigin: "https://devcontickets.herokuapp.com/outlet/"
+  };
+  const negotiator = new Negotiator(filter, options);
   // react effect
   useEffect(() => {
     // on success assign tokens to react state
-    negotiator.getTokenInstances().then((tokens) => {
-      // react event to update state of tokens, component re-renders to show the latest tokens.
-      setTokens(tokens);
-    }, (error) => {
-      console.log(error);
+    negotiator.getTokenInstances(res => {
+      if(res.success) setTokens(res.tokens);
     });
   }, []);
   return (
@@ -36,17 +39,19 @@ function App() {
         <p>Your tickets:</p>
       </div>
       <div className="flexCenter">
-        {
-          tokens.length > 0 && tokens.map((tokenInstance, index) => {
-            return <Card key={index} tokenInstance={tokenInstance} />
-          })
-        }
-        {
-          !tokens.length && <div>
-            <b>- no ticket found -</b>
-            <p>Click <a href="/?ticket=MIGbMA0CAQYCBWE3ap3-AgEABEEEEjVknVv9Kf7F2Ftt6QVO3I02eRadiE1kJ6kvr934-TApOLZxrh5GL3jLoEz9Jv42FspPv-LHFa6M9AaOuLAvIgNHADBEAiBwLK_95NPZo0W01HDBfyZisZ2KaNrzoWuxRV-nhjGLMAIgaOP4eVVINH5xM8Cv9OVDdyOG3BxUqyPVQOuDU9PaC9o=&secret=45845870684">here</a> to generate a ticket (for demo purposes only).</p> 
-          </div>
-        }
+        <div className="tokensWrapper">
+          {
+            tokens && tokens.length > 0 && tokens.map((tokenInstance, index) => {
+              return <Card key={index} tokenInstance={tokenInstance} />
+            })
+          }
+          {
+            !tokens.length && <div>
+              <b>- no ticket found -</b>
+              <p>Click <a href="?ticket=MIGbMA0CAQYCBWE3ap3-AgEABEEEKJZVxMEXbkSZZBWnNUTX_5ieu8GUqf0bx_a0tBPF6QYskABaMJBYhDOXsmQt3csk_TfMZ2wdmfRkK7ePCOI2kgNHADBEAiBwLK_95NPZo0W01HDBfyZisZ2KaNrzoWuxRV-nhjGLMAIgaOP4eVVINH5xM8Cv9OVDdyOG3BxUqyPVQOuDU9PaC9o=&secret=45845870684">here</a> to generate a ticket (for demo purposes only).</p> 
+            </div>
+          }
+        </div>
       </div>
     </main>
   );
