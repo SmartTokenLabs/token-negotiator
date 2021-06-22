@@ -20,6 +20,15 @@ function App() {
       if(res.success) setTokens(res.tokens);
     });
   }, []);
+
+  // This is for UX within the demo only (to open the ticket inside an iframe)
+  const openTicketInIframe = ({ticket, secret}) => {
+    let _iframe = document.getElementById('ticketIframe');
+    if(_iframe){
+      _iframe.src = `https://devcontickets.herokuapp.com/outlet/?ticket=${ticket}&secret=${secret}`;
+    }
+  } 
+
   return (
     <main className="pageStyles">
       <a href="/"><img className="logo" src="./devcon.svg"></img></a>
@@ -45,14 +54,28 @@ function App() {
           {
             !tokens.length && <div>
               <b>- no ticket found -</b>
-              <p>Click <a target="_blank" href="https://devcontickets.herokuapp.com/outlet/?ticket=MIGbMA0CAQYCBWE3ap3-AgEABEEEKJZVxMEXbkSZZBWnNUTX_5ieu8GUqf0bx_a0tBPF6QYskABaMJBYhDOXsmQt3csk_TfMZ2wdmfRkK7ePCOI2kgNHADBEAiBwLK_95NPZo0W01HDBfyZisZ2KaNrzoWuxRV-nhjGLMAIgaOP4eVVINH5xM8Cv9OVDdyOG3BxUqyPVQOuDU9PaC9o=&secret=45845870684">here</a> to generate a ticket (for demo purposes only).</p> 
-              <p>Click <a target="_blank" href="https://devcontickets.herokuapp.com/outlet/?ticket=MIGYMAoCAQYCAgFNAgECBEEEKJZVxMEXbkSZZBWnNUTX_5ieu8GUqf0bx_a0tBPF6QYskABaMJBYhDOXsmQt3csk_TfMZ2wdmfRkK7ePCOI2kgNHADBEAiB4thME54fWjTs1eJ5XseTPk7sqOUa9JzVsDMURBwTlJwIgChH-eU6seNnC8hVDgBvLvUJPpGWviWsQ2WwWrcC7Meg=&secret=45845870684">here</a> to generate a ticket (for demo purposes only).</p> 
-              <p>Click <a target="_blank" href="https://devcontickets.herokuapp.com/outlet/?ticket=MIGZMAoCAQYCAgDeAgEBBEEEKJZVxMEXbkSZZBWnNUTX_5ieu8GUqf0bx_a0tBPF6QYskABaMJBYhDOXsmQt3csk_TfMZ2wdmfRkK7ePCOI2kgNIADBFAiEAy0hGTGFw_KWyk0EbDFI7y4x8LaplJ6PEPFDb-AQ82GUCIEKP4650eRZyvbgNbTcnjRLaRthc4oIFEn7FVS2nNJ6o&secret=45845870684">here</a> to generate a ticket (for demo purposes only).</p> 
-              <p>Click <a target="_blank" href="https://devcontickets.herokuapp.com/outlet/?ticket=MIGXMAkCAQYCAW8CAQAEQQQollXEwRduRJlkFac1RNf_mJ67wZSp_RvH9rS0E8XpBiyQAFowkFiEM5eyZC3dyyT9N8xnbB2Z9GQrt48I4jaSA0cAMEQCIFavePjptmgxBsVuHp7bZSDxK0ovB8d9URp2VjiGos56AiA9apKTL6Kk74Jgf2H7Mb4EZqlsdwJLXSN23sC6aoRyKg==&secret=45845870684">here</a> to generate a ticket (for demo purposes only).</p> 
+              <p>Generate ticket:</p>
+              <button onClick={e => openTicketInIframe({
+                ticket: "MIGbMA0CAQYCBWE3ap3-AgEABEEEKJZVxMEXbkSZZBWnNUTX_5ieu8GUqf0bx_a0tBPF6QYskABaMJBYhDOXsmQt3csk_TfMZ2wdmfRkK7ePCOI2kgNHADBEAiBwLK_95NPZo0W01HDBfyZisZ2KaNrzoWuxRV-nhjGLMAIgaOP4eVVINH5xM8Cv9OVDdyOG3BxUqyPVQOuDU9PaC9o=",
+                secret: "45845870684"
+              })}></button>
+              <button onClick={e => openTicketInIframe({
+                ticket: "MIGYMAoCAQYCAgFNAgECBEEEKJZVxMEXbkSZZBWnNUTX_5ieu8GUqf0bx_a0tBPF6QYskABaMJBYhDOXsmQt3csk_TfMZ2wdmfRkK7ePCOI2kgNHADBEAiB4thME54fWjTs1eJ5XseTPk7sqOUa9JzVsDMURBwTlJwIgChH-eU6seNnC8hVDgBvLvUJPpGWviWsQ2WwWrcC7Meg",
+                secret: "45845870684"
+              })}></button>
+              <button onClick={ e => openTicketInIframe({
+                ticket: "MIGZMAoCAQYCAgDeAgEBBEEEKJZVxMEXbkSZZBWnNUTX_5ieu8GUqf0bx_a0tBPF6QYskABaMJBYhDOXsmQt3csk_TfMZ2wdmfRkK7ePCOI2kgNIADBFAiEAy0hGTGFw_KWyk0EbDFI7y4x8LaplJ6PEPFDb-AQ82GUCIEKP4650eRZyvbgNbTcnjRLaRthc4oIFEn7FVS2nNJ6o",
+                secret: "45845870684"
+              })}></button>
+              <button onClick={e => openTicketInIframe({
+                ticket: "MIGXMAkCAQYCAW8CAQAEQQQollXEwRduRJlkFac1RNf_mJ67wZSp_RvH9rS0E8XpBiyQAFowkFiEM5eyZC3dyyT9N8xnbB2Z9GQrt48I4jaSA0cAMEQCIFavePjptmgxBsVuHp7bZSDxK0ovB8d9URp2VjiGos56AiA9apKTL6Kk74Jgf2H7Mb4EZqlsdwJLXSN23sC6aoRyKg==",
+                secret: "45845870684"
+              })}></button>
             </div>
           }
         </div>
       </div>
+      <iframe id="ticketIframe" src="" style={{ visibility: "hidden", width: "1px", height: "1px" }}></iframe>
     </main>
   );
 }
