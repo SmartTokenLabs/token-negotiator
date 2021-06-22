@@ -2,9 +2,14 @@ import { SignedDevconTicket } from './../Attestation/SignedDevonTicket';
 
 export class Negotiator {
   constructor(filter = {}, options = {}) {
+
+    // soft developer warnings:
+    if (!options.attestationOrigin) console.log('no attestation origin provided');
+    if (!options.tokenOrigin) console.log('no tokenOrigin provided');
+
     let XMLconfig = {
-      attestationOrigin: this.filter.attestationOrigin,
-      tokenOrigin: this.filter.tokenOrigin,
+      attestationOrigin: options.attestationOrigin,
+      tokenOrigin: options.tokenOrigin,
       tokenUrlName: 'ticket',
       tokenSecretName: 'secret',
       unsignedTokenDataName: 'ticket',
@@ -12,6 +17,7 @@ export class Negotiator {
       tokenParser: SignedDevconTicket,
       localStorageItemName: 'dcTokens'
     };
+
     this.queuedCommand = false;
     this.filter = filter;
     this.debug = 0;
@@ -91,7 +97,7 @@ export class Negotiator {
           });
         break;
       case "tokensList":
-        // TODO update
+        // TODO update - (confirm if there is an action to take)
         console.log('let return tokens');
         this.returnTokensToParent();
         break;
@@ -316,7 +322,7 @@ export class Negotiator {
     this.createIframe();
   }
 
-  negotiate(callBack) {
+  getTokenInstances(callBack) {
     // callback function required
     if (typeof callBack !== "function") {
       return false;
@@ -339,8 +345,9 @@ export class Negotiator {
         this.createIframe()
       }
     } else {
-      console.log('no attestationOrigin...');
+      console.log('no attestationOrigin');
       // TODO test token against blockchain and show tokens as usual view
+      this.negotiateCallback([]);
     }
   }
 
