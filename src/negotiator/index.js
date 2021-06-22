@@ -1,15 +1,12 @@
 import { SignedDevconTicket } from './../Attestation/SignedDevonTicket';
 
-export class Negotiator {
-  constructor(filter = {}, options = {}) {
-
-    // soft developer warnings:
-    if (!options.attestationOrigin) console.log('no attestation origin provided');
-    if (!options.tokenOrigin) console.log('no tokenOrigin provided');
-
-    let XMLconfig = {
-      attestationOrigin: options.attestationOrigin,
-      tokenOrigin: options.tokenOrigin,
+const getTokenConfig = (token) => {
+  let XMLconfig = {};
+  // this will come from a lookup table at a later stage.
+  if(token === "devcon-ticket") {
+    XMLconfig = {
+      attestationOrigin: "https://stage.attestation.id",
+      tokenOrigin: "https://devcontickets.herokuapp.com/outlet/",
       tokenUrlName: 'ticket',
       tokenSecretName: 'secret',
       unsignedTokenDataName: 'ticket',
@@ -17,7 +14,18 @@ export class Negotiator {
       tokenParser: SignedDevconTicket,
       localStorageItemName: 'dcTokens'
     };
+  } else {
+    console.log("Negotiator: missing token script for this token");
+  }
+  return XMLconfig;
+}
 
+export class Negotiator {
+  constructor(filter = {}, token, options = {}) {
+
+    if(!token) console.log("Negotiator: token is a required parameter");
+
+    let XMLconfig = getTokenConfig(token);
     this.queuedCommand = false;
     this.filter = filter;
     this.debug = 0;
@@ -38,7 +46,7 @@ export class Negotiator {
       let currentURL = new URL(window.location.href);
       let tokenOriginURL = new URL(this.tokenOrigin);
       if (currentURL.origin === tokenOriginURL.origin) {
-        console.log('this is tokenOrigin. fire listener and read params');
+        console.log('Negotiator: this is tokenOrigin. fire listener and read params');
         // its tokens website, where tokens saved in localStorage
         // lets check url params and save token data to the local storage
         this.isTokenOriginWebsite = true;
@@ -47,8 +55,9 @@ export class Negotiator {
     }
 
     // do we inside iframe?
+    // TODO - check this comment with Oleg.
     if (window !== window.parent) {
-      this.debug && console.log('negotiator: its iframe, lets return tokens to the parent');
+      this.debug && console.log('Negotiator: its iframe, lets return tokens to the parent');
       // its iframe, listen for requests
       this.attachPostMessageListener(this.listenForParentMessages.bind(this))
       // send ready message to start interaction
@@ -73,12 +82,12 @@ export class Negotiator {
     let command = event.data.parentCommand;
     // parentData contains command content (token to sign or empty object)
     let data = event.data.parentData;
-    console.log('iframe: command, data = ', command, data);
+    console.log('Negotiator: iframe command, data = ', command, data);
     switch (command) {
       case "signToken":
-        console.log('let Auth data:', data);
+        console.log('Negotiator: let Auth data:', data);
         if (typeof window.Authenticator === "undefined") {
-          console.log('Authenticator not defined.');
+          console.log('Negotiator: Authenticator not defined.');
           return;
         }
         let rawTokenData = this.getRawToken(data);
@@ -92,13 +101,13 @@ export class Negotiator {
           attestationOrigin: this.attestationOrigin,
         },
           res => {
-            console.log('sign result:', res);
+            console.log('Negotiator: sign result ', res);
             window.parent.postMessage({ iframeCommand: "useTokenData", iframeData: { useToken: res, message: '', success: !!res } }, referrer.origin);
           });
         break;
       case "tokensList":
-        // TODO update - (confirm if there is an action to take)
-        console.log('let return tokens');
+        // TODO update - (confirm with Oleg if there is an action to take)
+        console.log('Negotiator: return tokens');
         this.returnTokensToParent();
         break;
       default:
@@ -169,13 +178,13 @@ export class Negotiator {
       let filterKeys = Object.keys(filter);
       decodedTokens.forEach(token => {
         let fitFilter = 1;
-        this.debug && console.log('test token:', token);
+        this.debug && console.log('Negotiator: test token ', token);
         filterKeys.forEach(key => {
           if (token[key].toString() != filter[key].toString()) fitFilter = 0;
         })
         if (fitFilter) {
           res.push(token);
-          this.debug && console.log('token fits:', token);
+          this.debug && console.log('Negotiator: token fits ', token);
         }
       })
       return res;
@@ -227,7 +236,7 @@ export class Negotiator {
         }
       }
     } catch (e) {
-      console.log('Cant parse tokens in LocalStorage');
+      console.log('Negotiator: Cant parse tokens in LocalStorage');
       if (typeof callBack === "function") {
         output.success = false;
       }
@@ -251,7 +260,7 @@ export class Negotiator {
               }
             }
           } else {
-            console.log('empty token data received');
+            console.log('Negotiator: empty token data received');
           }
         })
       }
@@ -277,7 +286,7 @@ export class Negotiator {
     let command = event.data.iframeCommand;
     // iframeData contains command content (tokens data, useToken , hide/display iframe)
     let data = event.data.iframeData;
-    console.log('parent: command, data = ', command, data);
+    console.log('Negotiator: parent: command, data = ', command, data);
     switch (command) {
       case "iframeWrap":
         if (data == "show") {
@@ -303,7 +312,7 @@ export class Negotiator {
         // } else {
         //     console.log('useTokenData error message: ' + data.message)
         // }
-        console.log('this.signCallback(data)');
+        console.log('Negotiator: this.signCallback(data)');
         this.signCallback && this.signCallback(data);
         this.signCallback = false;
         break;
@@ -327,9 +336,9 @@ export class Negotiator {
     if (typeof callBack !== "function") {
       return false;
     }
-    console.log('negotiateCallback added;');
+    console.log('Negotiator: negotiateCallback added;');
     this.negotiateCallback = callBack;
-    console.log('attestationOrigin = ' + this.attestationOrigin);
+    console.log('Negotiator: attestationOrigin = ' + this.attestationOrigin);
     if (this.attestationOrigin) {
       if (window.location.href === this.tokenOrigin) {
         // just read an return tokens
@@ -345,14 +354,14 @@ export class Negotiator {
         this.createIframe()
       }
     } else {
-      console.log('no attestationOrigin');
+      console.log('Negotiator: no attestationOrigin');
       // TODO test token against blockchain and show tokens as usual view
       this.negotiateCallback([]);
     }
   }
 
   createIframe() {
-    console.log('open iframe');
+    console.log('Negotiator: open iframe');
     // open iframe and request tokens
     this.attachPostMessageListener(this.listenForIframeMessages.bind(this));
     const iframe = document.createElement('iframe');
@@ -385,8 +394,7 @@ export class Negotiator {
 
   decodeTokens(rawTokens) {
     if (this.debug) {
-      console.log('decodeTokens fired');
-      console.log(rawTokens);
+      console.log('Negotiator: decodeTokens fired', rawTokens);
     }
     let decodedTokens = [];
     if (rawTokens.length) {
@@ -395,7 +403,7 @@ export class Negotiator {
           let decodedToken = new this.tokenParser(this.base64ToUint8array(tokenData.token).buffer);
           if (decodedToken && decodedToken[this.unsignedTokenDataName]) decodedTokens.push(decodedToken[this.unsignedTokenDataName]);
         } else {
-          console.log('empty token data received');
+          console.log('Negotiator: empty token data received');
         }
       })
     }

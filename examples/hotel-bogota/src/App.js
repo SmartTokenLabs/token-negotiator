@@ -27,18 +27,14 @@ function App() {
   // Selected token instance to apply discount, with the discount value on hotel booking.
   let [discount, setDiscount] = useState({ value: undefined, tokenInstance: null });
 
-  // Add filters when specific tokens are required
-  let filter = {};
-
+  // add filters when specific tokens are required
+  const filter = {};
+  // apply the token to negotciate (load) into the page
+  const token = "devcon-ticket";
   // set required negotiator options
-  const options = {
-    attestationOrigin: "https://stage.attestation.id",
-    tokenOrigin: "https://tokenscript.github.io/token-negotiator/examples/ticket-issuer/build/index.html"
-    // tokenOrigin: "http://localhost:3000/" // Development Use
-  };
-
+  const options = {};
   // Create new instance of the Negotiator with params
-  const negotiator = new Negotiator(filter, options);
+  const negotiator = new Negotiator(filter, token, options);
   
   // async example of initial hotel data loaded from source
   const getRoomTypesData = () => {
