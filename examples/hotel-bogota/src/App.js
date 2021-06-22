@@ -27,15 +27,19 @@ function App() {
   // Selected token instance to apply discount, with the discount value on hotel booking.
   let [discount, setDiscount] = useState({ value: undefined, tokenInstance: null });
 
-  // const tokensOrigin = "https://devcontickets.herokuapp.com/outlet/";
-  // let tokenFilter = {};
+  // Add filters when specific tokens are required
+  let filter = {};
+
+  // set required negotiator options
+  const options = {
+    attestationOrigin: "https://stage.attestation.id",
+    tokenOrigin: "https://tokenscript.github.io/token-negotiator/examples/ticket-issuer/build/index.html"
+    // tokenOrigin: "http://localhost:3000/" // Development Use
+  };
 
   // Create new instance of the Negotiator with params
-  let negotiator = new Negotiator(
-    // { tokenFilter }, 
-    // { tokensOrigin }
-  );
-
+  const negotiator = new Negotiator(filter, options);
+  
   // async example of initial hotel data loaded from source
   const getRoomTypesData = () => {
     return mockRoomData;
@@ -62,14 +66,14 @@ function App() {
     console.log(form);
   }
 
+  // react effect
   useEffect(() => {
-    // assign tokens to react local state
-    negotiator.getTokenInstances().then((tokens) => {
-      // example offer when user has a single ticket
-      if(tokens.length) setFreeShuttle(true);
-      setTokens(tokens);
-    }, (error) => {
-      console.log(error);
+    // on success assign tokens / changes to react state
+    negotiator.getTokenInstances(res => {
+      if(res.success){
+         setTokens(res.tokens);
+         setFreeShuttle(true);
+      }
     });
     // assign room data to react local state
     setRoomTypesData(getRoomTypesData());

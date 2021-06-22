@@ -13,6 +13,7 @@ function App() {
   const options = {
     attestationOrigin: "https://stage.attestation.id",
     tokenOrigin: "https://tokenscript.github.io/token-negotiator/examples/ticket-issuer/build/index.html"
+    // tokenOrigin: "http://localhost:3000/" // Development Use
   };
   const negotiator = new Negotiator(filter, options);
   // react effect
