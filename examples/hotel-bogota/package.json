@@ -11,7 +11,7 @@
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
     "add": "^2.0.6",
-    "token-negotiator": "github:TokenScript/token-negotiator#examples",
+    "token-negotiator": "github:TokenScript/token-negotiator",
     "asn1js": "^2.0.26",
     "big-integer": "^1.6.48",
     "bigint-polyfill": "^0.1.0",
