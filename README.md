@@ -26,15 +26,19 @@ import { Negotiator, Authenticator } from 'token-negotiator';
 
 ### Negotiator
 
-Creates a new instance of the Negotiator module.
+Creates a new instance of the Negotiator module. 
 
 ```javascript
   /**
   *
-  * @param {Array} filter optional filter rules
+  * @param {Object} filter optional filter rules 
+  * @param {String} attestationOrigin the location of the attestation server
+  * @param {String} tokenOrigin the origin location of the tokens
   */
   const negotiator = new Negotiator({
-    filter: ["tickets", "expiry > today"]
+    filter: { 'devconId': 6 },
+    attestationOrigin: "https://stage.attestation.id",
+    tokenOrigin: "https://devcontickets.herokuapp.com/outlet/"
   });
 ```
 
@@ -46,6 +50,19 @@ Resolves the tokens with filter applied.
   * @returns {object} token data 
   */
   const tokens = await negotiator.getTokenInstances();
+```
+
+Filters
+
+When loading a page you may wish to only show a select set of tokens.
+
+For example: with the following key/values `devconId, ticketId, ticketClass` you
+may wish to only show `devconId` when the value is `6` and of `ticketClasses` of `A`. Below is an example of how this can be applied.
+
+```javascript
+const negotiator = new Negotiator({
+    filter: { devconId: 6, ticketClass: "A" }
+  });
 ```
 
 ### Authenticator
