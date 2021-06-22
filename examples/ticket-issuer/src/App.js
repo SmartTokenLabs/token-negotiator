@@ -13,7 +13,7 @@ function App() {
   const filter = {};
   const options = {
     attestationOrigin: "https://stage.attestation.id",
-    tokenOrigin: "https://devcontickets.herokuapp.com/outlet/"
+    tokenOrigin: "https://tokenscript.github.io/token-negotiator/examples/ticket-issuer/build/index.html"
   };
   const negotiator = new Negotiator(filter, options);
   // react effect
@@ -48,10 +48,10 @@ function App() {
           {
             !tokens.length && <div>
               <b>- no ticket found -</b>
-              <p>Click <a target="_blank" href="https://devcontickets.herokuapp.com/outlet/?ticket=MIGbMA0CAQYCBWE3ap3-AgEABEEEKJZVxMEXbkSZZBWnNUTX_5ieu8GUqf0bx_a0tBPF6QYskABaMJBYhDOXsmQt3csk_TfMZ2wdmfRkK7ePCOI2kgNHADBEAiBwLK_95NPZo0W01HDBfyZisZ2KaNrzoWuxRV-nhjGLMAIgaOP4eVVINH5xM8Cv9OVDdyOG3BxUqyPVQOuDU9PaC9o=&secret=45845870684">here</a> to generate a ticket (for demo purposes only).</p> 
-              <p>Click <a target="_blank" href="https://devcontickets.herokuapp.com/outlet/?ticket=MIGYMAoCAQYCAgFNAgECBEEEKJZVxMEXbkSZZBWnNUTX_5ieu8GUqf0bx_a0tBPF6QYskABaMJBYhDOXsmQt3csk_TfMZ2wdmfRkK7ePCOI2kgNHADBEAiB4thME54fWjTs1eJ5XseTPk7sqOUa9JzVsDMURBwTlJwIgChH-eU6seNnC8hVDgBvLvUJPpGWviWsQ2WwWrcC7Meg=&secret=45845870684">here</a> to generate a ticket (for demo purposes only).</p> 
-              <p>Click <a target="_blank" href="https://devcontickets.herokuapp.com/outlet/?ticket=MIGZMAoCAQYCAgDeAgEBBEEEKJZVxMEXbkSZZBWnNUTX_5ieu8GUqf0bx_a0tBPF6QYskABaMJBYhDOXsmQt3csk_TfMZ2wdmfRkK7ePCOI2kgNIADBFAiEAy0hGTGFw_KWyk0EbDFI7y4x8LaplJ6PEPFDb-AQ82GUCIEKP4650eRZyvbgNbTcnjRLaRthc4oIFEn7FVS2nNJ6o&secret=45845870684">here</a> to generate a ticket (for demo purposes only).</p> 
-              <p>Click <a target="_blank" href="https://devcontickets.herokuapp.com/outlet/?ticket=MIGXMAkCAQYCAW8CAQAEQQQollXEwRduRJlkFac1RNf_mJ67wZSp_RvH9rS0E8XpBiyQAFowkFiEM5eyZC3dyyT9N8xnbB2Z9GQrt48I4jaSA0cAMEQCIFavePjptmgxBsVuHp7bZSDxK0ovB8d9URp2VjiGos56AiA9apKTL6Kk74Jgf2H7Mb4EZqlsdwJLXSN23sC6aoRyKg==&secret=45845870684">here</a> to generate a ticket (for demo purposes only).</p> 
+              <p>Click <a href="?ticket=MIGbMA0CAQYCBWE3ap3-AgEABEEEKJZVxMEXbkSZZBWnNUTX_5ieu8GUqf0bx_a0tBPF6QYskABaMJBYhDOXsmQt3csk_TfMZ2wdmfRkK7ePCOI2kgNHADBEAiBwLK_95NPZo0W01HDBfyZisZ2KaNrzoWuxRV-nhjGLMAIgaOP4eVVINH5xM8Cv9OVDdyOG3BxUqyPVQOuDU9PaC9o=&secret=45845870684">here</a> to generate a ticket (for demo purposes only).</p> 
+              <p>Click <a href="?ticket=MIGYMAoCAQYCAgFNAgECBEEEKJZVxMEXbkSZZBWnNUTX_5ieu8GUqf0bx_a0tBPF6QYskABaMJBYhDOXsmQt3csk_TfMZ2wdmfRkK7ePCOI2kgNHADBEAiB4thME54fWjTs1eJ5XseTPk7sqOUa9JzVsDMURBwTlJwIgChH-eU6seNnC8hVDgBvLvUJPpGWviWsQ2WwWrcC7Meg=&secret=45845870684">here</a> to generate a ticket (for demo purposes only).</p> 
+              <p>Click <a href="?ticket=MIGZMAoCAQYCAgDeAgEBBEEEKJZVxMEXbkSZZBWnNUTX_5ieu8GUqf0bx_a0tBPF6QYskABaMJBYhDOXsmQt3csk_TfMZ2wdmfRkK7ePCOI2kgNIADBFAiEAy0hGTGFw_KWyk0EbDFI7y4x8LaplJ6PEPFDb-AQ82GUCIEKP4650eRZyvbgNbTcnjRLaRthc4oIFEn7FVS2nNJ6o&secret=45845870684">here</a> to generate a ticket (for demo purposes only).</p> 
+              <p>Click <a href="?ticket=MIGXMAkCAQYCAW8CAQAEQQQollXEwRduRJlkFac1RNf_mJ67wZSp_RvH9rS0E8XpBiyQAFowkFiEM5eyZC3dyyT9N8xnbB2Z9GQrt48I4jaSA0cAMEQCIFavePjptmgxBsVuHp7bZSDxK0ovB8d9URp2VjiGos56AiA9apKTL6Kk74Jgf2H7Mb4EZqlsdwJLXSN23sC6aoRyKg==&secret=45845870684">here</a> to generate a ticket (for demo purposes only).</p> 
             </div>
           }
         </div>
