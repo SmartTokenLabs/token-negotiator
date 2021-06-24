@@ -1,5 +1,7 @@
-.container {
-  width: 380px;
+.modalContainer {
+  max-width: 340px;
+  min-width: 320px;
+  width: 100%;
 }
 .title {
   font-size: 1.2rem;
@@ -14,4 +16,23 @@
 }
 .smallCopy {
   font-size: 0.8rem;
+}
+
+.ticketWrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.ticketContainer {
+  transform: scale(0.9);
+}
+
+/* override Google Material */
+
+/* .MuiDialog-paper {
+  margin: 8px !important;
+} */
+
+.MuiDialogActions-root {
+  justify-content: flex-start !important;
 }

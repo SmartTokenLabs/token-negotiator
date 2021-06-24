@@ -5,6 +5,12 @@
   max-width: 220px;
 }
 
+.cardBottomLip {
+  background-color: #1aae23;
+  height: 3px;
+  width: 100%;
+}
+
 .tokenNotificationCard h1 {
   font-size: 1.1rem;
 }
@@ -13,8 +19,7 @@ p.MuiTypography-body1 {
   font-size: 0.75rem;
 }
 
-@media (max-width: 480px) {
-  .tokenNotificationCard {
-    display: none;
-  }
+/* override Google Material */
+.tokenNotificationCard .MuiCardContent-root {
+  padding: 10px !important;
 }
