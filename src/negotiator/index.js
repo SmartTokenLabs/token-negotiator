@@ -21,7 +21,7 @@ const getTokenConfig = (token) => {
 }
 
 export class Negotiator {
-  constructor(filter = {}, token, options = {}) {
+  constructor(filter = {}, token, options = { userAccessPermissionRequired=false }) {
 
     if(!token) console.log("Negotiator: token is a required parameter");
 
@@ -54,15 +54,20 @@ export class Negotiator {
       }
     }
 
-    // do we inside iframe?
-    // TODO - check this comment with Oleg.
-    if (window !== window.parent) {
-      this.debug && console.log('Negotiator: its iframe, lets return tokens to the parent');
-      // its iframe, listen for requests
-      this.attachPostMessageListener(this.listenForParentMessages.bind(this))
-      // send ready message to start interaction
-      let referrer = new URL(document.referrer);
-      window.parent.postMessage({ iframeCommand: "iframeReady", iframeData: '' }, referrer.origin);
+    // When the users permission is not required we can acquire the tokens
+    if(options.userAccessPermissionRequired === false) {
+
+      // do we inside iframe?
+      // TODO - check this comment with Oleg.
+      if (window !== window.parent) {
+        this.debug && console.log('Negotiator: its iframe, lets return tokens to the parent');
+        // its iframe, listen for requests
+        this.attachPostMessageListener(this.listenForParentMessages.bind(this))
+        // send ready message to start interaction
+        let referrer = new URL(document.referrer);
+        window.parent.postMessage({ iframeCommand: "iframeReady", iframeData: '' }, referrer.origin);
+      }
+
     }
   }
 
@@ -371,6 +376,8 @@ export class Negotiator {
     iframe.style.height = '700px';
     iframe.style.maxWidth = '100%';
     iframe.style.background = '#fff';
+    // https://developer.mozilla.org/en-US/docs/Web/API/Storage_Access_API
+    iframe.setAttribute('sandbox', 'allow-storage-access-by-user-activation allow-scripts allow-same-origin');
     let iframeWrap = document.createElement('div');
     this.tokenIframeWrap = iframeWrap;
     iframeWrap.setAttribute('style', 'width:100%; min-height: 100vh; position: fixed; align-items: center; justify-content: center; display: none; top: 0; left: 0; background: #fffa');
