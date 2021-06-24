@@ -33,25 +33,33 @@ function TokenView({tokensNumber}) {
   );
 };
 
-function TokenNotificationCard({ negotiator, tokensNumber }) {
+function TokenNotificationCard({ getTokens, negotiator, tokensNumber }) {
   
-  let [userPermissionStatus, setUserPermissionStatus] = useState();
+  let [userPermissionStatus, setUserPermissionStatus] = useState(undefined);
 
   const setPermissionEvent = (bool) => {
+    // set permission inside negotiator state
     negotiator.setUserPermission(bool);
+    // assign user permission status on change
+    setUserPermissionStatus(negotiator.getUserPermission());
   }
 
   // react effect
   useEffect(() => {
-    // assign user permission status onload
+    // assign user permission status to negotiator state
     setUserPermissionStatus(negotiator.getUserPermission());
-  }, []);
+    // if the status is true trigger parent component 
+    // event to get the tokens from the negotiator
+    if(userPermissionStatus === true) getTokens();
+    // When false hide the notification card
+    // if(userPermissionStatus === false);
+  }, [userPermissionStatus]);
 
   return (
     <Zoom in={true} style={{ transitionDelay: true ? '500ms' : '0ms' }}>
       <div>
         { userPermissionStatus && <TokenView tokensNumber={tokensNumber}></TokenView> }
-        { !userPermissionStatus && <Card className="tokenNotificationCard">
+        { userPermissionStatus === undefined && <Card className="tokenNotificationCard">
           <CardContent>
             <Typography
               gutterBottom

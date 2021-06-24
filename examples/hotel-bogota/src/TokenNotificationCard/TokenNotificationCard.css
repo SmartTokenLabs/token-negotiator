@@ -5,6 +5,10 @@
   max-width: 220px;
 }
 
+button {
+  cursor: pointer;
+}
+
 .cardBottomLip {
   background-color: #1aae23;
   height: 3px;

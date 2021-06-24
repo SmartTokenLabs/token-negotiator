@@ -6,8 +6,7 @@ import Typography from '@material-ui/core/Typography';
 import EthereumLogo from './EthereumLogo';
 import BookingDate from './BookingDate';
 import './App.css';
-// import { Negotiator } from 'token-negotiator';
-import { Negotiator } from './temp/negotiator';
+import { Negotiator } from 'token-negotiator';
   
 // mock data e.g. server side hotel room price database
 const mockRoomData = [{"type":"Deluxe Room","price": 0.5,"frequency":"per night","image":"./hotel_3.jpg"},{"type":"King Suite","price": 0.4,"frequency":"per night","image":"./hotel_2.png"},{"type":"Superior Deluxe Suite","price": 0.6,"frequency":"per night","image":"./hotel_1.jpg"}]
@@ -67,8 +66,7 @@ function App() {
 
   // negotiation happens when this method is triggered
   // before this time, the token-negotiator is not used.
-  const negotiate = () => {
-    // on success assign tokens / changes to react state
+  const getTokens = () => {
     negotiator.getTokenInstances(res => {
       if(res.success){
         setTokens(res.tokens);
@@ -87,7 +85,7 @@ function App() {
     <div>
       <div className="header">
         <LogoCard title={"Hotel Bogota"} />
-        <TokenNotificationCard negotiator={negotiator} tokensNumber={tokens.length} />
+        <TokenNotificationCard getTokens={e=>getTokens()} negotiator={negotiator} tokensNumber={tokens.length} />
       </div>
       <BookingDate />
       <div className="roomCardsContainer">

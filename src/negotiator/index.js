@@ -21,13 +21,16 @@ const getTokenConfig = (token) => {
 }
 
 export class Negotiator {
-  constructor(filter = {}, token, options = { userAccessPermissionRequired=false }) {
+  constructor(filter = {}, token, options = { userPermissionRequired: false }) {
 
     if(!token) console.log("Negotiator: token is a required parameter");
 
     let XMLconfig = getTokenConfig(token);
     this.queuedCommand = false;
     this.filter = filter;
+    this.userPermissionRequired = options.userPermissionRequired;
+    // if permission is not required then permission status is set as true.
+    this.userPermissionStatus = !options.userPermissionRequired ? true : undefined;
     this.debug = 0;
     this.hideTokensIframe = 1;
     this.tokenOrigin = XMLconfig.tokenOrigin;
@@ -54,21 +57,25 @@ export class Negotiator {
       }
     }
 
-    // When the users permission is not required we can acquire the tokens
-    if(options.userAccessPermissionRequired === false) {
-
-      // do we inside iframe?
-      // TODO - check this comment with Oleg.
-      if (window !== window.parent) {
-        this.debug && console.log('Negotiator: its iframe, lets return tokens to the parent');
-        // its iframe, listen for requests
-        this.attachPostMessageListener(this.listenForParentMessages.bind(this))
-        // send ready message to start interaction
-        let referrer = new URL(document.referrer);
-        window.parent.postMessage({ iframeCommand: "iframeReady", iframeData: '' }, referrer.origin);
-      }
-
+    // TODO: Confirm if this is still required?
+    if(window !== window.parent) {
+      this.debug && console.log('Negotiator: its iframe, lets return tokens to the parent');
+      // its iframe, listen for requests
+      this.attachPostMessageListener(this.listenForParentMessages.bind(this))
+      // send ready message to start interaction
+      let referrer = new URL(document.referrer);
+      window.parent.postMessage({ iframeCommand: "iframeReady", iframeData: '' }, referrer.origin);
     }
+  }
+
+  // Once a user has given or revoked their permission to use the token-negotiator
+  setUserPermission(bool) {
+    this.userPermissionStatus = bool;
+  }
+  
+  // returns true / false
+  getUserPermission() {
+    return this.userPermissionStatus;
   }
 
   listenForParentMessages(event) {
@@ -338,7 +345,12 @@ export class Negotiator {
 
   getTokenInstances(callBack) {
     // callback function required
-    if (typeof callBack !== "function") {
+    // user permission required (for now - if this is not defined it is true)
+    // TODO add logic: allow always when token when origin.
+    if (
+      this.userPermissionStatus === false || 
+      typeof callBack !== "function"
+    ) {
       return false;
     }
     console.log('Negotiator: negotiateCallback added;');
