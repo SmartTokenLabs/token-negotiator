@@ -6,6 +6,18 @@ import './App.css';
 // A minimal example to read tokens and render them to a view.
 
 function App() {
+
+  if(document.hasStorageAccess) {
+    document.hasStorageAccess().then((hasAccess) => {
+      console.log("user access: ", hasAccess);
+      if (!hasAccess) {
+        document.requestStorageAccess().then(hasAccessFromRequest => {
+          console.log("user access from request: ", hasAccessFromRequest);
+        });
+      }
+    });
+  }
+
   // local State: tokens[], setTokens: Method to update the state of tokens.
   let [tokens, setTokens] = useState([]);
   // create instance of Negotiator.
@@ -91,4 +103,3 @@ function App() {
 }
 
 export default App;
-

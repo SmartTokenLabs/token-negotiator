@@ -6,7 +6,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import TokenCard from './../TokenCard';
+import Card from './../Card';
 import './BookingModal.css';
 
 // BOOKING MODAL COMPONENT
@@ -56,16 +56,7 @@ export default function BookingModal({ roomType, applyDiscount, discount, price,
   const viewPrice = price - discountOfferValue;
 
   // example of application of tickets that can be used to apply a discount
-  const discountTicketClasses = [0n];
-
-  // Text to accompany the tickets (only shown when there are tickets)
-  const TicketCopy = (index) => {
-    if (index === 0) {
-      return (
-        <p className="smallCopy">Select a ticket to apply discount:</p>
-      );
-    }
-  }
+  const discountTicketClasses = ["0"];
 
   return (
     <div>
@@ -80,7 +71,7 @@ export default function BookingModal({ roomType, applyDiscount, discount, price,
         open={open}
         onClose={handleClose}
         aria-labelledby="form-dialog-title">
-        <div className='container'>
+        <div className='modalContainer'>
           <DialogTitle
             className="title"
             disableTypography={true}
@@ -91,7 +82,7 @@ export default function BookingModal({ roomType, applyDiscount, discount, price,
             className="subTitle"
             disableTypography={true}
           >
-            {viewPrice} ETH per night. { discount.value ? `(${discount.value}% discount applied)` : ""}
+            {viewPrice} ETH per night. { discount.value ? `(${discount.value}% discount)` : ""}
         </DialogTitle>
           <DialogContent>
             <form onSubmit={handleSubmit}>
@@ -105,13 +96,17 @@ export default function BookingModal({ roomType, applyDiscount, discount, price,
                 name="reference"
                 onChange={handleInput}
               />
+              <div>
+                {tokens.length > 0 && <p className="smallCopy">Select a ticket to apply discount:</p>
+                }
+              </div>
+              <div className="ticketWrapper">
               {tokens &&
                 tokens
-                  .filter(_token => discountTicketClasses.indexOf(_token.ticketClass) > -1)
+                  .filter(_token => discountTicketClasses.toString().indexOf(_token.ticketClass) > -1)
                   .map((token, index) => (
                     <div key={index}>
-                      {TicketCopy(index)}
-                      <TokenCard
+                      <Card
                         applyDiscount={applyDiscount}
                         tokenInstance={token}
                         discount={discount}
@@ -119,6 +114,7 @@ export default function BookingModal({ roomType, applyDiscount, discount, price,
                     </div>
                   ))
               }
+              </div>
             </form>
           </DialogContent>
           <DialogActions>

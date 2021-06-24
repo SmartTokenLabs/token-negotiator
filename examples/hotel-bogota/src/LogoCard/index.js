@@ -10,7 +10,7 @@ import './logoCard.css';
 function LogoCard({ title }) {
   return (
     <Card className="logoCard">
-      <CardContent>
+      <CardContent className="cardContent">
         <Typography
           gutterBottom
           variant="h1"
@@ -18,6 +18,11 @@ function LogoCard({ title }) {
         >
           {title}
         </Typography>
+        <div className="logo-wrapper">
+          <div className="logo-emblem"></div>
+          <div className="logo-emblem"></div>
+          <div className="logo-emblem"></div>
+        </div>
       </CardContent>
     </Card>
   );

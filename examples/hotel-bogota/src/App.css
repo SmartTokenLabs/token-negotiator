@@ -5,6 +5,11 @@
   visibility: hidden;
 }
 
+.header {
+  display: flex;
+  justify-content: space-between;
+}
+
 .MuiFormControl-root {
   width: 100%;
 }
