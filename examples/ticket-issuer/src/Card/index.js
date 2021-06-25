@@ -3,17 +3,21 @@ import Typography from '@material-ui/core/Typography';
 import './Card.css';
 
 function MediaCard({ tokenInstance }) {
+
+  // New Data Structure:
+  const { ticketClass, ticketId, devconId } = tokenInstance;
+
   return (
     <div className="ticketContainer">
       <div className="ticketDetails">
         <Typography className="ticketClass" gutterBottom variant="h5" component="h2">
-          {tokenInstance.ticketClass.toString()}
+          {ticketClass.value.toString()}
         </Typography>
         <Typography className="ticketId" variant="body2" color="textSecondary" component="p">
-          {tokenInstance.ticketId.toString()}
+          {ticketId.value.toString()}
         </Typography>
         <Typography className="devconId" variant="body2" color="textSecondary" component="p">
-          Devcon ID: {tokenInstance.devconId.toString()}
+          Devcon ID: {devconId.toString()}
         </Typography>
       </div>
       <img className="ticketImg" src="ticket_example_image.svg"></img>
