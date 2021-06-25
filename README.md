@@ -46,13 +46,13 @@ Resolves the tokens with filter applied.
 
 ```javascript
   /**
-    *
-    * @returns {object} token data 
-    */
-    let tokens = [];
-    negotiator.getTokenInstances(result => {
-      tokens = result.tokens;
-    });
+  *
+  * @returns {object} token data 
+  */
+  let tokens = [];
+  negotiator.getTokenInstances(result => {
+    tokens = result.tokens;
+  });
 ```
 
 Filters
