@@ -33,8 +33,7 @@ Creates a new instance of the Negotiator module.
   *
   * @param {Object} filter optional filter rules 
   * @param {Object} options api options (required options shown below)
-  * @param {String} attestationOrigin the location of the attestation server
-  * @param {String} tokenOrigin the origin location of the tokens
+  * @param {String} token token name (required)
   */
   const negotiator = new Negotiator({
     filter: { 'devconId': 6 },
