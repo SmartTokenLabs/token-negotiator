@@ -38,7 +38,8 @@ Creates a new instance of the Negotiator module.
   */
   const negotiator = new Negotiator({
     filter: { 'devconId': 6 },
-    token: "devcon-ticket"
+    token: "devcon-ticket",
+    options: { userPermissionRequired: true }
   });
 ```
 
@@ -63,6 +64,48 @@ may wish to only show `devconId` when the value is `6` and of `ticketClasses` of
 const negotiator = new Negotiator({
     filter: { devconId: 6, ticketClass: "A" }
   });
+```
+
+Negotiator Options 
+
+`userPermissionRequired` - Default is false. When true, the Token Negotiator will not allow `getTokenInstances()` to be used. Until access from the end user has given permissions to connect third party tokens with the origin website they are visiting.
+
+Example Use below:
+
+````javascript
+
+  // initial config object
+  const negotiator = new Negotiator({
+    filter: { 'devconId': 6 },
+    token: "devcon-ticket",
+    options: { userPermissionRequired: true }
+  });
+
+  // An example click event where the User clicks 'Yes' or 'No' to allow access.
+  const userPermissionClickEvent = (bool) => {
+    // set permission inside negotiator state
+    negotiator.setUserPermission(bool);
+    // assign user permission status on change
+    setUserPermissionStatus(negotiator.getUserPermission());
+  }
+````
+
+User consent to connect the website to the token, this is only required when 'userPermissionRequired' is set as true.
+
+```javascript
+/**
+  * @param {Boolean} boolean 
+  */
+  negotiator.setUserPermission(boolean);
+```
+
+The Negotiator will hold state of the permission, which can be accessed at any time. 
+
+```javascript
+/**
+  * @returns {Boolean} boolean
+  */
+  negotiator.getUserPermission();
 ```
 
 ### Authenticator (in Progress)
@@ -91,6 +134,8 @@ Triggers an attestation request event
     writeToLog('useDevconTicket received (in hex ): ' + useDevconTicket);
   };
  ```
+
+
 
 ## Contributing
 

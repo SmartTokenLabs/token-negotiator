@@ -15,7 +15,7 @@ const mockRoomDiscountData = 10;
 
 function App() {
 
-    // add filters when specific tokens are required
+  // add filters when specific tokens are required
   const filter = {};
   // apply the token to negotciate (load) into the page
   const token = "devcon-ticket";
@@ -119,26 +119,3 @@ function App() {
 }
 
 export default App;
-
-// Trigger:
-// authenticator.webAuth(currentToken)
-// Response:
-// { object token data }
-// Request: 
-// Web3 SIGN ownership of Ethereum Address
-// Response: { object proof of ownership }
-// Request [POST]:
-// authServerAPI( object token data + proof of address ownership )
-// Response:
-// True
-// End User can now use the website
-
-// Todo:
-// (1 hour) Working on the 3rd Party check - to allow Devcon to utilise the website (inject tickets)
-// (1 hour) Create mock backend Bogota/
-// github/repo/hotel-bogota-mock-backend-json-reponses
-// useTicketSuccess.json
-// useTicketError.json
-// github/repo/devcon-mock-backend-json-reponses/
-// ticketAuthenticationServerSuccess.json
-// ticketAuthenticationServerError.json
