@@ -1,4 +1,3 @@
-// Nick Correct this:
 import { SignedDevconTicket } from './../Attestation/SignedDevonTicket';
 
 const getTokenConfig = (token) => {
@@ -43,7 +42,7 @@ export class Negotiator {
     this.filter = filter;
     this.debug = 0;
     this.hideTokensIframe = 1;
-    this.tokensOrigin = XMLconfig.tokensOrigin;
+    this.tokenOrigin = XMLconfig.tokenOrigin;
     this.attestationOrigin = XMLconfig.attestationOrigin;
     this.tokenUrlName = XMLconfig.tokenUrlName;
     this.tokenSecretName = XMLconfig.tokenSecretName;
@@ -55,16 +54,17 @@ export class Negotiator {
 
     if (options.hasOwnProperty('debug')) this.debug = options.debug;
     if (options.hasOwnProperty('attestationOrigin')) this.attestationOrigin = options.attestationOrigin;
-    if (options.hasOwnProperty('tokensOrigin')) this.tokensOrigin = options.tokensOrigin;
+    if (options.hasOwnProperty('tokenOrigin')) this.tokenOrigin = options.tokenOrigin;
 
     this.isTokenOriginWebsite = false;
 
     if (this.attestationOrigin) {
       // if attestationOrigin filled then token need attestaion
       let currentURL = new URL(window.location.href);
-      let tokensOriginURL = new URL(this.tokensOrigin);
 
-      if (currentURL.origin === tokensOriginURL.origin) {
+      let tokenOriginURL = new URL(this.tokenOrigin);
+
+      if (currentURL.origin === tokenOriginURL.origin) {
         // its tokens website, where tokens saved in localStorage
         // lets chech url params and save token data to the local storage
         this.isTokenOriginWebsite = true;
@@ -72,7 +72,7 @@ export class Negotiator {
       }
 
       this.attachPostMessageListener(event => {
-        if (event.origin !== tokensOriginURL.origin) {
+        if (event.origin !== tokenOriginURL.origin) {
           return;
         }
         if (event.data.iframeCommand && event.data.iframeCommand == "closeMe" && this.addTokenIframe) {
@@ -130,7 +130,7 @@ export class Negotiator {
     // console.log('attestationOrigin = '+this.attestationOrigin);
     if (this.attestationOrigin) {
 
-      if (window.location.href === this.tokensOrigin) {
+      if (window.location.href === this.tokenOrigin) {
         // just read an return tokens
         let tokensOutput = this.readTokens();
         if (tokensOutput.success && !tokensOutput.noTokens) {
@@ -149,24 +149,17 @@ export class Negotiator {
     }
   }
 
-  addTokenThroughIframe(magicLink) {
-    console.log('createTokenIframe fired for : ' + magicLink);
-    // open iframe and request tokens
-    // this.attachPostMessageListener(this.listenForIframeMessages.bind(this));
-
+  addTokenThroughIframe({ ticket, secret, id }) {
+    // Create and append Iframe with magic link
+    const magicLink = `${this.tokenOrigin}/?ticket=${ticket}&secret=${secret}&id=${id}`;
     const iframe = document.createElement('iframe');
     this.addTokenIframe = iframe;
     iframe.src = magicLink;
     iframe.style.width = '1px';
     iframe.style.height = '1px';
     iframe.style.opacity = 0;
-    // let iframeWrap = document.createElement('div');
-    // this.tokenIframeWrap = iframeWrap;
-    // iframeWrap.setAttribute('style', 'width:100%; min-height: 100vh; position: fixed; align-items: center; justify-content: center; display: none; top: 0; left: 0; background: #fffa');
-    // iframeWrap.appendChild(iframe);
     document.body.appendChild(iframe);
   }
-
 
   listenForParentMessages(event) {
 
@@ -425,10 +418,10 @@ export class Negotiator {
 
     // console.log('listenForIframeMessages fired');
 
-    let tokensOriginURL = new URL(this.tokensOrigin);
+    let tokenOriginURL = new URL(this.tokenOrigin);
 
-    // listen only tokensOriginURL
-    if (event.origin !== tokensOriginURL.origin) {
+    // listen only tokenOriginURL
+    if (event.origin !== tokenOriginURL.origin) {
       return;
     }
 
@@ -516,7 +509,7 @@ export class Negotiator {
 
     const iframe = document.createElement('iframe');
     this.iframe = iframe;
-    iframe.src = this.tokensOrigin;
+    iframe.src = this.tokenOrigin;
     iframe.style.width = '800px';
     iframe.style.height = '700px';
     iframe.style.maxWidth = '100%';
