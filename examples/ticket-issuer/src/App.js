@@ -1,9 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { Negotiator } from 'token-negotiator';
+// import { Negotiator } from 'token-negotiator';
+import { Negotiator } from './temp/negotiator';
 import Card from './Card';
 import './App.css';
 
 // A minimal example to read tokens and render them to a view.
+
+const mockTicketData = [
+  {
+    ticket: "MIGWMA0MATYCBWE3ap3-AgEABEEEKJZVxMEXbkSZZBWnNUTX_5ieu8GUqf0bx_a0tBPF6QYskABaMJBYhDOXsmQt3csk_TfMZ2wdmfRkK7ePCOI2kgNCAOOZKRpcE6tLBuPbfE_SmwPk2wNjbj5vpa6kkD7eqQXvBOCa0WNo8dEHKvipeUGZZEWWjJKxooB44dEYdQO70Vgc",
+    secret:"45845870684",
+    id:"mah@mah.com"
+  },
+  {
+    ticket: "MIGXMA4MAjExAgVhN2qd_gIBAARBBCiWVcTBF25EmWQVpzVE1_-YnrvBlKn9G8f2tLQTxekGLJAAWjCQWIQzl7JkLd3LJP03zGdsHZn0ZCu3jwjiNpIDQgBbJBY1Ctlp_czUwB85yF1e5kpZ-lQ_-UZ7jaCYSFoEx028Jit1HIDLCJezKdsNn9c9IO7-HC-_r2ZLaYQ9GGrbHA==",
+    secret:"45845870684",
+    id:"mah@mah.com"
+  },
+  {
+    ticket: "MIGTMAoMATYCAgDeAgEABEEEKJZVxMEXbkSZZBWnNUTX_5ieu8GUqf0bx_a0tBPF6QYskABaMJBYhDOXsmQt3csk_TfMZ2wdmfRkK7ePCOI2kgNCAEZYXbNmWXDsAqIc5uf7SirR-dLCMLdEVN5teFrV93VbcKE_DED8c6jtFQ5LH2SRXwPEtXZqWfEh1c2OHTEYqfwb",
+    secret:"45845870684",
+    id:"mah@mah.com"
+  },
+  {
+    ticket: "MIGSMAkMATECAQECAQAEQQQollXEwRduRJlkFac1RNf_mJ67wZSp_RvH9rS0E8XpBiyQAFowkFiEM5eyZC3dyyT9N8xnbB2Z9GQrt48I4jaSA0IAOf4d0N9shWfPIgRXZPdBRhlRyIARDT0tJwNWYwy2ILVKnIy-qPzFsgdI6sZHm1OY6UsJKuDlp0A7EMC8vS5YhRs=",
+    secret:"45845870684",
+    id:"mah@mah.com"
+  },
+];
 
 function App() {
 
@@ -37,14 +61,18 @@ function App() {
   // when navigating back to this page you will find the ticket in view.
   // Alternative ways include; navigation to the ticket store page, which redirects
   // back to this page once complete.
-  const openTicketInNewTab = ({ticket, secret}) => {
-    window.open(
-      `https://devcontickets.herokuapp.com/outlet/?ticket=${ticket}&secret=${secret}`,
-      '_blank'
-    );
+  const openTicketInNewTab = ({event, ticket, secret, id}) => {
+    event.preventDefault();
+    negotiator.addTokenThroughIframe({ ticket, secret, id });
+    // For this demo - where tickets are loaded from within the page a timeout is used to allow time for the token to be negotiated
+    // and loaded into the view. 
+    // In a scenario where the ticket is embeded within a URL, when the end user navigates to the link, links could be provided in this
+    // page to direct the user e.g. to Devcon or third parties who accept the token. 
     setTimeout(() => {
-      location.reload();
-    }, 2000);
+      negotiator.getTokenInstances(res => {
+        if(res.success) setTokens(res.tokens);
+      });
+    }, 5000);
   }
 
   return (
@@ -74,25 +102,18 @@ function App() {
               <b>- no ticket found -</b>
               <p>Generate ticket:</p>
               <div className="ticketWrapper">
-                <button className="makeTicket" onClick={e => openTicketInNewTab({
-                  ticket: "MIGbMA0CAQYCBWE3ap3-AgEABEEEKJZVxMEXbkSZZBWnNUTX_5ieu8GUqf0bx_a0tBPF6QYskABaMJBYhDOXsmQt3csk_TfMZ2wdmfRkK7ePCOI2kgNHADBEAiBwLK_95NPZo0W01HDBfyZisZ2KaNrzoWuxRV-nhjGLMAIgaOP4eVVINH5xM8Cv9OVDdyOG3BxUqyPVQOuDU9PaC9o=",
-                  secret: "45845870684"
-                })}>Create Ticket</button> 
-
-                <button className="makeTicket" onClick={e => openTicketInNewTab({
-                  ticket: "MIGYMAoCAQYCAgFNAgECBEEEKJZVxMEXbkSZZBWnNUTX_5ieu8GUqf0bx_a0tBPF6QYskABaMJBYhDOXsmQt3csk_TfMZ2wdmfRkK7ePCOI2kgNHADBEAiB4thME54fWjTs1eJ5XseTPk7sqOUa9JzVsDMURBwTlJwIgChH-eU6seNnC8hVDgBvLvUJPpGWviWsQ2WwWrcC7Meg",
-                  secret: "45845870684"
-                })}>Create Ticket</button> 
-
-                <button className="makeTicket" onClick={ e => openTicketInNewTab({
-                  ticket: "MIGZMAoCAQYCAgDeAgEBBEEEKJZVxMEXbkSZZBWnNUTX_5ieu8GUqf0bx_a0tBPF6QYskABaMJBYhDOXsmQt3csk_TfMZ2wdmfRkK7ePCOI2kgNIADBFAiEAy0hGTGFw_KWyk0EbDFI7y4x8LaplJ6PEPFDb-AQ82GUCIEKP4650eRZyvbgNbTcnjRLaRthc4oIFEn7FVS2nNJ6o",
-                  secret: "45845870684"
-                })}>Create Ticket</button> 
-
-                <button className="makeTicket" onClick={e => openTicketInNewTab({
-                  ticket: "MIGXMAkCAQYCAW8CAQAEQQQollXEwRduRJlkFac1RNf_mJ67wZSp_RvH9rS0E8XpBiyQAFowkFiEM5eyZC3dyyT9N8xnbB2Z9GQrt48I4jaSA0cAMEQCIFavePjptmgxBsVuHp7bZSDxK0ovB8d9URp2VjiGos56AiA9apKTL6Kk74Jgf2H7Mb4EZqlsdwJLXSN23sC6aoRyKg==",
-                  secret: "45845870684"
-                })}>Create Ticket</button>
+                {
+                  mockTicketData.map((mockTicket, index) => {
+                    return (
+                      <button key={index} className="makeTicket" onClick={event => openTicketInNewTab({ 
+                        event,
+                        ticket: mockTicket.ticket,
+                        secret: mockTicket.secret,
+                        id: mockTicket.id
+                      })}>Create Ticket</button> 
+                    )
+                  })
+                }
               </div>
             </div>
           }
