@@ -33,7 +33,7 @@ Creates a new instance of the Negotiator module.
   *
   * @param {Object} filter optional filter rules 
   * @param {Object} options api options (required options shown below)
-  * @param {String} token token name (required)
+  * @param {String} token name (required)
   */
   const negotiator = new Negotiator({
     filter: { 'devconId': 6 },
