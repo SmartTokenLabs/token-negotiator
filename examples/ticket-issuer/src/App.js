@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-// import { Negotiator } from 'token-negotiator';
-import { Negotiator } from './temp/negotiator';
+import { Negotiator } from 'token-negotiator';
 import Card from './Card';
 import './App.css';
 
