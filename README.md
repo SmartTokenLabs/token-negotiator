@@ -130,8 +130,8 @@ Triggers an attestation request event
 ```javascript
   /**
   *
-  * @param {string} token that the end user must prove ownership of (e.g. to be able to complete a checkout payment discount). 
-  * @param {string} attestationOrigin url to attest the base64ticket + ticketSecret
+  * @param {object} token that the end user must prove ownership of (e.g. to be able to complete a checkout payment discount). 
+  * @param {string} tokenId identifier name of that token type. 
   * @returns {string} ticket in hex format
   */
   authenticator.getAuthenticationBlob({
