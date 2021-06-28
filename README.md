@@ -37,7 +37,7 @@ Creates a new instance of the Negotiator module.
   */
   const negotiator = new Negotiator({
     filter: { 'devconId': 6 },
-    token: "devcon-ticket",
+    tokenId: "devcon-ticket",
     options: { userPermissionRequired: true }
   });
 ```
@@ -130,15 +130,13 @@ Triggers an attestation request event
 ```javascript
   /**
   *
-  * @param {string} base64ticket provided to the end user
-  * @param {string} ticketSecret provided to the end user
+  * @param {string} token that the end user must prove ownership of (e.g. to be able to complete a checkout payment discount). 
   * @param {string} attestationOrigin url to attest the base64ticket + ticketSecret
   * @returns {string} ticket in hex format
   */
   authenticator.getAuthenticationBlob({
-    ticketBlob: base64ticket,
-    ticketSecret: ticketSecret,
-    attestationOrigin: 'https://stage.attestation.id/',
+    token: devconTicket,
+    tokenId: "devcon-ticket",
   }, useDevconTicket => {
     writeToLog('useDevconTicket received (in hex ): ' + useDevconTicket);
   };
