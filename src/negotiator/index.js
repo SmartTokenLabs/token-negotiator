@@ -3,7 +3,7 @@ import { SignedDevconTicket } from './../Attestation/SignedDevonTicket';
 const getTokenConfig = (tokenId) => {
   let XMLconfig = {};
   // this will come from a lookup table at a later stage.
-  if (token === "devcon-ticket") {
+  if (tokenId === "devcon-ticket") {
     XMLconfig = {
       attestationOrigin: "https://stage.attestation.id",
       tokenOrigin: "https://devcontickets.herokuapp.com/outlet/",
@@ -25,7 +25,7 @@ export class Negotiator {
 
   constructor(filter = {}, tokenId, options = { userPermissionRequired: false }) {
 
-    if(!token) console.log("Negotiator: token is a required parameter");
+    if(!tokenId) console.log("Negotiator: token is a required parameter");
 
     // The XML config is used to define the token configuration.
     // This includes how the ticket will confirm its vailidity and the origin
