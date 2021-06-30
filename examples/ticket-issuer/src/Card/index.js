@@ -10,10 +10,10 @@ function MediaCard({ tokenInstance }) {
     <div className="ticketContainer">
       <div className="ticketDetails">
         <Typography className="ticketClass" gutterBottom variant="h5" component="h2">
-          {ticketClass.toString()}
+          {ticketClass && ticketClass.toString()}
         </Typography>
         <Typography className="ticketId" variant="body2" color="textSecondary" component="p">
-          {ticketId.toString()}
+          {ticketId && ticketId.toString()}
         </Typography>
         <Typography className="devconId" variant="body2" color="textSecondary" component="p">
           Devcon ID: {devconId && devconId.toString()}

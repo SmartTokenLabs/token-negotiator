@@ -62,7 +62,6 @@ function App() {
   // back to this page once complete.
   const openTicketInNewTab = ({event, ticket, secret, id}) => {
     event.preventDefault();
-    debugger
     negotiator.addTokenThroughIframe({ ticket, secret, id });
     // For this demo - where tickets are loaded from within the page a timeout is used to allow time for the token to be negotiated
     // and loaded into the view. 
