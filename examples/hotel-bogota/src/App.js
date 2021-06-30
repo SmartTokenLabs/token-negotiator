@@ -17,14 +17,14 @@ function App() {
 
   // add filters when specific tokens are required
   const filter = {};
-  // apply the token to negotciate (load) into the page
-  const token = "devcon-ticket";
+  // apply the tokenId to negotiate tokens from e.g. devcon-ticket.
+  const tokenId = "devcon-ticket";
   // set required negotiator options
   const options = { 
     userPermissionRequired: true
   };
   // Create new instance of the Negotiator with params
-  let negotiator = new Negotiator(filter, token, options);
+  let negotiator = new Negotiator(filter, tokenId, options);
 
   // Devcon Tickets (local react state of tokens)
   let [tokens, setTokens] = useState([]);
