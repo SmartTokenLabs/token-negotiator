@@ -25,7 +25,7 @@ export class Negotiator {
 
   constructor(filter = {}, tokenId, options = { userPermissionRequired: false }) {
 
-    if(!tokenId) console.log("Negotiator: token is a required parameter");
+    if(!tokenId) console.log("Negotiator: tokenId is a required parameter");
 
     // The XML config is used to define the token configuration.
     // This includes how the ticket will confirm its vailidity and the origin
