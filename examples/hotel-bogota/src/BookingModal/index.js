@@ -117,6 +117,7 @@ export default function BookingModal({ roomType, applyDiscount, discount, price,
               </div>
             </form>
           </DialogContent>
+          <div className="booking">
           <DialogActions>
             <Button
               onClick={handleClose}
@@ -124,7 +125,7 @@ export default function BookingModal({ roomType, applyDiscount, discount, price,
             >
               Cancel
           </Button>
-            <Button
+          <Button
               onClick={handleSubmit}
               color="primary"
               disabled={formIsValid()}
@@ -132,6 +133,7 @@ export default function BookingModal({ roomType, applyDiscount, discount, price,
               Book Now
           </Button>
           </DialogActions>
+        </div>
         </div>
       </Dialog>
     </div>
