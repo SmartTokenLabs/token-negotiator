@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Negotiator } from 'token-negotiator';
+// import { Negotiator } from 'token-negotiator';
+import { Negotiator } from './temp/negotiator';
 import Card from './Card';
 import './App.css';
 
@@ -49,11 +50,10 @@ function App() {
   const options = {};
   const negotiator = new Negotiator(filter, token, options);
   //
-  useEffect(() => {
+  useEffect(async () => {
     // on success assign tokens to react state
-    negotiator.getTokenInstances(res => {
-      if(res.success) setTokens(res.tokens);
-    });
+    const devconData = await negotiator.negotiate();
+    if(devconData.success) setTokens(devconData.tokens);
   }, []);
 
   // This is one example of how the ticket can be loaded inside a new tab
@@ -67,11 +67,9 @@ function App() {
     // and loaded into the view. 
     // In a scenario where the ticket is embeded within a URL, when the end user navigates to the link, links could be provided in this
     // page to direct the user e.g. to Devcon or third parties who accept the token. 
-    setTimeout(() => {
-      negotiator.getTokenInstances(res => {
-        if(res.success) setTokens(res.tokens);
-      });
-    }, 5000);
+    negotiator.negotiate(res => {
+      if(res.success) setTokens(res.tokens);
+    });
   }
 
   return (

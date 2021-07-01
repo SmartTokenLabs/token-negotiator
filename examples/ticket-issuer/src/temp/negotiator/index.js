@@ -1,9 +1,10 @@
 import { SignedDevconTicket } from './../Attestation/SignedDevonTicket';
+import { ethers } from "ethers";
 
-const getTokenConfig = (token) => {
+const getTokenConfig = (tokenId) => {
   let XMLconfig = {};
   // this will come from a lookup table at a later stage.
-  if (token === "devcon-ticket") {
+  if (tokenId === "devcon-ticket") {
     XMLconfig = {
       attestationOrigin: "https://stage.attestation.id",
       tokenOrigin: "https://devcontickets.herokuapp.com/outlet/",
@@ -11,9 +12,9 @@ const getTokenConfig = (token) => {
       tokenSecretName: 'secret',
       unsignedTokenDataName: 'ticket',
       tokenIdName: 'id',
-      tokenParserUrl: '',
       tokenParser: SignedDevconTicket,
-      localStorageItemName: 'dcTokens'
+      localStorageItemName: 'dcTokens',
+      localStorageEthKeyItemName: 'dcEthKeys',
     };
   } else {
     console.log("Negotiator: missing token script for this token");
@@ -23,14 +24,14 @@ const getTokenConfig = (token) => {
 
 export class Negotiator {
 
-  constructor(filter = {}, token, options = { userPermissionRequired: false }) {
+  constructor(filter = {}, tokenId, options = { userPermissionRequired: false }) {
 
-    if(!token) console.log("Negotiator: token is a required parameter");
+    if (!tokenId) console.log("Negotiator: tokenId is a required parameter");
 
     // The XML config is used to define the token configuration.
     // This includes how the ticket will confirm its vailidity and the origin
     // of where the ticket was issued from.
-    let XMLconfig = getTokenConfig(token);
+    let XMLconfig = getTokenConfig(tokenId);
     // When True, the negoticator will require userPermissionStatus to be true to
     // read and provide tokens to client.
     this.userPermissionRequired = options.userPermissionRequired;
@@ -40,6 +41,8 @@ export class Negotiator {
     // TODO annotate the usage of variables below.
     this.queuedCommand = false;
     this.filter = filter;
+    //
+    this.tokensOrigin = XMLconfig.tokenOrigin;
     this.debug = 0;
     this.hideTokensIframe = 1;
     this.tokenOrigin = XMLconfig.tokenOrigin;
@@ -50,7 +53,12 @@ export class Negotiator {
     this.unsignedTokenDataName = XMLconfig.unsignedTokenDataName;
     this.tokenParser = XMLconfig.tokenParser;
     this.localStorageItemName = XMLconfig.localStorageItemName;
+    this.localStorageEthKeyItemName = XMLconfig.localStorageEthKeyItemName;
     this.addTokenIframe = null;
+
+    this.maxUNlength = 6;
+    this.UNttl = 60 * 60;
+    this.UNsecret = "0x1234567890abcdef";
 
     if (options.hasOwnProperty('debug')) this.debug = options.debug;
     if (options.hasOwnProperty('attestationOrigin')) this.attestationOrigin = options.attestationOrigin;
@@ -61,10 +69,9 @@ export class Negotiator {
     if (this.attestationOrigin) {
       // if attestationOrigin filled then token need attestaion
       let currentURL = new URL(window.location.href);
+      let tokensOriginURL = new URL(this.tokensOrigin);
 
-      let tokenOriginURL = new URL(this.tokenOrigin);
-
-      if (currentURL.origin === tokenOriginURL.origin) {
+      if (currentURL.origin === tokensOriginURL) {
         // its tokens website, where tokens saved in localStorage
         // lets chech url params and save token data to the local storage
         this.isTokenOriginWebsite = true;
@@ -72,7 +79,7 @@ export class Negotiator {
       }
 
       this.attachPostMessageListener(event => {
-        if (event.origin !== tokenOriginURL.origin) {
+        if (event.origin !== tokensOriginURL.origin) {
           return;
         }
         if (event.data.iframeCommand && event.data.iframeCommand == "closeMe" && this.addTokenIframe) {
@@ -82,6 +89,7 @@ export class Negotiator {
         }
 
       })
+
     }
 
     // do we inside iframe?
@@ -95,6 +103,48 @@ export class Negotiator {
       let referrer = new URL(document.referrer);
       window.parent.postMessage({ iframeCommand: "iframeReady", iframeData: '' }, referrer.origin);
     }
+
+  }
+
+  async connectMetamaskAndGetAddress() {
+
+    if (!window.ethereum) {
+      throw new Error('Please install metamask before.');
+    }
+
+    // const userAddresses = await window.ethereum.request({ method: 'eth_accounts' });
+    const userAddresses = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    if (!userAddresses || !userAddresses.length) {
+      throw new Error("Active Wallet required");
+    }
+
+    return userAddresses[0];
+  }
+
+  async signMessageWithBrowserWallet(message) {
+    await this.connectMetamaskAndGetAddress();
+
+    let provider = new ethers.providers.Web3Provider(window.ethereum);
+    let signer = provider.getSigner();
+    return await signer.signMessage(message);
+  }
+
+  addTokenThroughIframe(magicLink) {
+    console.log('createTokenIframe fired for : ' + magicLink);
+    // open iframe and request tokens
+    // this.attachPostMessageListener(this.listenForIframeMessages.bind(this));
+
+    const iframe = document.createElement('iframe');
+    this.addTokenIframe = iframe;
+    iframe.src = magicLink;
+    iframe.style.width = '1px';
+    iframe.style.height = '1px';
+    iframe.style.opacity = 0;
+    // let iframeWrap = document.createElement('div');
+    // this.tokenIframeWrap = iframeWrap;
+    // iframeWrap.setAttribute('style', 'width:100%; min-height: 100vh; position: fixed; align-items: center; justify-content: center; display: none; top: 0; left: 0; background: #fffa');
+    // iframeWrap.appendChild(iframe);
+    document.body.appendChild(iframe);
   }
 
   // Once a user has given or revoked their permission to use the token-negotiator
@@ -105,60 +155,6 @@ export class Negotiator {
   // returns true / false
   getUserPermission() {
     return this.userPermissionStatus;
-  }
-
-  // TODO confirm with team if we can deprecate this method.
-  // It appears to do the same task as the method getTokenInstances?
-  // It seems that using one method or the other will work just fine.
-  negotiate(callBack) {
-    return getTokenInstances(callBack);
-  }
-
-  getTokenInstances(callBack) {
-    // callback function required
-    // user permission required (for now - if this is not defined it is true)
-    // TODO add logic: allow always when token when origin.
-    if (
-      this.userPermissionStatus === false ||
-      typeof callBack !== "function"
-    ) {
-      return false;
-    }
-
-    this.negotiateCallback = callBack;
-
-    // console.log('attestationOrigin = '+this.attestationOrigin);
-    if (this.attestationOrigin) {
-
-      if (window.location.href === this.tokenOrigin) {
-        // just read an return tokens
-        let tokensOutput = this.readTokens();
-        if (tokensOutput.success && !tokensOutput.noTokens) {
-          let decodedTokens = this.decodeTokens(tokensOutput.tokens);
-          let filteredTokens = this.filterTokens(decodedTokens);
-          tokensOutput.tokens = filteredTokens;
-          this.negotiateCallback(tokensOutput);
-        }
-      } else {
-        this.queuedCommand = { parentCommand: 'tokensList', parentData: '' };
-        this.createIframe()
-      }
-    } else {
-      console.log('no attestationOrigin...');
-      // TODO test token against blockchain and show tokens as usual view
-    }
-  }
-
-  addTokenThroughIframe({ ticket, secret, id }) {
-    // Create and append Iframe with magic link
-    const magicLink = `${this.tokenOrigin}/?ticket=${ticket}&secret=${secret}&id=${id}`;
-    const iframe = document.createElement('iframe');
-    this.addTokenIframe = iframe;
-    iframe.src = magicLink;
-    iframe.style.width = '1px';
-    iframe.style.height = '1px';
-    iframe.style.opacity = 0;
-    document.body.appendChild(iframe);
   }
 
   listenForParentMessages(event) {
@@ -190,15 +186,12 @@ export class Negotiator {
     switch (command) {
       case "signToken":
         // we receive decoded token, we have to find appropriate raw token
-        console.log('let Auth data:', data);
         if (typeof window.Authenticator === "undefined") {
           console.log('Authenticator not defined.');
           return;
         }
 
         let rawTokenData = this.getRawToken(data);
-
-        console.log('rawTokenData: ', rawTokenData);
 
         let base64ticket = rawTokenData.token;
         let ticketSecret = rawTokenData.secret;
@@ -300,8 +293,8 @@ export class Negotiator {
   }
 
   /*
-   * Return token objects satisfying the current negotiator's requirements
-   */
+    * Return token objects satisfying the current negotiator's requirements
+    */
   filterTokens(decodedTokens, filter = {}) {
     if (Object.keys(filter).length == 0) {
       filter = this.filter;
@@ -418,10 +411,10 @@ export class Negotiator {
 
     // console.log('listenForIframeMessages fired');
 
-    let tokenOriginURL = new URL(this.tokenOrigin);
+    let tokensOriginURL = new URL(this.tokensOrigin);
 
-    // listen only tokenOriginURL
-    if (event.origin !== tokenOriginURL.origin) {
+    // listen only tokensOriginURL
+    if (event.origin !== tokensOriginURL.origin) {
       return;
     }
 
@@ -468,12 +461,6 @@ export class Negotiator {
 
         this.tokenIframeWrap.remove();
 
-        // if (data.success) {
-        //     console.log('useTokenData: ' + data.useToken)
-        // } else {
-        //     console.log('useTokenData error message: ' + data.message)
-        // }
-        console.log('this.signCallback(data)');
         this.signCallback && this.signCallback(data);
         this.signCallback = false;
         break;
@@ -493,13 +480,163 @@ export class Negotiator {
 
   }
 
-  signToken(unsignedToken, signCallback) {
-    console.log('signToken request for:');
-    console.log(unsignedToken);
+  authenticate(unsignedToken, unEndPoint = "") {
+    return new Promise(async (resolve, reject) => {
+      await this._authenticate(unsignedToken, unEndPoint, (proof, error) => {
+        if (!proof || !this.useEthKey) return reject(error);
+        resolve({ proof, useEthKey: this.useEthKey, status: true });
+      })
+    })
+  }
+
+
+  async _authenticate(unsignedToken, unEndPoint, signCallback) {
+    console.log('authenticate request. need to implement UN request/sign');
+    let useEthKey;
+    try {
+      useEthKey = await this.getChallengeSigned();
+    } catch (e) {
+      signCallback(null, e);
+      return;
+    }
+
+    console.log("useEthKey", useEthKey);
+
+    this.useEthKey = useEthKey;
+
     this.signCallback = signCallback;
     // open iframe and request tokens
     this.queuedCommand = { parentCommand: 'signToken', parentData: unsignedToken };
     this.createIframe();
+  }
+
+  getInt64Bytes(x) {
+    var bytes = [];
+    var i = 8;
+    do {
+      bytes[--i] = x & (255);
+      x = x >> 8;
+    } while (i)
+    return bytes;
+  }
+
+  async getUnpredictableNumber(endPoint) {
+    // TODO implement endpoint request
+
+    const expiry = Date.now() + this.UNttl * 1000;
+    let random = Math.floor(Math.random() * (10 ** this.maxUNlength));
+
+    return {
+      UN: random.toString() + this.createHmac(random, expiry),
+      Expiry: expiry
+    }
+  }
+
+  createHmac(random, expiry) {
+    let randomAndExpiryAsBytes = this.getInt64Bytes(random).concat(this.getInt64Bytes(expiry));
+    return ethers.utils.computeHmac("sha256", this.UNsecret, randomAndExpiryAsBytes);
+  }
+
+  ethKeyIsValid(ethKey) {
+    let random = parseInt(ethKey.UN.substr(0, ethKey.UN.length - 66));
+    let hmac = this.createHmac(random, ethKey.expiry);
+    if (hmac !== ethKey.UN.substr(ethKey.UN.length - 66)) return false;
+    if (ethKey.expiry < Date.now()) return false;
+    return true;
+  }
+
+  async getChallengeSigned(unEndPoint) {
+
+    const storageEthKeys = localStorage.getItem(this.localStorageEthKeyItemName);
+    let ethKeys;
+
+    if (storageEthKeys && storageEthKeys.length) {
+      ethKeys = JSON.parse(storageEthKeys);
+    } else {
+      ethKeys = {};
+    }
+
+    let address = await this.connectMetamaskAndGetAddress();
+    address = address.toLowerCase();
+
+    let useEthKey;
+
+    if (ethKeys && ethKeys[address] && !this.ethKeyIsValid(ethKeys[address])) {
+      console.log('remove invalid useEthKey');
+      delete ethKeys[address];
+    }
+
+    if (ethKeys && ethKeys[address]) {
+      useEthKey = ethKeys[address];
+    } else {
+      useEthKey = await this.signNewChallenge(unEndPoint);
+      if (useEthKey) {
+        ethKeys[useEthKey.address.toLowerCase()] = useEthKey;
+        localStorage.setItem(this.localStorageEthKeyItemName, JSON.stringify(ethKeys));
+      }
+    }
+    return useEthKey;
+  }
+
+  async signNewChallenge(unEndPoint) {
+    const { UN, Expiry } = await this.getUnpredictableNumber(unEndPoint);
+
+    const domain = window.location.hostname;
+
+    const challenge = `This is proof that I am visiting ${domain}, which has presented the following challenge ${UN.toString()} to sign.`;
+
+    let signature = await this.signMessageWithBrowserWallet(challenge);
+    const msgHash = ethers.utils.hashMessage(challenge);
+    const msgHashBytes = ethers.utils.arrayify(msgHash);
+
+    const recoveredAddress = ethers.utils.recoverAddress(msgHashBytes, signature);
+
+    return {
+      address: recoveredAddress,
+      expiry: Expiry,
+      challenge,
+      signature,
+      UN
+    };
+  }
+
+  negotiate() {
+    return new Promise((resolve, reject) => {
+      this._negotiate((tokens) => {
+        if (!tokens) return reject(false)
+        resolve(tokens);
+      })
+    })
+  }
+
+  _negotiate(callBack) {
+
+    if (this.userPermissionStatus === false) {
+      return false;
+    }
+    this.negotiateCallback = callBack;
+
+    if (this.attestationOrigin) {
+
+      console.log('attestationOrigin', this.attestationOrigin);
+
+      if (window.location.href === this.tokensOrigin) {
+        // just read an return tokens
+        let tokensOutput = this.readTokens();
+        if (tokensOutput.success && !tokensOutput.noTokens) {
+          let decodedTokens = this.decodeTokens(tokensOutput.tokens);
+          let filteredTokens = this.filterTokens(decodedTokens);
+          tokensOutput.tokens = filteredTokens;
+          this.negotiateCallback(tokensOutput);
+        }
+      } else {
+        this.queuedCommand = { parentCommand: 'tokensList', parentData: '' };
+        this.createIframe()
+      }
+    } else {
+      console.log('no attestationOrigin...');
+      // TODO test token against blockchain and show tokens as usual view
+    }
   }
 
   createIframe() {
@@ -509,7 +646,7 @@ export class Negotiator {
 
     const iframe = document.createElement('iframe');
     this.iframe = iframe;
-    iframe.src = this.tokenOrigin;
+    iframe.src = this.tokensOrigin;
     iframe.style.width = '800px';
     iframe.style.height = '700px';
     iframe.style.maxWidth = '100%';
