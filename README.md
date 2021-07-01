@@ -101,7 +101,7 @@ Example Use below:
     // if the user has selected to give access
     if(negotiator.getUserPermission() === true){
       // get the tokens and utilise them in the web application
-      negotiator.getTokenInstances(result => {
+      negotiator.getTokenInstances().then(result => {
         tokens = result.tokens;
       });
     }

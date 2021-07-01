@@ -1,6 +1,6 @@
 {
-  "name": "token-negotiator",
-  "version": "0.0.0",
+  "name": "@alphawallet/token-negotiator",
+  "version": "0.0.1",
   "description": "a library for enriching the functionality of your tokens within dapps",
   "main": "index.js",
   "scripts": {
