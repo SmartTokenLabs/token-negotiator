@@ -41,6 +41,8 @@ export class Negotiator {
     // TODO annotate the usage of variables below.
     this.queuedCommand = false;
     this.filter = filter;
+    //
+    this.tokensOrigin = XMLconfig.tokenOrigin;
     this.debug = 0;
     this.hideTokensIframe = 1;
     this.tokenOrigin = XMLconfig.tokenOrigin;
@@ -67,10 +69,9 @@ export class Negotiator {
     if (this.attestationOrigin) {
       // if attestationOrigin filled then token need attestaion
       let currentURL = new URL(window.location.href);
+      let tokensOriginURL = new URL(this.tokensOrigin);
 
-      let tokenOriginURL = new URL(this.tokenOrigin);
-
-      if (currentURL.origin === tokenOriginURL.origin) {
+      if (currentURL.origin === tokensOriginURL) {
         // its tokens website, where tokens saved in localStorage
         // lets chech url params and save token data to the local storage
         this.isTokenOriginWebsite = true;
@@ -78,7 +79,7 @@ export class Negotiator {
       }
 
       this.attachPostMessageListener(event => {
-        if (event.origin !== tokenOriginURL.origin) {
+        if (event.origin !== tokensOriginURL.origin) {
           return;
         }
         if (event.data.iframeCommand && event.data.iframeCommand == "closeMe" && this.addTokenIframe) {
@@ -88,6 +89,7 @@ export class Negotiator {
         }
 
       })
+
     }
 
     // do we inside iframe?
@@ -606,6 +608,15 @@ export class Negotiator {
       })
     })
   }
+  
+  getTokenInstances() {
+    return new Promise((resolve, reject) => {
+      this._negotiate((tokens) => {
+        if (!tokens) return reject(false)
+        resolve(tokens);
+      })
+    })
+  }
 
   _negotiate(callBack) {
 
@@ -614,8 +625,9 @@ export class Negotiator {
     }
     this.negotiateCallback = callBack;
 
-    // console.log('attestationOrigin = '+this.attestationOrigin);
     if (this.attestationOrigin) {
+
+      console.log('attestationOrigin', this.attestationOrigin);
 
       if (window.location.href === this.tokensOrigin) {
         // just read an return tokens

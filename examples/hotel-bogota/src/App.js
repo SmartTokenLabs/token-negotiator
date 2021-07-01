@@ -5,7 +5,8 @@ import TokenNotificationCard from './TokenNotificationCard';
 import Typography from '@material-ui/core/Typography';
 import EthereumLogo from './EthereumLogo';
 import BookingDate from './BookingDate';
-import { Negotiator } from 'token-negotiator';
+// import { Negotiator } from 'token-negotiator';
+import { Negotiator } from './temp/negotiator';
 import './App.css';
   
 // mock data e.g. server side hotel room price database
@@ -64,51 +65,53 @@ function App() {
 
     } else {
 
-      // const { status, useTicket, ethKey } = await negotiator.authenticate(ticket, unEndPoint);
+      // endpoint to get an unpredictable number (mock example)
+      const unpredicatbleNumberEndPoint = "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/examples/hotel-bogota/mockbackend-responses/un.json";
+      // authenticate discount ticket is valid
+      const authenticationData = await negotiator.authenticate({
+        un: unpredicatbleNumberEndPoint, 
+        token: ticket
+      });
 
-      // unpredictable number end point
-      const unEndPoint = "https://www.github.com/someMock.json";
-      const { status, useTicket, ethKey } = ((unEndPoint) => {
-        return {
-          status: true,
-          useTicket: "ABC",
-          ethKey: "123"
-        }
-      })();
-      
-      if(status === true) {
+      // when the ticket is valid and validation data is present
+      if(
+        authenticationData.status === true &&
+        authenticationData.useTicket &&
+        authenticationData.ethKey
+      ) {
 
-        // store token proof details for when the end user wants
-        // to finalise this examples transation to book a room.
-        setUseDiscountProof({status, useTicket, ethKey});
+        // store token proof details in react state for later.
+        // authenticationData: { status, useTicket, ethKey }
+        setUseDiscountProof(authenticationData);
         
-        // share discount price with the user.
+        // share discount price via react state with the user inside react view.
         setDiscount({ value: getApplicableDiscount(), tokenInstance: ticket });
 
       } else {
 
-        // handle scenario when the authentication process for discount was not valid.
+        // handle scenario when the authentication process for discount is not valid.
 
       }
     }
   }
 
-  // Complete transaction
-  const book = async (form) => {
+  // example transaction where the backend 
+  // can check the vailidity of the ticket with 
+  // 'useTicket', 'ethKey'.
+  const book = async (formData) => {
 
-    debugger;
-  
-    // Example of how data could be sent to backend server
-    // to begin a transaction process
-    postData('https://bogotbackend/pay', { 
-      proof: { useTicket, ethKey },
-      bookingData: { roomType, dates },
-      paymentData: { paymentDetails, discountType }
-    })
-    .then(data => {
+    const checkoutEndPoint = "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/examples/hotel-bogota/mockbackend-responses/pay.json";
+
+    const params = {
+      // proof: { useTicket, ethKey },
+      // bookingData: { roomType, dates },
+      // paymentData: { paymentDetails, discountType }
+    }
+
+    fetch(checkoutEndPoint + new URLSearchParams(params)).then(data => {
       alert('Transaction Complete, we look forward to your stay with us!');
     });
-    
+  
   }
 
   // negotiation happens when this method is triggered
