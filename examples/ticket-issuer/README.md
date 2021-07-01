@@ -19,10 +19,9 @@ A minimal example to read tokens and render them to a view within a react dapp.
 2. navigate to `https://devcontickets.herokuapp.com/` and from within your browser application storage clear `dcTokens`
 3. once cleared you will see no tickets inside this Dapp
 4. click on the `create ticket` button
-5. this will open the ticket inside a new window (this process emulates how a ticket page can be used to host the location of where tickets (data) is stored).
-Users may reach this page via receiving an email after ticket purchase.
-6. navigate back to this served Dapp and you will find a ticket has loaded into the view
-7. the ticket is now accessible via this Dapp and also other Dapps / websites that wish to integrate with the tickets (tokens).
+5. this will open the ticket inside an iframe. (Users may reach this page via receiving an email after ticket purchase)
+6. refresh the Dapp (if needed) and you will find a ticket has loaded into the view
+7. the tickets data is now accessible via this Dapp and also other Dapps / websites that wish to integrate with the tickets (tokens).
 
 ### for support, please contact us where we're happy to help or hear any feedback you have to improve this demo and Token-Negotiator
 
