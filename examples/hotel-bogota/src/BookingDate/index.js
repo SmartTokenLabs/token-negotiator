@@ -24,17 +24,17 @@ const BookingDate = () => {
         <div style={{ margin: '10px' }}>
           <DatePicker
             name={'from'}
-            label={'from'}
+            label={'check in'}
             handleInput={handleInput}
-            date={formInput.from}
+            date={"08/01/2021"}
           />
         </div>
         <div style={{ margin: '10px' }}>
           <DatePicker
             name={'to'}
-            label={'to'}
+            label={'check out'}
             handleInput={handleInput}
-            date={formInput.to}
+            date={"08/15/2021"}
           />
         </div>
       </div>

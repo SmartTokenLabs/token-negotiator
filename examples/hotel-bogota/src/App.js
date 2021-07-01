@@ -9,7 +9,7 @@ import { Negotiator } from 'token-negotiator';
 import './App.css';
   
 // mock data e.g. server side hotel room price database
-const mockRoomData = [{"type":"Deluxe Room","price": 0.5,"frequency":"per night","image":"./hotel_3.jpg"},{"type":"King Suite","price": 0.4,"frequency":"per night","image":"./hotel_2.png"},{"type":"Superior Deluxe Suite","price": 0.6,"frequency":"per night","image":"./hotel_1.jpg"}]
+const mockRoomData = [{"type":"Deluxe Room","price": 200000,"frequency":"per night","image":"./hotel_3.jpg"},{"type":"King Suite","price": 320000,"frequency":"per night","image":"./hotel_2.png"},{"type":"Superior Deluxe Suite","price": 250030,"frequency":"per night","image":"./hotel_1.jpg"}]
 // mock discount of 10% applied to any ticket selected. In a real world scenario, this maybe different per ticket type and retrieved from a backend service.
 const mockRoomDiscountData = 10;
 
@@ -64,18 +64,18 @@ function App() {
 
     } else {
 
+      // const { status, useTicket, ethKey } = await negotiator.authenticate(ticket, unEndPoint);
+
       // unpredictable number end point
       const unEndPoint = "https://www.github.com/someMock.json";
-
-      // authenticate
       const { status, useTicket, ethKey } = ((unEndPoint) => {
         return {
           status: true,
           useTicket: "ABC",
           ethKey: "123"
         }
-      })(); //await authenticator.authenticate(ticket, unEndPoint);
-
+      })();
+      
       if(status === true) {
 
         // store token proof details for when the end user wants
@@ -93,11 +93,22 @@ function App() {
     }
   }
 
-  // apply discount
-  // status, useTicket, ethKey
+  // Complete transaction
   const book = async (form) => {
-    // 
-    // useDiscountProof
+
+    debugger;
+  
+    // Example of how data could be sent to backend server
+    // to begin a transaction process
+    postData('https://bogotbackend/pay', { 
+      proof: { useTicket, ethKey },
+      bookingData: { roomType, dates },
+      paymentData: { paymentDetails, discountType }
+    })
+    .then(data => {
+      alert('Transaction Complete, we look forward to your stay with us!');
+    });
+    
   }
 
   // negotiation happens when this method is triggered

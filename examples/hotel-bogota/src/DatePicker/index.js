@@ -20,6 +20,7 @@ export default function DatePicker({ label, handleInput, date }) {
           margin="normal"
           className="date-picker-inline"
           label={label}
+          disabled={true}
           value={date}
           onChange={e => handleInput(e, label)}
           KeyboardButtonProps={{
