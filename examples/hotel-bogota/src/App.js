@@ -103,7 +103,7 @@ function App() {
     const checkoutEndPoint = "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/examples/hotel-bogota/mockbackend-responses/pay.json";
 
     const params = {
-      // proof: { useTicket, ethKey },
+      // proof: useDiscountProof,
       // bookingData: { roomType, dates },
       // paymentData: { paymentDetails, discountType }
     }
@@ -117,9 +117,9 @@ function App() {
   // negotiation happens when this method is triggered
   // before this time, the token-negotiator is not used.
   const getTokens = () => {
-    negotiator.getTokenInstances(res => {
-      if(res.success){
-        setTokens(res.tokens);
+    negotiator.negotiate().then(results => {
+      if(results.success){
+        setTokens(results.tokens);
         setFreeShuttle(true);
       }
     });
