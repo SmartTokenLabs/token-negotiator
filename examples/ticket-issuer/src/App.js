@@ -53,23 +53,22 @@ function App() {
   useEffect(async () => {
     // on success assign tokens to react state
     const devconData = await negotiator.negotiate();
-    setTimeout(() => {
-      if(devconData.success) setTokens(devconData.tokens);
-    }, 5000);
+    if(devconData.success) setTokens(devconData.tokens);
   }, []);
 
   // This is one example of how the ticket can be loaded inside a new tab
   // when navigating back to this page you will find the ticket in view.
   // Alternative ways include; navigation to the ticket store page, which redirects
   // back to this page once complete.
-  const openTicketInNewTab = ({event, ticket, secret, id}) => {
+  const openTicketInNewTab = async ({event, ticket, secret, id}) => {
     event.preventDefault();
-    negotiator.addTokenThroughIframe({ ticket, secret, id });
+    const magicLink = `https://devcontickets.herokuapp.com/outlet/?ticket=${ticket}&secret=${secret}&id=${id}`;
+    negotiator.addTokenThroughIframe(magicLink); 
     // For this demo - where tickets are loaded from within the page a timeout is used to allow time for the token to be negotiated
     // and loaded into the view. 
     // In a scenario where the ticket is embeded within a URL, when the end user navigates to the link, links could be provided in this
     // page to direct the user e.g. to Devcon or third parties who accept the token. 
-    negotiator.getTokenInstances(res => {
+    negotiator.negotiate().then(res => {
       if(res.success) setTokens(res.tokens);
     });
   }
