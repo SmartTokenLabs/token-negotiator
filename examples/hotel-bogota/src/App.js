@@ -69,7 +69,7 @@ function App() {
       const unpredicatbleNumberEndPoint = "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/examples/hotel-bogota/mockbackend-responses/un.json";
       // authenticate discount ticket is valid
       const authenticationData = await negotiator.authenticate({
-        un: unpredicatbleNumberEndPoint, 
+        unEndPoint: unpredicatbleNumberEndPoint, 
         token: ticket
       });
 

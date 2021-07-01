@@ -21,7 +21,7 @@ npm install token-negotiator
 ```
 
 ```javascript
-import { Negotiator, Authenticator } from 'token-negotiator';
+import { Negotiator } from 'token-negotiator';
 ```
 
 ### Negotiator
@@ -53,6 +53,19 @@ Resolves the tokens with filter applied.
   negotiator.getTokenInstances(result => {
     tokens = result.tokens;
   });
+```
+
+Authenticate ownership of Token
+
+```javascript
+  /**
+  * @param {URL} unEndPoint unpredictable number generator end point
+  * @param {object} ticket selected token/ticket
+  * @returns {object} { status (true/false), useTicket (object), ethKey (object) }
+  * - useTicket and ethKey can be used to verify a ticket is valid. 
+  * - status indicates if the function was successful.
+  */
+  negotiator.authenticate({ unEndPoint, ticket });
 ```
 
 Filters
