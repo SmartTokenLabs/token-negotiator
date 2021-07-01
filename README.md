@@ -57,12 +57,12 @@ Authenticate ownership of Token.
 ```javascript
   /**
   * @param {URL} unEndPoint end point must return { un: number, expiry: date }
-  * @param {object} ticket selected token/ticket
+  * @param {object} unsignedToken selected un-signed token/ticket
   * @returns {object} { status (true/false), useTicket (object), ethKey (object)
   * - useTicket and ethKey can be used to verify a ticket is valid. 
   * - status indicates if the function was successful.
   */
-  const { status, useTicket, ethKey } = await negotiator.authenticate({ unEndPoint, ticket });
+  const { status, useTicket, ethKey } = await negotiator.authenticate({ unEndPoint, unsignedToken });
 ```
 
 Filters

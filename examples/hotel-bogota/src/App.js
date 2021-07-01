@@ -70,7 +70,7 @@ function App() {
       // authenticate discount ticket is valid
       const authenticationData = await negotiator.authenticate({
         unEndPoint: unpredicatbleNumberEndPoint, 
-        token: ticket
+        unsignedToken: ticket
       });
 
       // when the ticket is valid and validation data is present
