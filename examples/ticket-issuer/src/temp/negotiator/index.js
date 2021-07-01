@@ -608,6 +608,15 @@ export class Negotiator {
       })
     })
   }
+  
+  getTokenInstances() {
+    return new Promise((resolve, reject) => {
+      this._negotiate((tokens) => {
+        if (!tokens) return reject(false)
+        resolve(tokens);
+      })
+    })
+  }
 
   _negotiate(callBack) {
 

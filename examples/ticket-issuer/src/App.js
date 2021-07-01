@@ -67,7 +67,7 @@ function App() {
     // and loaded into the view. 
     // In a scenario where the ticket is embeded within a URL, when the end user navigates to the link, links could be provided in this
     // page to direct the user e.g. to Devcon or third parties who accept the token. 
-    negotiator.negotiate(res => {
+    negotiator.getTokenInstances(res => {
       if(res.success) setTokens(res.tokens);
     });
   }
