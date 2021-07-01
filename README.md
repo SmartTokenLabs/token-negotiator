@@ -33,7 +33,7 @@ Creates a new instance of the Negotiator module.
   *
   * @param {Object} filter optional filter rules 
   * @param {Object} options api options (required options shown below)
-  * @param {String} token name (required)
+  * @param {String} tokenId name (required)
   */
   const negotiator = new Negotiator({
     filter: { 'devconId': 6 },
@@ -74,7 +74,7 @@ For example: with the following key/values `devconId, ticketId, ticketClass` you
 ```javascript
   const negotiator = new Negotiator({
     filter: { devconId: 6, ticketClass: "A" },
-    token: "devcon-ticket",
+    tokenId: "devcon-ticket",
     options: {}
   });
 ```
@@ -91,7 +91,7 @@ Example Use below:
   // initial config object
   const negotiator = new Negotiator({
     filter: { 'devconId': 6 },
-    token: "devcon-ticket",
+    tokenId: "devcon-ticket",
     options: { userPermissionRequired: true }
   });
   // An example click event where the User clicks 'Yes' or 'No' to allow access.
