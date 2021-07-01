@@ -9,8 +9,8 @@ function MediaCard({ tokenInstance }) {
   return (
     <div className="ticketContainer">
       <div className="ticketDetails">
-        <Typography className="ticketClass" gutterBottom variant="h5" component="h2">
-          {ticketClass && ticketClass.toString()}
+        <Typography className="ticketClass" variant="h5" component="h2">
+          {ticketClass.toString()}
         </Typography>
         <Typography className="ticketId" variant="body2" color="textSecondary" component="p">
           {ticketId && ticketId.toString()}

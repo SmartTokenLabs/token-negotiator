@@ -480,7 +480,7 @@ export class Negotiator {
 
   }
 
-  authenticate(unsignedToken, unEndPoint = "") {
+  authenticate({unsignedToken, unEndPoint}) {
     return new Promise(async (resolve, reject) => {
       await this._authenticate(unsignedToken, unEndPoint, (proof, error) => {
         if (!proof || !this.useEthKey) return reject(error);
