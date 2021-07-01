@@ -47,33 +47,29 @@ Resolves the tokens with filter applied.
 ```javascript
   /**
   *
-  * @returns {object} token data 
+  * @returns {object} token data { success: true/false, tokens: [...{}] }
   */
-  let tokens = [];
-  negotiator.getTokenInstances(result => {
-    tokens = result.tokens;
-  });
+  const tokenData = await negotiator.negotiate();
 ```
 
-Authenticate ownership of Token
+Authenticate ownership of Token.
 
 ```javascript
   /**
-  * @param {URL} unEndPoint unpredictable number generator end point
+  * @param {URL} unEndPoint end point must return { un: number, expiry: date }
   * @param {object} ticket selected token/ticket
-  * @returns {object} { status (true/false), useTicket (object), ethKey (object) }
+  * @returns {object} { status (true/false), useTicket (object), ethKey (object)
   * - useTicket and ethKey can be used to verify a ticket is valid. 
   * - status indicates if the function was successful.
   */
-  negotiator.authenticate({ unEndPoint, ticket });
+  const { status, useTicket, ethKey } = await negotiator.authenticate({ unEndPoint, ticket });
 ```
 
 Filters
 
 When loading a page you may wish to only show a select set of tokens.
 
-For example: with the following key/values `devconId, ticketId, ticketClass` you
-may wish to only show `devconId` when the value is `6` and of `ticketClasses` of `A`. Below is an example of how this can be applied.
+For example: with the following key/values `devconId, ticketId, ticketClass` you may wish to only show `devconId` when the value is `6` and of `ticketClasses` of `A`. Below is an example of how this can be applied.
 
 ```javascript
   const negotiator = new Negotiator({
@@ -130,35 +126,9 @@ The Negotiator will hold state of the permission, which can be accessed at any t
   negotiator.getUserPermission();
 ```
 
-### Authenticator (in Progress)
-
-Creates a new instance of the Authenticator module.
-
-```javascript
-  const authenticator = new Authenticator();
-```
-
-Triggers an attestation request event
-
-```javascript
-  /**
-  *
-  * @param {object} token that the end user must prove ownership of (e.g. to be able to complete a checkout payment discount). 
-  * @param {string} tokenId identifier name of that token type. 
-  * @returns {string} ticket in hex format
-  */
-  authenticator.getAuthenticationBlob({
-    token: devconTicket,
-    tokenId: "devcon-ticket",
-  }, useDevconTicket => {
-    writeToLog('useDevconTicket received (in hex ): ' + useDevconTicket);
-  };
-````
-
 ## Contributing
 
-A [guide for contributors](TBC)
-covers reporting bugs, requesting features and submitting code changes.
+Coming soon.
 
 ## Licensing
 
