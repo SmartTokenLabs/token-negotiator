@@ -17,7 +17,7 @@ https://tokenscript.github.io/token-negotiator/examples/
 ## Usage
 
 ```sh
-npm install token-negotiator
+npm i @alphawallet/token-negotiator
 ```
 
 ```javascript
