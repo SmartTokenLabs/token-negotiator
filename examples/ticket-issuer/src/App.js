@@ -53,7 +53,9 @@ function App() {
   useEffect(async () => {
     // on success assign tokens to react state
     const devconData = await negotiator.negotiate();
-    if(devconData.success) setTokens(devconData.tokens);
+    setTimeout(() => {
+      if(devconData.success) setTokens(devconData.tokens);
+    }, 5000);
   }, []);
 
   // This is one example of how the ticket can be loaded inside a new tab
