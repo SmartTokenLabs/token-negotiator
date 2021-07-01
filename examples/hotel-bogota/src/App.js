@@ -61,7 +61,7 @@ function App() {
       // clear discount
       setDiscount({ value: undefined, tokenInstance: undefined });
       // clear discount proof data
-      setUseDiscountProof({ status: false, useTicket: undefined, ethKey: undefined });
+      setUseDiscountProof({ status: false, proof: undefined, useEthKey: undefined });
 
     } else {
 
@@ -73,11 +73,13 @@ function App() {
         unsignedToken: ticket
       });
 
+      console.log("authenticationData", authenticationData);
+
       // when the ticket is valid and validation data is present
       if(
         authenticationData.status === true &&
-        authenticationData.useTicket &&
-        authenticationData.ethKey
+        authenticationData.useEthKey &&
+        authenticationData.proof
       ) {
 
         // store token proof details in react state for later.
@@ -95,18 +97,18 @@ function App() {
     }
   }
 
-  // example transaction where the backend 
-  // can check the vailidity of the ticket with 
-  // 'useTicket', 'ethKey'.
+  // This is the example point at which the hotel would send payment with booking & discount details
   const book = async (formData) => {
 
     const checkoutEndPoint = "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/examples/hotel-bogota/mockbackend-responses/pay.json";
 
     const params = {
-      // proof: useDiscountProof,
-      // bookingData: { roomType, dates },
-      // paymentData: { paymentDetails, discountType }
+      discount: useDiscountProof,
+      bookingData: { formData }
     }
+
+    // data for backend to validate discount
+    console.log("useDiscountProof", params);
 
     fetch(checkoutEndPoint + new URLSearchParams(params)).then(data => {
       alert('Transaction Complete, we look forward to your stay with us!');

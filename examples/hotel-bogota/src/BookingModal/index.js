@@ -18,7 +18,12 @@ export default function BookingModal({ roomType, applyDiscount, discount, price,
   const [open, setOpen] = React.useState(false);
 
   // Form state.
-  const [formInput, setFormInput] = useReducer((state, newState) => ({ ...state, ...newState }), { reference: "" });
+  const [formInput, setFormInput] = useReducer((state, newState) => ({ ...state, ...newState }), { 
+    reference: "Beeple",
+    cardNo: "00000000000", 
+    cardSort: "00-00-00",
+    cardCsv: "000"
+  });
 
   // Handle form input.
   const handleInput = evt => {
@@ -130,7 +135,7 @@ export default function BookingModal({ roomType, applyDiscount, discount, price,
                 fullWidth
                 placeholder="00000000000"
                 value="00000000000"
-                name="reference"
+                name="cardNo"
                 margin="normal"
                 onChange={handleInput}
                 InputLabelProps={{
@@ -143,7 +148,7 @@ export default function BookingModal({ roomType, applyDiscount, discount, price,
                 fullWidth
                 placeholder="00-00-00"
                 value="00-00-00"
-                name="reference"
+                name="cardSort"
                 margin="normal"
                 onChange={handleInput}
                 InputLabelProps={{
@@ -156,7 +161,7 @@ export default function BookingModal({ roomType, applyDiscount, discount, price,
                 fullWidth
                 value="000"
                 placeholder="000"
-                name="reference"
+                name="cardCsv"
                 margin="normal"
                 onChange={handleInput}
                 InputLabelProps={{
