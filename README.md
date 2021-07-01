@@ -126,10 +126,3 @@ The Negotiator will hold state of the permission, which can be accessed at any t
   negotiator.getUserPermission();
 ```
 
-## Contributing
-
-Coming soon.
-
-## Licensing
-
-TBC
