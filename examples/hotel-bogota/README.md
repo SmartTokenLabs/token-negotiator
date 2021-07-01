@@ -15,3 +15,4 @@ Shows capabilities of tokenScript within a Dapp to display tickets from the thir
 ### for support, please contact us where we're happy to help or hear any feedback you have to improve this demo and Token-Negotiator
 
 Alphawallet <info@alphawallet.com>
+ 

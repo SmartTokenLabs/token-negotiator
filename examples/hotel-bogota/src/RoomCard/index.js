@@ -45,7 +45,7 @@ export default function RoomCard({ room, applyDiscount, discount, tokens, book }
             color="textSecondary"
             component="p"
           >
-            From {price} ETH / {frequency}
+            From {price} COP / {frequency}
           </Typography>
         </CardContent>
       </div>

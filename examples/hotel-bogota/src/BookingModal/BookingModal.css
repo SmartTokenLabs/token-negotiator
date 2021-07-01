@@ -18,11 +18,6 @@
   font-size: 0.8rem;
 }
 
-.ticketWrapper {
-  display: flex;
-  justify-content: center;
-}
-
 .ticketContainer {
   transform: scale(0.9);
 }
@@ -36,3 +31,5 @@
 .MuiDialogActions-root {
   justify-content: flex-start !important;
 }
+
+

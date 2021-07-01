@@ -28,10 +28,8 @@ export default function BookingModal({ roomType, applyDiscount, discount, price,
   };
 
   // Simple validation check.
-  const formIsValid = () => {
-    return !(
-      (formInput.reference.length > 0)
-    );
+  const formIsDisabled = () => {
+    return false;
   }
 
   // handle form submission.
@@ -82,20 +80,17 @@ export default function BookingModal({ roomType, applyDiscount, discount, price,
             className="subTitle"
             disableTypography={true}
           >
-            {viewPrice} ETH per night. { discount.value ? `(${discount.value}% discount)` : ""}
+            {viewPrice} COP per night. { discount.value ? `(${discount.value}% discount)` : ""}
         </DialogTitle>
           <DialogContent>
             <form onSubmit={handleSubmit}>
-              <TextField
-                autoFocus
-                margin="dense"
-                id="booking-name"
-                label="Booking check-in reference name"
-                type="text"
-                fullWidth
-                name="reference"
-                onChange={handleInput}
-              />
+             <div style={{ border: "1px solid darkcyan", padding: "7px 12px", fontSize: "14px", display: "flex", justifyContent: "space-between" }}>
+                <div style={{ textAlign:"left" }}>check in 01/08/2021</div>
+                <div style={{ textAlign:"left" }}>check out 15/08/2021</div>
+             </div>
+             <div style={{ borderLeft: "1px solid darkcyan", borderRight: "1px solid darkcyan", borderBottom: "1px solid darkcyan", padding: "7px 12px", fontSize: "14px", textAlign:"left" }}>
+                <div>Total { viewPrice * 14 } COP</div>
+             </div>
               <div>
                 {tokens.length > 0 && <p className="smallCopy">Select a ticket to apply discount:</p>
                 }
@@ -115,8 +110,66 @@ export default function BookingModal({ roomType, applyDiscount, discount, price,
                   ))
               }
               </div>
+              <TextField
+                id="booking-name"
+                label="Reference name"
+                placeholder="Beeple"
+                value="Beeple"
+                helperText="(a check-in reference name for your booking)"
+                fullWidth
+                name="reference"
+                margin="normal"
+                onChange={handleInput}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+              <TextField
+                id="card-no"
+                label="Card Number"
+                fullWidth
+                placeholder="00000000000"
+                value="00000000000"
+                name="reference"
+                margin="normal"
+                onChange={handleInput}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+              <TextField
+                id="card-sort"
+                label="Card Sort Number"
+                fullWidth
+                placeholder="00-00-00"
+                value="00-00-00"
+                name="reference"
+                margin="normal"
+                onChange={handleInput}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+              <TextField
+                id="card-csv"
+                label="CSV"
+                fullWidth
+                value="000"
+                placeholder="000"
+                name="reference"
+                margin="normal"
+                onChange={handleInput}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+              <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "flex-end", marginTop: "12px" }}>
+                <div style={{ color: "grey", fontSize: "12px", marginRight: "5px" }}>cards accepted</div>
+                <img style={{ width: "100px", height: "24px" }} src="./cards-accepted-demo.png"></img>
+              </div>
             </form>
           </DialogContent>
+          <div className="booking">
           <DialogActions>
             <Button
               onClick={handleClose}
@@ -124,14 +177,15 @@ export default function BookingModal({ roomType, applyDiscount, discount, price,
             >
               Cancel
           </Button>
-            <Button
+          <Button
               onClick={handleSubmit}
               color="primary"
-              disabled={formIsValid()}
+              disabled={formIsDisabled()}
             >
-              Book Now
+              Pay Now
           </Button>
           </DialogActions>
+        </div>
         </div>
       </Dialog>
     </div>
