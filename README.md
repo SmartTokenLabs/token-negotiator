@@ -81,7 +81,7 @@ For example: with the following key/values `devconId, ticketId, ticketClass` you
 
 Negotiator Options 
 
-`userPermissionRequired` - Default is false. When true, the Token Negotiator will not allow `getTokenInstances()` to be found until access given. This feature can be thought of in a similar way to how cookies are managed with end user permissions. 
+`userPermissionRequired` - Default is false. When true, the Token Negotiator will not allow `negotiate()` to be used until access is given. This feature can be thought of in a similar way to how cookies are managed with end user permissions. 
 
 Example Use below:
 
@@ -101,7 +101,7 @@ Example Use below:
     // if the user has selected to give access
     if(negotiator.getUserPermission() === true){
       // get the tokens and utilise them in the web application
-      negotiator.getTokenInstances().then(result => {
+      negotiator.negotiate().then(result => {
         tokens = result.tokens;
       });
     }

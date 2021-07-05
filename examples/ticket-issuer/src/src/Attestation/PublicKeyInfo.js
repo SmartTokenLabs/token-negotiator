@@ -1,12 +1,8 @@
 import {
   BitString,
   compareSchema,
-  Integer,
-  OctetString,
   Sequence,
-  fromBER,
-  Any,
-  ObjectIdentifier
+  fromBER,  
 } from "asn1js";
 import { getParametersValue, clearProps } from "pvutils";
 import AlgorithmIdentifier from "./AlgorithmIdentifier.js";

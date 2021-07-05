@@ -17,6 +17,9 @@
   },
   "homepage": "https://github.com/TokenScript/token-negotiator#readme",
   "dependencies": {
-    "ethers": "^5.4.0"
+    "asn1js": "^2.0.26",
+    "big-integer": "^1.6.48",
+    "ethers": "^5.4.0",
+    "pvutils": "^1.0.17"
   }
 }
