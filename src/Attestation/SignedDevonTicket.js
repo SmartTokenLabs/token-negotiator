@@ -7,7 +7,6 @@ import {
   fromBER, Utf8String
 } from "asn1js";
 import { getParametersValue, clearProps, bufferToHexCodes } from "pvutils";
-import AlgorithmIdentifier from "./AlgorithmIdentifier.js";
 import PublicKeyInfo from "./PublicKeyInfo.js";
 
 export class DevconTicket {
