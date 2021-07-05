@@ -7,8 +7,7 @@ const getTokenConfig = (tokenId) => {
   if (tokenId === "devcon-ticket") {
     XMLconfig = {
       attestationOrigin: "https://stage.attestation.id",
-      // tokenOrigin: "https://devcontickets.herokuapp.com/outlet/",
-      tokenOrigin: "localhost:3000",
+      tokenOrigin: "https://devcontickets.herokuapp.com/outlet/",
       tokenUrlName: 'ticket',
       tokenSecretName: 'secret',
       unsignedTokenDataName: 'ticket',
