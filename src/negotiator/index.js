@@ -1,4 +1,4 @@
-// import { SignedDevconTicket } from './../Attestation/SignedDevonTicket';
+import { SignedDevconTicket } from './../Attestation/SignedDevonTicket';
 import { ethers } from "ethers";
 
 const getTokenConfig = (tokenId) => {
@@ -7,12 +7,13 @@ const getTokenConfig = (tokenId) => {
   if (tokenId === "devcon-ticket") {
     XMLconfig = {
       attestationOrigin: "https://stage.attestation.id",
-      tokenOrigin: "https://devcontickets.herokuapp.com/outlet/",
+      // tokenOrigin: "https://devcontickets.herokuapp.com/outlet/",
+      tokenOrigin: "localhost:3000",
       tokenUrlName: 'ticket',
       tokenSecretName: 'secret',
       unsignedTokenDataName: 'ticket',
       tokenIdName: 'id',
-      // tokenParser: SignedDevconTicket,
+      tokenParser: SignedDevconTicket,
       localStorageItemName: 'dcTokens',
       localStorageEthKeyItemName: 'dcEthKeys',
     };

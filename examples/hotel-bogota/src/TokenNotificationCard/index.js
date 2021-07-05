@@ -6,7 +6,8 @@ import Zoom from '@material-ui/core/Zoom';
 import './TokenNotificationCard.css';
 
 // TOKEN NOTIFICATION CARD COMPONENT
-// show a discount if available to Devcon ticket holders.
+// - shows ticket number
+// - manages the user selection if they will accept Devcon to connect with this page
 
 // When Access is granted this view will show
 function TokenView({tokensNumber}) {

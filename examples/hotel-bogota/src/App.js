@@ -6,11 +6,11 @@ import Typography from '@material-ui/core/Typography';
 import EthereumLogo from './EthereumLogo';
 import BookingDate from './BookingDate';
 import { Negotiator } from 'token-negotiator';
-// import { Negotiator } from './temp/negotiator';
 import './App.css';
   
 // mock data e.g. server side hotel room price database
 const mockRoomData = [{"type":"Deluxe Room","price": 200000,"frequency":"per night","image":"./hotel_3.jpg"},{"type":"King Suite","price": 320000,"frequency":"per night","image":"./hotel_2.png"},{"type":"Superior Deluxe Suite","price": 250030,"frequency":"per night","image":"./hotel_1.jpg"}]
+
 // mock discount of 10% applied to any ticket selected. In a real world scenario, this maybe different per ticket type and retrieved from a backend service.
 const mockRoomDiscountData = 10;
 
@@ -18,28 +18,31 @@ function App() {
 
   // add filters when specific tokens are required
   const filter = {};
+  
   // apply the tokenId to negotiate tokens from e.g. devcon-ticket.
   const tokenId = "devcon-ticket";
+
   // set required negotiator options
   const options = { 
     userPermissionRequired: true
   };
-  // Create new instance of the Negotiator with params
+
+  // create new instance of the Negotiator with params
   let negotiator = new Negotiator(filter, tokenId, options);
 
-  // Devcon Tickets (local react state of tokens)
+  // devcont tickets (react state of tokens)
   let [tokens, setTokens] = useState([]);
 
-  // local react state of token specical offer
+  // react state of token specical offer
   let [freeShuttle, setFreeShuttle] = useState(false);
 
-  // local react state of hotel room data
+  // react state of hotel room data
   let [roomTypesData, setRoomTypesData] = useState([]);
 
-  // Selected token instance to apply discount, with the discount value on hotel booking.
+  // selected token instance to apply discount, with the discount value on hotel booking.
   let [discount, setDiscount] = useState({ value: undefined, tokenInstance: null });
 
-  // Token proof
+  // token proof
   let [useDiscountProof, setUseDiscountProof] = useState({ status: false, useTicket: undefined, ethKey: undefined });
 
   // async example of initial hotel data loaded from source
@@ -55,11 +58,12 @@ function App() {
   // When a ticket is present and user applies it, the discount will be shown
   const applyDiscount = async (ticket) => {
 
-    // When unselecting the ticket (removes room discounts offered)
+    // toggle room discount offer on/off
     if (!ticket || ticket === null) {
       
       // clear discount
       setDiscount({ value: undefined, tokenInstance: undefined });
+
       // clear discount proof data
       setUseDiscountProof({ status: false, proof: undefined, useEthKey: undefined });
 
@@ -67,6 +71,7 @@ function App() {
 
       // endpoint to get an unpredictable number (mock example)
       const unpredicatbleNumberEndPoint = "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/examples/hotel-bogota/mockbackend-responses/un.json";
+      
       // authenticate discount ticket is valid
       const authenticationData = await negotiator.authenticate({
         unEndPoint: unpredicatbleNumberEndPoint, 

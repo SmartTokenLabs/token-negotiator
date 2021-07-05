@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Negotiator } from 'token-negotiator';
-// import { Negotiator } from './temp/negotiator';
 import Card from './Card';
 import './App.css';
 
@@ -31,46 +30,29 @@ const mockTicketData = [
 
 function App() {
 
-  if(document.hasStorageAccess) {
-    document.hasStorageAccess().then((hasAccess) => {
-      console.log("user access: ", hasAccess);
-      if (!hasAccess) {
-        document.requestStorageAccess().then(hasAccessFromRequest => {
-          console.log("user access from request: ", hasAccessFromRequest);
-        });
-      }
-    });
-  }
-
-  // local State: tokens[], setTokens: Method to update the state of tokens.
+  // local react state for tokens
   let [tokens, setTokens] = useState([]);
-  // create instance of Negotiator.
+  
+  // create configuration and instance of Negotiator.
   const filter = {};
   const token = "devcon-ticket";
   const options = {};
   const negotiator = new Negotiator(filter, token, options);
-  //
+  
   useEffect(async () => {
-    // on success assign tokens to react state
+    // retrieve existing tokens on initialisation of this component
     const devconData = await negotiator.negotiate();
     if(devconData.success) setTokens(devconData.tokens);
   }, []);
 
-  // This is one example of how the ticket can be loaded inside a new tab
-  // when navigating back to this page you will find the ticket in view.
-  // Alternative ways include; navigation to the ticket store page, which redirects
-  // back to this page once complete.
-  const openTicketInNewTab = async ({event, ticket, secret, id}) => {
+  const openTicketInIframe = async ({event, ticket, secret, id}) => {
     event.preventDefault();
+    // add token through magic link
     const magicLink = `https://devcontickets.herokuapp.com/outlet/?ticket=${ticket}&secret=${secret}&id=${id}`;
     negotiator.addTokenThroughIframe(magicLink); 
-    // For this demo - where tickets are loaded from within the page a timeout is used to allow time for the token to be negotiated
-    // and loaded into the view. 
-    // In a scenario where the ticket is embeded within a URL, when the end user navigates to the link, links could be provided in this
-    // page to direct the user e.g. to Devcon or third parties who accept the token. 
-    negotiator.negotiate().then(res => {
-      if(res.success) setTokens(res.tokens);
-    });
+    // apply token to react state
+    const devconData = await negotiator.negotiate();
+    if(devconData.success) setTokens(devconData.tokens);
   }
 
   return (
@@ -103,7 +85,7 @@ function App() {
                 {
                   mockTicketData.map((mockTicket, index) => {
                     return (
-                      <button key={index} className="makeTicket" onClick={event => openTicketInNewTab({ 
+                      <button key={index} className="makeTicket" onClick={event => openTicketInIframe({ 
                         event,
                         ticket: mockTicket.ticket,
                         secret: mockTicket.secret,

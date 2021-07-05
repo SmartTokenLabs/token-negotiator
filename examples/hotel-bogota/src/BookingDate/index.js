@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import DatePicker from './../DatePicker';
 
+// BOOKING DATE COMPONENT
+// Mock Date Picker for demo purposes only
+
 const BookingDate = () => {
 
   var today = new Date();

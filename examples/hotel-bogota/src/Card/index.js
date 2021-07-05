@@ -2,6 +2,9 @@ import React from 'react';
 import Typography from '@material-ui/core/Typography';
 import './Card.css';
 
+// Token Card COMPONENT
+// Displays a single tickets data
+
 function TokenCard({ tokenInstance, applyDiscount, discount }) {
   const isSelectedToken = (discount.tokenInstance && discount.tokenInstance.ticketId === tokenInstance.ticketId);
   return (
