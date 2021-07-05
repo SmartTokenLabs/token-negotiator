@@ -1,6 +1,6 @@
 {
   "name": "@alphawallet/token-negotiator",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "a library for enriching the functionality of your tokens within dapps",
   "main": "index.js",
   "scripts": {
@@ -21,5 +21,8 @@
     "big-integer": "^1.6.48",
     "ethers": "^5.4.0",
     "pvutils": "^1.0.17"
+  },
+  "devDependencies": {
+    "jest": "^27.0.6"
   }
 }
