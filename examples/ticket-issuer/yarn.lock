@@ -3477,7 +3477,7 @@ bfj@^7.0.2:
     hoopy "^0.1.4"
     tryer "^1.0.1"
 
-big-integer@^1.6.36, big-integer@^1.6.48:
+big-integer@^1.6.36:
   version "1.6.48"
   resolved "https://registry.yarnpkg.com/big-integer/-/big-integer-1.6.48.tgz#8fd88bd1632cba4a1c8c3e3d7159f08bb95b4b9e"
   integrity sha512-j51egjPa7/i+RdiRuJbPdJ2FIUYYPhvYLjzoYbcMMm62ooO6F94fETG4MTs46zPAF9Brs04OajboA/qTGuz78w==
@@ -7387,11 +7387,6 @@ isarray@1.0.0, isarray@^1.0.0, isarray@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/isarray/-/isarray-1.0.0.tgz#bb935d48582cba168c06834957a54a3e07124f11"
   integrity sha1-u5NdSFgsuhaMBoNJV6VKPgcSTxE=
-
-isevn@^2.0.2:
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/isevn/-/isevn-2.0.2.tgz#e210627cd176df69dbac9b6c6ec03cde31835b63"
-  integrity sha512-LE+Dz/jZBI7DYiodtXMiUX8eq1zjC4b0SEJcryxkgom3l9c5hoQkNRH1728zpGSLdsOa3yRXD8lLNQ0lIdiMwQ==
 
 isexe@^2.0.0:
   version "2.0.0"
@@ -12222,9 +12217,13 @@ toidentifier@1.0.0:
   resolved "https://registry.yarnpkg.com/toidentifier/-/toidentifier-1.0.0.tgz#7e1be3470f1e77948bc43d94a3c8f4d7752ba553"
   integrity sha512-yaOH/Pk/VEhBWWTlhI+qXxDFXlejDGcQipMlyxda9nthulaxLZUNcUqFxokp0vcYnvteJln5FNQDRrxj3YcbVw==
 
-"token-negotiator@github:TokenScript/token-negotiator":
-  version "0.0.0"
-  resolved "https://codeload.github.com/TokenScript/token-negotiator/tar.gz/2b4eb5d30fe9b11e7c18f0c0cd617e6333d58524"
+"token-negotiator@github:TokenScript/token-negotiator#polyfil-big-int":
+  version "0.0.7"
+  resolved "https://codeload.github.com/TokenScript/token-negotiator/tar.gz/0838922faca826ef6ac17dbe827be979e48647d4"
+  dependencies:
+    asn1js "^2.0.26"
+    bigint-polyfill "^0.1.0"
+    ethers "^5.4.0"
 
 tough-cookie@^4.0.0:
   version "4.0.0"

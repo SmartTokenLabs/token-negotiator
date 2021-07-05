@@ -91,12 +91,12 @@ export class DevconTicket {
 
     if ("ticketId" in asn1.result) {
       const ticketId = asn1.result["ticketId"].valueBlock._valueHex;
-      this.ticketId = BigInt("0x" + bufferToHexCodes(ticketId));
+      this.ticketId = bigInt("0x" + bufferToHexCodes(ticketId));
     }
 
     if ("ticketClass" in asn1.result) {
       const ticketClass = asn1.result["ticketClass"].valueBlock._valueHex;
-      this.ticketClass = BigInt("0x" + bufferToHexCodes(ticketClass));
+      this.ticketClass = bigInt("0x" + bufferToHexCodes(ticketClass));
     }
 
     //endregion
