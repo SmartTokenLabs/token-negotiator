@@ -4,7 +4,9 @@
   "description": "a library for enriching the functionality of your tokens within dapps",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack",
+    "watch": "webpack --watch --progress"
   },
   "repository": {
     "type": "git",
@@ -23,6 +25,8 @@
     "pvutils": "^1.0.17"
   },
   "devDependencies": {
-    "jest": "^27.0.6"
+    "jest": "^27.0.6",
+    "webpack": "^5.44.0",
+    "webpack-cli": "^4.7.2"
   }
 }
