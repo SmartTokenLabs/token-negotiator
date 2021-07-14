@@ -70,11 +70,11 @@ function App() {
     } else {
 
       // endpoint to get an unpredictable number (mock example)
-      const unpredicatbleNumberEndPoint = "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/examples/hotel-bogota/mockbackend-responses/un.json";
+      const unpredicatbleNumberEndPoint = 'https://crypto-verify.herokuapp.com/use-devcon-ticket';
       
       // authenticate discount ticket is valid
       const authenticationData = await negotiator.authenticate({
-        unEndPoint: unpredicatbleNumberEndPoint, 
+        unEndPoint: unpredicatbleNumberEndPoint,
         unsignedToken: ticket
       });
 
