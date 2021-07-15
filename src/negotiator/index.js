@@ -1,10 +1,10 @@
 import { SignedDevconTicket } from './../Attestation/SignedDevonTicket';
 import { ethers } from "ethers";
 
-const getTokenConfig = (tokenId) => {
+const getTokenConfig = (tokenName) => {
   let XMLconfig = {};
   // this will come from a lookup table at a later stage.
-  if (tokenId === "devcon-ticket") {
+  if (tokenName === "devcon-ticket") {
     XMLconfig = {
       attestationOrigin: "https://stage.attestation.id",
       tokenOrigin: "https://devcontickets.herokuapp.com/outlet/",
@@ -24,14 +24,14 @@ const getTokenConfig = (tokenId) => {
 
 export class Negotiator {
 
-  constructor(filter = {}, tokenId, options = { userPermissionRequired: false }) {
+  constructor(filter = {}, tokenName, options = { userPermissionRequired: false }) {
 
-    if (!tokenId) console.log("Negotiator: tokenId is a required parameter");
+    if (!tokenName) console.log("Negotiator: tokenName is a required parameter");
 
     // The XML config is used to define the token configuration.
     // This includes how the ticket will confirm its vailidity and the origin
     // of where the ticket was issued from.
-    let XMLconfig = getTokenConfig(tokenId);
+    let XMLconfig = getTokenConfig(tokenName);
     // When True, the negoticator will require userPermissionStatus to be true to
     // read and provide tokens to client.
     this.userPermissionRequired = options.userPermissionRequired;

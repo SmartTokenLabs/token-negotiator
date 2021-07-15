@@ -19,8 +19,8 @@ function App() {
   // add filters when specific tokens are required
   const filter = {};
   
-  // apply the tokenId to negotiate tokens from e.g. devcon-ticket.
-  const tokenId = "devcon-ticket";
+  // apply the tokenName to negotiate tokens from e.g. devcon-ticket.
+  const tokenName = "devcon-ticket";
 
   // set required negotiator options
   const options = { 
@@ -28,7 +28,7 @@ function App() {
   };
 
   // create new instance of the Negotiator with params
-  let negotiator = new Negotiator(filter, tokenId, options);
+  let negotiator = new Negotiator(filter, tokenName, options);
 
   // devcont tickets (react state of tokens)
   let [tokens, setTokens] = useState([]);
