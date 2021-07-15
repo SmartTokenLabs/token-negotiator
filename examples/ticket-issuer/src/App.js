@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-// import { Negotiator } from './src/negotiator';
 import { Negotiator } from 'token-negotiator';
 import Card from './Card';
 import './App.css';

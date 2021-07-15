@@ -1,10 +1,10 @@
 import { SignedDevconTicket } from './../Attestation/SignedDevonTicket';
 import { ethers } from "ethers";
 
-const getTokenConfig = (tokenId) => {
+const getTokenConfig = (tokenName) => {
   let XMLconfig = {};
   // this will come from a lookup table at a later stage.
-  if (tokenId === "devcon-ticket") {
+  if (tokenName === "devcon-ticket") {
     XMLconfig = {
       attestationOrigin: "https://stage.attestation.id",
       tokenOrigin: "https://devcontickets.herokuapp.com/outlet/",
@@ -24,14 +24,14 @@ const getTokenConfig = (tokenId) => {
 
 export class Negotiator {
 
-  constructor(filter = {}, tokenId, options = { userPermissionRequired: false }) {
+  constructor(filter = {}, tokenName, options = { userPermissionRequired: false }) {
 
-    if (!tokenId) console.log("Negotiator: tokenId is a required parameter");
+    if (!tokenName) console.log("Negotiator: tokenName is a required parameter");
 
     // The XML config is used to define the token configuration.
     // This includes how the ticket will confirm its vailidity and the origin
     // of where the ticket was issued from.
-    let XMLconfig = getTokenConfig(tokenId);
+    let XMLconfig = getTokenConfig(tokenName);
     // When True, the negoticator will require userPermissionStatus to be true to
     // read and provide tokens to client.
     this.userPermissionRequired = options.userPermissionRequired;
@@ -55,10 +55,6 @@ export class Negotiator {
     this.localStorageItemName = XMLconfig.localStorageItemName;
     this.localStorageEthKeyItemName = XMLconfig.localStorageEthKeyItemName;
     this.addTokenIframe = null;
-
-    this.maxUNlength = 6;
-    this.UNttl = 60 * 60;
-    this.UNsecret = "0x1234567890abcdef";
 
     if (options.hasOwnProperty('debug')) this.debug = options.debug;
     if (options.hasOwnProperty('attestationOrigin')) this.attestationOrigin = options.attestationOrigin;
@@ -476,8 +472,6 @@ export class Negotiator {
       default:
 
     }
-
-
   }
 
   authenticate({unsignedToken, unEndPoint}) {
@@ -491,16 +485,18 @@ export class Negotiator {
 
 
   async _authenticate(unsignedToken, unEndPoint, signCallback) {
-    console.log('authenticate request. need to implement UN request/sign');
     let useEthKey;
     try {
-      useEthKey = await this.getChallengeSigned();
+      useEthKey = await this.getChallengeSigned(unEndPoint);
+      const validateResult = await this.validateUseEthKey(unEndPoint, useEthKey);
+      let walletAddress = await this.connectMetamaskAndGetAddress();
+      if (walletAddress.toLowerCase() !== validateResult.toLowerCase()) {
+        throw new Error('useEthKey validation failed.');
+      }
     } catch (e) {
       signCallback(null, e);
       return;
     }
-
-    console.log("useEthKey", useEthKey);
 
     this.useEthKey = useEthKey;
 
@@ -510,37 +506,45 @@ export class Negotiator {
     this.createIframe();
   }
 
-  getInt64Bytes(x) {
-    var bytes = [];
-    var i = 8;
-    do {
-      bytes[--i] = x & (255);
-      x = x >> 8;
-    } while (i)
-    return bytes;
-  }
-
-  async getUnpredictableNumber(endPoint) {
-    // TODO implement endpoint request
-
-    const expiry = Date.now() + this.UNttl * 1000;
-    let random = Math.floor(Math.random() * (10 ** this.maxUNlength));
-
-    return {
-      UN: random.toString() + this.createHmac(random, expiry),
-      Expiry: expiry
+  async validateUseEthKey(endPoint, data){
+    try {
+      const response = await fetch(endPoint, {
+        method: 'POST', // *GET, POST, PUT, DELETE, etc.
+        //mode: 'cors', // no-cors, *cors, same-origin
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        //credentials: 'same-origin', // include, *same-origin, omit
+        headers: {
+          'Content-Type': 'application/json'
+          // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        redirect: 'follow', // manual, *follow, error
+        referrerPolicy: 'no-referrer', // no-referrer, *client
+        body: JSON.stringify(data) // body data type must match "Content-Type" header
+      });
+      const json = await response.json();
+      return json.address;
+    } catch (e) {
+      console.log(e);
+      return '';
     }
   }
 
-  createHmac(random, expiry) {
-    let randomAndExpiryAsBytes = this.getInt64Bytes(random).concat(this.getInt64Bytes(expiry));
-    return ethers.utils.computeHmac("sha256", this.UNsecret, randomAndExpiryAsBytes);
+  async getUnpredictableNumber(endPoint) {
+    try {
+      const response = await fetch(endPoint);
+      const json = await response.json();
+      json.success = true;
+      return json;
+    } catch (e) {
+      console.log(e);
+      return {
+        success: false,
+        message: "UN request failed"
+      }
+    }
   }
 
   ethKeyIsValid(ethKey) {
-    let random = parseInt(ethKey.UN.substr(0, ethKey.UN.length - 66));
-    let hmac = this.createHmac(random, ethKey.expiry);
-    if (hmac !== ethKey.UN.substr(ethKey.UN.length - 66)) return false;
     if (ethKey.expiry < Date.now()) return false;
     return true;
   }
@@ -556,45 +560,50 @@ export class Negotiator {
       ethKeys = {};
     }
 
-    let address = await this.connectMetamaskAndGetAddress();
-    address = address.toLowerCase();
+    try {
+      let address = await this.connectMetamaskAndGetAddress();
+      address = address.toLowerCase();
 
-    let useEthKey;
+      let useEthKey;
 
-    if (ethKeys && ethKeys[address] && !this.ethKeyIsValid(ethKeys[address])) {
-      console.log('remove invalid useEthKey');
-      delete ethKeys[address];
-    }
-
-    if (ethKeys && ethKeys[address]) {
-      useEthKey = ethKeys[address];
-    } else {
-      useEthKey = await this.signNewChallenge(unEndPoint);
-      if (useEthKey) {
-        ethKeys[useEthKey.address.toLowerCase()] = useEthKey;
-        localStorage.setItem(this.localStorageEthKeyItemName, JSON.stringify(ethKeys));
+      if (ethKeys && ethKeys[address] && !this.ethKeyIsValid(ethKeys[address])) {
+        console.log('remove invalid useEthKey');
+        delete ethKeys[address];
       }
+
+      if (ethKeys && ethKeys[address]) {
+        useEthKey = ethKeys[address];
+      } else {
+        useEthKey = await this.signNewChallenge(unEndPoint);
+        if (useEthKey) {
+          ethKeys[useEthKey.address.toLowerCase()] = useEthKey;
+          localStorage.setItem(this.localStorageEthKeyItemName, JSON.stringify(ethKeys));
+        }
+      }
+      return useEthKey;
+
+    } catch (e) {
+      throw new Error(e.message);
     }
-    return useEthKey;
   }
 
   async signNewChallenge(unEndPoint) {
-    const { UN, Expiry } = await this.getUnpredictableNumber(unEndPoint);
+    let res = await this.getUnpredictableNumber(unEndPoint);
 
-    const domain = window.location.hostname;
+    console.log(res);
+    const { number:UN, randomness, domain, expiration:expiry, messageToSign } = res;
 
-    const challenge = `This is proof that I am visiting ${domain}, which has presented the following challenge ${UN.toString()} to sign.`;
-
-    let signature = await this.signMessageWithBrowserWallet(challenge);
-    const msgHash = ethers.utils.hashMessage(challenge);
+    let signature = await this.signMessageWithBrowserWallet(messageToSign);
+    const msgHash = ethers.utils.hashMessage(messageToSign);
     const msgHashBytes = ethers.utils.arrayify(msgHash);
 
     const recoveredAddress = ethers.utils.recoverAddress(msgHashBytes, signature);
 
     return {
       address: recoveredAddress,
-      expiry: Expiry,
-      challenge,
+      expiry,
+      domain,
+      randomness,
       signature,
       UN
     };
