@@ -49,7 +49,7 @@ Resolves the tokens with filter applied.
   *
   * @returns {object} token data { success: true/false, tokens: [...{}] }
   */
-  const tokenData = await negotiator.negotiate();
+  const negotiatedTokens = await negotiator.negotiate();
 ```
 
 Authenticate ownership of Token.
