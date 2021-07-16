@@ -38,7 +38,7 @@ Creates a new instance of the Negotiator module.
   const negotiator = new Negotiator({
     filter: { 'devconId': 6 },
     tokenName: "devcon-ticket",
-    options: { userPermissionRequired: true }
+    options: {}
   });
 ```
 
@@ -81,48 +81,5 @@ For example: with the following key/values `devconId, ticketId, ticketClass` you
 
 Negotiator Options 
 
-`userPermissionRequired` - Default is false. When true, the Token Negotiator will not allow `negotiate()` to be used until access is given. This feature can be thought of in a similar way to how cookies are managed with end user permissions. 
-
-Example Use below:
-
-````javascript
-  // token list
-  let tokens = [];
-  // initial config object
-  const negotiator = new Negotiator({
-    filter: { 'devconId': 6 },
-    tokenName: "devcon-ticket",
-    options: { userPermissionRequired: true }
-  });
-  // An example click event where the User clicks 'Yes' or 'No' to allow access.
-  const userPermissionClickEvent = (bool) => {
-    // set permission inside negotiator state
-    negotiator.setUserPermission(bool);
-    // if the user has selected to give access
-    if(negotiator.getUserPermission() === true){
-      // get the tokens and utilise them in the web application
-      negotiator.negotiate().then(result => {
-        tokens = result.tokens;
-      });
-    }
-  }
-````
-
-User consent to connect the website to the token, this is only required when 'userPermissionRequired' is set as true.
-
-```javascript
-  /**
-  * @param {Boolean} boolean 
-  */
-  negotiator.setUserPermission(boolean);
-```
-
-The Negotiator will hold state of the permission, which can be accessed at any time. 
-
-```javascript
-  /**
-  * @returns {Boolean} boolean
-  */
-  negotiator.getUserPermission();
-```
+(coming soon)
 

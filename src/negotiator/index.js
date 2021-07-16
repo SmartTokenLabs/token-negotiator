@@ -24,7 +24,7 @@ const getTokenConfig = (tokenName) => {
 
 export class Negotiator {
 
-  constructor(filter = {}, tokenName, options = { userPermissionRequired: false }) {
+  constructor(filter = {}, tokenName, options = {}) {
 
     if (!tokenName) console.log("Negotiator: tokenName is a required parameter");
 
@@ -32,12 +32,6 @@ export class Negotiator {
     // This includes how the ticket will confirm its vailidity and the origin
     // of where the ticket was issued from.
     let XMLconfig = getTokenConfig(tokenName);
-    // When True, the negoticator will require userPermissionStatus to be true to
-    // read and provide tokens to client.
-    this.userPermissionRequired = options.userPermissionRequired;
-    // When userPermissionRequired is false, this flag defaults to true. Where 
-    // no permission (input from user) is required.
-    this.userPermissionStatus = !options.userPermissionRequired ? true : undefined;
     // TODO annotate the usage of variables below.
     this.queuedCommand = false;
     this.filter = filter;
@@ -141,16 +135,6 @@ export class Negotiator {
     // iframeWrap.setAttribute('style', 'width:100%; min-height: 100vh; position: fixed; align-items: center; justify-content: center; display: none; top: 0; left: 0; background: #fffa');
     // iframeWrap.appendChild(iframe);
     document.body.appendChild(iframe);
-  }
-
-  // Once a user has given or revoked their permission to use the token-negotiator
-  setUserPermission(bool) {
-    this.userPermissionStatus = bool;
-  }
-
-  // returns true / false
-  getUserPermission() {
-    return this.userPermissionStatus;
   }
 
   listenForParentMessages(event) {
@@ -629,9 +613,6 @@ export class Negotiator {
 
   _negotiate(callBack) {
 
-    if (this.userPermissionStatus === false) {
-      return false;
-    }
     this.negotiateCallback = callBack;
 
     if (this.attestationOrigin) {
