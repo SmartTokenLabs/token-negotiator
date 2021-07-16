@@ -9,6 +9,11 @@ A minimal example to read tokens and render them to a view within a react dapp.
 1. install dependancies `npm i` or `yarn`
 2. run `npm start` or `yarn start`
 
+if running this example outside of the repository:
+
+1. locate and remove this from package.json file  `"token-negotiator": "file:../../",`
+2. and run `npm i @alphawallet/token-negotiator`.
+
 ### to build the application 
 
 1. build `npm build` or `yarn build`

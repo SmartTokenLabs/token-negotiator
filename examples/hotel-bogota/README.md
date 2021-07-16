@@ -8,7 +8,11 @@ Shows capabilities of tokenScript within a Dapp to display tickets from the thir
 
 1. install dependancies `npm i` or `yarn`
 2. run `npm start` or `yarn start`
-3. build `npm build` or `yarn build`
+
+if running this example outside of the repository:
+
+1. locate and remove this from package.json file  `"token-negotiator": "file:../../",`
+2. and run `npm i @alphawallet/token-negotiator`.
 
 ### demo walk through
 

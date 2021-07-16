@@ -4,7 +4,8 @@ import { ethers } from "ethers";
 const getTokenConfig = (tokenName) => {
   let XMLconfig = {};
   // this will come from a lookup table at a later stage.
-  if (tokenName === "devcon-ticket") {
+  // commented for now so breaking changes are not caused.
+  // if (tokenName === "devcon-ticket") {
     XMLconfig = {
       attestationOrigin: "https://stage.attestation.id",
       tokenOrigin: "https://devcontickets.herokuapp.com/outlet/",
@@ -16,9 +17,9 @@ const getTokenConfig = (tokenName) => {
       localStorageItemName: 'dcTokens',
       localStorageEthKeyItemName: 'dcEthKeys',
     };
-  } else {
-    console.log("Negotiator: missing token script for this token");
-  }
+  // } else {
+    // console.log("Negotiator: missing token script for this token");
+  // }
   return XMLconfig;
 }
 
