@@ -9,6 +9,24 @@ import './TokenNotificationCard.css';
 // - shows ticket number
 // - manages the user selection if they will accept Devcon to connect with this page
 
+function PermissionView({ setPermissionEvent }) {
+  return (
+    <Card className="tokenNotificationCard">
+      <CardContent>
+       <Typography
+         gutterBottom
+         variant="body1"
+         component="p"
+       >
+         Do you give permission for Devcon to connect with this website?
+       </Typography>
+       <button onClick={event => setPermissionEvent(true)}>YES</button> <button onClick={e => setPermissionEvent(false)}>NO</button>
+      </CardContent>
+      <div className="cardBottomLip"></div>
+    </Card>
+  )
+}
+
 // When Access is granted this view will show
 function TokenView({tokensNumber}) {
     return (
@@ -34,45 +52,27 @@ function TokenView({tokensNumber}) {
   );
 };
 
-function TokenNotificationCard({ getTokens, negotiator, tokensNumber }) {
-  
-  let [userPermissionStatus, setUserPermissionStatus] = useState(undefined);
+function TokenNotificationCard({ getTokens, tokensNumber, tokenPermissionRequired }) {
 
-  const setPermissionEvent = (bool) => {
+  let [userPermissionStatus, setUserPermissionStatus] = useState(
+    tokenPermissionRequired === true ? undefined : false
+  );
+
+  const setPermissionEvent = (event) => {
     // set permission inside negotiator state
-    negotiator.setUserPermission(bool);
-    // assign user permission status on change
-    setUserPermissionStatus(negotiator.getUserPermission());
+    setUserPermissionStatus(event);
   }
 
   // react effect
   useEffect(() => {
-    // assign user permission status to negotiator state
-    setUserPermissionStatus(negotiator.getUserPermission());
-    // if the status is true trigger parent component 
-    // event to get the tokens from the negotiator
     if(userPermissionStatus === true) getTokens();
-    // When false hide the notification card
-    // if(userPermissionStatus === false);
   }, [userPermissionStatus]);
 
   return (
     <Zoom in={true} style={{ transitionDelay: true ? '500ms' : '0ms' }}>
       <div>
         { userPermissionStatus && <TokenView tokensNumber={tokensNumber}></TokenView> }
-        { userPermissionStatus === undefined && <Card className="tokenNotificationCard">
-          <CardContent>
-            <Typography
-              gutterBottom
-              variant="body1"
-              component="p"
-            >
-              Do you give permission for Devcon to connect with this website?
-            </Typography>
-            <button onClick={e => setPermissionEvent(true)}>YES</button> <button onClick={e => setPermissionEvent(false)}>NO</button>
-          </CardContent>
-          <div className="cardBottomLip"></div>
-        </Card>
+        { userPermissionStatus === undefined && <PermissionView setPermissionEvent={event => setPermissionEvent(event)}></PermissionView>
       }
       </div>
     </Zoom>
@@ -80,4 +80,3 @@ function TokenNotificationCard({ getTokens, negotiator, tokensNumber }) {
 }
 
 export default TokenNotificationCard;
-

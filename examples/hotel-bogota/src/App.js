@@ -23,9 +23,7 @@ function App() {
   const tokenName = "devcon-ticket";
 
   // set required negotiator options
-  const options = { 
-    userPermissionRequired: true
-  };
+  const options = {};
 
   // create new instance of the Negotiator with params
   let negotiator = new Negotiator(filter, tokenName, options);
@@ -142,7 +140,12 @@ function App() {
     <div>
       <div className="header">
         <LogoCard title={"Hotel Bogota"} />
-        <TokenNotificationCard getTokens={e=>getTokens()} negotiator={negotiator} tokensNumber={tokens.length} />
+        <TokenNotificationCard 
+          getTokens={e=>getTokens()} 
+          negotiator={negotiator} 
+          tokensNumber={tokens.length} 
+          tokenPermissionRequired={true} // example of how user permissions could be applied to flow on the client side
+        />
       </div>
       <BookingDate />
       <div className="roomCardsContainer">
