@@ -1,30 +1,15 @@
 import React from 'react';
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
-import Typography from '@material-ui/core/Typography';
 import './logoCard.css';
 
 // LOGO CARD COMPONENT
 // shows the hotel title
 
-function LogoCard({ title }) {
+function LogoCard() {
   return (
-    <Card className="logoCard">
-      <CardContent className="cardContent">
-        <Typography
-          gutterBottom
-          variant="h1"
-          component="h1"
-        >
-          {title}
-        </Typography>
-        <div className="logo-wrapper">
-          <div className="logo-emblem"></div>
-          <div className="logo-emblem"></div>
-          <div className="logo-emblem"></div>
-        </div>
-      </CardContent>
-    </Card>
+    <div style={{ color: 'white', marginLeft: '42px', width: '200px', height: '100px' }}>
+      <h1 style={{ margin: '17px 0 0 0' }} >Hotel Bogota</h1>
+      <h2 style={{ fontSize: '14px', margin: '5px', textAlign: "center", color: "#ff9900" }}>Condelaria</h2>
+    </div>
   );
 }
 

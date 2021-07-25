@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import LogoCard from './LogoCard';
 import RoomCard from './RoomCard';
-import TokenNotificationCard from './TokenNotificationCard';
 import Typography from '@material-ui/core/Typography';
 import EthereumLogo from './EthereumLogo';
 import BookingDate from './BookingDate';
 import { Negotiator } from 'token-negotiator';
+// import TokenNotificationCard from './TokenNotificationCard';
 import './App.css';
   
 // mock data e.g. server side hotel room price database
-const mockRoomData = [{"type":"Deluxe Room","price": 200000,"frequency":"per night","image":"./hotel_3.jpg"},{"type":"King Suite","price": 320000,"frequency":"per night","image":"./hotel_2.png"},{"type":"Superior Deluxe Suite","price": 250030,"frequency":"per night","image":"./hotel_1.jpg"}]
+const mockRoomData = [{"type":"Deluxe Room","price": 200000,"frequency":"night","image":"./hotel_3.jpg"},{"type":"King Suite","price": 320000,"frequency":"night","image":"./hotel_2.png"},{"type":"Superior Deluxe Suite","price": 250030,"frequency":"night","image":"./hotel_1.jpg"}]
 
 // mock discount of 10% applied to any ticket selected. In a real world scenario, this maybe different per ticket type and retrieved from a backend service.
 const mockRoomDiscountData = 10;
@@ -139,13 +139,13 @@ function App() {
   return (
     <div>
       <div className="header">
-        <LogoCard title={"Hotel Bogota"} />
-        <TokenNotificationCard 
+        <LogoCard />
+        {/* <TokenNotificationCard 
           getTokens={e=>getTokens()} 
           negotiator={negotiator} 
           tokensNumber={tokens.length} 
           tokenPermissionRequired={true} // example of how user permissions could be applied to flow on the client side
-        />
+        /> */}
       </div>
       <BookingDate />
       <div className="roomCardsContainer">

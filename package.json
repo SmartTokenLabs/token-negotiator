@@ -21,8 +21,7 @@
   "dependencies": {
     "asn1js": "^2.0.26",
     "big-integer": "^1.6.48",
-    "ethers": "^5.4.0",
-    "pvutils": "^1.0.17"
+    "ethers": "^5.4.0"
   },
   "devDependencies": {
     "jest": "^27.0.6",

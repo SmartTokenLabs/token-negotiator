@@ -6,13 +6,26 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import Card from './../Card';
+import { createTheme } from '@material-ui/core/styles';
+import { ThemeProvider } from '@material-ui/styles';
 import './BookingModal.css';
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#0071c3',
+    },
+    secondary: {
+      main: '#11cb5f',
+    },
+  },
+});
+
 
 // BOOKING MODAL COMPONENT
 // Booking form
 
-export default function BookingModal({ roomType, applyDiscount, discount, price, tokens, book }) {
+export default function BookingModal({ image, roomType, applyDiscount, discount, price, tokens, book }) {
 
   // Modal State (open boolean)
   const [open, setOpen] = React.useState(false);
@@ -62,12 +75,8 @@ export default function BookingModal({ roomType, applyDiscount, discount, price,
   const discountTicketClasses = ["0"];
 
   return (
-    <div>
-      <Button
-        size="small"
-        color="primary"
-        onClick={handleClickOpen}
-      >
+    <ThemeProvider theme={theme}>
+      <Button color="primary" className="bookButton" onClick={handleClickOpen} variant="contained">
         Book
       </Button>
       <Dialog
@@ -75,6 +84,12 @@ export default function BookingModal({ roomType, applyDiscount, discount, price,
         onClose={handleClose}
         aria-labelledby="form-dialog-title">
         <div className='modalContainer'>
+          <div style={{ width: '100%', height: '138px', overflow: 'hidden' }}>
+            <img 
+              style={{ width: '100%', position: 'relative', top: '-71px' }}
+              src={image}
+            />
+          </div>
           <DialogTitle
             className="title"
             disableTypography={true}
@@ -89,32 +104,6 @@ export default function BookingModal({ roomType, applyDiscount, discount, price,
         </DialogTitle>
           <DialogContent>
             <form onSubmit={handleSubmit}>
-             <div style={{ border: "1px solid darkcyan", padding: "7px 12px", fontSize: "14px", display: "flex", justifyContent: "space-between" }}>
-                <div style={{ textAlign:"left" }}>check in 01/08/2021</div>
-                <div style={{ textAlign:"left" }}>check out 15/08/2021</div>
-             </div>
-             <div style={{ borderLeft: "1px solid darkcyan", borderRight: "1px solid darkcyan", borderBottom: "1px solid darkcyan", padding: "7px 12px", fontSize: "14px", textAlign:"left" }}>
-                <div>Total { viewPrice * 14 } COP</div>
-             </div>
-              <div>
-                {tokens.length > 0 && <p className="smallCopy">Select a ticket to apply discount:</p>
-                }
-              </div>
-              <div className="ticketWrapper">
-              {tokens &&
-                tokens
-                  .filter(_token => discountTicketClasses.toString().indexOf(_token.ticketClass) > -1)
-                  .map((token, index) => (
-                    <div key={index}>
-                      <Card
-                        applyDiscount={applyDiscount}
-                        tokenInstance={token}
-                        discount={discount}
-                      />
-                    </div>
-                  ))
-              }
-              </div>
               <TextField
                 id="booking-name"
                 label="Reference name"
@@ -168,21 +157,14 @@ export default function BookingModal({ roomType, applyDiscount, discount, price,
                   shrink: true,
                 }}
               />
-              <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "flex-end", marginTop: "12px" }}>
-                <div style={{ color: "grey", fontSize: "12px", marginRight: "5px" }}>cards accepted</div>
-                <img style={{ width: "100px", height: "24px" }} src="./cards-accepted-demo.png"></img>
-              </div>
             </form>
           </DialogContent>
           <div className="booking">
           <DialogActions>
-            <Button
-              onClick={handleClose}
-              color="primary"
-            >
-              Cancel
-          </Button>
           <Button
+              color="primary"
+              className="paynow"
+              variant="contained"
               onClick={handleSubmit}
               color="primary"
               disabled={formIsDisabled()}
@@ -193,7 +175,7 @@ export default function BookingModal({ roomType, applyDiscount, discount, price,
         </div>
         </div>
       </Dialog>
-    </div>
+    </ThemeProvider>
   );
 }
 

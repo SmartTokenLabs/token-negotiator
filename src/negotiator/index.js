@@ -656,6 +656,7 @@ export class Negotiator {
     iframeWrap.setAttribute('style', 'width:100%; min-height: 100vh; position: fixed; align-items: center; justify-content: center; display: none; top: 0; left: 0; background: #fffa');
     iframeWrap.appendChild(iframe);
     document.body.appendChild(iframeWrap);
+    alert('yolo');
   }
 
   base64ToUint8array(base64str) {

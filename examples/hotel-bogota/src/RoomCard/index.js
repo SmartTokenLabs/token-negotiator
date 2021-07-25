@@ -34,6 +34,7 @@ export default function RoomCard({ room, applyDiscount, discount, tokens, book }
         />
         <CardContent>
           <Typography
+            style={{ fontSize: '21px' }}
             gutterBottom
             variant="h5"
             component="h2"
@@ -45,13 +46,14 @@ export default function RoomCard({ room, applyDiscount, discount, tokens, book }
             color="textSecondary"
             component="p"
           >
-            From {price} COP / {frequency}
+            COP {price} / {frequency}
           </Typography>
         </CardContent>
       </div>
       <CardActions>
         <BookingModal
           book={book}
+          image={image}
           applyDiscount={applyDiscount}
           tokens={tokens}
           roomType={type}

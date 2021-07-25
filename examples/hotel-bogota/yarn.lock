@@ -10358,7 +10358,7 @@ punycode@^2.1.0, punycode@^2.1.1:
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
   integrity sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==
 
-pvutils@^1.0.17, pvutils@latest:
+pvutils@latest:
   version "1.0.17"
   resolved "https://registry.yarnpkg.com/pvutils/-/pvutils-1.0.17.tgz#ade3c74dfe7178944fe44806626bd2e249d996bf"
   integrity sha512-wLHYUQxWaXVQvKnwIDWFVKDJku9XDCvyhhxoq8dc5MFdIlRenyPI9eSfEtcvgHgD7FlvCyGAlWgOzRnZD99GZQ==
@@ -12170,14 +12170,12 @@ toidentifier@1.0.0:
   resolved "https://registry.yarnpkg.com/toidentifier/-/toidentifier-1.0.0.tgz#7e1be3470f1e77948bc43d94a3c8f4d7752ba553"
   integrity sha512-yaOH/Pk/VEhBWWTlhI+qXxDFXlejDGcQipMlyxda9nthulaxLZUNcUqFxokp0vcYnvteJln5FNQDRrxj3YcbVw==
 
-"token-negotiator@github:TokenScript/token-negotiator":
-  version "0.0.9"
-  resolved "https://codeload.github.com/TokenScript/token-negotiator/tar.gz/b06da31a86fb0dbbfa6c2166e499502a009767ca"
+"token-negotiator@file:../..":
+  version "0.1.0"
   dependencies:
     asn1js "^2.0.26"
     big-integer "^1.6.48"
     ethers "^5.4.0"
-    pvutils "^1.0.17"
 
 tough-cookie@^4.0.0:
   version "4.0.0"
