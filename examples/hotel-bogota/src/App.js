@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import LogoCard from './LogoCard';
+import Header from './Header';
 import RoomCard from './RoomCard';
 import Typography from '@material-ui/core/Typography';
 import EthereumLogo from './EthereumLogo';
@@ -138,15 +138,7 @@ function App() {
 
   return (
     <div>
-      <div className="header">
-        <LogoCard />
-        {/* <TokenNotificationCard 
-          getTokens={e=>getTokens()} 
-          negotiator={negotiator} 
-          tokensNumber={tokens.length} 
-          tokenPermissionRequired={true} // example of how user permissions could be applied to flow on the client side
-        /> */}
-      </div>
+      <Header />
       <BookingDate />
       <div className="roomCardsContainer">
         {roomTypesData.map((room, index) => {

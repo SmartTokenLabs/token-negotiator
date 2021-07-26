@@ -22,7 +22,7 @@ const BookingDate = () => {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center' }}>
+    <div style={{ display: 'flex', justifyContent: 'center', margin: '92px 0 82px 0' }}>
       <div style={{ display: 'flex', justifyContent: 'center', width: '80%' }}>
         <div style={{ margin: '10px' }}>
           <DatePicker
