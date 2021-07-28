@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>token outlet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@200;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/outlet.css">
+  <script src="https://devcontickets.herokuapp.com/outlet/bigInteger.min.js"></script>
+  <script src="https://devcontickets.herokuapp.com/outlet/negotiator.js"></script>
+  <script src="https://devcontickets.herokuapp.com/outlet/authenticator.js"></script>
+</head>
+<body>
+  <div class="dvn-tk-outlt">
+    <div class="modal">
+      <div class="brand"></div>
+      <p class="headline">Available Tokens</p>
+      <div class="token-container"></div>
+    </div>
+    <button onclick="toggle()"></button>
+  </div>
+  <script>
+    
+    function toggle(event) {
+      var element = document.querySelector(".dvn-tk-outlt .modal")
+      element.classList.toggle("open");
+
+      if(element.classList.contains("open")) {
+        iframeResize({ height: '472', width: '378' });
+      } else {
+        setTimeout(() => {
+          iframeResize({ height: '110', width: '110' }); // close
+        }, 250);
+      }
+    }
+
+    // close the modal if user clicks into space
+    // window.addEventListener('click', function(e){   
+    //   if (!document.querySelector(".dvn-tk-outlt").contains(e.target)){
+    //     document.querySelector(".dvn-tk-outlt .modal").classList.remove("open");
+    //     iframeResize({ height: '110', width: '110' }); // close
+    //   }
+    // });
+
+    window.addEventListener('load', function() {
+	    iframeResize({ height: '110', width: '110' });
+    });
+
+    function iframeResize({width, height}) {
+      let message = { width, height };
+      // window.top refers to parent window
+      window.top.postMessage(message, "*");
+    }
+
+  </script>
+	<!-- <script src='bundle.js'></script> -->
+	<script>
+    let negotiator = new Negotiator();
+  </script>
+</body>
+</html>

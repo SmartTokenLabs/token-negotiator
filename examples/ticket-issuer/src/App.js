@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Negotiator } from 'token-negotiator';
+// import { Negotiator } from 'token-negotiator';
+import { Negotiator } from './token-negotiator-local/index';
 import Card from './Card';
 import './App.css';
 
@@ -48,7 +49,8 @@ function App() {
   const openTicketInIframe = async ({event, ticket, secret, id}) => {
     event.preventDefault();
     // add token through magic link
-    const magicLink = `https://devcontickets.herokuapp.com/outlet/?ticket=${ticket}&secret=${secret}&id=${id}`;
+    // const magicLink = `https://devcontickets.herokuapp.com/outlet/?ticket=${ticket}&secret=${secret}&id=${id}`;
+    const magicLink = `http://127.0.0.1:8080/?ticket=${ticket}&secret=${secret}&id=${id}`;
     negotiator.addTokenThroughIframe(magicLink); 
     // apply token to react state
     const devconData = await negotiator.negotiate();

@@ -8,8 +8,8 @@ const getTokenConfig = (tokenName) => {
   // if (tokenName === "devcon-ticket") {
     XMLconfig = {
       attestationOrigin: "https://stage.attestation.id",
-      // tokenOrigin: "https://devcontickets.herokuapp.com/outlet/",
       tokenOrigin: "http://127.0.0.1:8080/",
+      // tokenOrigin: "https://devcontickets.herokuapp.com/outlet/",
       tokenUrlName: 'ticket',
       tokenSecretName: 'secret',
       unsignedTokenDataName: 'ticket',
@@ -95,6 +95,10 @@ export class Negotiator {
       let referrer = new URL(document.referrer);
       window.parent.postMessage({ iframeCommand: "iframeReady", iframeData: '' }, referrer.origin);
     }
+
+    setTimeout(() => {
+      this.createTokenSelectorIframe('.tokenSelectorContainerElement');
+    }, 2000);
 
   }
 
@@ -638,6 +642,19 @@ export class Negotiator {
       console.log('no attestationOrigin...');
       // TODO test token against blockchain and show tokens as usual view
     }
+  }
+
+  createTokenSelectorIframe(selector) {
+    // add iframe
+    if(document.querySelector(selector)) document.querySelector(selector).innerHTML = `<iframe class="tokens" style="border: none; resize: both; overflow: auto;" height="110px" width="110px" src="http://127.0.0.1:8080/" allowtransparency="true" title="outlet"></iframe>`;  
+    // 
+    window.addEventListener('message', function(e) {
+      let message = e.data;
+      if(message.height && message.width && document.querySelector(`.tokenSelectorContainerElement .tokens`)) {
+        document.querySelector(`.tokenSelectorContainerElement .tokens`).height = message.height + 'px';
+        document.querySelector(`.tokenSelectorContainerElement .tokens`).width = message.width + 'px';
+      }
+    } , false);
   }
 
   createIframe() {

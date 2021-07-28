@@ -1,0 +1,25 @@
+{
+  "name": "rollup-starter-app",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^17.0.0",
+    "@rollup/plugin-node-resolve": "^11.1.0",
+    "npm-run-all": "^4.1.5",
+    "rollup": "^2.36.2",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-polyfill-node": "^0.7.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "serve": "^11.3.2"
+  },
+  "dependencies": {
+    "@alphawallet/token-negotiator": "^0.1.0",
+    "date-fns": "^2.16.1",
+    "isevn": "^2.0.2",
+    "rollup-plugin-node-globals": "^1.4.0"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "watch": "rollup -c -w",
+    "dev": "npm-run-all --parallel start watch",
+    "start": "serve public"
+  }
+}

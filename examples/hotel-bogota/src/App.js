@@ -4,8 +4,8 @@ import RoomCard from './RoomCard';
 import Typography from '@material-ui/core/Typography';
 import EthereumLogo from './EthereumLogo';
 import BookingDate from './BookingDate';
-import { Negotiator } from 'token-negotiator';
-// import TokenNotificationCard from './TokenNotificationCard';
+// import { Negotiator } from 'token-negotiator';
+import { Negotiator } from './token-negotiator-local/index';
 import './App.css';
   
 // mock data e.g. server side hotel room price database
@@ -23,7 +23,9 @@ function App() {
   const tokenName = "devcon-ticket";
 
   // set required negotiator options
-  const options = {};
+  const options = {
+    tokenSelectorContainer: ".tokenSelectorContainerElement"
+  };
 
   // create new instance of the Negotiator with params
   let negotiator = new Negotiator(filter, tokenName, options);
@@ -42,6 +44,8 @@ function App() {
 
   // token proof
   let [useDiscountProof, setUseDiscountProof] = useState({ status: false, useTicket: undefined, ethKey: undefined });
+
+
 
   // async example of initial hotel data loaded from source
   const getRoomTypesData = () => {
@@ -126,6 +130,7 @@ function App() {
       if(results.success){
         setTokens(results.tokens);
         setFreeShuttle(true);
+        console.log(results.tokens);
       }
     });
   }
@@ -134,6 +139,7 @@ function App() {
   useEffect(() => {
     // assign room data to react local state
     setRoomTypesData(getRoomTypesData());
+    getTokens();
   }, []);
 
   return (
@@ -164,6 +170,7 @@ function App() {
             component="p">
             Free shuttle service available to you as a Devcon Ticket holder! Enjoy the event.
           </Typography>
+          <div className="tokenSelectorContainerElement" style={{position: 'fixed', right: 0, bottom: 0}}></div>
         </div>
       }
     </div>
