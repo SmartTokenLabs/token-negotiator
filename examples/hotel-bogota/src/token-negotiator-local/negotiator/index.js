@@ -7,6 +7,7 @@ const getTokenConfig = (tokenName) => {
   // commented for now so breaking changes are not caused.
   // if (tokenName === "devcon-ticket") {
     XMLconfig = {
+      tokenName: tokenName,
       attestationOrigin: "https://stage.attestation.id",
       tokenOrigin: "http://127.0.0.1:8080/",
       // tokenOrigin: "https://devcontickets.herokuapp.com/outlet/",
@@ -96,10 +97,47 @@ export class Negotiator {
       window.parent.postMessage({ iframeCommand: "iframeReady", iframeData: '' }, referrer.origin);
     }
 
+    // embed Iframe
     setTimeout(() => {
-      this.createTokenSelectorIframe('.tokenSelectorContainerElement');
-    }, 2000);
+      if(document.querySelector('.tokenSelectorContainerElement')) {
+        // todo name the modal after the token outlet name.
+        const iframe = `<iframe class="${tokenName}Modal" style="border: none; resize: both; overflow: auto;" height="110px" width="110px" src="http://127.0.0.1:8080/" allowtransparency="true" title="outlet"></iframe>`;
+        // embed iframe
+        document.querySelector('.tokenSelectorContainerElement').innerHTML = iframe;
+        // onload of iframe post message
+        document.querySelector(`.tokenSelectorContainerElement .${tokenName}Modal`).onload = function() { 
+          document.querySelector(`.tokenSelectorContainerElement .${tokenName}Modal`)
+          .contentWindow
+          .postMessage(
+            { 
+              evt: "getTokenButtonHTML" 
+            }, '*');  
+        };
+      }
+    }, 0);
+    
+    // Handle Incoming Event Requests From Parent Window.
+    window.addEventListener('message', (event) => {
+      // if(event.origin !== '*') return; // review if we should whitelist access some events.
+      this.eventController(event.data);
+    }, false);
+  }
 
+  // Handle Event Business Logic
+  eventController(data) {
+    switch(data.evt) {
+      case 'setTokenButtonHTML':
+        document.getElementsByClassName("tokenSelectorContainerElement")[0].innerHTML = data.button;
+        break;
+      case 'setSelectedTokens':
+        // defines the tokens that are available to the website
+        // window.top.postMessage({ evt: 'setSelectedTokens', selectedTokens: originData.selectedTokens }, "*");
+        break;
+      case 'setToggleModalHandler':
+        // defines the tokens that are available to the website
+        // toggleTokenButtonHandler();
+        break;
+    }
   }
 
   async connectMetamaskAndGetAddress() {
@@ -642,19 +680,6 @@ export class Negotiator {
       console.log('no attestationOrigin...');
       // TODO test token against blockchain and show tokens as usual view
     }
-  }
-
-  createTokenSelectorIframe(selector) {
-    // add iframe
-    if(document.querySelector(selector)) document.querySelector(selector).innerHTML = `<iframe class="tokens" style="border: none; resize: both; overflow: auto;" height="110px" width="110px" src="http://127.0.0.1:8080/" allowtransparency="true" title="outlet"></iframe>`;  
-    // 
-    window.addEventListener('message', function(e) {
-      let message = e.data;
-      if(message.height && message.width && document.querySelector(`.tokenSelectorContainerElement .tokens`)) {
-        document.querySelector(`.tokenSelectorContainerElement .tokens`).height = message.height + 'px';
-        document.querySelector(`.tokenSelectorContainerElement .tokens`).width = message.width + 'px';
-      }
-    } , false);
   }
 
   createIframe() {

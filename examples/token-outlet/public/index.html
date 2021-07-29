@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>token outlet</title>
+  <title>Devon Token Outlet</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@200;400&display=swap" rel="stylesheet">
@@ -20,39 +20,58 @@
       <p class="headline">Available Tokens</p>
       <div class="token-container"></div>
     </div>
-    <button onclick="toggle()"></button>
   </div>
   <script>
-    
-    function toggle(event) {
-      var element = document.querySelector(".dvn-tk-outlt .modal")
-      element.classList.toggle("open");
 
-      if(element.classList.contains("open")) {
-        iframeResize({ height: '472', width: '378' });
-      } else {
-        setTimeout(() => {
-          iframeResize({ height: '110', width: '110' }); // close
-        }, 250);
+    // Origin Config
+    const originData = {
+      hostComponents: {
+        button: '<button onclick="negotiator.toggleTokenHandler()" style="height:80px; width:80px; border: 0; background-image: url(http://127.0.0.1:8080/img/button.svg); box-shadow: 0 2px 5px 0 #676767; border-radius: 64px; cursor: pointer; z-index: 999; position: relative;"></button>'
+      },
+      data: {
+        selectedTokens: [],
+        whiteList: [
+          'http://localhost:3000/'
+        ],
       }
     }
 
-    // close the modal if user clicks into space
-    // window.addEventListener('click', function(e){   
-    //   if (!document.querySelector(".dvn-tk-outlt").contains(e.target)){
-    //     document.querySelector(".dvn-tk-outlt .modal").classList.remove("open");
-    //     iframeResize({ height: '110', width: '110' }); // close
-    //   }
-    // });
+    // Handle Incoming Event Requests From Parent Window.
+    window.addEventListener('message', function(event) {
+      // if(event.origin !== '*') return; // review if we should whitelist access some events.
+      eventController(event.data);
+    },false);
 
-    window.addEventListener('load', function() {
-	    iframeResize({ height: '110', width: '110' });
-    });
+    // Handle Event Business Logic
+    function eventController(data) {
+      switch(data.evt) {
+        case 'getTokenButtonHTML':
+          window.top.postMessage({ evt: 'setTokenButtonHTML', button: originData.hostComponents.button }, "*");
+          break;
+        case 'setSelectedTokens':
+          // defines the tokens that are available to the website
+          window.top.postMessage({ evt: 'setSelectedTokens', selectedTokens: originData.selectedTokens }, "*");
+          break;
+        case 'setToggleModalHandler':
+          // defines the tokens that are available to the website
+          toggleTokenButtonHandler();
+          break;
+      }
+    }
 
-    function iframeResize({width, height}) {
-      let message = { width, height };
-      // window.top refers to parent window
-      window.top.postMessage(message, "*");
+    function tokenToggleHandler() {
+
+    }
+
+    // Handle Event To Hide / Show The Token Selection Modal.
+    function toggleTokenButtonHandler() {
+      var element = document.querySelector(".dvn-tk-outlt .modal")
+      element.classList.toggle("open");
+      if(element.classList.contains("open")) {
+        element.classList.add("open");
+      } else {
+        element.classList.add("open");
+      }
     }
 
   </script>
