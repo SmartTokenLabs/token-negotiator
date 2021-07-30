@@ -26,7 +26,7 @@
     // Origin Config
     const originData = {
       hostComponents: {
-        button: '<button onclick="negotiator.toggleTokenHandler()" style="height:80px; width:80px; border: 0; background-image: url(http://127.0.0.1:8080/img/button.svg); box-shadow: 0 2px 5px 0 #676767; border-radius: 64px; cursor: pointer; z-index: 999; position: relative;"></button>'
+        button: '<button onclick="negotiator.tokenButtonHandler()" style="height:80px; width:80px; border: 0; background-image: url(http://127.0.0.1:8080/img/button.svg); box-shadow: 0 2px 5px 0 #676767; border-radius: 64px; cursor: pointer; z-index: 999; position: relative;"></button>'
       },
       data: {
         selectedTokens: [],
@@ -59,9 +59,7 @@
       }
     }
 
-    function tokenToggleHandler() {
-
-    }
+    // function tokenToggleHandler() {}
 
     // Handle Event To Hide / Show The Token Selection Modal.
     function toggleTokenButtonHandler() {

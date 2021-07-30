@@ -109,7 +109,7 @@ export class Negotiator {
           document.querySelector(`.tokenSelectorContainerElement .${tokenName}Modal`)
           .contentWindow
           .postMessage(
-            { 
+            {
               evt: "getTokenButtonHTML" 
             }, '*');  
         };
@@ -127,7 +127,15 @@ export class Negotiator {
   eventController(data) {
     switch(data.evt) {
       case 'setTokenButtonHTML':
-        document.getElementsByClassName("tokenSelectorContainerElement")[0].innerHTML = data.button;
+        setTimeout(() => {
+          if(!document.getElementById("tokenButtonContainer")) {
+            debugger;
+            const newDiv = document.createElement("div");
+            newDiv.setAttribute('id', 'tokenButtonContainer')
+            newDiv.innerHTML = data.button;
+            document.getElementsByClassName("tokenSelectorContainerElement")[0].append(newDiv);
+          }
+        }, 0);
         break;
       case 'setSelectedTokens':
         // defines the tokens that are available to the website
@@ -138,6 +146,16 @@ export class Negotiator {
         // toggleTokenButtonHandler();
         break;
     }
+  }
+
+  // manages when token button is pressed
+  tokenButtonHandler() {
+    document.querySelector(`.tokenSelectorContainerElement .devcon-ticketModal`)
+    .contentWindow
+    .postMessage(
+      {
+        evt: "setToggleModalHandler" 
+      }, '*');
   }
 
   async connectMetamaskAndGetAddress() {

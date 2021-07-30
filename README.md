@@ -83,3 +83,16 @@ Negotiator Options
 
 (coming soon)
 
+Dev Notes (remove when complete):
+
+- Spin up the outlet with http-server
+- serve hotel bogota
+
+TODO's
+
+- finish open / close functionality e.g. load and unload Iframe with tickets
+- load tickets into container from window
+- selection event logic handling needed
+- Connect data to hotel bogota allowing for discount to be applied etc
+
+SEE: eventController & tokenButtonHandler 

@@ -7,6 +7,8 @@ import BookingDate from './BookingDate';
 // import { Negotiator } from 'token-negotiator';
 import { Negotiator } from './token-negotiator-local/index';
 import './App.css';
+
+window.negotiator = null;
   
 // mock data e.g. server side hotel room price database
 const mockRoomData = [{"type":"Deluxe Room","price": 200000,"frequency":"night","image":"./hotel_3.jpg"},{"type":"King Suite","price": 320000,"frequency":"night","image":"./hotel_2.png"},{"type":"Superior Deluxe Suite","price": 250030,"frequency":"night","image":"./hotel_1.jpg"}]
@@ -28,7 +30,7 @@ function App() {
   };
 
   // create new instance of the Negotiator with params
-  let negotiator = new Negotiator(filter, tokenName, options);
+  window.negotiator = new Negotiator(filter, tokenName, options);
 
   // devcont tickets (react state of tokens)
   let [tokens, setTokens] = useState([]);
