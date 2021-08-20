@@ -1,11 +1,11 @@
 // import '@alphawallet/token-negotiator';
 
 const mockTokens = [
-  // { ticketClass: 'a', ticketId: 'b', devconId: 'c' },
-  // { ticketClass: 'd', ticketId: 'e', devconId: 'f' },
-  // { ticketClass: 'g', ticketId: 'h', devconId: 'i' },
-  // { ticketClass: 'i', ticketId: 'j', devconId: 'k' },
-  // { ticketClass: 'l', ticketId: 'm', devconId: 'n' },
+  { ticketClass: 'a', ticketId: 'b', devconId: 'c' },
+  { ticketClass: 'd', ticketId: 'e', devconId: 'f' },
+  { ticketClass: 'g', ticketId: 'h', devconId: 'i' },
+  { ticketClass: 'i', ticketId: 'j', devconId: 'k' },
+  { ticketClass: 'l', ticketId: 'm', devconId: 'n' },
 ];
 
 const tokenContainer = document.querySelector('.dvn-tk-outlt .token-container');
