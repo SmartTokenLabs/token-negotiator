@@ -86,7 +86,7 @@ Negotiator Options
 Dev Notes (remove when complete):
 
 - Spin up the outlet with http-server
-- serve hotel bogota
+- Serve hotel bogota
 
 TODO's
 
@@ -96,3 +96,33 @@ TODO's
 - Connect data to hotel bogota allowing for discount to be applied etc
 
 SEE: eventController & tokenButtonHandler 
+
+Development notes towards the re-work of the NPM package
+
+  1. Token Negotiator Client 
+
+  negotiator.negotiate({ filter })
+
+  This function will open the modal and load the button into the page.
+  Filter will be stored in the negotiator state ready to dispatch
+  to modal in later events.
+
+  2. Token Negotiator Modal (button pressed) Client event
+  
+  negotiator.getTokenInstances()
+
+  dispatches event to Modal with filter (stored in memory)
+
+  Modal opens, showing tokens.
+  
+  3. Modal toggle single token on/off event
+
+  // internal methods used inside modal
+  negotiator.toggleToken(tokenID) // updates selected tokens state
+  >>> then >>>
+  negotiator.dispatchTokens()     // dispatches selected tokens to client
+
+  // attach to client (receives incoming events from modal)
+  // learns tokens that are sent only
+  negotiator.tokenListener() 
+
