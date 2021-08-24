@@ -1,29 +1,5 @@
-import { SignedDevconTicket } from './../Attestation/SignedDevonTicket';
 import { ethers } from "ethers";
-
-const getTokenConfig = (tokenName) => {
-  let XMLconfig = {};
-  // this will come from a lookup table at a later stage.
-  // commented for now so breaking changes are not caused.
-  // if (tokenName === "devcon-ticket") {
-    XMLconfig = {
-      tokenName: tokenName,
-      attestationOrigin: "https://stage.attestation.id",
-      tokenOrigin: "http://127.0.0.1:8080/",
-      // tokenOrigin: "https://devcontickets.herokuapp.com/outlet/",
-      tokenUrlName: 'ticket',
-      tokenSecretName: 'secret',
-      unsignedTokenDataName: 'ticket',
-      tokenIdName: 'id',
-      tokenParser: SignedDevconTicket,
-      localStorageItemName: 'dcTokens',
-      localStorageEthKeyItemName: 'dcEthKeys',
-    };
-  // } else {
-    // console.log("Negotiator: missing token script for this token");
-  // }
-  return XMLconfig;
-}
+import { tokenConfig } from "./tokenConfig";
 
 export class Negotiator {
 
@@ -34,11 +10,10 @@ export class Negotiator {
     // The XML config is used to define the token configuration.
     // This includes how the ticket will confirm its vailidity and the origin
     // of where the ticket was issued from.
-    let XMLconfig = getTokenConfig(tokenName);
-    //
+    let XMLconfig = tokenConfig[tokenName];
+    
     this.queuedCommand = false;
     this.filter = filter;
-    //
     this.tokensOrigin = XMLconfig.tokenOrigin;
     this.debug = 0;
     this.hideTokensIframe = 1;
@@ -48,10 +23,14 @@ export class Negotiator {
     this.tokenSecretName = XMLconfig.tokenSecretName;
     this.tokenIdName = XMLconfig.tokenIdName;
     this.unsignedTokenDataName = XMLconfig.unsignedTokenDataName;
-    this.tokenParser = XMLconfig.tokenParser;
+    
+    // this customer friendly lib should not need to contain such data
+    // this.tokenParser = XMLconfig.tokenParser;
+
     this.localStorageItemName = XMLconfig.localStorageItemName;
     this.localStorageEthKeyItemName = XMLconfig.localStorageEthKeyItemName;
     this.addTokenIframe = null;
+    this.modalTimer = null;
 
     if (options.hasOwnProperty('debug')) this.debug = options.debug;
     if (options.hasOwnProperty('attestationOrigin')) this.attestationOrigin = options.attestationOrigin;
@@ -85,7 +64,8 @@ export class Negotiator {
 
     }
 
-    // do we inside iframe?
+    // TODO: Can we review this question below 'do we inside iframe'.
+    // do we inside iframe? 
     if (window !== window.parent) {
       this.debug && console.log('negotiator: its iframe, lets return tokens to the parent');
 
@@ -101,7 +81,7 @@ export class Negotiator {
     setTimeout(() => {
       if(document.querySelector('.tokenSelectorContainerElement')) {
         // todo name the modal after the token outlet name.
-        const iframe = `<iframe class="${tokenName}Modal" style="border: none; resize: both; overflow: auto;" height="110px" width="110px" src="http://127.0.0.1:8080/" allowtransparency="true" title="outlet"></iframe>`;
+        const iframe = `<iframe class="${tokenName}Modal" style="border:0; resize: none; overflow: auto;" height="335px" width="306px" src="http://127.0.0.1:8080/" allowtransparency="true" title="outlet" frameborder="0" style="border:0" allowfullscreen frameborder="no" scrolling="no"></iframe>`;
         // embed iframe
         document.querySelector('.tokenSelectorContainerElement').innerHTML = iframe;
         // onload of iframe post message
@@ -127,15 +107,15 @@ export class Negotiator {
   eventController(data) {
     switch(data.evt) {
       case 'setTokenButtonHTML':
-        setTimeout(() => {
           if(!document.getElementById("tokenButtonContainer")) {
-            debugger;
             const newDiv = document.createElement("div");
             newDiv.setAttribute('id', 'tokenButtonContainer')
+            newDiv.style.display = 'flex';
+            newDiv.style.justifyContent= 'flex-end';
             newDiv.innerHTML = data.button;
+            document.getElementsByClassName("tokenSelectorContainerElement")[0].style.margin = '10px';
             document.getElementsByClassName("tokenSelectorContainerElement")[0].append(newDiv);
           }
-        }, 0);
         break;
       case 'setSelectedTokens':
         // defines the tokens that are available to the website
@@ -148,14 +128,30 @@ export class Negotiator {
     }
   }
 
+  animateModal() {
+    // If the timer exists and this function triggers the timeout wasn't complete
+    // so we hide the modal
+    if(this.modalTimer) document.getElementsByClassName('devcon-ticketModal')[0].style.display = 'none';
+    // clear timer each event
+    clearTimeout(this.modalTimer);
+    // allow for up to 1 second of css animation to close the modal
+    if(document.getElementsByClassName('devcon-ticketModal')[0].style.display === 'block'){
+      this.modalTimer = setTimeout(() => {
+        document.getElementsByClassName('devcon-ticketModal')[0].style.display = 'none';
+      }, 1000);
+    } else {
+      document.getElementsByClassName('devcon-ticketModal')[0].style.display = 'block';
+    }
+  }
+
   // manages when token button is pressed
   tokenButtonHandler() {
+    // hide show iframe for modal
+    this.animateModal();
+    // dispatch event to hide/show modal within iframe
     document.querySelector(`.tokenSelectorContainerElement .devcon-ticketModal`)
     .contentWindow
-    .postMessage(
-      {
-        evt: "setToggleModalHandler" 
-      }, '*');
+    .postMessage({ evt: "setToggleModalHandler" }, '*');
   }
 
   async connectMetamaskAndGetAddress() {
@@ -418,36 +414,31 @@ export class Negotiator {
     return output;
   }
 
-  getRawToken(unsignedToken) {
-    let tokensOutput = this.readTokens();
-    if (tokensOutput.success && !tokensOutput.noTokens) {
-      let rawTokens = tokensOutput.tokens;
-
-      let token = false;
-
-      if (rawTokens.length) {
-        rawTokens.forEach(tokenData => {
-          if (tokenData.token) {
-
-            let decodedToken = new this.tokenParser(this.base64ToUint8array(tokenData.token).buffer);
-            if (decodedToken && decodedToken[this.unsignedTokenDataName]) {
-              let decodedTokenData = decodedToken[this.unsignedTokenDataName];
-
-              if (this.compareObjects(decodedTokenData, unsignedToken)) {
-                token = tokenData;
-              }
-
-            }
-          } else {
-            console.log('empty token data received');
-          }
-
-        })
-      }
-
-      return token;
-    }
-  }
+  // this customer friendly lib should not need to contain such data
+  // getRawToken(unsignedToken) {
+  //   let tokensOutput = this.readTokens();
+  //   if (tokensOutput.success && !tokensOutput.noTokens) {
+  //     let rawTokens = tokensOutput.tokens;
+  //     let token = false;
+  //     if (rawTokens.length) {
+  //       rawTokens.forEach(tokenData => {
+  //         if (tokenData.token) {
+  //           // this customer friendly lib should not need to contain such data
+  //           let decodedToken = new this.tokenParser(this.base64ToUint8array(tokenData.token).buffer);
+  //           if (decodedToken && decodedToken[this.unsignedTokenDataName]) {
+  //             let decodedTokenData = decodedToken[this.unsignedTokenDataName];
+  //             if (this.compareObjects(decodedTokenData, unsignedToken)) {
+  //               token = tokenData;
+  //             }
+  //           }
+  //         } else {
+  //           console.log('empty token data received');
+  //         }
+  //       })
+  //     }
+  //     return token;
+  //   }
+  // }
 
   listenForIframeMessages(event) {
 
@@ -675,28 +666,25 @@ export class Negotiator {
 
   _negotiate(callBack) {
 
+    if(!this.attestationOrigin){
+      console.warn({ msg: 'no attestation origin provided' });
+      return;
+    }
+
     this.negotiateCallback = callBack;
-
-    if (this.attestationOrigin) {
-
-      console.log('attestationOrigin', this.attestationOrigin);
-
-      if (window.location.href === this.tokensOrigin) {
-        // just read an return tokens
-        let tokensOutput = this.readTokens();
-        if (tokensOutput.success && !tokensOutput.noTokens) {
-          let decodedTokens = this.decodeTokens(tokensOutput.tokens);
-          let filteredTokens = this.filterTokens(decodedTokens);
-          tokensOutput.tokens = filteredTokens;
-          this.negotiateCallback(tokensOutput);
-        }
-      } else {
-        this.queuedCommand = { parentCommand: 'tokensList', parentData: '' };
-        this.createIframe()
+    
+    if (window.location.href === this.tokensOrigin) {
+      const tokensOutput = this.readTokens();
+      // TODO: review this logic - if (tokensOutput) { // this would be a simpler way of doing this.
+      if (tokensOutput.success && !tokensOutput.noTokens) {
+        const decodedTokens = this.decodeTokens(tokensOutput.tokens);
+        const filteredTokens = this.filterTokens(decodedTokens);
+        tokensOutput.tokens = filteredTokens;
+        this.negotiateCallback(tokensOutput);
       }
     } else {
-      console.log('no attestationOrigin...');
-      // TODO test token against blockchain and show tokens as usual view
+      this.queuedCommand = { parentCommand: 'tokensList', parentData: '' };
+      this.createIframe()
     }
   }
 
@@ -741,6 +729,7 @@ export class Negotiator {
     }
     let decodedTokens = [];
     if (rawTokens.length) {
+      debugger
       rawTokens.forEach(tokenData => {
         if (tokenData.token) {
           let decodedToken = new this.tokenParser(this.base64ToUint8array(tokenData.token).buffer);

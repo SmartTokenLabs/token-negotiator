@@ -9,19 +9,17 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@200;400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./css/outlet.css">
-  <script src="https://devcontickets.herokuapp.com/outlet/bigInteger.min.js"></script>
-  <script src="https://devcontickets.herokuapp.com/outlet/negotiator.js"></script>
-  <script src="https://devcontickets.herokuapp.com/outlet/authenticator.js"></script>
+  <!-- <script src="https://devcontickets.herokuapp.com/outlet/bigInteger.min.js"></script> -->
+  <!-- <script src="https://devcontickets.herokuapp.com/outlet/negotiator.js"></script> -->
+  <!-- <script src="https://devcontickets.herokuapp.com/outlet/authenticator.js"></script> -->
 </head>
 <body>
   <div class="dvn-tk-outlt">
-    <button></button>
     <div class="modal">
       <div class="brand"></div>
       <p class="headline">Available Tokens</p>
       <div class="token-container"></div>
     </div>
-
   </div>
   <script>
 
@@ -61,23 +59,22 @@
       }
     }
 
-    // function tokenToggleHandler() {}
-
     // Handle Event To Hide / Show The Token Selection Modal.
+    // animate on and off the page.
     function toggleTokenButtonHandler() {
       var element = document.querySelector(".dvn-tk-outlt .modal")
       element.classList.toggle("open");
       if(element.classList.contains("open")) {
         element.classList.add("open");
       } else {
-        element.classList.add("open");
+        element.classList.remove("open");
       }
     }
 
   </script>
-	<!-- <script src='bundle.js'></script> -->
+	<script src='bundle.js'></script>
 	<script>
-    let negotiator = new Negotiator();
+    // let negotiator = new Negotiator();
   </script>
 </body>
 </html>

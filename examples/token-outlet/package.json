@@ -11,9 +11,7 @@
     "serve": "^11.3.2"
   },
   "dependencies": {
-    "@alphawallet/token-negotiator": "^0.1.0",
     "date-fns": "^2.16.1",
-    "isevn": "^2.0.2",
     "rollup-plugin-node-globals": "^1.4.0"
   },
   "scripts": {
