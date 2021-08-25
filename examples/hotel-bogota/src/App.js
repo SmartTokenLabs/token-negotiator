@@ -47,8 +47,6 @@ function App() {
   // token proof
   let [useDiscountProof, setUseDiscountProof] = useState({ status: false, useTicket: undefined, ethKey: undefined });
 
-
-
   // async example of initial hotel data loaded from source
   const getRoomTypesData = () => {
     return mockRoomData;

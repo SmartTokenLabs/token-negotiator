@@ -76,5 +76,8 @@
     "start": "npm run server:dev",
     "test": "karma start"
   },
-  "version": "0.0.1"
+  "version": "0.0.1",
+  "dependencies": {
+    "pvutils": "^1.0.17"
+  }
 }

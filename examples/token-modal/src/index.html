@@ -6,15 +6,15 @@
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://devcontickets.herokuapp.com/outlet/bigInteger.min.js"></script>
-  <script src="https://devcontickets.herokuapp.com/outlet/negotiator.js"></script>
-  <script src="https://devcontickets.herokuapp.com/outlet/authenticator.js"></script>
+  <!-- <script src="https://devcontickets.herokuapp.com/outlet/negotiator.js"></script> -->
+  <!-- <script src="https://devcontickets.herokuapp.com/outlet/authenticator.js"></script> -->
   <title><%= htmlWebpackPlugin.options.title %></title>
   <meta name="description" content="<%= htmlWebpackPlugin.options.description %>">
+  <!-- In 'development mode' the modal style opacity is set to 1 for ease of development changes. -->
+  <!-- <%= htmlWebpackPlugin.options.webpackmode === 'development' ? `<style> .dvn-tk-outlt .modal { opacity: 1!important; }</style>` : `<style></style>` %> -->
 </head>
 
 <body>
-
-  <%= htmlWebpackPlugin.options.webpackmode %>
 
   <div class="dvn-tk-outlt">
     <div class="modal">

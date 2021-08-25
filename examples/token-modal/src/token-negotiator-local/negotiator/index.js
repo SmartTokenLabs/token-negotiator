@@ -1,6 +1,9 @@
 import { ethers } from "ethers";
 import { tokenConfig } from "./tokenConfig";
 
+// TODO - this should be a client facing Class.
+// Configure, Request, Receive, Utilise Tokens.
+
 export class Negotiator {
 
   constructor(filter = {}, tokenName, options = {}) {
@@ -25,7 +28,7 @@ export class Negotiator {
     this.unsignedTokenDataName = XMLconfig.unsignedTokenDataName;
     
     // this customer friendly lib should not need to contain such data
-    // this.tokenParser = XMLconfig.tokenParser;
+    this.tokenParser = XMLconfig.tokenParser;
 
     this.localStorageItemName = XMLconfig.localStorageItemName;
     this.localStorageEthKeyItemName = XMLconfig.localStorageEthKeyItemName;
@@ -64,37 +67,34 @@ export class Negotiator {
 
     }
 
-    // Token Origin 
+    // TOKEN OUTLET - Store, Decode and Dispatch Tokens
     if (document.location.href === XMLconfig.tokenOrigin) {
-      
       this.debug && console.log('negotiator: its iframe, lets return tokens to the parent');
-
-      // its iframe, listen for requests
-      this.attachPostMessageListener(this.listenForParentMessages.bind(this))
-
+      // its iframe, listen for requests from TokenDispatcher (Modal)
+      this.attachPostMessageListener(this.listenForParentMessages.bind(this));
       // send ready message to start interaction
-      let referrer = new URL(document.referrer);
-      window.parent.postMessage({ iframeCommand: "iframeReady", iframeData: '' }, referrer.origin);
+      let referrer = document.referrer ? new URL(document.referrer).origin : '';
+      window.parent.postMessage({ iframeCommand: "iframeReady", iframeData: '' }, referrer);
     }
 
-    // embed Iframe
-    setTimeout(() => {
-      if(document.querySelector('.tokenSelectorContainerElement')) {
-        // todo name the modal after the token outlet name.
-        const iframe = `<iframe class="${tokenName}Modal" style="border:0; resize: none; overflow: auto;" height="335px" width="367px" src="http://127.0.0.1:8080/" allowtransparency="true" title="outlet" frameborder="0" style="border:0" allowfullscreen frameborder="no" scrolling="no"></iframe>`;
-        // embed iframe
-        document.querySelector('.tokenSelectorContainerElement').innerHTML = iframe;
-        // onload of iframe post message
-        document.querySelector(`.tokenSelectorContainerElement .${tokenName}Modal`).onload = function() { 
-          document.querySelector(`.tokenSelectorContainerElement .${tokenName}Modal`)
-          .contentWindow
-          .postMessage(
-            {
-              evt: "getTokenButtonHTML" 
-            }, '*');  
-        };
-      }
-    }, 0);
+    // CLIENT WEBSITE
+    // if(window.top.location.href === window.self.location.href) {
+    //   if(document.querySelector('.tokenSelectorContainerElement')) {
+    //     // todo name the modal after the token outlet name.
+    //     const iframe = `<iframe class="${tokenName}Modal" style="border:0; resize: none; overflow: auto;" height="335px" width="367px" src="http://127.0.0.1:8080/" allowtransparency="true" title="outlet" frameborder="0" style="border:0" allowfullscreen frameborder="no" scrolling="no"></iframe>`;
+    //     // embed iframe
+    //     document.querySelector('.tokenSelectorContainerElement').innerHTML = iframe;
+    //     // onload of iframe post message
+    //     document.querySelector(`.tokenSelectorContainerElement .${tokenName}Modal`).onload = function() { 
+    //       document.querySelector(`.tokenSelectorContainerElement .${tokenName}Modal`)
+    //       .contentWindow
+    //       .postMessage(
+    //         {
+    //           evt: "getTokenButtonHTML" 
+    //         }, '*');  
+    //     };
+    //   }
+    // }
     
     // Handle Incoming Event Requests From Parent Window.
     window.addEventListener('message', (event) => {
@@ -414,31 +414,29 @@ export class Negotiator {
     return output;
   }
 
-  // this customer friendly lib should not need to contain such data
-  // getRawToken(unsignedToken) {
-  //   let tokensOutput = this.readTokens();
-  //   if (tokensOutput.success && !tokensOutput.noTokens) {
-  //     let rawTokens = tokensOutput.tokens;
-  //     let token = false;
-  //     if (rawTokens.length) {
-  //       rawTokens.forEach(tokenData => {
-  //         if (tokenData.token) {
-  //           // this customer friendly lib should not need to contain such data
-  //           let decodedToken = new this.tokenParser(this.base64ToUint8array(tokenData.token).buffer);
-  //           if (decodedToken && decodedToken[this.unsignedTokenDataName]) {
-  //             let decodedTokenData = decodedToken[this.unsignedTokenDataName];
-  //             if (this.compareObjects(decodedTokenData, unsignedToken)) {
-  //               token = tokenData;
-  //             }
-  //           }
-  //         } else {
-  //           console.log('empty token data received');
-  //         }
-  //       })
-  //     }
-  //     return token;
-  //   }
-  // }
+  getRawToken(unsignedToken) {
+    let tokensOutput = this.readTokens();
+    if (tokensOutput.success && !tokensOutput.noTokens) {
+      let rawTokens = tokensOutput.tokens;
+      let token = false;
+      if (rawTokens.length) {
+        rawTokens.forEach(tokenData => {
+          if (tokenData.token) {
+            let decodedToken = new this.tokenParser(this.base64ToUint8array(tokenData.token).buffer);
+            if (decodedToken && decodedToken[this.unsignedTokenDataName]) {
+              let decodedTokenData = decodedToken[this.unsignedTokenDataName];
+              if (this.compareObjects(decodedTokenData, unsignedToken)) {
+                token = tokenData;
+              }
+            }
+          } else {
+            console.log('empty token data received');
+          }
+        })
+      }
+      return token;
+    }
+  }
 
   listenForIframeMessages(event) {
 
@@ -729,7 +727,6 @@ export class Negotiator {
     }
     let decodedTokens = [];
     if (rawTokens.length) {
-      debugger
       rawTokens.forEach(tokenData => {
         if (tokenData.token) {
           let decodedToken = new this.tokenParser(this.base64ToUint8array(tokenData.token).buffer);

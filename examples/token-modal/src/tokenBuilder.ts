@@ -3,7 +3,6 @@
 import tokenImage from './img/button.svg';
 
 export const tokenBuilder = (data:any, index:number) => {
-  debugger;
   return `
       <div class="token">
         <div class="content">

@@ -98,3 +98,15 @@ const toggleTokenButtonHandler = () => {
   }
 }
 
+
+
+// NOTES:
+
+/*
+
+Token Negotiator (modules within NPM package - code splitting will remove unused code per use case): 
+
+{ negotiator } - negotiate(), tokenEventListener(), toggleModalEventDispatcher()
+{ modal }  - getTokenInstances(), toggleToken(), toggleModalListener(), tokenEventDispatcher()
+
+*/

@@ -13,7 +13,7 @@ const plugins = [
   new HtmlWebpackPlugin({
     title: 'Devcon Token Modal',
     description: 'Gateway provider of tokens to client website',
-    webpackmode: nodeEnv !== 'production' ? '[ DEVELOPMENT MODE ]' : '',
+    webpackmode: nodeEnv !== 'production' ? 'development' : 'production',
     template: '!!ejs-loader!src/index.html'
   }),
   new webpack.LoaderOptionsPlugin({
@@ -80,7 +80,8 @@ var config = {
     contentBase: path.join(__dirname, 'dist/'),
     compress: true,
     port: 3000,
-    hot: true
+    hot: true,
+    headers: {'Access-Control-Allow-Origin': '*'}
   }
 };
 

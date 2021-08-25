@@ -1,4 +1,4 @@
-// import { SignedDevconTicket } from './../Attestation/SignedDevonTicket';
+import { SignedDevconTicket } from './../Attestation/SignedDevonTicket';
 
 /*
 
@@ -24,12 +24,13 @@ export const tokenConfig = {
       tokenUid: 'devcon-ticket',
       attestationOrigin: "https://stage.attestation.id",
       tokenModal: "http://localhost:3000/",
-      tokenOrigin: "https://devcontickets.herokuapp.com/outlet/",
+      tokenOrigin: "http://localhost:3000/",
+      // tokenOrigin: "https://devcontickets.herokuapp.com/outlet/",
       tokenUrlName: 'ticket',
       tokenSecretName: 'secret',
       tokenIdName: 'id',
       unsignedTokenDataName: 'ticket',
-      // tokenParser: SignedDevconTicket, 
+      tokenParser: SignedDevconTicket, 
       localStorageItemName: 'dcTokens',
       localStorageEthKeyItemName: 'dcEthKeys',
   }

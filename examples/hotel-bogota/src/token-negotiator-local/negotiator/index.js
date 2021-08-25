@@ -15,6 +15,7 @@ export class Negotiator {
     this.queuedCommand = false;
     this.filter = filter;
     this.tokensOrigin = XMLconfig.tokenOrigin;
+    this.tokenModal = XMLconfig.tokenModal;
     this.debug = 0;
     this.hideTokensIframe = 1;
     this.tokenOrigin = XMLconfig.tokenOrigin;
@@ -25,7 +26,7 @@ export class Negotiator {
     this.unsignedTokenDataName = XMLconfig.unsignedTokenDataName;
     
     // this customer friendly lib should not need to contain such data
-    // this.tokenParser = XMLconfig.tokenParser;
+    this.tokenParser = XMLconfig.tokenParser;
 
     this.localStorageItemName = XMLconfig.localStorageItemName;
     this.localStorageEthKeyItemName = XMLconfig.localStorageEthKeyItemName;
@@ -81,7 +82,7 @@ export class Negotiator {
     setTimeout(() => {
       if(document.querySelector('.tokenSelectorContainerElement')) {
         // todo name the modal after the token outlet name.
-        const iframe = `<iframe class="${tokenName}Modal" style="border:0; resize: none; overflow: auto;" height="335px" width="306px" src="http://127.0.0.1:8080/" allowtransparency="true" title="outlet" frameborder="0" style="border:0" allowfullscreen frameborder="no" scrolling="no"></iframe>`;
+        const iframe = `<iframe class="${tokenName}Modal" style="border:0; resize: none; overflow: auto;" height="335px" width="376px" src="${this.tokenModal}" allowtransparency="true" title="outlet" frameborder="0" style="border:0" allowfullscreen frameborder="no" scrolling="no"></iframe>`;
         // embed iframe
         document.querySelector('.tokenSelectorContainerElement').innerHTML = iframe;
         // onload of iframe post message
@@ -91,7 +92,7 @@ export class Negotiator {
           .postMessage(
             {
               evt: "getTokenButtonHTML" 
-            }, '*');  
+            }, '*');
         };
       }
     }, 0);
@@ -105,6 +106,9 @@ export class Negotiator {
 
   // Handle Event Business Logic
   eventController(data) {
+
+    // if(data.evt) debugger;
+
     switch(data.evt) {
       case 'setTokenButtonHTML':
           if(!document.getElementById("tokenButtonContainer")) {
@@ -729,7 +733,6 @@ export class Negotiator {
     }
     let decodedTokens = [];
     if (rawTokens.length) {
-      debugger
       rawTokens.forEach(tokenData => {
         if (tokenData.token) {
           let decodedToken = new this.tokenParser(this.base64ToUint8array(tokenData.token).buffer);
@@ -737,7 +740,6 @@ export class Negotiator {
         } else {
           console.log('empty token data received');
         }
-
       })
     }
     return decodedTokens;
