@@ -69,12 +69,13 @@ export class Negotiator {
 
     // TOKEN OUTLET - Store, Decode and Dispatch Tokens
     if (document.location.href === XMLconfig.tokenOrigin) {
-      this.debug && console.log('negotiator: its iframe, lets return tokens to the parent');
-      // its iframe, listen for requests from TokenDispatcher (Modal)
-      this.attachPostMessageListener(this.listenForParentMessages.bind(this));
       // send ready message to start interaction
-      let referrer = document.referrer ? new URL(document.referrer).origin : '';
-      window.parent.postMessage({ iframeCommand: "iframeReady", iframeData: '' }, referrer);
+      let referrer = document.referrer ? new URL(document.referrer).origin : false;
+      if (referrer) {
+        this.debug && console.log('negotiator: its iframe, lets return tokens to the parent');
+        this.attachPostMessageListener(this.listenForParentMessages.bind(this));
+        window.parent.postMessage({ iframeCommand: "iframeReady", iframeData: '' }, referrer);
+      }
     }
 
     // CLIENT WEBSITE

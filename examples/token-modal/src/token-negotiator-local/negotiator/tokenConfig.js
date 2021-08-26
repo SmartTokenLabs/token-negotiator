@@ -4,7 +4,6 @@ import { SignedDevconTicket } from './../Attestation/SignedDevonTicket';
 
   tokenUid: String (unique token id name)
   attestationOrigin: String (origin location of attestation check)
-  tokenModal: String (url location of modal web page contains modal component)
   tokenOrigin: String (url location of  token outlet)
   tokenIdName: String (used for query params ref)
   tokenUrlName: String (used for query params ref)
@@ -23,8 +22,7 @@ export const tokenConfig = {
   "devcon-ticket": {
       tokenUid: 'devcon-ticket',
       attestationOrigin: "https://stage.attestation.id",
-      tokenModal: "http://localhost:3000/",
-      tokenOrigin: "http://localhost:3000/",
+      tokenOrigin: "http://localhost:3002/",
       // tokenOrigin: "https://devcontickets.herokuapp.com/outlet/",
       tokenUrlName: 'ticket',
       tokenSecretName: 'secret',

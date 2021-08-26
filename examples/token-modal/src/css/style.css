@@ -32,7 +32,6 @@
   box-shadow: 0 2px 4px 0 rgba(103, 103, 103, 0.5);
   background-color: #ffffff;
   z-index: 888;
-  transition: all 0.3s ease-out;
 }
 
 .dvn-tk-outlt .modal .brand {

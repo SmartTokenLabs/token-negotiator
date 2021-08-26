@@ -50,8 +50,6 @@ negotiator.negotiate().then((results:any) => {
     addTokens(results.tokens.map((data:any, index:number) => {
       return tokenBuilder(data, index);
     }).join(''));
-  } else {
-    addTokens('<p style="padding: 0 18px">No tokens available.</p>');
   }
 });
 

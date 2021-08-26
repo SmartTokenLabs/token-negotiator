@@ -23,11 +23,7 @@ export const tokenConfig = {
   "devcon-ticket": {
       tokenUid: 'devcon-ticket',
       attestationOrigin: "https://stage.attestation.id",
-      // tokenModal: "http://127.0.0.1:8080/",
-      // tokenModal: "http://localhost:3000/",
-      tokenModal: "http://localhost:3000/",
-      tokenOrigin: "http://localhost:3000/",
-      // tokenOrigin: "http://127.0.0.1:8080/",
+      tokenOrigin: "http://localhost:3002/",
       // tokenOrigin: "https://devcontickets.herokuapp.com/outlet/",
       tokenUrlName: 'ticket',
       tokenSecretName: 'secret',

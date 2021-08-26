@@ -10,8 +10,6 @@
   <!-- <script src="https://devcontickets.herokuapp.com/outlet/authenticator.js"></script> -->
   <title><%= htmlWebpackPlugin.options.title %></title>
   <meta name="description" content="<%= htmlWebpackPlugin.options.description %>">
-  <!-- In 'development mode' the modal style opacity is set to 1 for ease of development changes. -->
-  <!-- <%= htmlWebpackPlugin.options.webpackmode === 'development' ? `<style> .dvn-tk-outlt .modal { opacity: 1!important; }</style>` : `<style></style>` %> -->
 </head>
 
 <body>
@@ -20,9 +18,24 @@
     <div class="modal">
       <div class="brand"></div>
       <p class="headline">Available Tokens</p>
-      <div class="token-container"></div>
+      <div class="token-container">
+        <p style="padding: 0 16px; color: grey">No tokens available.</p>
+      </div>
     </div>
   </div>
+  
+  <script>
+    // TODO this is a solution to fix items.
+    // - show modal when viewing this page directly (for development)
+    // - apply animation css once the page has loaded. Doing this before hand creates an iframe / modal flicker.
+    setTimeout(() => {
+      if (window.top === window.self) {
+        document.getElementsByClassName('modal')[0].style.opacity = 1;
+      } else {
+        document.getElementsByClassName('modal')[0].style.transition = 'all 0.2s ease-out';
+      }
+    }, 1000);
+  </script>
 
 </body>
 

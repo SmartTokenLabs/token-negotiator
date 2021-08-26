@@ -79,7 +79,7 @@ var config = {
   devServer: {
     contentBase: path.join(__dirname, 'dist/'),
     compress: true,
-    port: 3000,
+    port: 3002,
     hot: true,
     headers: {'Access-Control-Allow-Origin': '*'}
   }

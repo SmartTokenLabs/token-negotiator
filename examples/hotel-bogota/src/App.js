@@ -126,13 +126,22 @@ function App() {
   // negotiation happens when this method is triggered
   // before this time, the token-negotiator is not used.
   const getTokens = () => {
-    negotiator.negotiate().then(results => {
-      if(results.success){
-        setTokens(results.tokens);
-        setFreeShuttle(true);
-        console.log(results.tokens);
-      }
-    });
+    // negotiator.negotiate().then(results => {
+    //   // debugger;
+    //   if(results.success){
+    //     // setTokens(results.tokens);
+    //     // setFreeShuttle(true);
+    //     console.log(results.tokens);
+    //   }
+    // });
+    
+    // initiate the negotiator
+    negotiator.negotiate();
+    
+    window.addEventListener('message', (event) => {
+      // if(event.origin !== '*') return; // review if we should whitelist access some events.
+      if(event.data && event.data.evt === 'setSelectedTokens') console.log('YOLO');
+    }, false);
   }
 
   // react effect
@@ -170,9 +179,9 @@ function App() {
             component="p">
             Free shuttle service available to you as a Devcon Ticket holder! Enjoy the event.
           </Typography>
-          <div className="tokenSelectorContainerElement" style={{position: 'fixed', right: 0, bottom: 0}}></div>
         </div>
       }
+      <div className="tokenSelectorContainerElement" style={{position: 'fixed', right: 0, bottom: 0}}></div>
     </div>
   );
 }
