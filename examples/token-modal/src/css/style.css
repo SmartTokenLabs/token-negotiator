@@ -115,7 +115,7 @@
   cursor: pointer;
 }
 .dvn-tk-outlt .modal .toggle input.mobileToggle {
-  /* opacity: 0; */
+  opacity: 0;
   position: absolute;
 }
 .dvn-tk-outlt .modal .toggle input.mobileToggle + label {
@@ -128,7 +128,7 @@
   transition: 0.2s ease;
   height: 19px;
   width: 50px;
-  border: 1px solid #e4e4e4;
+  border: 3px solid #e4e4e4;
   border-radius: 60px;
   background: #c6c5c5;
   cursor: pointer;
@@ -150,7 +150,7 @@
   display: block;
   box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.1), 0 4px 0px 0 hsla(0, 0%, 0%, 0.04), 0 4px 9px hsla(0, 0%, 0%, 0.13), 0 3px 3px hsla(0, 0%, 0%, 0.05);
   transition: 0.25s cubic-bezier(0.54, 1.6, 0.5, 1);
-  background: whitesmoke;
+  background: #037fed;
   height: 28px;
   width: 28px;
   top: -5px;
@@ -158,7 +158,7 @@
   border-radius: 60px;
 }
 .dvn-tk-outlt .modal .toggle input.mobileToggle:checked + label:before {
-  background: #2ecc71;
+  background: #88bff6;
   transition: width 0.2s cubic-bezier(0, 0, 0, 0.1);
 }
 .dvn-tk-outlt .modal .toggle input.mobileToggle:checked + label:after {
@@ -167,11 +167,8 @@
 
 .dvn-tk-outlt .modal .toggle input:focus + label
 {
-  border: 3px solid #005fcc;
+  border: 3px solid #005fcc !important;
 }
 
-.dvn-tk-outlt .modal .toggle input + label
-{
-  border: 3px solid #fff;
-}
+
 

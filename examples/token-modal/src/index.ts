@@ -6,42 +6,18 @@ import { tokenBuilder } from "./tokenBuilder";
 // @ts-ignore
 import { Negotiator } from './token-negotiator-local';
 
-// This script acts like a controller / manager. Creating an instance of:
-// clientStateService - which handles the state of the data which is exposed to the client
-// eventService - which handles event listeners and communication between the token outlet and client
-
-// TODO: this url must be compared inside the token Negotiator
-// when matched the tokens will be provided to this component.
-// when the tokens are activated, they will be dispatched to the 
-// client website.
-const locationUrl = document.location.href;
-
-// const mockTokens = [
-//   { ticketClass: 'a', ticketId: 'b', devconId: 'c' },
-//   { ticketClass: 'd', ticketId: 'e', devconId: 'f' },
-//   { ticketClass: 'g', ticketId: 'h', devconId: 'i' },
-//   { ticketClass: 'i', ticketId: 'j', devconId: 'k' },
-//   { ticketClass: 'l', ticketId: 'm', devconId: 'n' },
-// ];
-
 // Service to handle the state of the selected tokens
 const _clientStateService = new clientStateService();
 // Client components (token button)
 const _clientComponents = new clientComponents();
 // Modal components for this part of the negotiator
-let _modalComponents; // = new tokenBuilder(mockTokens);
 
 // apply the tokenName to negotiate tokens from e.g. devcon-ticket.
 const tokenName = "devcon-ticket";
-
 // add filters when specific tokens are required
 const filter = {};
-
 // set required negotiator options
-const options = {
-  tokenSelectorContainer: ".tokenSelectorContainerElement"
-};
-
+const options = { tokenSelectorContainer: ".tokenSelectorContainerElement" };
 // create new instance of the Negotiator with params
 const negotiator = new Negotiator(filter, tokenName, options);
 
@@ -84,6 +60,22 @@ function eventManager(data:any) {
   }
 }
 
+// this function is designed to gather the latest state from the UI
+// of activated tokens, then present them to the event manager
+// which will dispatch the tokens back to the client.
+window['tokenSelection'] = (event:any) => {
+  var output:any = [];
+  document.querySelectorAll('.token .mobileToggle').forEach((token:any) => {
+    if(token.checked === true) {
+      output.push({
+        token: token.dataset.token
+      });
+    }
+  });
+  _clientStateService.selectedTokens = output;
+  eventManager({ evt: 'setSelectedTokens' });
+}
+
 const toggleTokenButtonHandler = () => {
   const element = document.querySelector(".dvn-tk-outlt .modal");
   element.classList.toggle("open");
@@ -95,16 +87,3 @@ const toggleTokenButtonHandler = () => {
     return 'close';
   }
 }
-
-
-
-// NOTES:
-
-/*
-
-Token Negotiator (modules within NPM package - code splitting will remove unused code per use case): 
-
-{ negotiator } - negotiate(), tokenEventListener(), toggleModalEventDispatcher()
-{ modal }  - getTokenInstances(), toggleToken(), toggleModalListener(), tokenEventDispatcher()
-
-*/

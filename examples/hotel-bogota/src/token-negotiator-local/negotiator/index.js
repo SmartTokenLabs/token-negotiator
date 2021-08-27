@@ -77,24 +77,26 @@ export class Negotiator {
       window.parent.postMessage({ iframeCommand: "iframeReady", iframeData: '' }, referrer.origin);
     }
 
-    // embed Iframe
-    setTimeout(() => {
-      if(document.querySelector('.tokenSelectorContainerElement')) {
-        // todo name the modal after the token outlet name.
-        const iframe = `<iframe class="${tokenName}Modal" style="border:0; resize: none; overflow: auto;" height="335px" width="376px" src="${this.tokenOrigin}" allowtransparency="true" title="outlet" frameborder="0" style="border:0" allowfullscreen frameborder="no" scrolling="no"></iframe>`;
-        // embed iframe
-        document.querySelector('.tokenSelectorContainerElement').innerHTML = iframe;
-        // onload of iframe post message
-        document.querySelector(`.tokenSelectorContainerElement .${tokenName}Modal`).onload = function() { 
-          document.querySelector(`.tokenSelectorContainerElement .${tokenName}Modal`)
-          .contentWindow
-          .postMessage(
-            {
-              evt: "getTokenButtonHTML" 
-            }, '*');
-        };
-      }
-    }, 0);
+    // embed Iframe if root window
+    if(window.top == window.self){
+      setTimeout(() => {
+        if(document.querySelector('.tokenSelectorContainerElement')) {
+          // todo name the modal after the token outlet name.
+          const iframe = `<iframe class="${tokenName}Modal" style="border:0; resize: none; overflow: auto;" height="335px" width="376px" src="${this.tokenOrigin}" allowtransparency="true" title="outlet" frameborder="0" style="border:0" allowfullscreen frameborder="no" scrolling="no"></iframe>`;
+          // embed iframe
+          document.querySelector('.tokenSelectorContainerElement').innerHTML = iframe;
+          // onload of iframe post message
+          document.querySelector(`.tokenSelectorContainerElement .${tokenName}Modal`).onload = function() { 
+            document.querySelector(`.tokenSelectorContainerElement .${tokenName}Modal`)
+            .contentWindow
+            .postMessage(
+              {
+                evt: "getTokenButtonHTML" 
+              }, '*');
+          };
+        }
+      }, 0);
+    }
     
     // Handle Incoming Event Requests From Parent Window.
     window.addEventListener('message', (event) => {

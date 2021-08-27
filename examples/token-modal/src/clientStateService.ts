@@ -13,7 +13,7 @@ class ClientTokenService {
       }
     }
   }
-    
+      
   get selectedTokens() {
     return this.state.data.selectedTokens
   }
