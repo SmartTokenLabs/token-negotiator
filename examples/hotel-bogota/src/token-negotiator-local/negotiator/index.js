@@ -105,28 +105,31 @@ export class Negotiator {
     }, false);
   }
 
-  // Handle Event Business Logic
+  // Handle Event Business Logic Client
   eventController(data) {
-    switch(data.evt) {
-      case 'setTokenButtonHTML':
-          if(!document.getElementById("tokenButtonContainer")) {
-            const newDiv = document.createElement("div");
-            newDiv.setAttribute('id', 'tokenButtonContainer')
-            newDiv.style.display = 'flex';
-            newDiv.style.justifyContent= 'flex-end';
-            newDiv.innerHTML = data.button;
-            document.getElementsByClassName("tokenSelectorContainerElement")[0].style.margin = '10px';
-            document.getElementsByClassName("tokenSelectorContainerElement")[0].append(newDiv);
-          }
-        break;
-      case 'setSelectedTokens':
-        // defines the tokens that are available to the website
-        window.top.postMessage({ evt: 'setSelectedTokens', selectedTokens: originData.selectedTokens }, "*");
-        break;
-      case 'setToggleModalHandler':
-        // defines the tokens that are available to the website
-        // toggleTokenButtonHandler();
-        break;
+    if(window.top == window.self){
+      switch(data.evt) {
+        case 'setTokenButtonHTML':
+            if(!document.getElementById("tokenButtonContainer")) {
+              const newDiv = document.createElement("div");
+              newDiv.setAttribute('id', 'tokenButtonContainer')
+              newDiv.style.display = 'flex';
+              newDiv.style.justifyContent= 'flex-end';
+              newDiv.innerHTML = data.button;
+              document.getElementsByClassName("tokenSelectorContainerElement")[0].style.margin = '10px';
+              document.getElementsByClassName("tokenSelectorContainerElement")[0].append(newDiv);
+            }
+          break;
+        case 'setSelectedTokens':
+          console.log(data);
+          // defines the tokens that are available to the website
+          // window.top.postMessage({ evt: 'setSelectedTokens', selectedTokens: originData.selectedTokens }, "*");
+          break;
+        case 'setToggleModalHandler':
+          // defines the tokens that are available to the website
+          // toggleTokenButtonHandler();
+          break;
+      }
     }
   }
 
@@ -146,8 +149,9 @@ export class Negotiator {
     }
   }
 
+  // TODO is this client or modal code
   // manages when token button is pressed
-  tokenButtonHandler() {
+  modalClickHandler() {
     // hide show iframe for modal
     this.animateModal();
     // dispatch event to hide/show modal within iframe

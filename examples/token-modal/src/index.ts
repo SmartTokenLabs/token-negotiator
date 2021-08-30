@@ -41,7 +41,7 @@ window.addEventListener('message', function(event) {
   eventManager(event.data);
 },false);
 
-// Handle Event Business Logic
+// Handle Event Business Logic Modal Event trigger to Top.
 function eventManager(data:any) {
   switch(data.evt) {
     case 'getTokenButtonHTML':
@@ -52,9 +52,7 @@ function eventManager(data:any) {
       window.top.postMessage({ evt: 'setSelectedTokens', selectedTokens: _clientStateService.selectedTokens }, "*");
       break;
     case 'setToggleModalHandler':
-      // defines the tokens that are available to the website
-      const toggleModalState = toggleTokenButtonHandler();
-      // TODO: review if this is needed.
+      const toggleModalState = modalClickHandler();
       window.top.postMessage({ evt: 'setToggleModal', state: toggleModalState }, "*");
       break;
   }
@@ -67,16 +65,15 @@ window['tokenSelection'] = (event:any) => {
   var output:any = [];
   document.querySelectorAll('.token .mobileToggle').forEach((token:any) => {
     if(token.checked === true) {
-      output.push({
-        token: token.dataset.token
-      });
+      output.push(JSON.parse(token.dataset.token));
     }
   });
   _clientStateService.selectedTokens = output;
   eventManager({ evt: 'setSelectedTokens' });
 }
 
-const toggleTokenButtonHandler = () => {
+// toggle open and close the Modal
+const modalClickHandler = () => {
   const element = document.querySelector(".dvn-tk-outlt .modal");
   element.classList.toggle("open");
   if(element.classList.contains("open")) {

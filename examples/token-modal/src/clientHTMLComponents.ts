@@ -9,7 +9,7 @@ class ClientComponents {
     this.components = {
       button: `
         <button
-          onclick="negotiator.tokenButtonHandler()"
+          onclick="negotiator.modalClickHandler()"
           style="height:80px; width:80px; border: 0; background-image: url('${document.location.href}/img/button.svg'); box-shadow: 0 2px 5px 0 #676767; border-radius: 64px; cursor: pointer; z-index: 999; position: relative;">
         </button>
       `,
