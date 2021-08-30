@@ -150,35 +150,4 @@
 // }
 
 
-// {/* <Header />
-//       <BookingDate />
-//       <div className="roomCardsContainer">
-//         {roomTypesData.map((room, index) => {
-//           return <RoomCard
-//             key={index}
-//             room={room}
-//             applyDiscount={applyDiscount}
-//             discount={discount}
-//             tokens={tokens}
-//             book={book}
-//           />
-//         })}
-//       </div>
-//       {
-//         freeShuttle &&
-//         <div>
-//           <EthereumLogo />
-//           <Typography
-//             style={{ padding: '20px' }}
-//             className="applyDiscountCopyContainer"
-//             gutterBottom
-//             variant="body2"
-//             component="p">
-//             Free shuttle service available to you as a Devcon Ticket holder! Enjoy the event.
-//           </Typography>
-//         </div>
-//       }
-//       <div className="tokenSelectorContainerElement" style={{position: 'fixed', right: 0, bottom: 0}}></div>
-//     </div> */}
-
 // export default App;

@@ -21,8 +21,13 @@ const useStyles = makeStyles({
   },
 });
 
-export default function RoomCard({ room, applyDiscount, discount, tokens, book }) {
+export default function RoomCard({ room, book }) {
   const classes = useStyles();
+  
+  // applyDiscount
+  // discount
+  // discountPrice
+
   const { type, price, image, frequency } = room;
   return (
     <Card className="roomCard">
@@ -32,33 +37,57 @@ export default function RoomCard({ room, applyDiscount, discount, tokens, book }
           image={image}
           title="token"
         />
-        <CardContent>
-          <Typography
-            style={{ fontSize: '21px' }}
-            gutterBottom
-            variant="h5"
-            component="h2"
-          >
-            {type}
-          </Typography>
-          <Typography
-            variant="body2"
-            color="textSecondary"
-            component="p"
-          >
-            COP {price} / {frequency}
-          </Typography>
-        </CardContent>
+        { !room.applyDiscount &&
+          <CardContent>
+              <Typography
+                style={{ fontSize: '21px' }}
+                gutterBottom
+                variant="h5"
+                component="h2"
+              >
+                {type}
+              </Typography>
+              <Typography
+                variant="body2"
+                color="textSecondary"
+                component="p"
+              >
+                COP {price} / {frequency}
+              </Typography>
+          </CardContent>
+        }
+        { room.applyDiscount &&
+          <CardContent>
+              <Typography
+                style={{ fontSize: '21px' }}
+                gutterBottom
+                variant="h5"
+                component="h2"
+              >
+                {type}
+              </Typography>
+              <div style={{display: 'flex'}}>
+                <Typography
+                  style={{ color: '#d3182e', textDecoration: 'line-through', marginRight: '4px'}}
+                  variant="body2"
+                  color="textSecondary"
+                  component="p"
+                >
+                  COP {room.price} / {frequency} 
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="textSecondary"
+                  component="p"
+                >
+                  COP {room.discountPrice} / {frequency}
+                </Typography>
+              </div>
+          </CardContent>
+        }
       </div>
       <CardActions>
-        <BookingModal
-          book={book}
-          image={image}
-          applyDiscount={applyDiscount}
-          tokens={tokens}
-          roomType={type}
-          discount={discount}
-          price={price} />
+        <BookingModal book={book} room={room} />
       </CardActions>
     </Card>
   );

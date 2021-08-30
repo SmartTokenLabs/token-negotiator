@@ -6,8 +6,10 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import CardContent from '@material-ui/core/CardContent';
 import { createTheme } from '@material-ui/core/styles';
 import { ThemeProvider } from '@material-ui/styles';
+import Typography from '@material-ui/core/Typography';
 import './BookingModal.css';
 
 const theme = createTheme({
@@ -25,7 +27,9 @@ const theme = createTheme({
 // BOOKING MODAL COMPONENT
 // Booking form
 
-export default function BookingModal({ image, roomType, applyDiscount, discount, price, tokens, book }) {
+export default function BookingModal({ room, book }) {
+
+  const { type, price, image, frequency } = room;
 
   // Modal State (open boolean)
   const [open, setOpen] = React.useState(false);
@@ -53,7 +57,7 @@ export default function BookingModal({ image, roomType, applyDiscount, discount,
   // handle form submission.
   const handleSubmit = evt => {
     evt.preventDefault();
-    book({ formInput, roomType });
+    book({ formInput, type });
   };
 
   // Open Modal
@@ -66,14 +70,6 @@ export default function BookingModal({ image, roomType, applyDiscount, discount,
     setOpen(false);
   };
   
-  // apply discount
-  const discountPerc = discount.value ? discount.value : 0;
-  const discountOfferValue = (discountPerc / 100) * price;
-  const viewPrice = price - discountOfferValue;
-
-  // example of application of tickets that can be used to apply a discount
-  const discountTicketClasses = ["0"];
-
   return (
     <ThemeProvider theme={theme}>
       <Button color="primary" className="bookButton" onClick={handleClickOpen} variant="contained">
@@ -94,14 +90,40 @@ export default function BookingModal({ image, roomType, applyDiscount, discount,
             className="title"
             disableTypography={true}
           >
-            {roomType} 
+            {type}
           </DialogTitle>
-          <DialogTitle
-            className="subTitle"
-            disableTypography={true}
-          >
-            {viewPrice} COP per night. { discount.value ? `(${discount.value}% discount)` : ""}
-        </DialogTitle>
+          { !room.applyDiscount &&
+          <CardContent>
+            <Typography
+              variant="body2"
+              color="textSecondary"
+              component="p"
+            >
+              COP {price} / {frequency}
+            </Typography>
+          </CardContent>
+        }
+        { room.applyDiscount &&
+          <CardContent>
+              <div style={{display: 'flex'}}>
+                <Typography
+                  style={{ color: '#d3182e', textDecoration: 'line-through', marginRight: '4px'}}
+                  variant="body2"
+                  color="textSecondary"
+                  component="p"
+                >
+                  COP {room.price} / {frequency} 
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="textSecondary"
+                  component="p"
+                >
+                  COP {room.discountPrice} / {frequency}
+                </Typography>
+              </div>
+          </CardContent>
+        }
           <DialogContent>
             <form onSubmit={handleSubmit}>
               <TextField
