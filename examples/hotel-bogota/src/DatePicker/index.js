@@ -12,7 +12,7 @@ import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/picker
 export default function DatePicker({ label, handleInput, date }) {
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
-      <Grid container justify="space-around">
+      <Grid container justifyContent="space-around">
         <KeyboardDatePicker
           disableToolbar
           variant="inline"
