@@ -17,9 +17,9 @@
   position: relative;
 }
 
-.dvn-tk-outlt .modal.open {
-  opacity: 1;
-}
+/* animation fix: https://stackoverflow.com/questions/3331353/transitions-on-the-css-display-property */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.dvn-tk-outlt .modal.open { animation: fadeIn 0.5s; opacity: 1; }
 
 .dvn-tk-outlt .modal {
   opacity: 0;

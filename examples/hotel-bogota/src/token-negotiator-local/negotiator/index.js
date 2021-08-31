@@ -6,7 +6,11 @@ export class Negotiator {
   constructor(filter = {}, tokenName, options = {}) {
 
     if (!tokenName) console.log("Negotiator: tokenName is a required parameter");
+    if (!options.tokenSelectorContainer) console.log("Negotiator: options.tokenSelectorContainer is a required parameter");
 
+    this.tokenSelectorContainer = options.tokenSelectorContainer;
+    this.tokenName = tokenName;
+    
     // The XML config is used to define the token configuration.
     // This includes how the ticket will confirm its vailidity and the origin
     // of where the ticket was issued from.
@@ -23,7 +27,7 @@ export class Negotiator {
     this.tokenSecretName = XMLconfig.tokenSecretName;
     this.tokenIdName = XMLconfig.tokenIdName;
     this.unsignedTokenDataName = XMLconfig.unsignedTokenDataName;
-    
+
     // this customer friendly lib should not need to contain such data
     this.tokenParser = XMLconfig.tokenParser;
 
@@ -80,14 +84,17 @@ export class Negotiator {
     // embed Iframe if root window
     if(window.top == window.self){
       setTimeout(() => {
-        if(document.querySelector('.tokenSelectorContainerElement')) {
-          // todo name the modal after the token outlet name.
-          const iframe = `<iframe class="${tokenName}Modal" style="border:0; resize: none; overflow: auto;" height="335px" width="376px" src="${this.tokenOrigin}" allowtransparency="true" title="outlet" frameborder="0" style="border:0" allowfullscreen frameborder="no" scrolling="no"></iframe>`;
-          // embed iframe
-          document.querySelector('.tokenSelectorContainerElement').innerHTML = iframe;
-          // onload of iframe post message
-          document.querySelector(`.tokenSelectorContainerElement .${tokenName}Modal`).onload = function() { 
-            document.querySelector(`.tokenSelectorContainerElement .${tokenName}Modal`)
+        
+        let refTokenSelector = document.querySelector(this.tokenSelectorContainer);
+        
+        if(refTokenSelector) {
+         
+          const iframe = `<div class="${tokenName}ModalWrapper"><iframe class="${tokenName}Modal" style="border:0; resize: none; overflow: auto;" height="335px" width="376px" src="${this.tokenOrigin}" allowtransparency="true" title="outlet" frameborder="0" style="border:0" allowfullscreen frameborder="no" scrolling="no"></iframe></div>`;
+          refTokenSelector.innerHTML = iframe;
+
+          let refModalSelector = document.querySelector(`${this.tokenSelectorContainer} .${tokenName}Modal`);
+          refModalSelector.onload = function() { 
+            refModalSelector
             .contentWindow
             .postMessage(
               {
@@ -120,44 +127,53 @@ export class Negotiator {
               document.getElementsByClassName("tokenSelectorContainerElement")[0].append(newDiv);
             }
           break;
+        case 'hideModal':
+          document.querySelector(`${this.tokenSelectorContainer} .${this.tokenName}ModalWrapper`).style.display = 'none';
+          break;
+        case 'showModal':
+          document.querySelector(`${this.tokenSelectorContainer} .${this.tokenName}ModalWrapper`).style.display = 'block';
+          break;
         case 'setSelectedTokens':
           console.log(data);
           // defines the tokens that are available to the website
           // window.top.postMessage({ evt: 'setSelectedTokens', selectedTokens: originData.selectedTokens }, "*");
           break;
-        case 'setToggleModalHandler':
-          // defines the tokens that are available to the website
-          // toggleTokenButtonHandler();
-          break;
       }
     }
   }
 
-  animateModal() {
-    // If the timer exists and this function triggers the timeout wasn't complete
-    // so we hide the modal
-    if(this.modalTimer) document.getElementsByClassName('devcon-ticketModal')[0].style.display = 'none';
-    // clear timer each event
-    clearTimeout(this.modalTimer);
-    // allow for up to 1 second of css animation to close the modal
-    if(document.getElementsByClassName('devcon-ticketModal')[0].style.display === 'block'){
-      this.modalTimer = setTimeout(() => {
-        document.getElementsByClassName('devcon-ticketModal')[0].style.display = 'none';
-      }, 1000);
-    } else {
-      document.getElementsByClassName('devcon-ticketModal')[0].style.display = 'block';
-    }
-  }
-
-  // TODO is this client or modal code
-  // manages when token button is pressed
+  // CLIENT
+  modalTimer = null;
   modalClickHandler() {
-    // hide show iframe for modal
-    this.animateModal();
-    // dispatch event to hide/show modal within iframe
-    document.querySelector(`.tokenSelectorContainerElement .devcon-ticketModal`)
+
+    // const timerDuration = 1000;
+
+    // debugger;
+
+    // const modalShouldNotBePresent = (this.modalTimer); 
+    // if(modalShouldNotBePresent) document.getElementsByClassName('devcon-ticketModal')[0].style.display = 'none';
+
+    // clearTimeout(this.modalTimer);
+
+    // const modalIsShowing = (document.getElementsByClassName('devcon-ticketModal')[0].style.display === 'block');
+
+    // if(modalIsShowing){
+     
+    //   this.modalTimer = setTimeout(() => {
+    //    document.getElementsByClassName('devcon-ticketModal')[0].style.display = 'none';
+    //    // Remove Modal
+    //  }, timerDuration);
+
+    // } else {
+    //  document.getElementsByClassName('devcon-ticketModal')[0].style.display = 'block';
+    //  // Add Modal
+    // }
+ 
+    // Event to Modal - to show content
+    document.querySelector(`${this.tokenSelectorContainer} .${this.tokenName}Modal`)
     .contentWindow
     .postMessage({ evt: "setToggleModalHandler" }, '*');
+
   }
 
   async connectMetamaskAndGetAddress() {

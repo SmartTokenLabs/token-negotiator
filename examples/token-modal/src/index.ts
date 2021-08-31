@@ -41,7 +41,24 @@ window.addEventListener('message', function(event) {
   eventManager(event.data);
 },false);
 
+// toggle open and close the Modal
+const modalClickHandler = () => {
+  const element = document.querySelector(".dvn-tk-outlt .modal");
+  const isOpen = element.classList.contains("open");
+  element.classList.toggle("open");
+  if(!isOpen) {
+    window.top.postMessage({ evt: 'hideModal', state: 'open' }, "*");
+    element.classList.add("open");
+    return 'open';
+  } else {
+    window.top.postMessage({ evt: 'hideModal', state: 'close' }, "*");
+    element.classList.remove("open");
+    return 'close';
+  }
+}
+
 // Handle Event Business Logic Modal Event trigger to Top.
+let fadeoutTimer:any = null;
 function eventManager(data:any) {
   switch(data.evt) {
     case 'getTokenButtonHTML':
@@ -53,7 +70,14 @@ function eventManager(data:any) {
       break;
     case 'setToggleModalHandler':
       const toggleModalState = modalClickHandler();
-      window.top.postMessage({ evt: 'setToggleModal', state: toggleModalState }, "*");
+      clearTimeout(fadeoutTimer);
+      if(toggleModalState === 'close') {
+        fadeoutTimer = setTimeout(() => {
+          window.top.postMessage({ evt: 'hideModal', state: toggleModalState }, "*");
+        }, 1000);
+      } else {
+        window.top.postMessage({ evt: 'showModal', state: toggleModalState }, "*");
+      }
       break;
   }
 }
@@ -70,17 +94,4 @@ window['tokenSelection'] = (event:any) => {
   });
   _clientStateService.selectedTokens = output;
   eventManager({ evt: 'setSelectedTokens' });
-}
-
-// toggle open and close the Modal
-const modalClickHandler = () => {
-  const element = document.querySelector(".dvn-tk-outlt .modal");
-  element.classList.toggle("open");
-  if(element.classList.contains("open")) {
-    element.classList.add("open");
-    return 'open';
-  } else {
-    element.classList.remove("open");
-    return 'close';
-  }
 }

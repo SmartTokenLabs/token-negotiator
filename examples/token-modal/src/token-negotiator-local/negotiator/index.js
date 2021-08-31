@@ -129,32 +129,6 @@ export class Negotiator {
     }
   }
 
-  animateModal() {
-    // If the timer exists and this function triggers the timeout wasn't complete
-    // so we hide the modal
-    if(this.modalTimer) document.getElementsByClassName('devcon-ticketModal')[0].style.display = 'none';
-    // clear timer each event
-    clearTimeout(this.modalTimer);
-    // allow for up to 1 second of css animation to close the modal
-    if(document.getElementsByClassName('devcon-ticketModal')[0].style.display === 'block'){
-      this.modalTimer = setTimeout(() => {
-        document.getElementsByClassName('devcon-ticketModal')[0].style.display = 'none';
-      }, 1000);
-    } else {
-      document.getElementsByClassName('devcon-ticketModal')[0].style.display = 'block';
-    }
-  }
-
-  // manages when token button is pressed
-  tokenButtonHandler() {
-    // hide show iframe for modal
-    this.animateModal();
-    // dispatch event to hide/show modal within iframe
-    document.querySelector(`.tokenSelectorContainerElement .devcon-ticketModal`)
-    .contentWindow
-    .postMessage({ evt: "setToggleModalHandler" }, '*');
-  }
-
   async connectMetamaskAndGetAddress() {
 
     if (!window.ethereum) {
