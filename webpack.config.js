@@ -1,6 +1,7 @@
 const path = require('path');
 
 module.exports = {
+    mode: 'production',
     target: 'node',
     entry: './src/index.ts',
     module: {
@@ -25,7 +26,7 @@ module.exports = {
     },
     output: {
         filename: 'negotiator.js',
-        path: path.resolve(__dirname, 'dist'),
+        path: path.resolve(__dirname, 'dist')
     },
     // watch: true,
     watch: false,
