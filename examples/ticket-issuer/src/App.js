@@ -80,22 +80,26 @@ function App() {
           {
             !tokens.length && <div>
               <b>- no ticket found -</b>
-              <p>Generate ticket:</p>
-              <div className="ticketWrapper">
-                {
-                  mockTicketData.map((mockTicket, index) => {
-                    return (
-                      <button key={index} className="makeTicket" onClick={event => openTicketInIframe({ 
-                        event,
-                        ticket: mockTicket.ticket,
-                        secret: mockTicket.secret,
-                        id: mockTicket.id
-                      })}>Create Ticket</button> 
-                    )
-                  })
-                }
-              </div>
             </div>
+          }
+        </div>
+      </div>
+      <div className="flexCenter">
+        <p>Generate ticket:</p>
+      </div>
+      <div className="flexCenter">
+        <div className="ticketWrapper">
+          {
+            mockTicketData.map((mockTicket, index) => {
+              return (
+                <button key={index} className="makeTicket" onClick={event => openTicketInIframe({ 
+                  event,
+                  ticket: mockTicket.ticket,
+                  secret: mockTicket.secret,
+                  id: mockTicket.id
+                })}>Create Ticket</button> 
+              )
+            })
           }
         </div>
       </div>
