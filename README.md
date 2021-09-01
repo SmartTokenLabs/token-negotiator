@@ -21,7 +21,7 @@ npm i @alphawallet/token-negotiator
 ```
 
 ```javascript
-import { Negotiator } from 'token-negotiator';
+import { Negotiator } from '@alphawallet/token-negotiator';
 ```
 
 ### Negotiator
