@@ -8,11 +8,12 @@ For more information please visit: [https://tokenscript.org/](tokenscript.org).
 
 ## Examples
 
-https://tokenscript.github.io/token-negotiator/examples/
+https://tokenscript.github.io/token-negotiator-examples/
 
 ## Documentation
 
 [guides and deployment](https://tokenscript.org/guides/Intro.html)
+[NPM](https://www.npmjs.com/package/@alphawallet/token-negotiator)
 
 ## Usage
 
@@ -35,7 +36,7 @@ Creates a new instance of the Negotiator module.
   * @param {Object} options api options (required options shown below)
   * @param {String} tokenName name (required)
   */
-  const negotiator = new Negotiator({
+  const negotiator = new window.Negotiator({
     filter: { 'devconId': 6 },
     tokenName: "devcon-ticket",
     options: { userPermissionRequired: true }
@@ -72,7 +73,7 @@ When loading a page you may wish to only show a select set of tokens.
 For example: with the following key/values `devconId, ticketId, ticketClass` you may wish to only show `devconId` when the value is `6` and of `ticketClasses` of `A`. Below is an example of how this can be applied.
 
 ```javascript
-  const negotiator = new Negotiator({
+  const negotiator = new window.Negotiator({
     filter: { devconId: 6, ticketClass: "A" },
     tokenName: "devcon-ticket",
     options: {}
@@ -89,7 +90,7 @@ Example Use below:
   // token list
   let tokens = [];
   // initial config object
-  const negotiator = new Negotiator({
+  const negotiator = new window.Negotiator({
     filter: { 'devconId': 6 },
     tokenName: "devcon-ticket",
     options: { userPermissionRequired: true }

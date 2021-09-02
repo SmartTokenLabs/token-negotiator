@@ -1,8 +1,8 @@
 const path = require('path');
 
 module.exports = {
-    mode: 'production',
-    target: 'node',
+    mode: 'development',
+    target: 'web',
     entry: './src/index.ts',
     module: {
         rules: [
@@ -25,8 +25,12 @@ module.exports = {
         mainFields: ['loader', 'main']
     },
     output: {
-        filename: 'negotiator.js',
-        path: path.resolve(__dirname, 'dist')
+        filename: 'index.js',
+        path: path.resolve(__dirname, './dist'),
+        library: "@alphawallet/token-negotiator",
+        libraryTarget: 'commonjs2',
+        globalObject: 'this',
+        umdNamedDefine: true
     },
     // watch: true,
     watch: false,
