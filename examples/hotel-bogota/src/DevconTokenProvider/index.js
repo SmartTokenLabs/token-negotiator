@@ -30,14 +30,16 @@ class DevconTokenProvider  extends React.Component {
 
     // negotiator event handler
     window.addEventListener('message', (event) => {
-      if(event.data && event.data.evt === 'setSelectedTokens') {
-        this.setState({
-          negotiator: window.negotiator,
-          tokens: event.data.selectedTokens 
-        }, () => {
-          console.log('token event: ', this.state);
-        });
-      }
+      switch(event.data.evt) {
+        case 'setSelectedTokens':
+          this.setState({
+            negotiator: window.negotiator,
+            tokens: event.data.selectedTokens 
+          }, () => {
+            console.log('token event: ', this.state, event);
+          });
+          break;
+        }
     }, false);
 
   }

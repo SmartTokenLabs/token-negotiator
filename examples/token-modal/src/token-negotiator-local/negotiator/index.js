@@ -41,31 +41,33 @@ export class Negotiator {
 
     this.isTokenOriginWebsite = false;
 
-    if (this.attestationOrigin) {
-      // if attestationOrigin filled then token need attestaion
-      let currentURL = new URL(window.location.href);
-      let tokensOriginURL = new URL(this.tokensOrigin);
+    this.tokenOriginReadMagicURL(this.attestationOrigin, this.tokenOrigin);     // MOVE this to origin module
+    
+    // if (this.attestationOrigin) {
+    //   // if attestationOrigin filled then token need attestaion
+    //   let currentURL = new URL(window.location.href);
+    //   let tokensOriginURL = new URL(this.tokensOrigin);
 
-      if (currentURL.origin === tokensOriginURL) {
-        // its tokens website, where tokens saved in localStorage
-        // lets chech url params and save token data to the local storage
-        this.isTokenOriginWebsite = true;
-        this.readMagicUrl();
-      }
+    //   if (currentURL.origin === tokensOriginURL) {
+    //     // its tokens website, where tokens saved in localStorage
+    //     // lets chech url params and save token data to the local storage
+    //     this.isTokenOriginWebsite = true;
+    //     this.readMagicUrl();
+    //   }
 
-      this.attachPostMessageListener(event => {
-        if (event.origin !== tokensOriginURL.origin) {
-          return;
-        }
-        if (event.data.iframeCommand && event.data.iframeCommand == "closeMe" && this.addTokenIframe) {
-          this.addTokenIframe.remove();
-          const tokenEvent = new Event('newTokenAdded');
-          document.body.dispatchEvent(tokenEvent);
-        }
+    //   this.attachPostMessageListener(event => {
+    //     if (event.origin !== tokensOriginURL.origin) {
+    //       return;
+    //     }
+    //     if (event.data.iframeCommand && event.data.iframeCommand == "closeMe" && this.addTokenIframe) {
+    //       this.addTokenIframe.remove();
+    //       const tokenEvent = new Event('newTokenAdded');
+    //       document.body.dispatchEvent(tokenEvent);
+    //     }
 
-      })
+    //   })
 
-    }
+    // }
 
     // TOKEN OUTLET - Store, Decode and Dispatch Tokens
     if (document.location.href === XMLconfig.tokenOrigin) {
@@ -102,6 +104,18 @@ export class Negotiator {
       // if(event.origin !== '*') return; // review if we should whitelist access some events.
       this.eventController(event.data);
     }, false);
+
+  }
+
+  tokenOriginReadMagicURL(attestationOrigin, tokenOrigin) {
+    if (attestationOrigin) {
+      // if attestationOrigin filled then token need attestaion
+      let currentURL = new URL(window.location.href);
+      let tokensOriginURL = new URL(tokenOrigin);
+      if (currentURL.origin === tokensOriginURL) {
+        this.readMagicUrl();
+      }
+    }
   }
 
   // Handle Event Business Logic
