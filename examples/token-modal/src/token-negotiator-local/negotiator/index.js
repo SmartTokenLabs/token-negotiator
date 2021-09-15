@@ -26,7 +26,7 @@ export class Negotiator {
     this.tokenSecretName = XMLconfig.tokenSecretName;
     this.tokenIdName = XMLconfig.tokenIdName;
     this.unsignedTokenDataName = XMLconfig.unsignedTokenDataName;
-    
+
     // this customer friendly lib should not need to contain such data
     this.tokenParser = XMLconfig.tokenParser;
 

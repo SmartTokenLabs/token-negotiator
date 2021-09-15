@@ -34,7 +34,8 @@ const BookingPage = ({ tokens, negotiator }) => {
   // token proof
   let [useDiscountProof, setUseDiscountProof] = useState();
 
-  // when a ticket is active and user triggers booking event
+  // TODO FYANG: The UI should present a button to click to apply this discount.
+
   const applyDiscount = async () => {
     
     const unpredicatbleNumberEndPoint = 'https://crypto-verify.herokuapp.com/use-devcon-ticket';
@@ -64,6 +65,7 @@ const BookingPage = ({ tokens, negotiator }) => {
   }
 
 
+  // TODO FYANG: The book function only needs to do the else statement. We can remove the shoudApplyTokenDiscountProof.
   // this is the example point at which the hotel would send payment with booking & discount details
   const book = async (formData) => {
 

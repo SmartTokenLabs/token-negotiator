@@ -11,7 +11,12 @@ export class Negotiator {
     this.options = options;
     this.filter = filter;
     this.assignClientListener();
-    this.embedClientModal(tokenName, this.config.tokenOrigin, options.tokenSelectorContainer, filter);
+    this.embedClientModal(
+      tokenName, 
+      this.config.tokenOrigin, 
+      options.tokenSelectorContainer, 
+      filter
+    );
   }
 
   assignClientListener() {
@@ -22,52 +27,48 @@ export class Negotiator {
   }
 
   embedClientModal(tokenName, tokenOrigin, tokenSelectorContainer, filter) {
-    if(window.top == window.self){
-      setTimeout(() => {
-        let refTokenSelector = document.querySelector(tokenSelectorContainer);
-        if(refTokenSelector) {
-          const iframe = `<div class="${tokenName}ModalWrapper"><iframe class="${tokenName}Modal" style="border:0; resize: none; overflow: auto;" height="335px" width="376px" src="${tokenOrigin}" allowtransparency="true" title="outlet" frameborder="0" style="border:0" allowfullscreen frameborder="no" scrolling="no"></iframe></div>`;
-          refTokenSelector.innerHTML = iframe;
-          let refModalSelector = document.querySelector(`${tokenSelectorContainer} .${tokenName}Modal`);
-          refModalSelector.onload = function() { 
-            refModalSelector
-            .contentWindow
-            .postMessage({ 
-              evt: "getTokenButtonHTML", 
-              data: { 
-                filter
-              } 
-            }, '*');
-          };
-        }
-      }, 0);
-    }
+    setTimeout(() => {
+      let refTokenSelector = document.querySelector(tokenSelectorContainer);
+      if(refTokenSelector) {
+        const iframe = `<div class="${tokenName}ModalWrapper"><iframe class="${tokenName}Modal" style="border:0; resize: none; overflow: auto;" height="335px" width="376px" src="${tokenOrigin}" allowtransparency="true" title="outlet" frameborder="0" style="border:0" allowfullscreen frameborder="no" scrolling="no"></iframe></div>`;
+        refTokenSelector.innerHTML = iframe;
+        let refModalSelector = document.querySelector(`${tokenSelectorContainer} .${tokenName}Modal`);
+        refModalSelector.onload = function() { 
+          refModalSelector
+          .contentWindow
+          .postMessage({ 
+            evt: "getTokenButtonHTML", 
+            data: { 
+              filter
+            } 
+          }, '*');
+        };
+      }
+    }, 0);
   }
 
   clientEventController(data) {
-    if(window.top == window.self){
-      switch(data.evt) {
-        case 'setTokenButtonHTML':
-            if(!document.getElementById("tokenButtonContainer")) {
-              let newDiv = document.createElement("div");
-              newDiv.setAttribute('id', 'tokenButtonContainer')
-              newDiv.style.cssText = `
-                display: flex; 
-                justify-content: flex-end;
-                margin: 10px;
-              `;
-              newDiv.innerHTML = data.button;
-              document.querySelector(`${this.options.tokenSelectorContainer}`).style.margin = '10px';
-              document.querySelector(`${this.options.tokenSelectorContainer}`).append(newDiv);
-            }
-          break;
-        case 'hideModal':
-          document.querySelector(`${this.options.tokenSelectorContainer} .${this.tokenName}ModalWrapper`).style.display = 'none';
-          break;
-        case 'showModal':
-          document.querySelector(`${this.options.tokenSelectorContainer} .${this.tokenName}ModalWrapper`).style.display = 'block';
-          break;
-      }
+    switch(data.evt) {
+      case 'setTokenButtonHTML':
+          if(!document.getElementById("tokenButtonContainer")) {
+            let newDiv = document.createElement("div");
+            newDiv.setAttribute('id', 'tokenButtonContainer')
+            newDiv.style.cssText = `
+              display: flex; 
+              justify-content: flex-end;
+              margin: 10px;
+            `;
+            newDiv.innerHTML = data.button;
+            document.querySelector(`${this.options.tokenSelectorContainer}`).style.margin = '10px';
+            document.querySelector(`${this.options.tokenSelectorContainer}`).append(newDiv);
+          }
+        break;
+      case 'hideModal':
+        document.querySelector(`${this.options.tokenSelectorContainer} .${this.tokenName}ModalWrapper`).style.display = 'none';
+        break;
+      case 'showModal':
+        document.querySelector(`${this.options.tokenSelectorContainer} .${this.tokenName}ModalWrapper`).style.display = 'block';
+        break;
     }
   }
 
@@ -92,7 +93,7 @@ export class Negotiator {
   }
 
 
-  // Point of discussion Nick, Oleg, Weiwu. 
+  // Point of discussion Nick, Oleg, Weiwu, Fyang. 
   // (Client, modal, communication)
 
   authenticate({unsignedToken, unEndPoint}) {
