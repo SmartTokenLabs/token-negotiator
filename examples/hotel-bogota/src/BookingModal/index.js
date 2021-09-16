@@ -74,7 +74,7 @@ export default function BookingModal({room}) {
   const book = async (formData) => {
     const checkoutEndPoint = "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/examples/hotel-bogota/mockbackend-responses/pay.json";
     const params = {
-      discount: tokenProof,
+      tokenProof: tokenProof,
       bookingData: {formData}
     }
     // TODO add design to this step
