@@ -8,8 +8,7 @@
 
 .title {
   font-size: 1.2rem;
-  margin-bottom: 0px;
-  padding-bottom: 0;
+  margin-bottom: 0;
   padding: 17px 24px 0px 24px !important
 }
 /* .subTitle {
@@ -61,6 +60,12 @@
 
 .MuiPaper-root {
   border-radius: 0 !important;
+}
+
+.MuiDialog-paper {
+  margin: 1px !important;
+  position: relative;
+  overflow-y: auto;
 }
 
 .center {

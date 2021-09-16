@@ -62,7 +62,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 360px;
+  max-width: 320px;
   height: 80px;
   border-top: solid 1px #e9e9e9;
 }
@@ -73,7 +73,7 @@
 }
 
 .dvn-tk-outlt .modal .token:last-child {
-  border-bottom: solid 1px #e9e9e9;  
+  border-bottom: solid 1px #e9e9e9;
 }
 
 .dvn-tk-outlt .modal .token .emblem {
