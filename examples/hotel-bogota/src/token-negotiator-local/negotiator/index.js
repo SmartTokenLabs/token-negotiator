@@ -12,9 +12,9 @@ export class Negotiator {
     this.filter = filter;
     this.assignClientListener();
     this.embedClientModal(
-      tokenName, 
-      this.config.tokenOrigin, 
-      options.tokenSelectorContainer, 
+      tokenName,
+      this.config.tokenOrigin,
+      options.tokenSelectorContainer,
       filter
     );
   }
@@ -33,14 +33,14 @@ export class Negotiator {
         const iframe = `<div class="${tokenName}ModalWrapper"><iframe class="${tokenName}Modal" style="border:0; resize: none; overflow: auto;" height="335px" width="376px" src="${tokenOrigin}" allowtransparency="true" title="outlet" frameborder="0" style="border:0" allowfullscreen frameborder="no" scrolling="no"></iframe></div>`;
         refTokenSelector.innerHTML = iframe;
         let refModalSelector = document.querySelector(`${tokenSelectorContainer} .${tokenName}Modal`);
-        refModalSelector.onload = function() { 
+        refModalSelector.onload = function() {
           refModalSelector
           .contentWindow
-          .postMessage({ 
-            evt: "getTokenButtonHTML", 
-            data: { 
+          .postMessage({
+            evt: "getTokenButtonHTML",
+            data: {
               filter
-            } 
+            }
           }, '*');
         };
       }
@@ -93,38 +93,23 @@ export class Negotiator {
   }
 
 
-  // Point of discussion Nick, Oleg, Weiwu, Fyang. 
+  // Point of discussion Nick, Oleg, Weiwu, Fyang.
   // (Client, modal, communication)
 
-  authenticate({unsignedToken, unEndPoint}) {
-    return new Promise(async (resolve, reject) => {
-      await this._authenticate(unsignedToken, unEndPoint, (proof, error) => {
-        if (!proof || !this.useEthKey) return reject(error);
-        resolve({ proof, useEthKey: this.useEthKey, status: true });
-      })
-    })
-  }
-
-  async _authenticate(unsignedToken, unEndPoint, signCallback) {
-    let useEthKey;
+  async authenticate({unsignedToken, unEndPoint}) {
     try {
-      useEthKey = await this.getChallengeSigned(unEndPoint);
+      let useEthKey = await this.getChallengeSigned(unEndPoint);
       const validateResult = await this.validateUseEthKey(unEndPoint, useEthKey);
       let walletAddress = await this.connectMetamaskAndGetAddress();
       if (walletAddress.toLowerCase() !== validateResult.toLowerCase()) {
         throw new Error('useEthKey validation failed.');
       }
+      this.useEthKey = useEthKey;
+      return {status: true, useEthKey, proof: 'proof'};
     } catch (e) {
-      signCallback(null, e);
-      return;
+      console.error(e);
+      return e;
     }
-    this.useEthKey = useEthKey;
-    this.signCallback = signCallback;
-
-    // TODO is this needed ?
-    // open iframe and request tokens
-    // this.queuedCommand = { parentCommand: 'signToken', parentData: unsignedToken };
-    // this.createIframe();
   }
 
   async validateUseEthKey(endPoint, data){
@@ -145,7 +130,7 @@ export class Negotiator {
       const json = await response.json();
       return json.address;
     } catch (e) {
-      console.log(e);
+      console.error(e);
       return '';
     }
   }
@@ -157,7 +142,7 @@ export class Negotiator {
       json.success = true;
       return json;
     } catch (e) {
-      console.log(e);
+      console.error(e);
       return {
         success: false,
         message: "UN request failed"
@@ -166,8 +151,7 @@ export class Negotiator {
   }
 
   ethKeyIsValid(ethKey) {
-    if (ethKey.expiry < Date.now()) return false;
-    return true;
+    return ethKey.expiry >= Date.now();
   }
 
   async getChallengeSigned(unEndPoint) {
@@ -183,7 +167,6 @@ export class Negotiator {
       address = address.toLowerCase();
       let useEthKey;
       if (ethKeys && ethKeys[address] && !this.ethKeyIsValid(ethKeys[address])) {
-        console.log('remove invalid useEthKey');
         delete ethKeys[address];
       }
       if (ethKeys && ethKeys[address]) {
@@ -197,6 +180,7 @@ export class Negotiator {
       }
       return useEthKey;
     } catch (e) {
+      console.error(e);
       throw new Error(e.message);
     }
   }

@@ -21,9 +21,9 @@ const useStyles = makeStyles({
   },
 });
 
-export default function RoomCard({ room, book }) {
+export default function RoomCard({ room }) {
   const classes = useStyles();
-  
+
   // applyDiscount
   // discount
   // discountPrice
@@ -73,7 +73,7 @@ export default function RoomCard({ room, book }) {
                   color="textSecondary"
                   component="p"
                 >
-                  COP {room.price} / {frequency} 
+                  COP {room.price} / {frequency}
                 </Typography>
                 <Typography
                   variant="body2"
@@ -87,7 +87,7 @@ export default function RoomCard({ room, book }) {
         }
       </div>
       <CardActions>
-        <BookingModal book={book} room={room} />
+        <BookingModal room={room} />
       </CardActions>
     </Card>
   );

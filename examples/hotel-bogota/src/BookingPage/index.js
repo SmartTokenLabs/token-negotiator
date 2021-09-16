@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useContext } from 'react';
 import Typography from '@material-ui/core/Typography';
+import { TokenContext} from "../token-negotiator-local";
 import Header from './../Header';
 import RoomCard from './../RoomCard';
 import BookingDate from './../BookingDate';
 import './../App.css';
 
-const BookingPage = ({ tokens, negotiator }) => {
- 
+const BookingPage = () => {
+
+  const { tokens } = useContext(TokenContext);
+
   // example of providing live benefits to customers based on rules of the number of tokens they hold
   const tokenHolderBenefits = {
     roomDiscount: (tokens.length > 0), // Single Or multi ticket holder
@@ -31,79 +34,13 @@ const BookingPage = ({ tokens, negotiator }) => {
     return room;
   });
 
-  // token proof
-  let [useDiscountProof, setUseDiscountProof] = useState();
-
-  // TODO FYANG: The UI should present a button to click to apply this discount.
-
-  const applyDiscount = async () => {
-    
-    const unpredicatbleNumberEndPoint = 'https://crypto-verify.herokuapp.com/use-devcon-ticket';
-    
-    // authenticate discount ticket is valid
-    const authenticationData = await negotiator.authenticate({
-      unEndPoint: unpredicatbleNumberEndPoint,
-      unsignedToken: tokens[0]
-    });
-
-    // when the ticket is valid and validation data is present
-    if(
-      authenticationData.status === true &&
-      authenticationData.useEthKey &&
-      authenticationData.proof
-    ) {
-
-      // store token proof details in react state for later.
-      // authenticationData: { status, useTicket, ethKey }
-      setUseDiscountProof(authenticationData);
-
-    } else {
-
-      // handle scenario when the authentication process for discount is not valid.
-
-    }
-  }
-
-
-  // TODO FYANG: The book function only needs to do the else statement. We can remove the shoudApplyTokenDiscountProof.
-  // this is the example point at which the hotel would send payment with booking & discount details
-  const book = async (formData) => {
-
-    // 
-    const shoudApplyTokenDiscountProof = tokens.length > 0 && !useDiscountProof;
-
-    if(shoudApplyTokenDiscountProof) {
-
-      applyDiscount();
-      
-    } else {
-
-      const checkoutEndPoint = "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/examples/hotel-bogota/mockbackend-responses/pay.json";
-
-      const params = {
-        discount: useDiscountProof,
-        bookingData: { formData }
-      }
-
-      // TODO add design to this step
-      fetch(checkoutEndPoint + new URLSearchParams(params)).then(data => {
-        alert('Transaction Complete, we look forward to your stay with us!');
-      });
-
-    }
-  }
-
   return (
     <div>
       <Header />
       <BookingDate />
       <div className="roomCardsContainer">
         {roomTypesData.length > 0 && roomTypesData.map((room, index) => {
-          return <RoomCard
-            key={index}
-            room={room}
-            book={book}
-          />
+          return <RoomCard key={index} room={room}/>
         })}
       </div>
       {
@@ -119,7 +56,6 @@ const BookingPage = ({ tokens, negotiator }) => {
           </Typography>
         </div>
       }
-      <div className="tokenSelectorContainerElement" style={{position: 'fixed', right: 0, bottom: 0}}></div>
     </div>
   )
 }
