@@ -66,7 +66,8 @@ var config = {
           }
         : null,
       { test: /\.html$/, loader: 'html-loader' },
-      { test: /\.css$/, loaders: ['style-loader', 'css-loader'] }
+      { test: /\.css$/i, use: ['style-loader', 'css-loader'] },
+      // { test: /\.(jpg|png|svg)$/, use: { loader: 'url-loader', }, },
     ].filter(Boolean)
   },
   resolve: {

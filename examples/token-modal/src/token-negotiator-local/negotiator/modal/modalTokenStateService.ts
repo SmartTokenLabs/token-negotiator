@@ -1,4 +1,4 @@
-class ClientTokenService {
+class ModalTokenStateService {
 
   state: { 
     data: {
@@ -24,4 +24,4 @@ class ClientTokenService {
 
 }
 
-export default ClientTokenService;
+export default ModalTokenStateService;

@@ -1,7 +1,5 @@
-import { Negotiator } from './negotiator';
-// import { NegotiatorModal } from './negotiatorModal';
+import { NegotiatorModal } from './negotiator/negotiatorModal';
 
 export {
-  Negotiator,
-  // NegotiatorModal
+  NegotiatorModal
 };
