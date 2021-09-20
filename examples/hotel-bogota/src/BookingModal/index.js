@@ -37,36 +37,36 @@ export default function BookingModal({room}) {
   const [open, setOpen] = useState(false);
 
   // token proof
-  const [discountProof, setDiscountProof] = useState();
+  const [tokenProof, setTokenProof] = useState();
 
   const [bookingDone, setBookingDone] = useState(false);
 
-  const applyDiscount = async () => {
-    console.log('applying discount...');
-    // authenticate discount ticket is valid
-    const authenticationData = await negotiator.authenticate({
-      unEndPoint: 'https://crypto-verify.herokuapp.com/use-devcon-ticket',
-      unsignedToken: tokens[0]
-    });
+  const useToken = async () => {
+    try {
+      // authenticate discount ticket is valid
+      const authenticationData = await negotiator.authenticate({
+        unEndPoint: 'https://crypto-verify.herokuapp.com/use-devcon-ticket',
+        unsignedToken: tokens[0]
+      });
 
-    console.log('authenticationData', authenticationData);
+      // when the ticket is valid and validation data is present
+      if (
+          authenticationData.status === true &&
+          authenticationData.useEthKey &&
+          authenticationData.proof
+      ) {
 
-    // when the ticket is valid and validation data is present
-    if (
-        authenticationData.status === true &&
-        authenticationData.useEthKey &&
-        authenticationData.proof
-    ) {
+        // store token proof details in react state for later.
+        // tokenProof: { status, useTicket, ethKey }
+        setTokenProof(authenticationData);
+      } else {
 
-      // store token proof details in react state for later.
-      // discountProof: { status, useTicket, ethKey }
-      setDiscountProof(authenticationData);
-      console.log('discountProof', discountProof);
+        // handle scenario when the authentication process for discount is not valid.
 
-    } else {
-
-      // handle scenario when the authentication process for discount is not valid.
-
+      }
+    } catch (e) {
+      console.error(e);
+      // authenticate failed and we do nothing for now
     }
   }
 
@@ -74,7 +74,7 @@ export default function BookingModal({room}) {
   const book = async (formData) => {
     const checkoutEndPoint = "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/examples/hotel-bogota/mockbackend-responses/pay.json";
     const params = {
-      discount: discountProof,
+      tokenProof: tokenProof,
       bookingData: {formData}
     }
     // TODO add design to this step
@@ -125,15 +125,17 @@ export default function BookingModal({room}) {
             open={open}
             onClose={handleClose}
             aria-labelledby="form-dialog-title">
-          {bookingDone &&
-              <div className='modalContainer'>
-                <div className='center'>
-                  <h3>Booking Confirmed!</h3>
-                  <CheckCircleIcon style={{color: 'green', fontSize: '80px'}}/>
-                </div>
+          {
+            bookingDone &&
+            <div className='modalContainer'>
+              <div className='center'>
+                <h3>Booking Confirmed!</h3>
+                <CheckCircleIcon style={{color: 'green', fontSize: '80px'}}/>
               </div>
+            </div>
           }
-          {!bookingDone &&
+          {
+            !bookingDone &&
             <div className='modalContainer'>
               <div style={{width: '100%', height: '138px', overflow: 'hidden'}}>
                 <img
@@ -243,19 +245,19 @@ export default function BookingModal({room}) {
               <div className="booking">
                 <DialogActions>
                   {
-                    tokens.length > 0 && !discountProof &&
+                    tokens.length > 0 && !tokenProof &&
                     <Button
                         color="primary"
                         className="paynow"
                         variant="contained"
-                        onClick={applyDiscount}
+                        onClick={useToken}
                         color="primary"
                     >
-                      Provide Discount Proof
+                      Use Token
                     </Button>
                   }
                   {
-                    (tokens.length === 0 || discountProof) &&
+                    (tokens.length === 0 || tokenProof) &&
                     <Button
                         color="primary"
                         className="paynow"

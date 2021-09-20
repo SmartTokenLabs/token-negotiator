@@ -9,7 +9,7 @@ const App = () => {
     <TokenContextProvider tokenName={'devcon-ticket'} options={options}>
       <>
         <BookingPage/>
-        <div className="tokenSelectorContainerElement" style={{position: 'fixed', right: 0, bottom: 0}}/>
+        <div className="tokenSelectorContainerElement" style={{position: 'fixed', right: 0, bottom: 0, maxWidth: '100%'}}/>
       </>
     </TokenContextProvider>
   )
