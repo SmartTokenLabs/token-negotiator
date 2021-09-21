@@ -56,6 +56,7 @@ const BookingPage = () => {
           </Typography>
         </div>
       }
+      <div className="tokenSelectorContainerElement" style={{position: 'fixed', right: 0, bottom: 0, maxWidth: '100%'}}/>
     </div>
   )
 }
