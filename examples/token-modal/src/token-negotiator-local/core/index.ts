@@ -1,5 +1,5 @@
 // @ts-ignore
-import { base64ToUint8array } from './utils';
+import { base64ToUint8array } from './../utils';
 
 // negotiator functions.
 
@@ -72,6 +72,7 @@ export const getTokens = async ({
   localStorageItemName = "dcTokens",
   // @ts-ignore
   tokenParser,
+  // @ts-ignore
   unsignedTokenDataName
 }) => {
   return new Promise((resolve, reject) => {
@@ -89,9 +90,7 @@ export const getTokens = async ({
   })
 }
 
-export const storeMagicURL = (tokens: any, localStorageItemName: string) => {
-  localStorage.setItem(localStorageItemName, JSON.stringify(tokens));
-}
+export const storeMagicURL = (tokens: any, localStorageItemName: string) => localStorage.setItem(localStorageItemName, JSON.stringify(tokens));
 
 export const readMagicUrl = (tokenUrlName: string, tokenSecretName: string, tokenIdName: string) => {
 
@@ -105,7 +104,7 @@ export const readMagicUrl = (tokenUrlName: string, tokenSecretName: string, toke
   let tokensOutput = readTokens("localstoragenamegoeshere");
   let isNewQueryTicket = true;
 
-  const tokens = tokensOutput.tokens.map(tokenData => {
+  const tokens = tokensOutput.tokens.map((tokenData: any) => {
     if (tokenData.token === tokenFromQuery) {
       isNewQueryTicket = false;
     }

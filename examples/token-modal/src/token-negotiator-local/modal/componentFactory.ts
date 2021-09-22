@@ -1,6 +1,3 @@
-// @ts-ignore
-import tokenImage from './../../../theme/fab-button.svg';
-
 export const createModalMarkup = () => {
   return `
     <div class="modal">
@@ -13,7 +10,7 @@ export const createModalMarkup = () => {
   `;
 };
 
-export const createToken = (data: any, index: any) => {
+export const createToken = (data: any, index: any, tokenImage: string) => {
   return `
     <div class='token'>
       <div class='content'>
@@ -31,11 +28,10 @@ export const createToken = (data: any, index: any) => {
   `;
 };
 
-export const createFabButton = (buttonURL: string) => {
+export const createFabButton = (button: string) => {
   return `
-    <button
-      onclick="negotiator.modalClickHandler()"
-      style="height:80px; width:80px; border: 0; background-image: url(${buttonURL}); box-shadow: 0 2px 5px 0 #676767; border-radius: 64px; cursor: pointer; z-index: 999; position: relative;">
+    <button onclick="negotiator.modalClickHandler()" style="padding: 0; height:80px; width:80px; border: 0; box-shadow: 0 2px 5px 0 #676767; border-radius: 64px; cursor: pointer; z-index: 999; position: relative;">
+      <svg src=${button}></svg>
     </button>
   `;
 }

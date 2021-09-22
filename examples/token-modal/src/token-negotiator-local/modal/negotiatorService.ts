@@ -1,6 +1,6 @@
 // @ts-ignore
-import { tokenConfig } from "./../tokenConfig";
-import { getTokens } from './../negotiatorFunctions';
+import { config } from "./../config";
+import { getTokens } from './../core';
 import { createModalMarkup, createToken, createFabButton } from "./componentFactory";
 
 // NegotiatorService enscapsulates resources to use the negotiator service (modal)
@@ -13,14 +13,14 @@ class NegotiatorService {
   // types
   getTokens: ({ filter, tokenName, tokensOrigin, localStorageItemName, tokenParser, unsignedTokenDataName }: { filter?: {}; tokenName?: string; tokensOrigin?: string; localStorageItemName?: string; tokenParser: any; unsignedTokenDataName: string; }) => Promise<unknown>;
   createModalMarkup: () => string;
-  createToken: (data: any, index: any) => string;
+  createToken: (data: any, index: any, tokenImage: string) => string;
   createFabButton: (buttonURL: string) => string;
   config: any;
   selectedTokenState: any[]
   tokenParser: string;
   filter: {};
   options: {};
-  modalClickTimer: ReturnType<typeof setTimeout>;
+  modalClickTimer: any; // ReturnType<typeof setTimeout>;
 
   constructor() {
     // assign public proxied functions
@@ -33,10 +33,11 @@ class NegotiatorService {
   };
 
   // applies negotiation config from client
+  // @ts-ignore
   set configuration ({ filter, tokenName, options }) {
     this.filter = filter;
     this.options = options;
-    this.config = tokenConfig[tokenName];
+    this.config = config[tokenName];
     this.tokenParser = this.config.tokenParser;
   }
 
@@ -90,7 +91,7 @@ class NegotiatorService {
     emitTokenButtonHTML: () => {
       window.top.postMessage({
         evt: 'setTokenButtonHTML',
-        button: this.createFabButton(`${document.location.href}/theme/fab-button.svg`)
+        button: this.createFabButton(this.config.fabButton)
       }, "*");
     },
     emitSelectedTokens: () => {
@@ -100,11 +101,14 @@ class NegotiatorService {
        },
       "*");
     },
+    // @ts-ignore
     modalClickTimer: null,
     emitModalToggleState: () => {
       const toggleModalState = this.modalClickHandler();
+      // @ts-ignore
       clearTimeout(this.modalClickTimer);
       if (toggleModalState === 'close') {
+        // @ts-ignore
         this.modalClickTimer = setTimeout(() => {
           window.top.postMessage({ evt: 'hideModal', state: toggleModalState }, "*");
         }, 1000);
@@ -134,7 +138,7 @@ class NegotiatorService {
   addTokens = (tokens: any) => {
     const tokenContainer = document.querySelector('.tk-modal .token-container');
     this.addToken(tokenContainer, tokens.map((data: any, index: number) => {
-      return this.createToken(data, index);
+      return this.createToken(data, index, this.config.fabButton);
     }).join(''));
   }
 

@@ -8,7 +8,7 @@ export class Modal {
     // custom to modal
     const negotiatorModalService = new NegotiatorService();
 
-    // assign incoming events
+    // assign incoming event requests
     window.addEventListener('message', function(event) { negotiatorModalService.eventReciever(event.data); }, false);
 
     // tokenToggleSelection = Global modal token selection toggle event from top client window
@@ -24,7 +24,13 @@ export class Modal {
     }
 
     // DEV MODE ONLY: Enabling live css / development changes
-    if (window.top === window.self) applyDevelopmentMode(negotiatorModalService);
+    if (window.top === window.self) applyDevelopmentMode(
+      'devcon-ticket',
+      ".tokenSelectorContainerElement",
+      "http://localhost:3002/",
+      "dcTokens",
+      negotiatorModalService,
+    );
   };
 
 
