@@ -1,7 +1,7 @@
 // @ts-ignore
 import tokenImage from './../../../theme/fab-button.svg';
 
-export const createModalSkeleton = () => {
+export const createModalMarkup = () => {
   return `
     <div class="modal">
       <div class="brand"></div>

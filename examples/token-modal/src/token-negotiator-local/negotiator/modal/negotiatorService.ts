@@ -1,7 +1,7 @@
 // @ts-ignore
 import { tokenConfig } from "./../tokenConfig";
-import { getTokens } from './negotiatorFunctions';
-import { createModalSkeleton, createToken, createFabButton } from "./componentFactory";
+import { getTokens } from './../negotiatorFunctions';
+import { createModalMarkup, createToken, createFabButton } from "./componentFactory";
 
 // NegotiatorService enscapsulates resources to use the negotiator service (modal)
 // - html templates for modal and tokens
@@ -12,7 +12,7 @@ class NegotiatorService {
 
   // types
   getTokens: ({ filter, tokenName, tokensOrigin, localStorageItemName, tokenParser, unsignedTokenDataName }: { filter?: {}; tokenName?: string; tokensOrigin?: string; localStorageItemName?: string; tokenParser: any; unsignedTokenDataName: string; }) => Promise<unknown>;
-  createModalSkeleton: () => string;
+  createModalMarkup: () => string;
   createToken: (data: any, index: any) => string;
   createFabButton: (buttonURL: string) => string;
   config: any;
@@ -20,10 +20,11 @@ class NegotiatorService {
   tokenParser: string;
   filter: {};
   options: {};
+  modalClickTimer: ReturnType<typeof setTimeout>;
 
   constructor() {
-    // assign (composed public/proxied) functions
-    this.createModalSkeleton = createModalSkeleton;
+    // assign public proxied functions
+    this.createModalMarkup = createModalMarkup;
     this.createToken = createToken;
     this.createFabButton = createFabButton;
     this.getTokens = getTokens;
@@ -31,6 +32,7 @@ class NegotiatorService {
     this.selectedTokenState = [];
   };
 
+  // applies negotiation config from client
   set configuration ({ filter, tokenName, options }) {
     this.filter = filter;
     this.options = options;
@@ -42,9 +44,104 @@ class NegotiatorService {
   get selectedTokens() { return this.selectedTokenState };
   set selectedTokens(tokens) { this.selectedTokenState = tokens };
 
-  // event sender / reciever
-  // click handler
-  // add tokens
+  // recieves events
+  eventReciever = (data: any) => {
+    switch (data.evt) {
+      case 'getTokenButtonHTML':
+        // TODO must be configured by client - read from 'data.evt'
+        const dataEvtMock = { tokenName: 'devcon-ticket', filter: {}, options: { tokenSelectorContainer: ".tokenSelectorContainerElement" } };
+        // apply the modal markup / animation timing properties
+        document.querySelector('.tk-modal').innerHTML = this.createModalMarkup();
+        // @ts-ignore
+        document.getElementsByClassName('modal')[0].style.transition = 'all 0.2s ease-out';
+        // apply config recieved from client
+        this.configuration = {
+          filter: dataEvtMock.filter,
+          tokenName: dataEvtMock.tokenName,
+          options: dataEvtMock.options
+        };
+        // get tokens
+        this.getTokens({
+          filter: {},
+          tokenName: "devcon-ticket",
+          tokensOrigin: "http://localhost:3002/",
+          localStorageItemName: "dcTokens",
+          tokenParser: this.config.tokenParser,
+          unsignedTokenDataName: this.config.unsignedTokenDataName
+        }).then((resultTokens: any) => {
+          // apply tokens to web modal view
+          this.addTokens(resultTokens.tokens);
+          // send the fab token button to the client
+          // to enable interaction with the modal
+          this.eventSender.emitTokenButtonHTML();
+        });
+        break;
+      case 'setSelectedTokens':
+        this.eventSender.emitSelectedTokens();
+        break;
+      case 'setToggleModalHandler':
+        this.eventSender.emitModalToggleState();
+        break;
+    }
+  }
+
+  // sends events
+  eventSender = {
+    emitTokenButtonHTML: () => {
+      window.top.postMessage({
+        evt: 'setTokenButtonHTML',
+        button: this.createFabButton(`${document.location.href}/theme/fab-button.svg`)
+      }, "*");
+    },
+    emitSelectedTokens: () => {
+      window.top.postMessage({
+        evt: 'setSelectedTokens',
+        selectedTokens: this.selectedTokens
+       },
+      "*");
+    },
+    modalClickTimer: null,
+    emitModalToggleState: () => {
+      const toggleModalState = this.modalClickHandler();
+      clearTimeout(this.modalClickTimer);
+      if (toggleModalState === 'close') {
+        this.modalClickTimer = setTimeout(() => {
+          window.top.postMessage({ evt: 'hideModal', state: toggleModalState }, "*");
+        }, 1000);
+      } else {
+        window.top.postMessage({ evt: 'showModal', state: toggleModalState }, "*");
+      }
+    }
+  }
+
+  // recieved click event from client
+  modalClickHandler = () => {
+    const element = document.querySelector(".tk-modal .modal");
+    const isOpen = element.classList.contains("open");
+    element.classList.toggle("open");
+    if (!isOpen) {
+      window.top.postMessage({ evt: 'hideModal', state: 'open' }, "*");
+      element.classList.add("open");
+      return 'open';
+    } else {
+      window.top.postMessage({ evt: 'hideModal', state: 'close' }, "*");
+      element.classList.remove("open");
+      return 'close';
+    }
+  }
+
+  // add html tokens to modal
+  addTokens = (tokens: any) => {
+    const tokenContainer = document.querySelector('.tk-modal .token-container');
+    this.addToken(tokenContainer, tokens.map((data: any, index: number) => {
+      return this.createToken(data, index);
+    }).join(''));
+  }
+
+  // add a single token to the modal
+  addToken = (tokenContainer: any, str: string) => {
+    tokenContainer.innerHTML = str;
+  };
 
 }
 

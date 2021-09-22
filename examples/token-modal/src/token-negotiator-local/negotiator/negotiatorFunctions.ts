@@ -1,5 +1,5 @@
 // @ts-ignore
-import { base64ToUint8array } from './../utils';
+import { base64ToUint8array } from './utils';
 
 // negotiator functions.
 
@@ -54,7 +54,8 @@ export const readTokens = (localStorageItemName: any) => {
   return output;
 }
 
-export const decodeTokens = (rawTokens: any, tokenParser, unsignedTokenDataName: string) => {
+// decode and return tokens
+export const decodeTokens = (rawTokens: any, tokenParser: any, unsignedTokenDataName: string) => {
   return rawTokens.map((tokenData: any) => {
     if (tokenData.token) {
       let decodedToken = new tokenParser(base64ToUint8array(tokenData.token).buffer);
@@ -63,11 +64,13 @@ export const decodeTokens = (rawTokens: any, tokenParser, unsignedTokenDataName:
   });
 };
 
+// returns decode and filtered tokens
 export const getTokens = async ({
   filter = {},
   tokenName = "devcon-ticket",
   tokensOrigin = "http://localhost:3002/",
   localStorageItemName = "dcTokens",
+  // @ts-ignore
   tokenParser,
   unsignedTokenDataName
 }) => {
@@ -84,4 +87,32 @@ export const getTokens = async ({
       }
     }
   })
+}
+
+export const storeMagicURL = (tokens: any, localStorageItemName: string) => {
+  localStorage.setItem(localStorageItemName, JSON.stringify(tokens));
+}
+
+export const readMagicUrl = (tokenUrlName: string, tokenSecretName: string, tokenIdName: string) => {
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const tokenFromQuery = urlParams.get(tokenUrlName);
+  const secretFromQuery = urlParams.get(tokenSecretName);
+  const idFromQuery = urlParams.get(tokenIdName);
+
+  if (!(tokenFromQuery && secretFromQuery)) return;
+
+  let tokensOutput = readTokens("localstoragenamegoeshere");
+  let isNewQueryTicket = true;
+
+  const tokens = tokensOutput.tokens.map(tokenData => {
+    if (tokenData.token === tokenFromQuery) {
+      isNewQueryTicket = false;
+    }
+  });
+
+  if (isNewQueryTicket) tokens.push({ token: tokenFromQuery, secret: secretFromQuery, id: idFromQuery, magic_link: window.location.href });
+
+  storeMagicURL(tokens, "localstoragenamegoeshere");
+
 }
