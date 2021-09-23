@@ -1,12 +1,12 @@
 
-.dvn-tk-outlt {
+.tk-modal {
   font-family: 'Source Sans Pro', sans-serif;
   position: fixed;
   bottom: 24px;
   right: 24px;
 }
 
-.dvn-tk-outlt button {
+.tk-modal button {
   height:80px;
   width:80px;
   border: 0;
@@ -19,9 +19,9 @@
 
 /* animation fix: https://stackoverflow.com/questions/3331353/transitions-on-the-css-display-property */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-.dvn-tk-outlt .modal.open { animation: fadeIn 0.5s; opacity: 1; }
+.tk-modal .modal.open { animation: fadeIn 0.5s; opacity: 1; }
 
-.dvn-tk-outlt .modal {
+.tk-modal .modal {
   opacity: 0;
   position: absolute;
   top: -290px;
@@ -34,13 +34,13 @@
   z-index: 888;
 }
 
-.dvn-tk-outlt .modal .brand {
+.tk-modal .modal .brand {
   width: 355px;
   height: 4px;
   background-color: #303052;
 }
 
-.dvn-tk-outlt .modal .headline {
+.tk-modal .modal .headline {
   width: 246px;
   height: 41px;
   margin: 18px 98px 0px 16px;
@@ -53,12 +53,12 @@
   color: #000000;
 }
 
-.dvn-tk-outlt .modal .token-container {
+.tk-modal .modal .token-container {
   height: 222px;
   overflow: scroll;
 }
 
-.dvn-tk-outlt .modal .token {
+.tk-modal .modal .token {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -67,22 +67,27 @@
   border-top: solid 1px #e9e9e9;
 }
 
-.dvn-tk-outlt .modal .content {
+.tk-modal .modal .content {
   display: flex;
   align-items: center;
 }
 
+<<<<<<< HEAD:examples/token-modal/src/css/style.css
 .dvn-tk-outlt .modal .token:last-child {
   border-bottom: solid 1px #e9e9e9;
+=======
+.tk-modal .modal .token:last-child {
+  border-bottom: solid 1px #e9e9e9;  
+>>>>>>> review-changes-v2:examples/token-modal/dist/theme/style.css
 }
 
-.dvn-tk-outlt .modal .token .emblem {
+.tk-modal .modal .token .emblem {
   width: 44px;
   height: 44px;
   margin: 0 14px;
 }
 
-.dvn-tk-outlt .modal .token .detail {
+.tk-modal .modal .token .detail {
   height: 20px;
   font-size: 11px;
   font-weight: normal;
@@ -94,7 +99,7 @@
   margin: 0;
 }
 
-.dvn-tk-outlt .modal .token .title {
+.tk-modal .modal .token .title {
   height: 34px;
   margin: 0 ;
   font-size: 18px;
@@ -106,7 +111,7 @@
   color: #000000;
 }
 
-.dvn-tk-outlt .modal .toggle {
+.tk-modal .modal .toggle {
   transform: scale(0.7);
   width: 55px;
   margin-right: 7px;
@@ -114,11 +119,11 @@
   background: white;
   cursor: pointer;
 }
-.dvn-tk-outlt .modal .toggle input.mobileToggle {
+.tk-modal .modal .toggle input.mobileToggle {
   opacity: 0;
   position: absolute;
 }
-.dvn-tk-outlt .modal .toggle input.mobileToggle + label {
+.tk-modal .modal .toggle input.mobileToggle + label {
   position: relative;
   display: inline-block;
   -webkit-user-select: none;
@@ -133,7 +138,7 @@
   background: #c6c5c5;
   cursor: pointer;
 }
-.dvn-tk-outlt .modal .toggle input.mobileToggle + label:before {
+.tk-modal .modal .toggle input.mobileToggle + label:before {
   content: "";
   position: absolute;
   display: block;
@@ -144,7 +149,7 @@
   left: 0;
   border-radius: 19px;
 }
-.dvn-tk-outlt .modal .toggle input.mobileToggle + label:after {
+.tk-modal .modal .toggle input.mobileToggle + label:after {
   content: "";
   position: absolute;
   display: block;
@@ -157,15 +162,15 @@
   left: 0px;
   border-radius: 60px;
 }
-.dvn-tk-outlt .modal .toggle input.mobileToggle:checked + label:before {
+.tk-modal .modal .toggle input.mobileToggle:checked + label:before {
   background: #88bff6;
   transition: width 0.2s cubic-bezier(0, 0, 0, 0.1);
 }
-.dvn-tk-outlt .modal .toggle input.mobileToggle:checked + label:after {
+.tk-modal .modal .toggle input.mobileToggle:checked + label:after {
   left: 24px;
 }
 
-.dvn-tk-outlt .modal .toggle input:focus + label
+.tk-modal .modal .toggle input:focus + label
 {
   border: 3px solid #005fcc !important;
 }

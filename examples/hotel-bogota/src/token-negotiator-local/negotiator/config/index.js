@@ -21,10 +21,9 @@ import { SignedDevconTicket } from './../../Attestation/SignedDevonTicket';
 
 export const config = {
   "devcon-ticket": {
-      tokenUid: 'devcon-ticket',
+      tokenName: 'devcon-ticket',
       attestationOrigin: "https://stage.attestation.id",
       tokenOrigin: "http://localhost:3002",
-      // tokenOrigin: "https://devcontickets.herokuapp.com/outlet/",
       tokenUrlName: 'ticket',
       tokenSecretName: 'secret',
       tokenIdName: 'id',

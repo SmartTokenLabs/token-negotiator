@@ -78,6 +78,7 @@
   },
   "version": "0.0.1",
   "dependencies": {
-    "pvutils": "^1.0.17"
+    "pvutils": "^1.0.17",
+    "strip-ansi": "^7.0.1"
   }
 }

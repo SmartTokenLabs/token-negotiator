@@ -21,3 +21,52 @@ start `npm run start`
 test `npm run test`
 
 
+## Nicks notes:
+
+1. Enable the Modal to be both Modal and Outlet
+
+How: 
+
+a: Modal Opens Iframe (self or new window)
+b: Reads Tokens
+c: Closes
+
+2. Merge Hotel Bogota Changes from Fyang
+
+3. Update negotiator directory (using an SPA will reduce the effort needed by Tony)
+
+'Enclave' / 'No mans land'
+
+[TOKEN NEGOTIATOR NPM]
+
+/src
+  /negotiator
+    /modal - change name to /overlay
+      index.ts
+      componentFacory.ts
+      negotiatorService.ts
+      negotiatorController.ts
+    /client
+      index.ts
+      negotiatorService.ts
+    /outlet
+      index.ts
+      negotiatorService.ts
+    /core
+      negotiatorFunctions.ts
+
+[TOKEN NEGOTIATOR SPA]
+
+/tokenIssuerWebApp
+  /negotiator
+    /pages
+      outlet / modal (overlay webpage)
+    /theme
+      theme.css
+      theme-fab-button.svg
+    webpack
+    tsconfig
+    package
+    gitignore
+
+

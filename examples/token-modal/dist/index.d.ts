@@ -1,1 +1,2 @@
-import "./css/style.css";
+import './token-negotiator-local/negotiator/modal/';
+import "./theme/style.css";
