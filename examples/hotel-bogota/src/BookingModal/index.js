@@ -10,7 +10,7 @@ import {createTheme} from '@material-ui/core/styles';
 import {ThemeProvider} from '@material-ui/styles';
 import Typography from '@material-ui/core/Typography';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
-import {TokenContext} from "../token-negotiator-local";
+import {TokenContext} from "./../TokenContextProvider";
 import './BookingModal.css';
 
 const theme = createTheme({

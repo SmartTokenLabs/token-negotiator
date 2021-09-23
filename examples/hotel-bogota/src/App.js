@@ -1,4 +1,4 @@
-import { TokenContextProvider } from './token-negotiator-local';
+import { TokenContextProvider } from './TokenContextProvider';
 import BookingPage from './BookingPage';
 
 const App = () => {

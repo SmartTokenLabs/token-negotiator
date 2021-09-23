@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import Typography from '@material-ui/core/Typography';
-import { TokenContext} from "../token-negotiator-local";
+import { TokenContext } from "./../TokenContextProvider";
 import Header from './../Header';
 import RoomCard from './../RoomCard';
 import BookingDate from './../BookingDate';

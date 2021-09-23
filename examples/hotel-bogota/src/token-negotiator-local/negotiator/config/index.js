@@ -1,4 +1,4 @@
-import { SignedDevconTicket } from './../Attestation/SignedDevonTicket';
+import { SignedDevconTicket } from './../../Attestation/SignedDevonTicket';
 
 /*
 
@@ -19,7 +19,7 @@ import { SignedDevconTicket } from './../Attestation/SignedDevonTicket';
 
 */
 
-export const tokenConfig = {
+export const config = {
   "devcon-ticket": {
       tokenUid: 'devcon-ticket',
       attestationOrigin: "https://stage.attestation.id",
