@@ -64,6 +64,25 @@ export const decodeTokens = (rawTokens: any, tokenParser: any, unsignedTokenData
   });
 };
 
+export const openOutletIframe = (tokensOrigin: string, localStorageItemName: string) => {
+  return new Promise((resolve, reject) => {
+    const iframe = document.createElement('iframe');
+    iframe.src = tokensOrigin;
+    iframe.style.width = '1px';
+    iframe.style.height = '1px';
+    iframe.style.opacity = '0';
+    document.body.appendChild(iframe);
+    iframe.onload = () => {
+      // ask for tokens
+      window.postMessage({
+        evt: 'getTokens',
+        localStorageItemName: localStorageItemName
+      }, "*");
+      resolve(true);
+    };
+  });
+}
+
 // returns decode and filtered tokens
 export const getTokens = async ({
   filter = {},
@@ -76,23 +95,22 @@ export const getTokens = async ({
   unsignedTokenDataName
 }) => {
   return new Promise((resolve, reject) => {
-    if (window.location.href === tokensOrigin) {
-      const tokensOutput = readTokens(localStorageItemName);
-      if (tokensOutput.success && !tokensOutput.noTokens) {
-        const decodedTokens = decodeTokens(tokensOutput.tokens, tokenParser, unsignedTokenDataName);
+    window.addEventListener('message', function(event) { 
+      // @ts-ignore
+      if(event.data.evt === 'setTokens') {
+        const decodedTokens = decodeTokens(event.data.tokens.tokens, tokenParser, unsignedTokenDataName);
         const filteredTokens = filterTokens(decodedTokens, filter);
-        tokensOutput.tokens = filteredTokens;
-        resolve(tokensOutput);
-      } else {
-        reject(false);
+        resolve(filteredTokens);
       }
-    }
+    }, false);
+    // TODO - Add timeout e.g. 20 seconds to acquire tokens or fail process.
+    openOutletIframe(tokensOrigin, localStorageItemName);
   })
 }
 
 export const storeMagicURL = (tokens: any, localStorageItemName: string) => localStorage.setItem(localStorageItemName, JSON.stringify(tokens));
 
-export const readMagicUrl = (tokenUrlName: string, tokenSecretName: string, tokenIdName: string) => {
+export const readMagicUrl = (tokenUrlName: string, tokenSecretName: string, tokenIdName: string, localStorageItemName: string) => {
 
   const urlParams = new URLSearchParams(window.location.search);
   const tokenFromQuery = urlParams.get(tokenUrlName);
@@ -101,7 +119,7 @@ export const readMagicUrl = (tokenUrlName: string, tokenSecretName: string, toke
 
   if (!(tokenFromQuery && secretFromQuery)) return;
 
-  let tokensOutput = readTokens("localstoragenamegoeshere");
+  let tokensOutput = readTokens(localStorageItemName);
   let isNewQueryTicket = true;
 
   const tokens = tokensOutput.tokens.map((tokenData: any) => {
@@ -112,6 +130,6 @@ export const readMagicUrl = (tokenUrlName: string, tokenSecretName: string, toke
 
   if (isNewQueryTicket) tokens.push({ token: tokenFromQuery, secret: secretFromQuery, id: idFromQuery, magic_link: window.location.href });
 
-  storeMagicURL(tokens, "localstoragenamegoeshere");
+  storeMagicURL(tokens, localStorageItemName);
 
 }

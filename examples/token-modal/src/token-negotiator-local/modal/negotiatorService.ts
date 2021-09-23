@@ -69,9 +69,9 @@ class NegotiatorService {
           localStorageItemName: this.config.localStorageItemName,
           tokenParser: this.config.tokenParser,
           unsignedTokenDataName: this.config.unsignedTokenDataName
-        }).then((resultTokens: any) => {
+        }).then((tokens: any) => {
           // apply tokens to web modal view
-          this.addTokens(resultTokens.tokens);
+          this.addTokens(tokens);
           // send the fab token button to the client
           // to enable interaction with the modal
           this.eventSender.emitTokenButtonHTML();

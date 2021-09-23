@@ -13,5 +13,6 @@ new Modal();
 new Outlet({
   tokenUrlName: 'ticket',
   tokenSecretName: 'secret',
-  tokenIdName: 'id'
+  tokenIdName: 'id',
+  localStorageItemName: 'dcTokens'
 });

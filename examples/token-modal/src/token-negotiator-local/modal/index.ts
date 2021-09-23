@@ -5,6 +5,7 @@ import { applyDevelopmentMode } from "./devUtils";
 export class Modal {
 
   constructor() {
+
     // custom to modal
     const negotiatorModalService = new NegotiatorService();
 
@@ -31,7 +32,7 @@ export class Modal {
       "dcTokens",
       negotiatorModalService,
     );
-  };
+  }
 
 
 };

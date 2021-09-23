@@ -1,5 +1,7 @@
 import { ethers } from "ethers";
+// import { getTokens } from "../../../../../token-modal/src/token-negotiator-local/core";
 import { config } from "./../config/index";
+import OverlayService from "./overlayService";
 export class Client {
 
   constructor(filter = {}, tokenName, options = {}) {
@@ -9,74 +11,17 @@ export class Client {
     this.config = config[tokenName];
     this.options = options;
     this.filter = filter;
-    this.assignClientListener();
-    this.embedClientModal(
-      tokenName,
-      this.config.tokenOrigin,
-      options,
-      filter
-    );
   }
 
-  assignClientListener() {
-    window.addEventListener('message', (event) => {
-      if(event.origin !== this.config.tokenOrigin) return;
-      this.clientEventController(event.data);
-    }, false);
+  async negotiate() {
+    if(this.options.useOverlay === true) this.negotiateViaOverlay();
+    // else getTokens() // make direct request to acquire tokens
   }
 
-  embedClientModal(tokenName, tokenOrigin, options, filter) {
-    setTimeout(() => {
-      let refTokenSelector = document.querySelector(options.tokenSelectorContainer);
-      if(refTokenSelector) {
-        const iframe = `<div class="${tokenName}ModalWrapper"><iframe class="${tokenName}Modal" style="border:0; resize: none; overflow: auto;" height="335px" width="376px" src="${tokenOrigin}" allowtransparency="true" title="outlet" frameborder="0" style="border:0" allowfullscreen frameborder="no" scrolling="no"></iframe></div>`;
-        refTokenSelector.innerHTML = iframe;
-        let refModalSelector = document.querySelector(`${options.tokenSelectorContainer} .${tokenName}Modal`);
-        refModalSelector.onload = function() {
-          refModalSelector
-          .contentWindow
-          .postMessage({
-            evt: "getTokenButtonHTML",
-            data: {
-              tokenName,
-              filter,
-              options
-            }
-          }, '*');
-        };
-      }
-    }, 0);
-  }
-
-  clientEventController(data) {
-    switch(data.evt) {
-      case 'setTokenButtonHTML':
-          if(!document.getElementById("tokenButtonContainer")) {
-            let newDiv = document.createElement("div");
-            newDiv.setAttribute('id', 'tokenButtonContainer')
-            newDiv.style.cssText = `
-              display: flex; 
-              justify-content: flex-end;
-              margin: 10px;
-            `;
-            newDiv.innerHTML = data.button;
-            document.querySelector(`${this.options.tokenSelectorContainer}`).style.margin = '10px';
-            document.querySelector(`${this.options.tokenSelectorContainer}`).append(newDiv);
-          }
-        break;
-      case 'hideModal':
-        document.querySelector(`${this.options.tokenSelectorContainer} .${this.tokenName}ModalWrapper`).style.display = 'none';
-        break;
-      case 'showModal':
-        document.querySelector(`${this.options.tokenSelectorContainer} .${this.tokenName}ModalWrapper`).style.display = 'block';
-        break;
-    }
-  }
-
-  modalClickHandler() {
-    document.querySelector(`${this.options.tokenSelectorContainer} .${this.tokenName}Modal`)
-    .contentWindow
-    .postMessage({ evt: "setToggleModalHandler" }, '*');
+  // instantiates overlay
+  negotiateViaOverlay() {
+    const overlayService = new OverlayService(this.config, this.options, this.filter); 
+    this.modalClickHandler = overlayService.modalClickHandler;
   }
 
   async connectMetamaskAndGetAddress() {

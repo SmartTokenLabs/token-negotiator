@@ -2,7 +2,9 @@
 // OutletService enscapsulates resources to use the negotiator service (outlet)
 // - reads tokens from query string
 // - provides tokens through an iframe
-
+import {
+  readTokens
+} from '../core';
 class OutletService {
 
   constructor() {};
@@ -10,16 +12,19 @@ class OutletService {
   // recieves events
   eventReciever = (data: any) => {
     switch (data.evt) {
-      case 'getTokens': break;
+      case 'getTokens': 
+        const tokens = readTokens(data.localStorageItemName);
+        this.eventSender.emitTokens(tokens);
+      break;
     }
   }
 
   // sends events
   eventSender = {
-    emitTokens: () => {
-      window.top.postMessage({
+    emitTokens: (tokens: any) => {
+      window.postMessage({
         evt: 'setTokens',
-        tokens: []
+        tokens: tokens
       }, "*");
     }
   }

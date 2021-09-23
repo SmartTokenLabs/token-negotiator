@@ -33,12 +33,13 @@ class TokenNegotiatorInstance  extends React.Component {
     const filter = {};
     // apply the tokenName to negotiate tokens from e.g. devcon-ticket.
     const tokenName = "devcon-ticket";
-    // set required negotiator options.
-    const options = { tokenSelectorContainer: ".tokenSelectorContainerElement" };
+    // set required negotiator options. // TODO tokenOverlayContainer
+    const options = { useOverlay: true, tokenSelectorContainer: ".tokenSelectorContainerElement" };
     // create new instance of the Negotiator with params
     window.negotiator = new Client(filter, tokenName, options);
     // instance of negotiator
     this.state = { negotiator: window.negotiator };
+    window.negotiator.negotiate();
   }
   render() { return this.props.render({ negotiator: negotiator, modalContainer: this.state.modalContainer }) };
 }
