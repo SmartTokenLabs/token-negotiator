@@ -1,8 +1,8 @@
 {
-  "name": "@alphawallet/token-negotiator",
-  "version": "0.1.0",
+  "name": "@tokenscript/token-negotiator",
+  "version": "0.0.0",
   "description": "a library for enriching the functionality of your tokens within dapps",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack",
