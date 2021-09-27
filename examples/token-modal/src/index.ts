@@ -2,6 +2,7 @@
 // import { Modal } from './token-negotiator-local/index';
 // import { Outlet } from './token-negotiator-local/index';
 
+// import { Modal, Outlet } from './token-negotiator-local/index';
 import { Modal, Outlet } from './../../../dist/index';
 
 // peronalise styles here
