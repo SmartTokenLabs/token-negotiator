@@ -1,4 +1,4 @@
-// @ts-ignore
+// @ts-nocheck
 import { base64ToUint8array } from './../utils';
 
 // negotiator functions.

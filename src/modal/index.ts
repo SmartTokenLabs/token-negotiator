@@ -1,4 +1,4 @@
-// @ts-ignore
+// @ts-nocheck
 import NegotiatorService from "./negotiatorService";
 // TODO - should only be injected when running webpack development server
 import { applyDevelopmentMode } from "./devUtils";

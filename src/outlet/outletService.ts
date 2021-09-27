@@ -1,4 +1,4 @@
-
+// @ts-nocheck
 // OutletService enscapsulates resources to use the negotiator service (outlet)
 // - reads tokens from query string
 // - provides tokens through an iframe

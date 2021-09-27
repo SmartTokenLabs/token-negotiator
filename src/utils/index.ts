@@ -1,3 +1,4 @@
+// @ts-nocheck
 export const compareObjects = (o1: any, o2: any) => {
   for (let p in o1) {
     if (o1.hasOwnProperty(p)) {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // @ts-ignore
 import { config } from "./../config";
 import { getTokens } from './../core';

@@ -1,0 +1,1 @@
+export declare const applyDevelopmentMode: (tokenName: string | undefined, tokenSelectorContainer: string | undefined, tokensOrigin: string | undefined, localStorageItemName: string | undefined, negotiatorService: any) => void;

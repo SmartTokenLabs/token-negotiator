@@ -22,7 +22,7 @@ export const applyDevelopmentMode = (
       tokenParser: negotiatorService.config.tokenParser,
       unsignedTokenDataName: negotiatorService.config.unsignedTokenDataName
     }).then((resultTokens: any) => {
-      negotiatorService.addTokens(resultTokens.tokens);
+      negotiatorService.addTokens(resultTokens);
     });
     // @ts-ignore
     document.getElementsByClassName('modal')[0].style.cssText = `opacity: 1; top: -320px; left: -278px;`;

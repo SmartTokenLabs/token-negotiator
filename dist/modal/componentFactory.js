@@ -1,6 +1,5 @@
-// @ts-nocheck
 export const createModalMarkup = () => {
-  return `
+    return `
     <div class="modal">
       <div class="brand"></div>
       <p class="headline">Available Tokens</p>
@@ -10,9 +9,8 @@ export const createModalMarkup = () => {
     </div>
   `;
 };
-
-export const createToken = (data: any, index: any, tokenImage: string) => {
-  return `
+export const createToken = (data, index, tokenImage) => {
+    return `
     <div class='token'>
       <div class='content'>
         <svg class='emblem' src=${tokenImage} />
@@ -28,12 +26,10 @@ export const createToken = (data: any, index: any, tokenImage: string) => {
     </div>
   `;
 };
-
-export const createFabButton = (button: string) => {
-  return `
+export const createFabButton = (button) => {
+    return `
     <button onclick="negotiator.modalClickHandler()" style="padding: 0; height:80px; width:80px; border: 0; box-shadow: 0 2px 5px 0 #676767; border-radius: 64px; cursor: pointer; z-index: 999; position: relative;">
       <svg src=${button}></svg>
     </button>
   `;
-}
-
+};
