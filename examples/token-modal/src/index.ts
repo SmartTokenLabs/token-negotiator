@@ -1,9 +1,5 @@
 // Opens overlay for end user to select from their tokens.
-// import { Modal } from './token-negotiator-local/index';
-// import { Outlet } from './token-negotiator-local/index';
-
-// import { Modal, Outlet } from './token-negotiator-local/index';
-import { Modal, Outlet } from './../../../dist/index';
+import { Modal, Outlet } from './../../../src/index';
 
 // peronalise styles here
 import "./theme/style.css";

@@ -4,6 +4,7 @@ class OutletService {
         this.eventReciever = (data) => {
             switch (data.evt) {
                 case 'getTokens':
+                    debugger;
                     const tokens = readTokens(data.localStorageItemName);
                     this.eventSender.emitTokens(tokens);
                     break;
@@ -11,7 +12,8 @@ class OutletService {
         };
         this.eventSender = {
             emitTokens: (tokens) => {
-                window.postMessage({
+                debugger;
+                window.parent.postMessage({
                     evt: 'setTokens',
                     tokens: tokens
                 }, "*");

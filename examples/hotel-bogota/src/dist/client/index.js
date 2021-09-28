@@ -1,4 +1,5 @@
 import { ethers } from "ethers";
+import { getTokens } from "./../core/index";
 import { config } from "./../config/index";
 import OverlayService from "./overlayService";
 export class Client {
@@ -13,8 +14,19 @@ export class Client {
         this.filter = filter;
     }
     async negotiate() {
-        if (this.options.useOverlay === true)
+        if (this.options.useOverlay === true){
             this.negotiateViaOverlay();
+        } else {
+            const tokens = await getTokens({
+                filter: this.filter,
+                tokenName: this.config.tokenName,
+                tokensOrigin: this.config.tokenOrigin,
+                localStorageItemName: this.config.localStorageItemName,
+                tokenParser: this.config.tokenParser,
+                unsignedTokenDataName: this.config.unsignedTokenDataName
+            });
+            return tokens;
+        }
     }
     negotiateViaOverlay() {
         const overlayService = new OverlayService(this.config, this.options, this.filter);

@@ -1,6 +1,6 @@
 export declare class Client {
     constructor(filter: {} | undefined, tokenName: any, options?: {});
-    negotiate(): Promise<void>;
+    negotiate(): Promise<unknown>;
     negotiateViaOverlay(): void;
     connectMetamaskAndGetAddress(): Promise<any>;
     signMessageWithBrowserWallet(message: any): Promise<string>;
