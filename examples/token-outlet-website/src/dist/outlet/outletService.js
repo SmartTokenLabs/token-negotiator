@@ -11,7 +11,7 @@ class OutletService {
         };
         this.eventSender = {
             emitTokens: (tokens) => {
-                window.postMessage({
+                window.parent.postMessage({
                     evt: 'setTokens',
                     tokens: tokens
                 }, "*");

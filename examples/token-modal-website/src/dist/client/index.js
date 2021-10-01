@@ -1,11 +1,12 @@
 import { ethers } from "ethers";
+import { getTokens } from "./../core/index";
 import { config } from "./../config/index";
 import OverlayService from "./overlayService";
 export class Client {
     constructor(filter = {}, tokenName, options = {}) {
         if (!tokenName)
             console.warn("Negotiator: tokenName is a required parameter");
-        if (!options.tokenSelectorContainer)
+        if (options.useOverlay === true && !options.tokenSelectorContainer)
             console.warn("Negotiator: options.tokenSelectorContainer is a required parameter");
         this.tokenName = tokenName;
         this.config = config[tokenName];
@@ -15,6 +16,17 @@ export class Client {
     async negotiate() {
         if (this.options.useOverlay === true)
             this.negotiateViaOverlay();
+        else {
+            const tokens = await getTokens({
+                filter: this.filter,
+                tokenName: this.config.tokenName,
+                tokensOrigin: this.config.tokenOrigin,
+                localStorageItemName: this.config.localStorageItemName,
+                tokenParser: this.config.tokenParser,
+                unsignedTokenDataName: this.config.unsignedTokenDataName
+            });
+            return tokens;
+        }
     }
     negotiateViaOverlay() {
         const overlayService = new OverlayService(this.config, this.options, this.filter);

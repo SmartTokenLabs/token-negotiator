@@ -1,4 +1,4 @@
-import { SignedDevconTicket } from './../Attestation/SignedDevonTicket';
+import { SignedDevconTicket } from './../Attestation/SignedDevonTicket.js';
 export declare const config: {
     "devcon-ticket": {
         tokenName: string;

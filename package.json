@@ -21,9 +21,11 @@
   "dependencies": {
     "asn1js": "^2.0.26",
     "big-integer": "^1.6.48",
-    "ethers": "^5.4.0"
+    "ethers": "^5.4.0",
+    "pvutils": "^1.0.17"
   },
   "devDependencies": {
+    "ts-loader": "^9.2.6",
     "jest": "^27.0.6",
     "webpack": "^5.51.1",
     "webpack-cli": "^4.8.0"
