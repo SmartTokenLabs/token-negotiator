@@ -1,0 +1,33 @@
+.logoCard {
+  margin: 12px;
+  flex-grow: 1;
+  flex-basis: 0;
+  max-width: 220px;
+}
+
+.logoCard h1 {
+  font-size: 1rem;
+}
+
+/* override Google Material */
+.logoCard.MuiPaper-root {
+  width: 168px !important;
+  height: 60px !important;
+}
+
+.logoCard .MuiCardContent-root {
+  display: flex;
+  justify-content: space-between;
+}
+
+.logo-wrapper {
+  display: flex;
+}
+
+.logo-emblem {
+  height: 6px;
+  width: 6px;
+  margin: 3px;
+  background-color: darkcyan;
+  border-radius: 20px;
+}

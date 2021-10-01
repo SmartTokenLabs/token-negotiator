@@ -74,7 +74,7 @@ export const openOutletIframe = (tokensOrigin: string, localStorageItemName: str
     iframe.style.opacity = '0';
     document.body.appendChild(iframe);
     iframe.onload = () => {
-      window.postMessage({
+      iframe.contentWindow.postMessage({
         evt: 'getTokens',
         localStorageItemName: localStorageItemName
       }, "*");

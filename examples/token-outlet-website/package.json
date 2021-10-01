@@ -1,0 +1,74 @@
+{
+  "_from": "@nobrainr/typescript_universal-webpack-karma_jasmine@^1.0.0",
+  "_id": "@nobrainr/typescript_universal-webpack-karma_jasmine@1.0.0",
+  "_inBundle": false,
+  "_integrity": "sha512-yt9IFFFsnYn0KwZxqKehMPyN/RpyF8tP8U7uJqj0yFrqox5Pxedv9h+aTWNzIGVGNbaihC6STzQokEzQQeNIfQ==",
+  "_location": "/@nobrainr/typescript_universal-webpack-karma_jasmine",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "range",
+    "registry": true,
+    "raw": "@nobrainr/typescript_universal-webpack-karma_jasmine@^1.0.0",
+    "name": "@nobrainr/typescript_universal-webpack-karma_jasmine",
+    "escapedName": "@nobrainr%2ftypescript_universal-webpack-karma_jasmine",
+    "scope": "@nobrainr",
+    "rawSpec": "^1.0.0",
+    "saveSpec": null,
+    "fetchSpec": "^1.0.0"
+  },
+  "_requiredBy": [
+    "#DEV:/",
+    "#USER"
+  ],
+  "_resolved": "https://registry.npmjs.org/@nobrainr/typescript_universal-webpack-karma_jasmine/-/typescript_universal-webpack-karma_jasmine-1.0.0.tgz",
+  "_shasum": "1c7e50d285c3427fd7ddb716147fc558b3d55754",
+  "_spec": "@nobrainr/typescript_universal-webpack-karma_jasmine@^1.0.0",
+  "_where": "/Users/nicktaras/.nvm/versions/node/v14.17.3/lib/node_modules/create-ts-lib",
+  "author": "",
+  "bundleDependencies": false,
+  "deprecated": false,
+  "description": "",
+  "devDependencies": {
+    "awesome-typescript-loader": "^5.2.0",
+    "copy-webpack-plugin": "^9.0.1",
+    "cross-env": "^5.0.1",
+    "css-loader": "^1.0.0",
+    "ejs-loader": "^0.3.0",
+    "eslint": "^5.4.0",
+    "html-loader": "^0.5.5",
+    "html-webpack-plugin": "^3.2.0",
+    "istanbul-instrumenter-loader": "^3.0.0",
+    "rimraf": "^2.6.1",
+    "source-map-loader": "^0.2.1",
+    "style-loader": "^0.22.1",
+    "tslint": "^5.5.0",
+    "tslint-loader": "^3.5.3",
+    "typescript": "^3.0.1",
+    "url-loader": "^4.1.1",
+    "webpack": "^4.17.0",
+    "webpack-cli": "^3.1.0",
+    "webpack-dev-server": "^3.1.5"
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "license": "ISC",
+  "main": "src/index.ts",
+  "name": "src",
+  "scripts": {
+    "build": "npm run build:prod",
+    "build:dev": "webpack --mode development --config ./webpack.config.js --progress --color --display-error-details",
+    "build:prod": "cross-env NODE_ENV=production webpack --mode production --config ./webpack.config.js  --progress  --color --display-error-details --bail",
+    "clean": "npm cache clear && rimraf -- dist",
+    "server": "npm run server:dev",
+    "server:dev": "webpack-dev-server --mode development --config ./webpack.config.js --hot --inline --progress --watch --open",
+    "server:prod": "cross-env NODE_ENV=production webpack-dev-server  --mode production --config ./webpack.config.js --port 3000 --host 0.0.0.0 --hot --inline --progress  --watch --open --content-base dist/",
+    "start": "npm run server:dev",
+    "test": "karma start"
+  },
+  "version": "0.0.1",
+  "dependencies": {
+    "pvutils": "^1.0.17",
+    "strip-ansi": "^7.0.1"
+  }
+}

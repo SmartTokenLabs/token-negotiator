@@ -7,7 +7,7 @@ export class Client {
 
   constructor(filter = {}, tokenName, options = {}) {
     if (!tokenName) console.warn("Negotiator: tokenName is a required parameter");
-    if (!options.tokenSelectorContainer) console.warn("Negotiator: options.tokenSelectorContainer is a required parameter");
+    if (options.useOverlay === true && !options.tokenSelectorContainer) console.warn("Negotiator: options.tokenSelectorContainer is a required parameter");
     this.tokenName = tokenName;
     this.config = config[tokenName];
     this.options = options;
