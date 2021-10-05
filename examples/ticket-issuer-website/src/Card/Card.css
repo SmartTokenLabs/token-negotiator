@@ -1,6 +1,0 @@
-.ticketContainer { position: relative }
-.ticketDetails { position: absolute; width: 100%; }
-.ticketClass { position: absolute; top: 12px; right: 16px; }
-.ticketId { position: absolute; top: 52px; right: 34px; }
-.devconId { position: absolute; top: 75px; right: 34px; font-size: 12px; }
-.ticketImg { width: 300px; text-align: right; }
