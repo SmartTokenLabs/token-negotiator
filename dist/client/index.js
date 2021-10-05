@@ -46,16 +46,18 @@ export class Client {
         let signer = provider.getSigner();
         return await signer.signMessage(message);
     }
+    async getProofToken({ token, UN, Message, Signature }) {
+        return { 'proof': true };
+    }
     async authenticate({ unsignedToken, unEndPoint }) {
         try {
             let useEthKey = await this.getChallengeSigned(unEndPoint);
             const validateResult = await this.validateUseEthKey(unEndPoint, useEthKey);
             let walletAddress = await this.connectMetamaskAndGetAddress();
-            if (walletAddress.toLowerCase() !== validateResult.toLowerCase()) {
+            if (walletAddress.toLowerCase() !== validateResult.toLowerCase())
                 throw new Error('useEthKey validation failed.');
-            }
-            this.useEthKey = useEthKey;
-            return { status: true, useEthKey, proof: 'proof' };
+            const useTicket = await this.getProofToken({ ticket: unsignedToken, unEndPoint, message: 'Message', Signature: 'signature' });
+            return { useEthKey, useTicket };
         }
         catch (e) {
             console.error(e);

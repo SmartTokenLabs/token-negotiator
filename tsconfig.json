@@ -5,6 +5,7 @@
     "baseUrl": ".",
     "target": "es2020",
     "module": "es6",
+    "esModuleInterop": true,
     "declaration": true,
     "outDir": "./dist",
     "strict": true,

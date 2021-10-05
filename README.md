@@ -27,9 +27,9 @@ For all use cases, install the token-negotiator. From there we will share the st
 npm i @alphawallet/token-negotiator
 ```
 
-## Client Installation 
+## Client: Installation
 
-The client installation provides two solutions to bringing tokens into your website, web app, dapp. 
+The client installation provides two solutions to bringing tokens into your website, web app or dapp. 
 
 ### Active Client Negotiation of tokens
 
@@ -41,6 +41,8 @@ until the end user has selected them via an iframe to the Token Issuers domain.
   import { Client } from 'token-negotiator';
   
   const filter = {};
+
+  let tokens = [];
 
   const tokenName = "devcon-ticket";
 
@@ -55,7 +57,7 @@ until the end user has selected them via an iframe to the Token Issuers domain.
   window.addEventListener('message', (event) => {
     switch(event.data.evt) {
       case 'setSelectedTokens':
-        setTokens(event.data.selectedTokens);
+        tokens = event.data.selectedTokens;
         break;
     }
   }, false);
@@ -74,7 +76,7 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
 
   const tokenName = "devcon-ticket";
 
-  const options = { useOverlay: true, tokenSelectorContainer: ".tokenSelectorContainerElement" };
+  const options = {};
   
   const negotiator = new Client(filter, tokenName, options);
 
@@ -127,14 +129,14 @@ what discount could be applied with ownership of a token or entry to a VIP loung
 
 ```
 
-## Token Issuer Installation 
+## Token Issuer: Installation 
 
 The token issuer installation provides two ways for the consumers to acquire tokens - using the following process.
-### Installation of overlay
+### Overlay: Installation
 
-The overlay web component acts as an intermediatry between the client and token outlet (explained below). Where a client will connect with an overlay which will in turn connect with the token outlet to retrieve selected tokens.
+The overlay web component acts as an intermediatry component between the client and token outlet (explained below). Where a client will connect with an overlay to retrieve selected tokens.
 
-The token issuer should create a web directory location for the following application. 
+The token issuer should create a web directory location for this component. 
 
 The styles.css can be updated to reflect the Token Issuers brand (branding, token design).
  
@@ -148,7 +150,7 @@ The styles.css can be updated to reflect the Token Issuers brand (branding, toke
 
 ````
 
-### Installation of token outlet
+### Token outlet: Installation 
 
 The token outlet is the location in which tokens are stored and dispatched. The Token Negotiator is flexible, where you can install both the overlay and outlet modules in the same location, or separate. 
  

@@ -11,9 +11,7 @@ export class Outlet {
   // @ts-ignore
   constructor({ tokenUrlName, tokenSecretName, tokenIdName, localStorageItemName }) {
     const outletService = new OutletService();
-    // assign incoming event requests
     window.addEventListener('message', function(event) { outletService.eventReciever(event.data); }, false);
-    // read magic urls onload of page // local
     readMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, localStorageItemName);
   };
 }

@@ -4,6 +4,14 @@ export declare class Client {
     negotiateViaOverlay(): void;
     connectMetamaskAndGetAddress(): Promise<any>;
     signMessageWithBrowserWallet(message: any): Promise<string>;
+    getProofToken({ token, UN, Message, Signature }: {
+        token: any;
+        UN: any;
+        Message: any;
+        Signature: any;
+    }): Promise<{
+        proof: boolean;
+    }>;
     authenticate({ unsignedToken, unEndPoint }: {
         unsignedToken: any;
         unEndPoint: any;
