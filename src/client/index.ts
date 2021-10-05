@@ -14,6 +14,7 @@ export class Client {
     this.filter = filter;
   }
 
+  // negotiates using both passive and active flows.
   async negotiate() {
     if(this.options.useOverlay === true) this.negotiateViaOverlay();
     else {
@@ -49,19 +50,28 @@ export class Client {
     return await signer.signMessage(message);
   }
 
+  async getProofToken({ token, UN, Message, Signature }) {
+    return { 'proof': true };
+  }
+
   async authenticate({unsignedToken, unEndPoint}) {
     try {
       let useEthKey = await this.getChallengeSigned(unEndPoint);
       const validateResult = await this.validateUseEthKey(unEndPoint, useEthKey);
+      
       let walletAddress = await this.connectMetamaskAndGetAddress();
-      if (walletAddress.toLowerCase() !== validateResult.toLowerCase()) {
-        throw new Error('useEthKey validation failed.');
-      }
-      this.useEthKey = useEthKey;
-      return {status: true, useEthKey, proof: 'proof'};
+      if (walletAddress.toLowerCase() !== validateResult.toLowerCase()) throw new Error('useEthKey validation failed.');
+      
+      // to confirm this step and inner logic.
+      const useTicket = await this.getProofToken({ ticket: unsignedToken, unEndPoint, message: 'Message', Signature: 'signature' });
+
+      return { useEthKey, useTicket };
+
     } catch (e) {
+
       console.error(e);
       return e;
+      
     }
   }
 
