@@ -96,7 +96,7 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
 ````javascript
 
  /**
-  * @param {Object} filter { 'devconId': 6, 'class': 'gold' } (optional rule to fiter tokens by keys and values)
+  * @param {Object} filter { 'devconId': 6, 'class': 'gold' } (optional rule to fiter tokens by keys and values - this acts as a simple filter where you cannot at this time filter many from the same key).
   * @param {String} tokenName token name identifier to negotiate 
   * @param {Object} options
   * @param {Boolean} options[useOverlay] optional rule to use token issuer overlay
