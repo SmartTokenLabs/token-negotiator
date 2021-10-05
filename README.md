@@ -1,33 +1,30 @@
-# token-negotiator 
+# token-negotiator
 
 The token-negotiator is an NPM package designed for use with TokenScript. 
 
 TokenScript is a framework which improves functionality, security and usability of blockchain token. It creates a layer between a blockchain and user devices, adding information, rules and functionalites both onchain and offchain. 
 
-For more information please visit: [https://tokenscript.org/](tokenscript.org).
+With a tokenScript enabled token, you can build a custom tokenised web experience with the use of token-negotiator.
+
+For further information about TokenScript please visit: [https://tokenscript.org/](tokenscript.org).
 
 ## Examples
 
-To familiarise yourself with this technology also consider visiting the link below with working examples of how
-the Token Negotiator can be utilised. 
+A live demonsration of the Token Negotiator with source code.
 
 https://tokenscript.github.io/token-negotiator/examples/
 
-## Documentation
-
-[guides and deployment](https://tokenscript.org/guides/Intro.html)
-
 ## Installation and usage
 
-There are 2 locations that require the token-negotiator to be installed (As a consumer of a token, you will only need to follow the client steps).
+There are 2 locations that require the token-negotiator to be installed for use:
 
-1. Token Issuers Web Application.
-2. Client Web Applications that utilise tokens. 
+1. Token Issuers will install the package to their web Application (e.g. 'hotel-land-token')
+2. Client Web Applications can then install the pacakge to utilise the 'hotel-land-token' (no limit to tokens)
 
-For all use cases, install the token-negotiator. From there we will share the steps to configure the pacakge for both the Token Issuer and Client.
+For all use cases, install the token-negotiator. From there follow the steps to configure the pacakge for both the Token Issuer and Client.
 
 ```sh
-npm i @alphawallet/token-negotiator
+npm i @tokenScript/token-negotiator
 ```
 
 ## Client: Installation
