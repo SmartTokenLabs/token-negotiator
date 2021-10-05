@@ -4,7 +4,7 @@ class OverlayService {
         this.options = options;
         this.filter = filter;
         this.assignClientListener();
-        this.embedClientModal(this.config.tokenName, this.config.tokenOrigin, this.options, this.filter);
+        this.embedClientOverlay(this.config.tokenName, this.config.tokenOrigin, this.options, this.filter);
     }
     isEventFromOverlay(origin, tokenOrigin) { return origin === tokenOrigin; }
     ;
@@ -15,15 +15,15 @@ class OverlayService {
             this.clientEventController(event.data);
         }, false);
     }
-    embedClientModal(tokenName, tokenOrigin, options, filter) {
+    embedClientOverlay(tokenName, tokenOrigin, options, filter) {
         setTimeout(() => {
             let refTokenSelector = document.querySelector(options.tokenSelectorContainer);
             if (refTokenSelector) {
-                const iframe = `<div class="${tokenName}ModalWrapper"><iframe class="${tokenName}Modal" style="border:0; resize: none; overflow: auto;" height="335px" width="376px" src="${tokenOrigin}" allowtransparency="true" title="outlet" frameborder="0" style="border:0" allowfullscreen frameborder="no" scrolling="no"></iframe></div>`;
+                const iframe = `<div class="${tokenName}OverlayWrapper"><iframe class="${tokenName}Overlay" style="border:0; resize: none; overflow: auto;" height="335px" width="376px" src="${tokenOrigin}" allowtransparency="true" title="outlet" frameborder="0" style="border:0" allowfullscreen frameborder="no" scrolling="no"></iframe></div>`;
                 refTokenSelector.innerHTML = iframe;
-                let refModalSelector = document.querySelector(`${options.tokenSelectorContainer} .${tokenName}Modal`);
-                refModalSelector.onload = function () {
-                    refModalSelector
+                let refOverlaySelector = document.querySelector(`${options.tokenSelectorContainer} .${tokenName}Overlay`);
+                refOverlaySelector.onload = function () {
+                    refOverlaySelector
                         .contentWindow
                         .postMessage({
                         evt: "getTokenButtonHTML",
@@ -53,18 +53,18 @@ class OverlayService {
                     document.querySelector(`${this.options.tokenSelectorContainer}`).append(newDiv);
                 }
                 break;
-            case 'hideModal':
-                document.querySelector(`${this.options.tokenSelectorContainer} .${this.config.tokenName}ModalWrapper`).style.display = 'none';
+            case 'hideOverlay':
+                document.querySelector(`${this.options.tokenSelectorContainer} .${this.config.tokenName}OverlayWrapper`).style.display = 'none';
                 break;
-            case 'showModal':
-                document.querySelector(`${this.options.tokenSelectorContainer} .${this.config.tokenName}ModalWrapper`).style.display = 'block';
+            case 'showOverlay':
+                document.querySelector(`${this.options.tokenSelectorContainer} .${this.config.tokenName}OverlayWrapper`).style.display = 'block';
                 break;
         }
     }
-    modalClickHandler() {
-        document.querySelector(`${this.options.tokenSelectorContainer} .${this.config.tokenName}Modal`)
+    overlayClickHandler() {
+        document.querySelector(`${this.options.tokenSelectorContainer} .${this.config.tokenName}Overlay`)
             .contentWindow
-            .postMessage({ evt: "setToggleModalHandler" }, '*');
+            .postMessage({ evt: "setToggleOverlayHandler" }, '*');
     }
 }
 export default OverlayService;

@@ -30,7 +30,7 @@ export class Client {
     }
     negotiateViaOverlay() {
         const overlayService = new OverlayService(this.config, this.options, this.filter);
-        this.modalClickHandler = overlayService.modalClickHandler;
+        this.overlayClickHandler = overlayService.overlayClickHandler;
     }
     async connectMetamaskAndGetAddress() {
         if (!window.ethereum)
