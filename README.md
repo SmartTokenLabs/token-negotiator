@@ -14,115 +14,172 @@ https://tokenscript.github.io/token-negotiator/examples/
 
 [guides and deployment](https://tokenscript.org/guides/Intro.html)
 
-## Usage
+## Installation and usage
+
+There are 2 locations that require the token-negotiator to be installed (As a consumer of a token, you will only need to follow the client steps).
+
+1. Token Issuers Web Application.
+2. Client Web Applications that utilise tokens. 
+
+For all use cases, install the token-negotiator. From there we will share the steps to configure the pacakge for both the Token Issuer and Client.
 
 ```sh
 npm i @alphawallet/token-negotiator
 ```
 
-```javascript
-import { Negotiator } from 'token-negotiator';
-```
+## Client Installation 
 
-### Negotiator
+The client installation provides two solutions to bringing tokens into your website, web app, dapp. 
 
-Creates a new instance of the Negotiator module. 
+### Active Client Negotiation of tokens
 
-```javascript
-  /**
-  *
-  * @param {Object} filter optional filter rules 
-  * @param {Object} options api options (required options shown below)
-  * @param {String} tokenName name (required)
-  */
-  const negotiator = new Negotiator({
-    filter: { 'devconId': 6 },
-    tokenName: "devcon-ticket",
-    options: {}
-  });
-```
-
-Resolves the tokens with filter applied.
+This approach is designed with security in mind where the client website will not learn about the tokens
+until the end user has selected them via an iframe to the Token Issuers domain. 
 
 ```javascript
-  /**
-  *
-  * @returns {object} token data { success: true/false, tokens: [...{}] }
-  */
-  const negotiatedTokens = await negotiator.negotiate();
-```
-
-Authenticate ownership of Token.
-
-```javascript
-  /**
-  * @param {URL} unEndPoint end point must return { un: number, expiry: date }
-  * @param {object} unsignedToken selected un-signed token/ticket
-  * @returns {object} { status (true/false), useToken (object), useEthKey (object)
-  * - useTicket and ethKey can be used to verify a ticket is valid. 
-  * - status indicates if the function was successful.
-  */
-  const { status, useToken, useEthKey } = await negotiator.authenticate({ unEndPoint, unsignedToken });
-```
-
-Filters
-
-When loading a page you may wish to only show a select set of tokens.
-
-For example: with the following key/values `devconId, ticketId, ticketClass` you may wish to only show `devconId` when the value is `6` and of `ticketClasses` of `A`. Below is an example of how this can be applied.
-
-```javascript
-  const negotiator = new Negotiator({
-    filter: { devconId: 6, ticketClass: "A" },
-    tokenName: "devcon-ticket",
-    options: {}
-  });
-```
-
-Negotiator Options 
-
-(coming soon)
-
-Dev Notes (remove when complete):
-
-- Spin up the outlet with http-server
-- Serve hotel bogota
-
-TODO's
-
-- finish open / close functionality e.g. load and unload Iframe with tickets
-- load tickets into container from window
-- selection event logic handling needed
-- Connect data to hotel bogota allowing for discount to be applied etc
-
-SEE: eventController & tokenButtonHandler 
-
-Development notes towards the re-work of the NPM package
-
-  1. Token Negotiator Client 
-
-  negotiator.negotiate({ filter })
-
-  This function will open the modal and load the button into the page.
-  Filter will be stored in the negotiator state ready to dispatch
-  to modal in later events.
-
-  2. Token Negotiator Modal (button pressed) Client event
   
-  negotiator.getTokenInstances()
-
-  dispatches event to Modal with filter (stored in memory)
-
-  Modal opens, showing tokens.
+  import { Client } from 'token-negotiator';
   
-  3. Modal toggle single token on/off event
+  const filter = {};
 
-  // internal methods used inside modal
-  negotiator.toggleToken(tokenID) // updates selected tokens state
-  >>> then >>>
-  negotiator.dispatchTokens()     // dispatches selected tokens to client
+  const tokenName = "devcon-ticket";
 
-  // attach to client (receives incoming events from modal)
-  // learns tokens that are sent only
-  negotiator.tokenListener() 
+  const options = { useOverlay: true, tokenSelectorContainer: ".tokenSelectorContainerElement" };
 
+  const negotiator = new Client(filter, tokenName, options);
+
+  this.state = { negotiator: window.negotiator };
+
+  negotiator.negotiate();
+
+  window.addEventListener('message', (event) => {
+    switch(event.data.evt) {
+      case 'setSelectedTokens':
+        setTokens(event.data.selectedTokens);
+        break;
+    }
+  }, false);
+```
+### Passive Client Negotiation of tokens
+
+This approach is designed for a fully custom ui/ux experience, where a list of all tokens are learnt by the client on negotation. 
+
+````javascript
+
+  import { Client } from 'token-negotiator';
+
+  let tokens = [];
+
+  const filter = { 'devconId': 6 };
+
+  const tokenName = "devcon-ticket";
+
+  const options = { useOverlay: true, tokenSelectorContainer: ".tokenSelectorContainerElement" };
+  
+  const negotiator = new Client(filter, tokenName, options);
+
+  negotiator.negotiate().then(result => {
+    if(tokens){
+      tokens = result;
+    }
+    }).catch((err) => {
+      console.log('error', err);
+    }
+  );
+
+````
+
+### Negotiator Client Module API
+
+````javascript
+
+ /**
+  * @param {Object} filter { 'devconId': 6, 'class': 'gold' } (optional rule to fiter tokens by keys and values)
+  * @param {String} tokenName token name identifier to negotiate 
+  * @param {Object} options
+  * @param {Boolean} options[useOverlay] optional rule to use token issuer overlay
+  * @param {Object} options[tokenSelectorContainer] HTML Selector location to inject token issuer overlay when use overlay is set as true
+  */
+ negotiator.negotiate(
+   filter,
+   tokenName,
+   options
+ )
+
+````
+### Negotiator Client Authenticate ownership of Token
+
+At the stage of negotiation, the client has learnt about the tokens which can be used to provide soft features such as
+what discount could be applied with ownership of a token or entry to a VIP lounge for browsing purposes. The Token Negotiator can be then used to attest that the end user has ownership rights to the token, via the authenticate method.
+
+```javascript
+
+  /**
+  * @param {URL} unEndPoint end point that returns the following JSON payload { un: number, expiry: date }
+  * @param {object} unsignedToken token to attest
+  * @returns {object} { ethKey (object), proof (object) }
+  */
+  const { useToken, useEthKey } = await negotiator.authenticate({ 
+    unEndPoint, 
+    unsignedToken 
+  });
+
+
+```
+
+## Token Issuer Installation 
+
+The token issuer installation provides two ways for the consumers to acquire tokens - using the following process.
+### Installation of overlay
+
+The overlay web component acts as an intermediatry between the client and token outlet (explained below). Where a client will connect with an overlay which will in turn connect with the token outlet to retrieve selected tokens.
+
+The token issuer should create a web directory location for the following application. 
+
+The styles.css can be updated to reflect the Token Issuers brand (branding, token design).
+ 
+````javascript
+  
+  import { Overlay } from 'token-negotiator';
+
+  import "./theme/style.css";
+
+  new Modal();
+
+````
+
+### Installation of token outlet
+
+The token outlet is the location in which tokens are stored and dispatched. The Token Negotiator is flexible, where you can install both the overlay and outlet modules in the same location, or separate. 
+ 
+````javascript
+  
+  import { Outlet } from 'token-negotiator';
+
+  new Outlet({
+    tokenUrlName: 'ticket',
+    tokenSecretName: 'secret',
+    tokenIdName: 'id',
+    localStorageItemName: 'dcTokens'
+  });
+
+````
+
+### Negotiator Token Outlet Module API
+
+````javascript
+
+  /**
+  * @param {string} tokenUrlName name of the token to be read from a magic link
+  * @param {String} tokenSecretName a secret that can be used to decode a token
+  * @param {String} tokenIdName ticket identifier data e.g. email address
+  * @param {String} localStorageItemName location to store tokens
+  */
+  new Outlet({
+    tokenUrlName: 'ticket',
+    tokenSecretName: 'secret',
+    tokenIdName: 'id',
+    localStorageItemName: 'dcTokens'
+  });
+
+````

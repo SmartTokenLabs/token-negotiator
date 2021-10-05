@@ -50,14 +50,7 @@ export default function BookingModal({room}) {
       });
 
       // when the ticket is valid and validation data is present
-      if (
-          authenticationData.status === true &&
-          authenticationData.useEthKey &&
-          authenticationData.proof
-      ) {
-
-        // store token proof details in react state for later.
-        // tokenProof: { status, useTicket, ethKey }
+      if (authenticationData.useEthKey && authenticationData.proof) {
         setTokenProof(authenticationData);
       } else {
 

@@ -41,7 +41,7 @@ function App() {
   let [discount, setDiscount] = useState({ value: undefined, tokenInstance: null });
 
   // token proof
-  let [useDiscountProof, setUseDiscountProof] = useState({ status: false, useTicket: undefined, ethKey: undefined });
+  let [useDiscountProof, setUseDiscountProof] = useState({ useTicket: undefined, ethKey: undefined });
 
   // async example of initial hotel data loaded from source
   const getRoomTypesData = () => {
@@ -63,7 +63,7 @@ function App() {
       setDiscount({ value: undefined, tokenInstance: undefined });
 
       // clear discount proof data
-      setUseDiscountProof({ status: false, proof: undefined, useEthKey: undefined });
+      setUseDiscountProof({ proof: undefined, useEthKey: undefined });
 
     } else {
 
@@ -81,14 +81,10 @@ function App() {
       });
 
       // when the ticket is valid and validation data is present
-      if(
-        authenticationData.status === true &&
-        authenticationData.useEthKey &&
-        authenticationData.proof
-      ) {
+      if(authenticationData.useEthKey && authenticationData.proof) {
 
         // store token proof details in react state for later.
-        // authenticationData: { status, useTicket, ethKey }
+        // authenticationData: { useTicket, ethKey }
         setUseDiscountProof(authenticationData);
         
         // share discount price via react state with the user inside react view.
