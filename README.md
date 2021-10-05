@@ -8,6 +8,9 @@ For more information please visit: [https://tokenscript.org/](tokenscript.org).
 
 ## Examples
 
+To familiarise yourself with this technology also consider visiting the link below with working examples of how
+the Token Negotiator can be utilised. 
+
 https://tokenscript.github.io/token-negotiator/examples/
 
 ## Documentation
