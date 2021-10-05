@@ -185,3 +185,12 @@ The token outlet is the location in which tokens are stored and dispatched. The 
   });
 
 ````
+
+### Help / Questions / Improvements
+
+Please contact us or open an issue via github:
+Alphawallet <info@alphawallet.com>
+
+For working examples please visit and see readme for local setup:
+https://tokenscript.github.io/token-negotiator/examples/
+
