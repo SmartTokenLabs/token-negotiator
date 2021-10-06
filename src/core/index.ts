@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { base64ToUint8array } from './../utils';
 
-// negotiator functions.
+// core / common negotiator functions.
 
 // recieves decoded tokens, returns filtered list.
 export const filterTokens = (decodedTokens: any, filter = {}) => {

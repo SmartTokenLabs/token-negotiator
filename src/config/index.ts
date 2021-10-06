@@ -14,8 +14,8 @@ import { SignedDevconTicket } from './../Attestation/SignedDevonTicket.js';
   localStorageItemName: String (namespace used to locate tokens)
   localStorageEthKeyItemName: String (namespace used to locate keys)
 
-  TODO - tokenParser isn't scaleable e.g. this lib can't hold 1m of token definitions.
-  This should be held inside the Modal or Outlet.
+  TODO - consider a new strategy where this config can be both trusted and loaded externally from
+  this package.
 
 */
 
