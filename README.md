@@ -189,6 +189,10 @@ The token outlet is the location in which tokens are stored and dispatched. The 
 
 run `npm run test`
 
+## Development of this library.
+
+See Developers Page inside Wiki
+
 ### Help / Questions / Improvements
 
 Please contact us or open an issue via github:
