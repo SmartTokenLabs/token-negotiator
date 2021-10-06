@@ -1,7 +1,7 @@
 {
   "name": "@tokenscript/token-negotiator",
   "version": "0.0.0",
-  "description": "a library for enriching the functionality of your tokens within dapps",
+  "description": "",
   "main": "dist/index.js",
   "scripts": {
     "test": "jest",
@@ -28,8 +28,6 @@
     "jest": "^27.1.1",
     "jest-junit": "^12.2.0",
     "ts-jest": "^27.0.5",
-    "ts-loader": "^9.2.6",
-    "webpack": "^5.51.1",
-    "webpack-cli": "^4.8.0"
+    "ts-loader": "^9.2.6"
   }
 }
