@@ -1,4 +1,4 @@
-
+// @ts-nocheck
 // OutletService enscapsulates resources to use the negotiator service (outlet)
 // - reads tokens from query string
 // - provides tokens through an iframe
@@ -22,7 +22,7 @@ class OutletService {
   // sends events
   eventSender = {
     emitTokens: (tokens: any) => {
-      window.postMessage({
+      window.parent.postMessage({
         evt: 'setTokens',
         tokens: tokens
       }, "*");

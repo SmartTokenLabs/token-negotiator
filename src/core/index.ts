@@ -1,4 +1,4 @@
-// @ts-ignore
+// @ts-nocheck
 import { base64ToUint8array } from './../utils';
 
 // negotiator functions.
@@ -74,8 +74,7 @@ export const openOutletIframe = (tokensOrigin: string, localStorageItemName: str
     iframe.style.opacity = '0';
     document.body.appendChild(iframe);
     iframe.onload = () => {
-      // ask for tokens
-      window.postMessage({
+      iframe.contentWindow.postMessage({
         evt: 'getTokens',
         localStorageItemName: localStorageItemName
       }, "*");

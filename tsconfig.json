@@ -1,18 +1,20 @@
 {
   "compilerOptions": {
-    "experimentalDecorators": true,
-    "outDir": "./dist/",
-    "noImplicitAny": true,
-    "module": "es6",
-    "target": "es2020",
-    "jsx": "react",
-    "allowJs": true,
+    "removeComments": true,
     "moduleResolution": "node",
-    "strict": false,
+    "baseUrl": ".",
+    "target": "es2020",
+    "module": "es6",
+    "esModuleInterop": true,
     "declaration": true,
-    "sourceMap": true,
-    "types": ["jest", "node"]
+    "outDir": "./dist",
+    "strict": true,
+    "allowJs": true,
+    "typeRoots": [
+      "node_modules/@types",
+      "src/typings"
+    ]
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"]
+  "include": ["src"],
+  "exclude": ["node_modules", "**/__tests__/*", "examples"]
 }

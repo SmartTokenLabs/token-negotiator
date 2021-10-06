@@ -1,5 +1,5 @@
 // @ts-ignore
-import { SignedDevconTicket } from './../Attestation/SignedDevonTicket';
+import { SignedDevconTicket } from './../Attestation/SignedDevonTicket.js';
 
 /*
 
@@ -23,7 +23,7 @@ export const config = {
   "devcon-ticket": {
       tokenName: 'devcon-ticket',
       attestationOrigin: "https://stage.attestation.id",
-      tokenOrigin: "http://localhost:3002/",
+      tokenOrigin: "http://localhost:3002",
       tokenUrlName: 'ticket',
       tokenSecretName: 'secret',
       tokenIdName: 'id',

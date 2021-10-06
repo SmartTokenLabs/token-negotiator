@@ -1,12 +1,11 @@
 {
   "name": "@tokenscript/token-negotiator",
   "version": "0.0.0",
-  "description": "a library for enriching the functionality of your tokens within dapps",
+  "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack",
-    "watch": "webpack --watch --progress"
+    "test": "jest",
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
@@ -21,11 +20,15 @@
   "dependencies": {
     "asn1js": "^2.0.26",
     "big-integer": "^1.6.48",
-    "ethers": "^5.4.0"
+    "ethers": "^5.4.0",
+    "pvutils": "^1.0.17"
   },
   "devDependencies": {
-    "jest": "^27.0.6",
-    "webpack": "^5.51.1",
-    "webpack-cli": "^4.8.0"
+    "@types/jest": "^27.0.2",
+    "jest": "^27.1.1",
+    "jest-junit": "^12.2.0",
+    "ts-jest": "^27.0.5",
+    "ts-loader": "^9.2.6",
+    "typescript": "^4.4.3"
   }
 }
