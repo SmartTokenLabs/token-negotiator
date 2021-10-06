@@ -38,7 +38,7 @@ until the end user has selected them via an iframe to the Token Issuers domain.
 
 ```javascript
   
-  import { Client } from 'token-negotiator';
+  import { Client } from '@tokenscript/token-negotiator';
   
   const filter = {};
 
@@ -49,8 +49,6 @@ until the end user has selected them via an iframe to the Token Issuers domain.
   const options = { useOverlay: true, tokenSelectorContainer: ".tokenSelectorContainerElement" };
 
   const negotiator = new Client(filter, tokenName, options);
-
-  this.state = { negotiator: window.negotiator };
 
   negotiator.negotiate();
 
@@ -68,7 +66,7 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
 
 ````javascript
 
-  import { Client } from 'token-negotiator';
+  import { Client } from '@tokenscript/token-negotiator';
 
   let tokens = [];
 
@@ -142,7 +140,7 @@ The styles.css can be updated to reflect the Token Issuers brand (branding, toke
  
 ````javascript
   
-  import { Overlay } from 'token-negotiator';
+  import { Overlay } from '@tokenscript/token-negotiator';
 
   import "./theme/style.css";
 
@@ -155,13 +153,14 @@ The styles.css can be updated to reflect the Token Issuers brand (branding, toke
 The token outlet is the location in which tokens are stored and dispatched. The Token Negotiator is flexible, where you can install both the overlay and outlet modules in the same location, or separate. 
  
 ````javascript
-  // token list
-  let tokens = [];
-  // initial config object
-  const negotiator = new window.Negotiator({
-    filter: { 'devconId': 6 },
-    tokenName: "devcon-ticket",
-    options: { userPermissionRequired: true }
+
+  import { Outlet } from '@tokenscript/token-negotiator';
+
+  new Outlet({
+    tokenUrlName: 'ticket',
+    tokenSecretName: 'secret',
+    tokenIdName: 'id',
+    localStorageItemName: 'dcTokens'
   });
 
 ````
