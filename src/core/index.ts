@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { base64ToUint8array } from './../utils';
 
-// negotiator functions.
+// core / common negotiator functions.
 
 // recieves decoded tokens, returns filtered list.
 export const filterTokens = (decodedTokens: any, filter = {}) => {
@@ -86,9 +86,9 @@ export const openOutletIframe = (tokensOrigin: string, localStorageItemName: str
 // returns decode and filtered tokens
 export const getTokens = async ({
   filter = {},
-  tokenName = "devcon-ticket",
-  tokensOrigin = "http://localhost:3002/",
-  localStorageItemName = "dcTokens",
+  tokenName,
+  tokensOrigin,
+  localStorageItemName,
   // @ts-ignore
   tokenParser,
   // @ts-ignore
