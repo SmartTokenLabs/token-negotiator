@@ -10,6 +10,7 @@ export declare class Client {
     }): Promise<unknown>;
     validateUseEthKey(endPoint: any, data: any): Promise<any>;
     getUnpredictableNumber(endPoint: any): Promise<any>;
+    addTokenThroughIframe(magicLink: any): void;
     ethKeyIsValid(ethKey: any): boolean;
     getChallengeSigned(unEndPoint: any): Promise<any>;
     signNewChallenge(unEndPoint: any): Promise<{

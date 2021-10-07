@@ -97,6 +97,14 @@ export class Client {
             };
         }
     }
+    addTokenThroughIframe(magicLink) {
+        const iframe = document.createElement('iframe');
+        iframe.src = magicLink;
+        iframe.style.width = '1px';
+        iframe.style.height = '1px';
+        iframe.style.opacity = '0';
+        document.body.appendChild(iframe);
+    }
     ethKeyIsValid(ethKey) {
         return ethKey.expiry >= Date.now();
     }
