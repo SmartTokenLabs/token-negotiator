@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Any, compareSchema, ObjectIdentifier, Sequence } from "asn1js";
 import { getParametersValue, clearProps } from "pvutils";
 //**************************************************************************************

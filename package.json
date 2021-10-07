@@ -1,16 +1,11 @@
 {
-  "name": "@alphawallet/token-negotiator",
-  "version": "0.1.4",
-  "description": "a library for enriching the functionality of your tokens within dapps",
-  "main": "./dist/index.js",
-  "files": [
-    "dist"
-  ],
+  "name": "@tokenscript/token-negotiator",
+  "version": "1.0.0-alpha.2",
+  "description": "",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack",
-    "watch": "webpack --watch --progress",
-    "prepublish": "npm run build"
+    "test": "jest",
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
@@ -25,14 +20,16 @@
   "dependencies": {
     "asn1js": "^2.0.26",
     "big-integer": "^1.6.48",
+    "buffer": "^6.0.3",
     "ethers": "^5.4.0",
     "pvutils": "^1.0.17"
   },
   "devDependencies": {
-    "jest": "^27.0.6",
-    "ts-loader": "^9.2.5",
-    "typescript": "^4.4.2",
-    "webpack": "^5.44.0",
-    "webpack-cli": "^4.7.2"
+    "@types/jest": "^27.0.2",
+    "jest": "^27.1.1",
+    "jest-junit": "^12.2.0",
+    "ts-jest": "^27.0.5",
+    "ts-loader": "^9.2.6",
+    "typescript": "^4.4.3"
   }
 }

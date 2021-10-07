@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   BitString,
   compareSchema,
@@ -9,6 +10,7 @@ import {
 import { getParametersValue, clearProps, bufferToHexCodes } from "pvutils";
 import PublicKeyInfo from "./PublicKeyInfo.js";
 import { ethers } from "ethers";
+import bigInt from 'big-integer';
 
 export class DevconTicket {
   //**********************************************************************************

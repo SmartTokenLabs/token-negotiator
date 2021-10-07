@@ -1,5 +1,3 @@
-import { Negotiator } from "./negotiator";
-
-// @ts-ignore
-window.Negotiator = Negotiator;
-
+export { Overlay } from './overlay/index';
+export { Outlet } from './outlet/index';
+export { Client } from './client/index';
