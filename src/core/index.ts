@@ -86,9 +86,9 @@ export const openOutletIframe = (tokensOrigin: string, localStorageItemName: str
 // returns decode and filtered tokens
 export const getTokens = async ({
   filter = {},
-  tokenName = "devcon-ticket",
-  tokensOrigin = "http://localhost:3002/",
-  localStorageItemName = "dcTokens",
+  tokenName,
+  tokensOrigin,
+  localStorageItemName,
   // @ts-ignore
   tokenParser,
   // @ts-ignore

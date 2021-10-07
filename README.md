@@ -44,7 +44,11 @@ until the end user has selected them via an iframe to the Token Issuers domain.
 
   let tokens = [];
 
+  // points to remote host
   const tokenName = "devcon-ticket";
+
+  // local development use:
+  // const tokenName = 'devcon-ticket-local-3002';
 
   const options = { useOverlay: true, tokenSelectorContainer: ".tokenSelectorContainerElement" };
 
@@ -74,12 +78,15 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
 
   const tokenName = "devcon-ticket";
 
+  // local development use:
+  // const tokenName = 'devcon-ticket-local-3002';
+
   const options = {};
   
   const negotiator = new Client(filter, tokenName, options);
 
   negotiator.negotiate().then(result => {
-    if(tokens){
+    if(result){
       tokens = result;
     }
     }).catch((err) => {
@@ -175,11 +182,15 @@ The token outlet is the location in which tokens are stored and dispatched. The 
   * @param {String} tokenIdName ticket identifier data e.g. email address
   * @param {String} localStorageItemName location to store tokens
   */
+
+  // Points to remote host:.
   new Outlet({
-    tokenUrlName: 'ticket',
-    tokenSecretName: 'secret',
-    tokenIdName: 'id',
-    localStorageItemName: 'dcTokens'
+    tokenName: 'devcon-ticket'
+  });
+
+  // Local development.
+  new Outlet({
+    tokenName: 'devcon-ticket-local-3002'
   });
 
 ````

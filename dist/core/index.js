@@ -74,7 +74,7 @@ export const openOutletIframe = (tokensOrigin, localStorageItemName) => {
         };
     });
 };
-export const getTokens = async ({ filter = {}, tokenName = "devcon-ticket", tokensOrigin = "http://localhost:3002/", localStorageItemName = "dcTokens", tokenParser, unsignedTokenDataName }) => {
+export const getTokens = async ({ filter = {}, tokenName, tokensOrigin, localStorageItemName, tokenParser, unsignedTokenDataName }) => {
     return new Promise((resolve, reject) => {
         window.addEventListener('message', function (event) {
             if (event.data.evt === 'setTokens') {

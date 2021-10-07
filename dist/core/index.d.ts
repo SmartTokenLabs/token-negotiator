@@ -4,9 +4,9 @@ export declare const decodeTokens: (rawTokens: any, tokenParser: any, unsignedTo
 export declare const openOutletIframe: (tokensOrigin: string, localStorageItemName: string) => Promise<unknown>;
 export declare const getTokens: ({ filter, tokenName, tokensOrigin, localStorageItemName, tokenParser, unsignedTokenDataName }: {
     filter?: {} | undefined;
-    tokenName?: string | undefined;
-    tokensOrigin?: string | undefined;
-    localStorageItemName?: string | undefined;
+    tokenName: any;
+    tokensOrigin: any;
+    localStorageItemName: any;
     tokenParser: any;
     unsignedTokenDataName: any;
 }) => Promise<unknown>;
