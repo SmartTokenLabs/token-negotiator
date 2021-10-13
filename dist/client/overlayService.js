@@ -4,22 +4,22 @@ class OverlayService {
         this.options = options;
         this.filter = filter;
         this.assignClientListener();
-        this.embedClientOverlay(this.config.tokenName, this.config.tokenOrigin, this.options, this.filter);
+        this.embedClientOverlay(this.config.tokenName, this.config.tokenOverlayOrigin, this.options, this.filter);
     }
-    isEventFromOverlay(origin, tokenOrigin) { return origin === tokenOrigin; }
+    isEventFromOverlay(origin, tokenOverlayOrigin) { return origin === tokenOverlayOrigin; }
     ;
     assignClientListener() {
         window.addEventListener('message', (event) => {
-            if (!this.isEventFromOverlay(event.origin, this.config.tokenOrigin))
+            if (!this.isEventFromOverlay(event.origin, this.config.tokenOverlayOrigin))
                 return;
             this.clientEventController(event.data);
         }, false);
     }
-    embedClientOverlay(tokenName, tokenOrigin, options, filter) {
+    embedClientOverlay(tokenName, tokenOverlayOrigin, options, filter) {
         setTimeout(() => {
             let refTokenSelector = document.querySelector(options.tokenSelectorContainer);
             if (refTokenSelector) {
-                const iframe = `<div class="${tokenName}OverlayWrapper"><iframe class="${tokenName}Overlay" style="border:0; resize: none; overflow: auto;" height="335px" width="376px" src="${tokenOrigin}" allowtransparency="true" title="outlet" frameborder="0" style="border:0" allowfullscreen frameborder="no" scrolling="no"></iframe></div>`;
+                const iframe = `<div class="${tokenName}OverlayWrapper"><iframe class="${tokenName}Overlay" style="border:0; resize: none; overflow: auto;" height="335px" width="376px" src="${tokenOverlayOrigin}" allowtransparency="true" title="outlet" frameborder="0" style="border:0" allowfullscreen frameborder="no" scrolling="no"></iframe></div>`;
                 refTokenSelector.innerHTML = iframe;
                 let refOverlaySelector = document.querySelector(`${options.tokenSelectorContainer} .${tokenName}Overlay`);
                 refOverlaySelector.onload = function () {

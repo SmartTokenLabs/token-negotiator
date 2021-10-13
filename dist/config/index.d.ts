@@ -4,6 +4,7 @@ export declare const config: {
         tokenName: string;
         attestationOrigin: string;
         tokenOrigin: string;
+        tokenOverlayOrigin: string;
         tokenUrlName: string;
         tokenSecretName: string;
         tokenIdName: string;
@@ -17,6 +18,7 @@ export declare const config: {
         tokenName: string;
         attestationOrigin: string;
         tokenOrigin: string;
+        tokenOverlayOrigin: string;
         tokenUrlName: string;
         tokenSecretName: string;
         tokenIdName: string;
@@ -30,6 +32,7 @@ export declare const config: {
         tokenName: string;
         attestationOrigin: string;
         tokenOrigin: string;
+        tokenOverlayOrigin: string;
         tokenUrlName: string;
         tokenSecretName: string;
         tokenIdName: string;
