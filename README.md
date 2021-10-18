@@ -16,7 +16,7 @@ https://github.com/TokenScript/token-negotiator-examples
 
 ### The following documentation is divided into the two sections
 
-- Client installation (utilising exisitng tokens)
+- Client installation (utilising exisiting tokens)
 - Token issuer installation (for token issuers/suppliers)
 
 ## Client: Installation
@@ -46,7 +46,7 @@ until the end user has selected them via an token negotiator overlay web compone
 
   const options = { 
     useOverlay: true, // enables active negotiation
-    tokenSelectorContainer: ".tokenSelectorContainerElement" // add an element inside your app to load overlay within
+    tokenSelectorContainer: ".tokenSelectorContainerElement" // an HTML container element for the overlay to load within
   };
 
   const negotiator = new Client(filter, tokenName, options);
