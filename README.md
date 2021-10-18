@@ -8,7 +8,7 @@ With a tokenScript enabled token, you can build a custom tokenised web experienc
 
 For further information about TokenScript please visit: [https://tokenscript.org/](tokenscript.org).
 
-## Examples
+### Examples
 
 A live demonsration of the Token Negotiator and development examples can be found here.
 
