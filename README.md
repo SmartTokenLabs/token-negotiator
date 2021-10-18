@@ -139,7 +139,7 @@ These components/web pages are;
 
 - a Token Overlay (for active negotiation)
 - a Token Outlet (a central place to store ticket attestations)
-- a Token issuer interface, which is used to direct a magic link.
+- a Token issuer interface, which is used to recieve a magic link
 
 (note: the token issuer could be web page or another interface that has web capabilities).
 
