@@ -24,7 +24,7 @@ Within your web application / dapp install the token negotiator.
 npm i @tokenScript/token-negotiator
 ```
 
-The library provides two ways to load tokens into your application, active or passive. 
+This library provides two ways to load tokens into your application, active or passive. 
 
 ### Active Negotiation of tokens
 
