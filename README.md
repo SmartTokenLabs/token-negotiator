@@ -14,7 +14,7 @@ A live demonsration of the Token Negotiator and development examples can be foun
 
 https://github.com/TokenScript/token-negotiator-examples
 
-## The documentation is divided into the two following sections
+### The following documentation is divided into the two sections
 
 - Client installation (utilising exisitng tokens)
 - Token issuer installation (for token issuers/suppliers)
@@ -46,7 +46,7 @@ until the end user has selected them via an token negotiator overlay web compone
 
   const options = { 
     useOverlay: true, // enables active negotiation
-    tokenSelectorContainer: ".tokenSelectorContainerElement" // entry point inside your application to load component
+    tokenSelectorContainer: ".tokenSelectorContainerElement" // add an element inside your app to load overlay within
   };
 
   const negotiator = new Client(filter, tokenName, options);
@@ -72,7 +72,7 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
 
   let tokens = [];
 
-  const filter = {}; // filter example: { 'devconId': 6 };
+  const filter = {};
 
   const tokenName = "devcon-ticket";
 
