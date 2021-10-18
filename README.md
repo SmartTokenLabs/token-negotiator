@@ -217,7 +217,7 @@ See Developers Page inside Wiki
 ### Help / Questions / Improvements
 
 Please contact us or open an issue via github:
-Alphawallet <info@alphawallet.com>
+Alchemynft <info@alchemynft.org>
 
 For working examples please visit and see readme for local setup:
 https://tokenscript.github.io/token-negotiator/examples/
