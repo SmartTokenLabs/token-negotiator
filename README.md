@@ -83,6 +83,7 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
   negotiator.negotiate().then(result => {
     if(result){
       tokens = result;
+      // do something with tokens here.
     }
     }).catch((err) => {
       console.log('error', err);
