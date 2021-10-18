@@ -109,7 +109,7 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
  )
 
 ````
-### Client: Negotiator Client Authenticate ownership of Token
+### Client: Authenticate ownership of Token
 
 At the stage of negotiation, the client has learnt about the tokens which can be used to provide soft features such as
 what discount could be applied with ownership of a token or entry to a VIP lounge for browsing purposes. The Token Negotiator can be then used to attest that the end user has ownership rights to the token, via the authenticate method.
