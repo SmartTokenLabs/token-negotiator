@@ -184,7 +184,7 @@ Once the `tokenName` has been configured you can build the application and host 
 
 ### Token Issuer: Token Config
 
-At this stage of our development road map, compatible tokens are stored inside this package. As a token issuer, please contact us at: Alphawallet <info@alphawallet.com>
+At this stage of our development road map, compatible tokens are stored inside this package. As a token issuer, please contact us at: Alchemynft <info@alchemynft.org>
 where we would be like to connect with you and help support your token.
 
 The config file provides the settings to communicate tokens between the issuer and client.
