@@ -4,37 +4,35 @@ The token-negotiator is an NPM package designed for use with TokenScript.
 
 TokenScript is a framework which improves functionality, security and usability of blockchain token. It creates a layer between a blockchain and user devices, adding information, rules and functionalites both onchain and offchain. 
 
-With a tokenScript enabled token, you can build a custom tokenised web experience with the use of token-negotiator.
+With a tokenScript enabled token, you can build a custom tokenised web experience with the use of token-negotiator, using both on and off chain web capabilities.
 
 For further information about TokenScript please visit: [https://tokenscript.org/](tokenscript.org).
 
 ## Examples
 
-A live demonsration of the Token Negotiator with source code.
+A live demonsration of the Token Negotiator and development examples can be found here.
 
-https://tokenscript.github.io/token-negotiator/examples/
+https://github.com/TokenScript/token-negotiator-examples
 
-## Installation and usage
+## The documentation below is split into two parts
 
-There are 2 locations that require the token-negotiator to be installed for use:
+- 'Client' installation (utilising an exisitng token)
+- 'Token issuer' installation (for new token issuers)
 
-1. Token Issuers will install the package to their web Application (e.g. 'hotel-land-token')
-2. Client Web Applications can then install the pacakge to utilise the 'hotel-land-token' (no limit to tokens)
+## Client: Installation
 
-For all use cases, install the token-negotiator. From there follow the steps to configure the pacakge for both the Token Issuer and Client.
+Within your web application / dapp install the token negotiator.
 
 ```sh
 npm i @tokenScript/token-negotiator
 ```
 
-## Client: Installation
+The library provides two ways to load tokens into your application, active or passive. 
 
-The client installation provides two solutions to bringing tokens into your website, web app or dapp. 
-
-### Active Client Negotiation of tokens
+### Client: Active Negotiation of tokens
 
 This approach is designed with security in mind where the client website will not learn about the tokens
-until the end user has selected them via an iframe to the Token Issuers domain. 
+until the end user has selected them via an token negotiator overlay web component loaded into the page.
 
 ```javascript
   
@@ -44,13 +42,12 @@ until the end user has selected them via an iframe to the Token Issuers domain.
 
   let tokens = [];
 
-  // points to remote host
   const tokenName = "devcon-ticket";
 
-  // local development use:
-  // const tokenName = 'devcon-ticket-local-3002';
-
-  const options = { useOverlay: true, tokenSelectorContainer: ".tokenSelectorContainerElement" };
+  const options = { 
+    useOverlay: true, // enables active negotiation
+    tokenSelectorContainer: ".tokenSelectorContainerElement" // entry point inside your application to load component
+  };
 
   const negotiator = new Client(filter, tokenName, options);
 
@@ -60,11 +57,12 @@ until the end user has selected them via an iframe to the Token Issuers domain.
     switch(event.data.evt) {
       case 'setSelectedTokens':
         tokens = event.data.selectedTokens;
+        // do something with tokens here.
         break;
     }
   }, false);
 ```
-### Passive Client Negotiation of tokens
+### Client: Passive Negotiation of tokens
 
 This approach is designed for a fully custom ui/ux experience, where a list of all tokens are learnt by the client on negotation. 
 
@@ -74,12 +72,9 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
 
   let tokens = [];
 
-  const filter = { 'devconId': 6 };
+  const filter = {}; // filter example: { 'devconId': 6 };
 
   const tokenName = "devcon-ticket";
-
-  // local development use:
-  // const tokenName = 'devcon-ticket-local-3002';
 
   const options = {};
   
@@ -96,7 +91,7 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
 
 ````
 
-### Negotiator Client Module API
+### Client: Negotiator Client Module API
 
 ````javascript
 
@@ -107,14 +102,14 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
   * @param {Boolean} options[useOverlay] optional rule to use token issuer overlay
   * @param {Object} options[tokenSelectorContainer] HTML Selector location to inject token issuer overlay when use overlay is set as true
   */
- negotiator.negotiate(
+ client.negotiate(
    filter,
    tokenName,
    options
  )
 
 ````
-### Negotiator Client Authenticate ownership of Token
+### Client: Negotiator Client Authenticate ownership of Token
 
 At the stage of negotiation, the client has learnt about the tokens which can be used to provide soft features such as
 what discount could be applied with ownership of a token or entry to a VIP lounge for browsing purposes. The Token Negotiator can be then used to attest that the end user has ownership rights to the token, via the authenticate method.
@@ -122,7 +117,7 @@ what discount could be applied with ownership of a token or entry to a VIP loung
 ```javascript
 
   /**
-  * @param {URL} unEndPoint end point that returns the following JSON payload { un: number, expiry: date }
+  * @param {URL} unEndPoint end point that returns the following JSON payload { un: number, expiry: date } 
   * @param {object} unsignedToken token to attest
   * @returns {object} { ethKey (object), proof (object) }
   */
@@ -131,20 +126,33 @@ what discount could be applied with ownership of a token or entry to a VIP loung
     unsignedToken 
   });
 
+  // un is a short lived unpredictable number that a server can provide towards the authenticated use of a token.
 
 ```
 
 ## Token Issuer: Installation 
 
-The token issuer installation provides two ways for the consumers to acquire tokens - using the following process.
-### Overlay: Installation
+This library requires three web utilies to be added to make use of a token with the token negotiator. 
 
-The overlay web component acts as an intermediatry component between the client and token outlet (explained below). Where a client will connect with an overlay to retrieve selected tokens.
+These components/web pages are;
 
-The token issuer should create a web directory location for this component. 
+- a Token Overlay (for active negotiation)
+- a Token Outlet (a central place to store ticket attestations)
+- a Token issuer interface, which is used to direct a magic link.
+
+(note: the token issuer could be web page or another interface that has web capabilities).
+
+### Token Issuer: Overlay web page installation
+
+The overlay web page acts as an intermediatry component between the client and token outlet (explained below). Where a client will connect with an overlay to retrieve selected tokens.
+
+Please download and install `/overlay` from:
+https://github.com/TokenScript/token-negotiator-examples
 
 The styles.css can be updated to reflect the Token Issuers brand (branding, token design).
- 
+
+Once the styles have been updated, you can build the application and host it via the token-issuers origin website. 
+
 ````javascript
   
   import { Overlay } from '@tokenscript/token-negotiator';
@@ -155,44 +163,47 @@ The styles.css can be updated to reflect the Token Issuers brand (branding, toke
 
 ````
 
-### Token outlet: Installation 
+### Token Issuer: Outlet web page installation 
 
-The token outlet is the location in which tokens are stored and dispatched. The Token Negotiator is flexible, where you can install both the overlay and outlet modules in the same location, or separate. 
+The token outlet is the location in which tokens are stored and dispatched. 
+
+Please download and install `/outlet` from:
+https://github.com/TokenScript/token-negotiator-examples
+
+Once the `tokenName` has been configured you can build the application and host it via the token-issuers origin website. 
  
 ````javascript
 
   import { Outlet } from '@tokenscript/token-negotiator';
 
   new Outlet({
-    tokenUrlName: 'ticket',
-    tokenSecretName: 'secret',
-    tokenIdName: 'id',
-    localStorageItemName: 'dcTokens'
+    tokenName: 'devcon-ticket'
   });
 
 ````
 
-### Negotiator Token Outlet Module API
+### Token Issuer: Token Config
 
-````javascript
+At this stage of our development road map, compatible tokens are stored inside this package. As a token issuer, please contact us at: Alphawallet <info@alphawallet.com>
+where we would be like to connect with you and help support your token.
 
-  /**
-  * @param {string} tokenUrlName name of the token to be read from a magic link
-  * @param {String} tokenSecretName a secret that can be used to decode a token
-  * @param {String} tokenIdName ticket identifier data e.g. email address
-  * @param {String} localStorageItemName location to store tokens
-  */
+The config file provides the settings to communicate tokens between the issuer and client.
 
-  // Points to remote host:.
-  new Outlet({
-    tokenName: 'devcon-ticket'
-  });
-
-  // Local development.
-  new Outlet({
-    tokenName: 'devcon-ticket-local-3002'
-  });
-
+````
+  "devcon-ticket": {
+    tokenName: 'devcon-ticket',
+    attestationOrigin: "https://token-issuer-website/attestation/index.html",
+    tokenOrigin: "https://token-issuer-website.eth/origin/index.html",
+    tokenOverlayOrigin: "https://token-issuer-website.eth/overlay/index.html",
+    tokenUrlName: 'ticket',
+    tokenSecretName: 'secret',
+    tokenIdName: 'id',
+    unsignedTokenDataName: 'ticket',
+    tokenParser: SignedDevconTicket,
+    localStorageItemName: 'dcTokens',
+    localStorageEthKeyItemName: 'dcEthKeys',
+    fabButton: '<svg...'
+  }
 ````
 
 ## Tests
