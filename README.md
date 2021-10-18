@@ -183,6 +183,25 @@ Once the `tokenName` has been configured you can build the application and host 
 
 ````
 
+### Token Issuer: Issuer web page installation 
+
+The token issuer is the location in which tokens are recieved via magic link. 
+
+Please download and install `/ticket-issuer` from:
+https://github.com/TokenScript/token-negotiator-examples
+
+Please contact us at: Alchemynft <info@alchemynft.org>, for the technology steps required to generate ticket attestations from tokens.
+ 
+````javascript
+
+  import { Outlet } from '@tokenscript/token-negotiator';
+
+  new Outlet({
+    tokenName: 'devcon-ticket'
+  });
+
+````
+
 ### Token Issuer: Token Config
 
 At this stage of our development road map, compatible tokens are stored inside this package. As a token issuer, please contact us at: Alchemynft <info@alchemynft.org>
