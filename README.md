@@ -17,7 +17,7 @@ https://github.com/TokenScript/token-negotiator-examples
 ### The following documentation is divided into the two sections
 
 - Client installation (utilising exisiting tokens)
-- Token issuer installation (for token issuers/suppliers)
+- Token issuer installation (for new & existing token issuers/suppliers)
 
 ## Client: Installation
 
