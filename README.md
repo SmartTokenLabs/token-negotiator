@@ -103,7 +103,7 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
   * @param {Boolean} options[useOverlay] optional rule to use token issuer overlay
   * @param {Object} options[tokenSelectorContainer] HTML Selector location to inject token issuer overlay when use overlay is set as true
   */
- client.negotiate(
+ negotiator.negotiate(
    filter,
    tokenName,
    options
