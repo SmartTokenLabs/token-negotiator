@@ -14,7 +14,7 @@ A live demonsration of the Token Negotiator and development examples can be foun
 
 https://github.com/TokenScript/token-negotiator-examples
 
-## The documentation below is split into two parts
+## The documentation is divided into two sections
 
 - Client installation (utilising exisitng tokens)
 - Token issuer installation (for token issuers/suppliers)
