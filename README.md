@@ -6,6 +6,8 @@ TokenScript is a framework which improves functionality, security and usability 
 
 With a tokenScript enabled token, you can build a custom tokenised web experience with the use of token-negotiator, using both on and off chain web capabilities.
 
+Token-negotiator is also the first step for integrating attestations to your websites. Token-negotiator allows attestations stored in a browser's local storage to be recognised as a token.
+
 For further information about TokenScript please visit: [https://tokenscript.org/](tokenscript.org).
 
 (for token issuers: please navigate to the following WIKI page: https://github.com/TokenScript/token-negotiator/wiki/Token-Issuer-Page).

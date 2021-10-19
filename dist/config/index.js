@@ -2,7 +2,7 @@ import { SignedDevconTicket } from './../Attestation/SignedDevonTicket.js';
 export const config = {
     "devcon-ticket-local-3002": {
         tokenName: 'devcon-ticket-local-3002',
-        attestationOrigin: "https://stage.attestation.id",
+        attestationOrigin: "https://stage.attestation.id/",
         tokenOrigin: "http://localhost:3002",
         tokenOverlayOrigin: "http://localhost:3003",
         tokenUrlName: 'ticket',
@@ -16,9 +16,9 @@ export const config = {
     },
     "devcon-ticket-heroku": {
         tokenName: 'devcon-ticket-heroku',
-        attestationOrigin: "https://stage.attestation.id",
-        tokenOrigin: "https://devcontickets.herokuapp.com/outlet",
-        tokenOverlayOrigin: "https://devcontickets.herokuapp.com/overlay",
+        attestationOrigin: "https://stage.attestation.id/",
+        tokenOrigin: "https://devcontickets.herokuapp.com/outlet/",
+        tokenOverlayOrigin: "https://tokenscript.github.io/token-negotiator-examples/github-pages-use-only/token-overlay-website/build/index.html",
         tokenUrlName: 'ticket',
         tokenSecretName: 'secret',
         tokenIdName: 'id',
@@ -30,9 +30,9 @@ export const config = {
     },
     "devcon-ticket": {
         tokenName: 'devcon-ticket',
-        attestationOrigin: "https://stage.attestation.id",
-        tokenOrigin: "https://tokenscript.github.io/token-negotiator-examples/token-outlet-website/build/index.html",
-        tokenOverlayOrigin: "https://tokenscript.github.io/token-negotiator-examples/token-overlay-website/build/index.html",
+        attestationOrigin: "https://stage.attestation.id/",
+        tokenOrigin: "https://tokenscript.github.io/token-negotiator-examples/github-pages-use-only/token-outlet-website/build/index.html",
+        tokenOverlayOrigin: "https://tokenscript.github.io/token-negotiator-examples/github-pages-use-only/token-overlay-website/build/index.html",
         tokenUrlName: 'ticket',
         tokenSecretName: 'secret',
         tokenIdName: 'id',

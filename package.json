@@ -1,6 +1,6 @@
 {
   "name": "@tokenscript/token-negotiator",
-  "version": "1.0.0-alpha.81",
+  "version": "1.0.0-alpha.84",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -11,7 +11,7 @@
     "type": "git",
     "url": "git+https://github.com/TokenScript/token-negotiator.git"
   },
-  "author": "Alphawallet <info@alphawallet.com>",
+  "author": "Alchemynft <info@alchemynft.org>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/TokenScript/token-negotiator/issues"

@@ -50,6 +50,78 @@ export class Client {
     return await signer.signMessage(message);
   }
 
+  // TODO implement this:
+  // async authenticate({unsignedToken, unEndPoint}) {
+  //   if(!unsignedToken || !unEndPoint) return { status: false, useEthKey: null, proof: null };
+  //   try {
+  //     let useEthKey = await this.getChallengeSigned(unEndPoint);
+  //     const validateResult = await this.validateUseEthKey(unEndPoint, useEthKey);
+  //     let walletAddress = await this.connectMetamaskAndGetAddress();
+  //     if (walletAddress.toLowerCase() !== validateResult.toLowerCase()) {
+  //       throw new Error('useEthKey validation failed.');
+  //     }
+  //     // @ts-ignore
+  //     this.useEthKey = useEthKey;
+
+  //     // this.queuedCommand = { parentCommand: 'signToken', parentData: unsignedToken };
+  //     // this.createIframe();
+
+  //     const { proof } = await signToken(unsignedToken);
+  //     const status = (proof !== null);
+
+  //     return { status, useEthKey, proof };
+  //   } catch (e) {
+  //     console.error(e);
+  //     return e;
+  //   }
+  // }
+
+  // async signToken(unsignedToken) {
+
+  //   // we receive decoded token, we have to find appropriate raw token
+  //   // @ts-ignore
+  //   if (typeof window['Authenticator'] === "undefined") return { proof: null }; 
+  //   if (!unsignedToken) return { proof: null }; 
+
+  //   if (!data || !Object.keys(data).length) {
+  //     window.parent.postMessage({ 
+  //       iframeCommand: "useTokenData", 
+  //       iframeData: { 
+  //         useToken: {}, 
+  //         message: 'Token data required', 
+  //         success: false } 
+  //       }, 
+  //       referrer.origin
+  //     );
+  //     return;
+  //   }
+
+  //   let rawTokenData = this.getRawToken(data);
+
+  //   let base64ticket = rawTokenData.token;
+  //   let ticketSecret = rawTokenData.secret;
+
+  //   // @ts-ignore
+  //   this.authenticator = new window['Authenticator'](this);
+
+  //   let tokenObj:magicUrlTokenData = {
+  //     ticketBlob: base64ticket,
+  //     ticketSecret: ticketSecret,
+  //     attestationOrigin: this.attestationOrigin,
+  //   };
+  //   if (rawTokenData && rawTokenData.id) tokenObj.email = rawTokenData.id;
+  //   if (rawTokenData && rawTokenData.magic_link) tokenObj.magicLink = rawTokenData.magic_link;
+
+  //   this.authenticator.getAuthenticationBlob(tokenObj,
+  //     // TODO type it
+  //     (res:any, error: string) => {
+  //       logger(3,'sign result:', res);
+  //         window.parent.postMessage({ iframeCommand: "useTokenData", iframeData: { useToken: res, message: error, success: !!res } }, referrer.origin);
+  //     });
+
+  // }
+
+  // TODO deprecate this:
   async authenticate({unsignedToken, unEndPoint}) {
     try {
       let useEthKey = await this.getChallengeSigned(unEndPoint);
