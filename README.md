@@ -16,7 +16,7 @@ A live demonsration of the Token Negotiator and development examples can be foun
 
 https://github.com/TokenScript/token-negotiator-examples
 
-#### Quick Start
+Quick Start guide with examples:
 
 https://github.com/TokenScript/token-negotiator/wiki/Quick-Start
 
