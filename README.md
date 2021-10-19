@@ -14,11 +14,7 @@ For further information about TokenScript please visit: [https://tokenscript.org
 
 A live demonsration of the Token Negotiator and development examples can be found here.
 
-https://github.com/TokenScript/token-negotiator-examples
-
-Quick Start guide with examples:
-
-https://github.com/TokenScript/token-negotiator/wiki/Quick-Start
+https://github.com/TokenScript/token-negotiator-examples / https://github.com/TokenScript/token-negotiator/wiki/Quick-Start
 
 ## Installation
 
