@@ -16,8 +16,6 @@ A live demonsration of the Token Negotiator and development examples can be foun
 
 https://github.com/TokenScript/token-negotiator-examples 
 
-https://github.com/TokenScript/token-negotiator/wiki/quick-start
-
 ## Installation
 
 Within your web application / dapp install the token negotiator.
