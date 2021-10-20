@@ -1,6 +1,6 @@
 {
   "name": "@tokenscript/token-negotiator",
-  "version": "1.0.0-alpha.84",
+  "version": "1.0.0-alpha.85",
   "description": "",
   "main": "dist/index.js",
   "scripts": {

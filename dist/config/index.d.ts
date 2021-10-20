@@ -42,4 +42,18 @@ export declare const config: {
         localStorageEthKeyItemName: string;
         fabButton: string;
     };
+    "liscon-ticket": {
+        tokenName: string;
+        attestationOrigin: string;
+        tokenOrigin: string;
+        tokenOverlayOrigin: string;
+        tokenUrlName: string;
+        tokenSecretName: string;
+        tokenIdName: string;
+        unsignedTokenDataName: string;
+        tokenParser: typeof SignedDevconTicket;
+        localStorageItemName: string;
+        localStorageEthKeyItemName: string;
+        fabButton: string;
+    };
 };
