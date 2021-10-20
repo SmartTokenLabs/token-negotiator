@@ -1,5 +1,5 @@
 export class DevconTicket {
-    static schema(parameters?: {}): any;
+    static schema(parameters?: {}): Sequence;
     constructor(source?: Object | undefined);
     devconId: any;
     ticketId: any;
@@ -15,4 +15,5 @@ export class SignedDevconTicket {
     signatureValue: any;
     fromSchema(schema: Object): void;
 }
+import { Sequence } from "asn1js";
 import PublicKeyInfo from "./PublicKeyInfo.js";
