@@ -45,7 +45,7 @@ export const config = {
     "liscon-ticket": {
         tokenName: 'liscon-ticket',
         attestationOrigin: "https://liscon.attestation.id/",
-        tokenOrigin: "https://devcontickets.herokuapp.com/outlet/",
+        tokenOrigin: "https://liscon.alchemynft.org/",
         tokenOverlayOrigin: "https://tokenscript.github.io/token-negotiator-examples/github-pages-use-only/token-overlay-website/build/index.html",
         tokenUrlName: 'ticket',
         tokenSecretName: 'secret',
