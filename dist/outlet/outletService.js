@@ -33,6 +33,8 @@ class OutletService {
     ;
     rawTokenCheck(unsignedToken, localStorageItemName, tokenParser) {
         let rawTokenData = this.getRawToken(unsignedToken, localStorageItemName, tokenParser);
+        if (!rawTokenData)
+            return null;
         let base64ticket = rawTokenData.token;
         let ticketSecret = rawTokenData.secret;
         let tokenObj = {

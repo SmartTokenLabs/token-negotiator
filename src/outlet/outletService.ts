@@ -50,6 +50,7 @@ class OutletService {
     // need to be able to install this module:
     // this.authenticator = new Authenticator();
     let rawTokenData = this.getRawToken(unsignedToken, localStorageItemName, tokenParser);
+    if(!rawTokenData) return null;
     let base64ticket = rawTokenData.token;
     let ticketSecret = rawTokenData.secret;
     let tokenObj = {
