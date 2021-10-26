@@ -7,6 +7,10 @@ class OutletService {
                     const tokens = readTokens(data.localStorageItemName);
                     this.eventSender.emitTokens(tokens);
                     break;
+                case 'getTokenProof':
+                    const tokenProof = rawTokenCheck(data.unsignedToken);
+                    this.eventSender.emitTokens(tokenProof);
+                    break;
             }
         };
         this.eventSender = {
@@ -15,7 +19,13 @@ class OutletService {
                     evt: 'setTokens',
                     tokens: tokens
                 }, "*");
-            }
+            },
+            emitTokens: (tokenProof) => {
+                window.parent.postMessage({
+                    evt: 'setTokenProof',
+                    tokenProof: tokenProof
+                }, "*");
+            },
         };
     }
     ;

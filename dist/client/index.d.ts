@@ -8,6 +8,8 @@ export declare class Client {
         unsignedToken: any;
         unEndPoint: any;
     }): Promise<unknown>;
+    getTokenProofFromOutlet: (tokensOrigin: any, localStorageItemName: any, unsignedToken: any) => Promise<unknown>;
+    getTokenProofFromOutlet: (tokensOrigin: any, localStorageItemName: any, unsignedToken: any) => Promise<unknown>;
     validateUseEthKey(endPoint: any, data: any): Promise<any>;
     getUnpredictableNumber(endPoint: any): Promise<any>;
     addTokenThroughIframe(magicLink: any): void;

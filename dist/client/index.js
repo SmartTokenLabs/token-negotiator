@@ -4,6 +4,39 @@ import { config } from "./../config/index";
 import OverlayService from "./overlayService";
 export class Client {
     constructor(filter = {}, tokenName, options = {}) {
+        this.getTokenProofFromOutlet = (tokensOrigin, localStorageItemName, unsignedToken) => {
+            return new Promise((resolve, reject) => {
+                window.addEventListener('message', function (event) {
+                    console.log('authenticate: event', event.data.evt);
+                    if (event.data.evt === 'setTokenProof') {
+                        console.log('authenticate: event found', event.data);
+                        resolve(event.data.tokenProof);
+                    }
+                }, false);
+                console.log('authenticate: open iframe');
+                getTokenProofFromOutlet(tokensOrigin, localStorageItemName, unsignedToken);
+            });
+        };
+        this.getTokenProofFromOutlet = (tokensOrigin, localStorageItemName, unsignedToken) => {
+            return new Promise((resolve, reject) => {
+                console.log('authenticate: create iframe');
+                const iframe = document.createElement('iframe');
+                iframe.src = tokensOrigin;
+                iframe.style.width = '1px';
+                iframe.style.height = '1px';
+                iframe.style.opacity = '0';
+                document.body.appendChild(iframe);
+                iframe.onload = () => {
+                    console.log('Iframe loaded');
+                    iframe.contentWindow.postMessage({
+                        evt: 'getTokenProof',
+                        localStorageItemName: localStorageItemName,
+                        unsignedToken: unsignedToken
+                    }, "*");
+                    resolve(true);
+                };
+            });
+        };
         if (!tokenName)
             console.warn("Negotiator: tokenName is a required parameter");
         if (options.useOverlay === true && !options.tokenSelectorContainer)
@@ -47,15 +80,21 @@ export class Client {
         return await signer.signMessage(message);
     }
     async authenticate({ unsignedToken, unEndPoint }) {
+        if (!unsignedToken || !unEndPoint)
+            return { status: false, useEthKey: null, proof: null };
         try {
+            console.log('authenticate: entry');
             let useEthKey = await this.getChallengeSigned(unEndPoint);
-            const validateResult = await this.validateUseEthKey(unEndPoint, useEthKey);
-            let walletAddress = await this.connectMetamaskAndGetAddress();
-            if (walletAddress.toLowerCase() !== validateResult.toLowerCase()) {
+            console.log('authenticate: ethkey', useEthKey);
+            const attestedAddress = await this.validateUseEthKey(unEndPoint, useEthKey);
+            console.log('authenticate: attestAddr', attestedAddress);
+            const walletAddress = await this.connectMetamaskAndGetAddress();
+            console.log('authenticate: connectMetaMask', walletAddress);
+            if (walletAddress.toLowerCase() !== attestedAddress.toLowerCase())
                 throw new Error('useEthKey validation failed.');
-            }
-            this.useEthKey = useEthKey;
-            return { status: true, useEthKey, proof: 'proof' };
+            const tokenProof = await getTokenProofFromOutlet(unsignedToken);
+            console.log('authenticate: proof', tokenProof);
+            return { status: true, useEthKey: '', proof: tokenProof };
         }
         catch (e) {
             console.error(e);
@@ -110,13 +149,7 @@ export class Client {
     }
     async getChallengeSigned(unEndPoint) {
         const storageEthKeys = localStorage.getItem(this.config.localStorageEthKeyItemName);
-        let ethKeys;
-        if (storageEthKeys && storageEthKeys.length) {
-            ethKeys = JSON.parse(storageEthKeys);
-        }
-        else {
-            ethKeys = {};
-        }
+        let ethKeys = (storageEthKeys && storageEthKeys.length) ? JSON.parse(storageEthKeys) : null;
         try {
             let address = await this.connectMetamaskAndGetAddress();
             address = address.toLowerCase();
