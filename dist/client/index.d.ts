@@ -9,7 +9,7 @@ export declare class Client {
         unEndPoint: any;
     }): Promise<unknown>;
     getTokenProofFromOutlet: (tokensOrigin: any, localStorageItemName: any, unsignedToken: any) => Promise<unknown>;
-    getTokenProofFromOutlet: (tokensOrigin: any, localStorageItemName: any, unsignedToken: any) => Promise<unknown>;
+    getTokenProofFromOutletIframe: (tokensOrigin: any, localStorageItemName: any, unsignedToken: any) => Promise<unknown>;
     validateUseEthKey(endPoint: any, data: any): Promise<any>;
     getUnpredictableNumber(endPoint: any): Promise<any>;
     addTokenThroughIframe(magicLink: any): void;
