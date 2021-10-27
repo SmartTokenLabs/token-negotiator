@@ -1,5 +1,5 @@
 export default class AlgorithmIdentifier {
-    static defaultValues(memberName: string): Any;
+    static defaultValues(memberName: string): any;
     static compareWithDefault(memberName: string, memberValue: any): boolean;
     static schema(parameters?: Object): Object;
     constructor(source?: {
@@ -12,4 +12,3 @@ export default class AlgorithmIdentifier {
     toJSON(): Object;
     isEqual(algorithmIdentifier: AlgorithmIdentifier): boolean;
 }
-import { Any } from "asn1js";
