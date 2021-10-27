@@ -29,6 +29,7 @@ class OutletService {
             },
         };
         this.config = config;
+        this.authenticator = new Authenticator();
     }
     ;
     rawTokenCheck(unsignedToken, localStorageItemName, tokenParser) {
@@ -46,7 +47,7 @@ class OutletService {
             tokenObj.email = rawTokenData.id;
         if (rawTokenData && rawTokenData.magic_link)
             tokenObj.magicLink = rawTokenData.magic_link;
-        return true;
+        return this.authenticator.getAuthenticationBlob(tokenObj);
     }
     getRawToken(unsignedToken, localStorageItemName, tokenParser) {
         if (!unsignedToken || !Object.keys(unsignedToken).length)

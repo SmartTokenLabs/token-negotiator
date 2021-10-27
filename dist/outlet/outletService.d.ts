@@ -5,7 +5,7 @@ declare class OutletService {
         emitTokens: (tokens: any) => void;
         emitTokenProof: (tokenProof: any) => void;
     };
-    rawTokenCheck(unsignedToken: any, localStorageItemName: any, tokenParser: any): true | null;
+    rawTokenCheck(unsignedToken: any, localStorageItemName: any, tokenParser: any): any;
     getRawToken(unsignedToken: any, localStorageItemName: any, tokenParser: any): {} | null | undefined;
 }
 export default OutletService;

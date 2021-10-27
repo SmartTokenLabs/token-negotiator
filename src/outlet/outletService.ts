@@ -2,7 +2,6 @@
 // OutletService enscapsulates resources to use the negotiator service (outlet)
 // - reads tokens from query string
 // - provides tokens through an iframe
-import { Authenticator } from "./../authenticator/dist/authenticator";
 
 import {
   readTokens
@@ -13,6 +12,7 @@ class OutletService {
 
   constructor(config) {
     this.config = config;
+    this.authenticator = new Authenticator();
   };
 
   // recieves events
@@ -48,7 +48,6 @@ class OutletService {
 
   rawTokenCheck(unsignedToken, localStorageItemName, tokenParser) {
     // need to be able to install this module:
-    // this.authenticator = new Authenticator();
     let rawTokenData = this.getRawToken(unsignedToken, localStorageItemName, tokenParser);
     if(!rawTokenData) return null;
     let base64ticket = rawTokenData.token;
@@ -62,8 +61,7 @@ class OutletService {
         tokenObj.email = rawTokenData.id;
     if (rawTokenData && rawTokenData.magic_link)
         tokenObj.magicLink = rawTokenData.magic_link;
-    // const output = getAuthenticationBlob(tokenObj);
-    return true;
+    return this.authenticator.getAuthenticationBlob(tokenObj);
   }
 
   getRawToken(unsignedToken, localStorageItemName, tokenParser) {
