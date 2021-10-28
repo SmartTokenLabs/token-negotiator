@@ -11,9 +11,12 @@ import { base64ToUint8array, compareObjects } from './../utils/index';
 class OutletService {
 
   constructor(config, Authenticator) {
-    if(!config || !Authenticator) throw new Error('OutletService: Please provide the config and Authenticator to use this module service');
-    this.config = config;
-    this.authenticator = new Authenticator();
+    if(config && Authenticator){
+      this.config = config;
+      this.authenticator = new Authenticator();
+    } else {
+      console.warn('OutletService: Please provide the config and Authenticator to use this module service');
+    }
   };
 
   // recieves events
