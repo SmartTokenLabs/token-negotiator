@@ -27,25 +27,15 @@ class LocalStorageMock {
 global.localStorage = new LocalStorageMock;
 
 describe('outlet Spec', () => {
-  test('expect a new instance of outlet service', () => {
-    const outletService = new OutletService(config['devcon-ticket']);
+  test('expect a new instance of outlet service without an instance of the Authenticator', () => {
+    const outletService = new OutletService(config['devcon-ticket'], null);
     expect(outletService ? true : false).toEqual(true);
   });
-  test('expect mock triggered event can be made to service', () => {
-    const outletService = new OutletService(config['devcon-ticket']);
+  test('expect mock triggered event can be made to service without an instance of the Authenticator', () => {
+    const outletService = new OutletService(config['devcon-ticket'], null);
     outletService.eventReciever({
       evt: 'getTokens',
       localStorageItemName: 'test'
     });
   });
 });
-
-
-// eventReciever = (data: any) => {
-//   switch (data.evt) {
-//     case 'getTokens': 
-//       const tokens = readTokens(data.localStorageItemName);
-//       this.eventSender.emitTokens(tokens);
-//     break;
-//   }
-// }

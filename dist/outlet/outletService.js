@@ -1,7 +1,7 @@
 import { readTokens } from '../core';
 import { base64ToUint8array, compareObjects } from './../utils/index';
 class OutletService {
-    constructor(config) {
+    constructor(config, Authenticator) {
         this.eventReciever = (data) => {
             switch (data.evt) {
                 case 'getTokens':
@@ -9,8 +9,7 @@ class OutletService {
                     this.eventSender.emitTokens(tokens);
                     break;
                 case 'getTokenProof':
-                    const tokenProof = this.rawTokenCheck(data.unsignedToken, this.config.localStorageItemName, this.config.tokenParser);
-                    this.eventSender.emitTokenProof(tokenProof);
+                    this.rawTokenCheck(data.unsignedToken, this.config.localStorageItemName, this.config.tokenParser);
                     break;
             }
         };
@@ -28,6 +27,8 @@ class OutletService {
                 }, "*");
             },
         };
+        if (!config || !Authenticator)
+            throw new Error('OutletService: Please provide the config and Authenticator to use this module service');
         this.config = config;
         this.authenticator = new Authenticator();
     }
@@ -47,7 +48,9 @@ class OutletService {
             tokenObj.email = rawTokenData.id;
         if (rawTokenData && rawTokenData.magic_link)
             tokenObj.magicLink = rawTokenData.magic_link;
-        return this.authenticator.getAuthenticationBlob(tokenObj);
+        this.authenticator.getAuthenticationBlob(tokenObj, () => {
+            this.eventSender.emitTokenProof(tokenProof);
+        });
     }
     getRawToken(unsignedToken, localStorageItemName, tokenParser) {
         if (!unsignedToken || !Object.keys(unsignedToken).length)

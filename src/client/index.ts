@@ -156,7 +156,7 @@ export class Client {
 
   async getChallengeSigned(unEndPoint) {
     const storageEthKeys = localStorage.getItem(this.config.localStorageEthKeyItemName);
-    let ethKeys = (storageEthKeys && storageEthKeys.length) ? JSON.parse(storageEthKeys) : null;
+    let ethKeys = (storageEthKeys && storageEthKeys.length) ? JSON.parse(storageEthKeys) : {};
     try {
       let address = await this.connectMetamaskAndGetAddress();
       address = address.toLowerCase();
