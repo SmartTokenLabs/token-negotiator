@@ -27,9 +27,5 @@ export const createToken = (data, index, tokenImage) => {
   `;
 };
 export const createFabButton = (button) => {
-    return `
-    <button onclick="negotiator.overlayClickHandler()" style="padding: 0; height:80px; width:80px; border: 0; box-shadow: 0 2px 5px 0 #676767; border-radius: 64px; cursor: pointer; z-index: 999; position: relative;">
-      <svg src=${button}></svg>
-    </button>
-  `;
+    return `<button class="overlayFabButton" onclick="negotiator.overlayClickHandler()" style="padding: 0; height:80px; width:80px; border: 0; box-shadow: 0 2px 5px 0 #676767; border-radius: 64px; cursor: pointer; z-index: 999; position: relative;"><div style="pointer-events: none;"><svg src=${button}></svg></div></button>`;
 };

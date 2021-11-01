@@ -31,6 +31,12 @@ class NegotiatorService {
                 case 'setSelectedTokens':
                     this.eventSender.emitSelectedTokens();
                     break;
+                case 'setCloseOverlay':
+                    const element = document.querySelector(".tk-overlay .overlay");
+                    const isOpen = element.classList.contains("open");
+                    if (isOpen)
+                        this.overlayClickHandler();
+                    break;
                 case 'setToggleOverlayHandler':
                     this.eventSender.emitOverlayToggleState();
                     break;
@@ -53,15 +59,19 @@ class NegotiatorService {
             emitOverlayToggleState: () => {
                 const toggleOverlayState = this.overlayClickHandler();
                 clearTimeout(this.overlayClickTimer);
-                if (toggleOverlayState === 'close') {
-                    this.overlayClickTimer = setTimeout(() => {
-                        window.top.postMessage({ evt: 'hideOvelay', state: toggleOverlayState }, "*");
-                    }, 1000);
-                }
-                else {
-                    window.top.postMessage({ evt: 'showOverlay', state: toggleOverlayState }, "*");
-                }
+                if (toggleOverlayState === 'close')
+                    this.closeOverlay();
+                else
+                    this.showOverlay();
             }
+        };
+        this.closeOverlay = () => {
+            this.overlayClickTimer = setTimeout(() => {
+                window.top.postMessage({ evt: 'hideOvelay', state: 'close' }, "*");
+            }, 1000);
+        };
+        this.showOverlay = () => {
+            window.top.postMessage({ evt: 'showOverlay', state: 'open' }, "*");
         };
         this.overlayClickHandler = () => {
             const element = document.querySelector(".tk-overlay .overlay");

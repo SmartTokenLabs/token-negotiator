@@ -4,6 +4,34 @@ import { config } from "./../config/index";
 import OverlayService from "./overlayService";
 export class Client {
     constructor(filter = {}, tokenName, options = {}) {
+        this.getTokenProofFromOutlet = (tokensOrigin, localStorageItemName, unsignedToken) => {
+            this.getTokenProofFromOutletIframe(tokensOrigin, localStorageItemName, unsignedToken);
+            return new Promise((resolve, reject) => {
+                window.addEventListener('message', function (event) {
+                    if (event.data.evt === 'setTokenProof') {
+                        resolve(event.data.tokenProof);
+                    }
+                }, false);
+            });
+        };
+        this.getTokenProofFromOutletIframe = (tokensOrigin, localStorageItemName, unsignedToken) => {
+            return new Promise((resolve, reject) => {
+                const iframe = document.createElement('iframe');
+                iframe.src = tokensOrigin;
+                iframe.style.width = '1px';
+                iframe.style.height = '1px';
+                iframe.style.opacity = '0';
+                document.body.appendChild(iframe);
+                iframe.onload = () => {
+                    iframe.contentWindow.postMessage({
+                        evt: 'getTokenProof',
+                        localStorageItemName: localStorageItemName,
+                        unsignedToken: unsignedToken
+                    }, "*");
+                    resolve(true);
+                };
+            });
+        };
         if (!tokenName)
             console.warn("Negotiator: tokenName is a required parameter");
         if (options.useOverlay === true && !options.tokenSelectorContainer)
@@ -47,15 +75,16 @@ export class Client {
         return await signer.signMessage(message);
     }
     async authenticate({ unsignedToken, unEndPoint }) {
+        if (!unsignedToken || !unEndPoint)
+            return { status: false, useEthKey: null, proof: null };
         try {
             let useEthKey = await this.getChallengeSigned(unEndPoint);
-            const validateResult = await this.validateUseEthKey(unEndPoint, useEthKey);
-            let walletAddress = await this.connectMetamaskAndGetAddress();
-            if (walletAddress.toLowerCase() !== validateResult.toLowerCase()) {
+            const attestedAddress = await this.validateUseEthKey(unEndPoint, useEthKey);
+            const walletAddress = await this.connectMetamaskAndGetAddress();
+            if (walletAddress.toLowerCase() !== attestedAddress.toLowerCase())
                 throw new Error('useEthKey validation failed.');
-            }
-            this.useEthKey = useEthKey;
-            return { status: true, useEthKey, proof: 'proof' };
+            const tokenProof = await this.getTokenProofFromOutlet(this.config.tokenOrigin, this.config.localStorageItemName, unsignedToken);
+            return { status: true, useEthKey: useEthKey, proof: tokenProof };
         }
         catch (e) {
             console.error(e);
@@ -110,13 +139,7 @@ export class Client {
     }
     async getChallengeSigned(unEndPoint) {
         const storageEthKeys = localStorage.getItem(this.config.localStorageEthKeyItemName);
-        let ethKeys;
-        if (storageEthKeys && storageEthKeys.length) {
-            ethKeys = JSON.parse(storageEthKeys);
-        }
-        else {
-            ethKeys = {};
-        }
+        let ethKeys = (storageEthKeys && storageEthKeys.length) ? JSON.parse(storageEthKeys) : {};
         try {
             let address = await this.connectMetamaskAndGetAddress();
             address = address.toLowerCase();

@@ -65,6 +65,7 @@ export const decodeTokens = (rawTokens: any, tokenParser: any, unsignedTokenData
   });
 };
 
+// rename this function to getTokensThroughIframe...
 export const openOutletIframe = (tokensOrigin: string, localStorageItemName: string) => {
   return new Promise((resolve, reject) => {
     const iframe = document.createElement('iframe');

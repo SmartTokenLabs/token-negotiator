@@ -1,6 +1,6 @@
 import { BitString, compareSchema, Integer, OctetString, Sequence, fromBER, Utf8String } from "asn1js";
 import { getParametersValue, clearProps, bufferToHexCodes } from "pvutils";
-import PublicKeyInfo from "./PublicKeyInfo.js";
+import PublicKeyInfo from "./PublicKeyInfo.ts";
 export class DevconTicket {
     constructor(source = {}) {
         if (typeof (source) == "string") {

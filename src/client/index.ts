@@ -51,112 +51,57 @@ export class Client {
   }
 
   // TODO implement this:
-  // async authenticate({unsignedToken, unEndPoint}) {
-  //   if(!unsignedToken || !unEndPoint) return { status: false, useEthKey: null, proof: null };
-  //   try {
-  //     let useEthKey = await this.getChallengeSigned(unEndPoint);
-  //     const validateResult = await this.validateUseEthKey(unEndPoint, useEthKey);
-  //     let walletAddress = await this.connectMetamaskAndGetAddress();
-  //     if (walletAddress.toLowerCase() !== validateResult.toLowerCase()) {
-  //       throw new Error('useEthKey validation failed.');
-  //     }
-  //     // @ts-ignore
-  //     this.useEthKey = useEthKey;
-
-  //     // this.queuedCommand = { parentCommand: 'signToken', parentData: unsignedToken };
-  //     // this.createIframe();
-
-  //     const { proof } = await signToken(unsignedToken);
-  //     const status = (proof !== null);
-
-  //     return { status, useEthKey, proof };
-  //   } catch (e) {
-  //     console.error(e);
-  //     return e;
-  //   }
-  // }
-
-  // async signToken(unsignedToken) {
-
-  //   // we receive decoded token, we have to find appropriate raw token
-  //   // @ts-ignore
-  //   if (typeof window['Authenticator'] === "undefined") return { proof: null }; 
-  //   if (!unsignedToken) return { proof: null }; 
-
-  //   if (!data || !Object.keys(data).length) {
-  //     window.parent.postMessage({ 
-  //       iframeCommand: "useTokenData", 
-  //       iframeData: { 
-  //         useToken: {}, 
-  //         message: 'Token data required', 
-  //         success: false } 
-  //       }, 
-  //       referrer.origin
-  //     );
-  //     return;
-  //   }
-
-  //   let rawTokenData = this.getRawToken(data);
-
-  //   let base64ticket = rawTokenData.token;
-  //   let ticketSecret = rawTokenData.secret;
-
-  //   // @ts-ignore
-  //   this.authenticator = new window['Authenticator'](this);
-
-  //   let tokenObj:magicUrlTokenData = {
-  //     ticketBlob: base64ticket,
-  //     ticketSecret: ticketSecret,
-  //     attestationOrigin: this.attestationOrigin,
-  //   };
-  //   if (rawTokenData && rawTokenData.id) tokenObj.email = rawTokenData.id;
-  //   if (rawTokenData && rawTokenData.magic_link) tokenObj.magicLink = rawTokenData.magic_link;
-
-  //   this.authenticator.getAuthenticationBlob(tokenObj,
-  //     // TODO type it
-  //     (res:any, error: string) => {
-  //       logger(3,'sign result:', res);
-  //         window.parent.postMessage({ iframeCommand: "useTokenData", iframeData: { useToken: res, message: error, success: !!res } }, referrer.origin);
-  //     });
-
-  // }
-
-  // TODO deprecate this:
   async authenticate({unsignedToken, unEndPoint}) {
+    if(!unsignedToken || !unEndPoint) return { status: false, useEthKey: null, proof: null };
     try {
       let useEthKey = await this.getChallengeSigned(unEndPoint);
-      const validateResult = await this.validateUseEthKey(unEndPoint, useEthKey);
-      let walletAddress = await this.connectMetamaskAndGetAddress();
-      if (walletAddress.toLowerCase() !== validateResult.toLowerCase()) {
-        throw new Error('useEthKey validation failed.');
-      }
+      const attestedAddress = await this.validateUseEthKey(unEndPoint, useEthKey);
+      const walletAddress = await this.connectMetamaskAndGetAddress();
+      if (walletAddress.toLowerCase() !== attestedAddress.toLowerCase()) throw new Error('useEthKey validation failed.');
       // @ts-ignore
-      this.useEthKey = useEthKey;
-      return {status: true, useEthKey, proof: 'proof'};
+      // this.useEthKey = useEthKey; // TODO use this to speed up authentication process.
+      const tokenProof = await this.getTokenProofFromOutlet(
+        this.config.tokenOrigin, 
+        this.config.localStorageItemName, 
+        unsignedToken
+      );
+      return { status: true, useEthKey: useEthKey, proof: tokenProof };
     } catch (e) {
       console.error(e);
       return e;
     }
   }
 
-  // TODO:
-  // async getUseTicket({ token, UN, Message, Signature }) {
-  //   return { 'proof': true };
-  // }
-  // async authenticate({unsignedToken, unEndPoint}) {
-  //   try {
-  //     let useEthKey = await this.getChallengeSigned(unEndPoint);
-  //     const validateResult = await this.validateUseEthKey(unEndPoint, useEthKey);
-  //     let walletAddress = await this.connectMetamaskAndGetAddress();
-  //     if (walletAddress.toLowerCase() !== validateResult.toLowerCase()) throw new Error('useEthKey validation failed.');
-  //     // to confirm this step and inner logic.
-  //     const useTicket = await this.getProofToken({ ticket: unsignedToken, unEndPoint, message: 'Message', Signature: 'signature' });
-  //     return { useEthKey, useTicket };
-  //   } catch (e) {
-  //     console.error(e);
-  //     return e;
-  //   }
-  // }
+  async getTokenProofFromOutlet = (tokensOrigin, localStorageItemName, unsignedToken) => {
+    this.getTokenProofFromOutletIframe(tokensOrigin, localStorageItemName, unsignedToken);
+    return new Promise((resolve, reject) => {
+      window.addEventListener('message', function(event) { 
+        if(event.data.evt === 'setTokenProof') {
+          resolve(event.data.tokenProof);
+        }
+      }, false);
+    })
+  }
+
+  // gets the token proof from the outlet iframe
+  async getTokenProofFromOutletIframe = (tokensOrigin, localStorageItemName, unsignedToken) => {
+    return new Promise((resolve, reject) => {
+      const iframe = document.createElement('iframe');
+      iframe.src = tokensOrigin;
+      iframe.style.width = '1px';
+      iframe.style.height = '1px';
+      iframe.style.opacity = '0';
+      document.body.appendChild(iframe);
+      iframe.onload = () => {
+        iframe.contentWindow.postMessage({
+          evt: 'getTokenProof',
+          localStorageItemName: localStorageItemName,
+          unsignedToken: unsignedToken
+        }, "*");
+        resolve(true);
+      };
+    });
+  }
 
   async validateUseEthKey(endPoint, data){
     try {
@@ -211,12 +156,7 @@ export class Client {
 
   async getChallengeSigned(unEndPoint) {
     const storageEthKeys = localStorage.getItem(this.config.localStorageEthKeyItemName);
-    let ethKeys;
-    if (storageEthKeys && storageEthKeys.length) {
-      ethKeys = JSON.parse(storageEthKeys);
-    } else {
-      ethKeys = {};
-    }
+    let ethKeys = (storageEthKeys && storageEthKeys.length) ? JSON.parse(storageEthKeys) : {};
     try {
       let address = await this.connectMetamaskAndGetAddress();
       address = address.toLowerCase();
