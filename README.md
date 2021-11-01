@@ -143,6 +143,5 @@ See Developers Page inside Wiki
 Please contact us or open an issue via github:
 Alchemynft <info@alchemynft.org>
 
-For working examples please visit and see readme for local setup:
-https://tokenscript.github.io/token-negotiator/examples/
+For a quick start to using this product please see: https://github.com/TokenScript/token-negotiator-examples/wiki/quick-start
 
