@@ -1,6 +1,6 @@
 import { BitString, compareSchema, Sequence, fromBER, } from "asn1js";
 import { getParametersValue, clearProps } from "pvutils";
-import AlgorithmIdentifier from "./AlgorithmIdentifier.js";
+import AlgorithmIdentifier from "./AlgorithmIdentifier.ts";
 export default class PublicKeyInfo {
     constructor(source = {}) {
         if (typeof (source) == "string") {

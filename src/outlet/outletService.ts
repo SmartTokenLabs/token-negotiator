@@ -10,9 +10,13 @@ import {
 import { base64ToUint8array, compareObjects } from './../utils/index';
 class OutletService {
 
-  constructor(config) {
-    this.config = config;
-    this.authenticator = new Authenticator();
+  constructor(config, Authenticator) {
+    if(config && Authenticator){
+      this.config = config;
+      this.authenticator = new Authenticator();
+    } else {
+      console.warn('OutletService: Please provide the config and Authenticator to use this module service');
+    }
   };
 
   // recieves events
@@ -23,8 +27,15 @@ class OutletService {
         this.eventSender.emitTokens(tokens);
       break;
       case 'getTokenProof':
-        const tokenProof = this.rawTokenCheck(data.unsignedToken, this.config.localStorageItemName, this.config.tokenParser);
-        this.eventSender.emitTokenProof(tokenProof);
+        
+        // * TODO consider making this into an return function (this is optional - based on decision around promise/call back flow)
+        // const tokenProof = this.rawTokenCheck(data.unsignedToken, this.config.localStorageItemName, this.config.tokenParser);
+        // this.eventSender.emitTokenProof(tokenProof);
+        // to do this the Authenticator would require an update.
+
+        // current flow uses callbacks
+        this.rawTokenCheck(data.unsignedToken, this.config.localStorageItemName, this.config.tokenParser);
+        
       break;
     }
   }
@@ -42,8 +53,7 @@ class OutletService {
         evt: 'setTokenProof',
         tokenProof: tokenProof
       }, "*");
-    },
-  
+    },  
   }
 
   rawTokenCheck(unsignedToken, localStorageItemName, tokenParser) {
@@ -61,7 +71,11 @@ class OutletService {
         tokenObj.email = rawTokenData.id;
     if (rawTokenData && rawTokenData.magic_link)
         tokenObj.magicLink = rawTokenData.magic_link;
-    return this.authenticator.getAuthenticationBlob(tokenObj);
+
+    // * call back flow.
+    this.authenticator.getAuthenticationBlob(tokenObj, () => {
+      this.eventSender.emitTokenProof(tokenProof);
+    });
   }
 
   getRawToken(unsignedToken, localStorageItemName, tokenParser) {
