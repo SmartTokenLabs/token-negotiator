@@ -32,7 +32,7 @@ class NegotiatorService {
     // initial selected token state
     this.selectedTokenState = [];
   };
-
+  
   // applies negotiation config from client
   // @ts-ignore
   set configuration ({ filter, tokenName, options }) {
@@ -81,6 +81,11 @@ class NegotiatorService {
       case 'setSelectedTokens':
         this.eventSender.emitSelectedTokens();
         break;
+      case 'setCloseOverlay':
+        const element = document.querySelector(".tk-overlay .overlay");
+        const isOpen = element.classList.contains("open");
+        if(isOpen) this.overlayClickHandler();
+        break;
       case 'setToggleOverlayHandler':
         this.eventSender.emitOverlayToggleState();
         break;
@@ -108,15 +113,20 @@ class NegotiatorService {
       const toggleOverlayState = this.overlayClickHandler();
       // @ts-ignore
       clearTimeout(this.overlayClickTimer);
-      if (toggleOverlayState === 'close') {
-        // @ts-ignore
-        this.overlayClickTimer = setTimeout(() => {
-          window.top.postMessage({ evt: 'hideOvelay', state: toggleOverlayState }, "*");
-        }, 1000);
-      } else {
-        window.top.postMessage({ evt: 'showOverlay', state: toggleOverlayState }, "*");
-      }
+      if (toggleOverlayState === 'close') this.closeOverlay();
+      else this.showOverlay();
     }
+  }
+
+  closeOverlay = () => {
+    // @ts-ignore
+    this.overlayClickTimer = setTimeout(() => {
+      window.top.postMessage({ evt: 'hideOvelay', state: 'close' }, "*");
+    }, 1000);
+  }
+  
+  showOverlay = () => {
+    window.top.postMessage({ evt: 'showOverlay', state: 'open' }, "*");
   }
 
   // recieved click event from client

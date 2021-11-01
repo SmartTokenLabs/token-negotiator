@@ -31,6 +31,8 @@ declare class NegotiatorService {
         overlayClickTimer: null;
         emitOverlayToggleState: () => void;
     };
+    closeOverlay: () => void;
+    showOverlay: () => void;
     overlayClickHandler: () => "open" | "close";
     addTokens: (tokens: any) => void;
     addToken: (tokenContainer: any, str: string) => void;
