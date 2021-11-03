@@ -1,14 +1,15 @@
-class OverlayService {
-    constructor(config, options, filter) {
-        this.onClickOutside = (e) => {
+var OverlayService = (function () {
+    function OverlayService(config, options, filter) {
+        var _this = this;
+        this.onClickOutside = function (e) {
             if (e.target.className !== "overlayFabButton") {
-                this.eventSender.closeOverlay();
+                _this.eventSender.closeOverlay();
             }
         };
         this.eventSender = {
-            closeOverlay: () => {
-                if (this.refOverlaySelector && this.refOverlaySelector.contentWindow) {
-                    this.refOverlaySelector.contentWindow.postMessage({
+            closeOverlay: function () {
+                if (_this.refOverlaySelector && _this.refOverlaySelector.contentWindow) {
+                    _this.refOverlaySelector.contentWindow.postMessage({
                         evt: "setCloseOverlay",
                     }, "*");
                 }
@@ -21,67 +22,67 @@ class OverlayService {
         this.embedClientOverlay(this.config.tokenName, this.config.tokenOverlayOrigin, this.options, this.filter);
         window.addEventListener("click", this.onClickOutside);
     }
-    isEventFromOverlay(origin, tokenOverlayOrigin) {
+    OverlayService.prototype.isEventFromOverlay = function (origin, tokenOverlayOrigin) {
         return origin === tokenOverlayOrigin;
-    }
-    assignClientListener() {
-        window.addEventListener("message", (event) => {
-            if (!this.isEventFromOverlay(event.origin, this.config.tokenOverlayOrigin))
+    };
+    OverlayService.prototype.assignClientListener = function () {
+        var _this = this;
+        window.addEventListener("message", function (event) {
+            if (!_this.isEventFromOverlay(event.origin, _this.config.tokenOverlayOrigin))
                 return;
-            this.eventReciever(event.data);
+            _this.eventReciever(event.data);
         }, false);
-    }
-    embedClientOverlay(tokenName, tokenOverlayOrigin, options, filter) {
-        setTimeout(() => {
-            let refTokenSelector = document.querySelector(options.tokenSelectorContainer);
+    };
+    OverlayService.prototype.embedClientOverlay = function (tokenName, tokenOverlayOrigin, options, filter) {
+        var _this = this;
+        setTimeout(function () {
+            var refTokenSelector = document.querySelector(options.tokenSelectorContainer);
             if (refTokenSelector) {
-                const iframe = `<div class="${tokenName}OverlayWrapper"><iframe class="${tokenName}Overlay" style="border:0; resize: none; overflow: auto;" height="335px" width="376px" src="${tokenOverlayOrigin}" allowtransparency="true" title="outlet" frameborder="0" style="border:0" allowfullscreen frameborder="no" scrolling="no"></iframe></div>`;
+                var iframe = "<div class=\"" + tokenName + "OverlayWrapper\"><iframe class=\"" + tokenName + "Overlay\" style=\"border:0; resize: none; overflow: auto;\" height=\"335px\" width=\"376px\" src=\"" + tokenOverlayOrigin + "\" allowtransparency=\"true\" title=\"outlet\" frameborder=\"0\" style=\"border:0\" allowfullscreen frameborder=\"no\" scrolling=\"no\"></iframe></div>";
                 refTokenSelector.innerHTML = iframe;
-                let refOverlaySelector = document.querySelector(`${options.tokenSelectorContainer} .${tokenName}Overlay`);
-                this.refOverlaySelector = refOverlaySelector;
-                refOverlaySelector.onload = function () {
-                    refOverlaySelector.contentWindow.postMessage({
+                var refOverlaySelector_1 = document.querySelector(options.tokenSelectorContainer + " ." + tokenName + "Overlay");
+                _this.refOverlaySelector = refOverlaySelector_1;
+                refOverlaySelector_1.onload = function () {
+                    refOverlaySelector_1.contentWindow.postMessage({
                         evt: "getTokenButtonHTML",
                         data: {
-                            tokenName,
-                            filter,
-                            options,
+                            tokenName: tokenName,
+                            filter: filter,
+                            options: options,
                         },
                     }, "*");
                 };
             }
         }, 0);
-    }
-    eventReciever(data) {
+    };
+    OverlayService.prototype.eventReciever = function (data) {
         switch (data.evt) {
             case "setTokenButtonHTML":
                 if (!document.getElementById("tokenButtonContainer")) {
-                    let newDiv = document.createElement("div");
+                    var newDiv = document.createElement("div");
                     newDiv.setAttribute("id", "tokenButtonContainer");
-                    newDiv.style.cssText = `
-              display: flex; 
-              justify-content: flex-end;
-              margin: 10px;
-            `;
+                    newDiv.style.cssText = "\n              display: flex; \n              justify-content: flex-end;\n              margin: 10px;\n            ";
                     newDiv.innerHTML = data.button;
-                    document.querySelector(`${this.options.tokenSelectorContainer}`).style.margin = "10px";
+                    document.querySelector("" + this.options.tokenSelectorContainer).style.margin = "10px";
                     document
-                        .querySelector(`${this.options.tokenSelectorContainer}`)
+                        .querySelector("" + this.options.tokenSelectorContainer)
                         .append(newDiv);
                 }
                 break;
             case "hideOverlay":
-                document.querySelector(`${this.options.tokenSelectorContainer} .${this.config.tokenName}OverlayWrapper`).style.display = "none";
+                document.querySelector(this.options.tokenSelectorContainer + " ." + this.config.tokenName + "OverlayWrapper").style.display = "none";
                 break;
             case "showOverlay":
-                document.querySelector(`${this.options.tokenSelectorContainer} .${this.config.tokenName}OverlayWrapper`).style.display = "block";
+                document.querySelector(this.options.tokenSelectorContainer + " ." + this.config.tokenName + "OverlayWrapper").style.display = "block";
                 break;
         }
-    }
-    overlayClickHandler() {
+    };
+    OverlayService.prototype.overlayClickHandler = function () {
         document
-            .querySelector(`${this.options.tokenSelectorContainer} .${this.config.tokenName}Overlay`)
+            .querySelector(this.options.tokenSelectorContainer + " ." + this.config.tokenName + "Overlay")
             .contentWindow.postMessage({ evt: "setToggleOverlayHandler" }, "*");
-    }
-}
+    };
+    return OverlayService;
+}());
 export default OverlayService;
+//# sourceMappingURL=overlayService.js.map

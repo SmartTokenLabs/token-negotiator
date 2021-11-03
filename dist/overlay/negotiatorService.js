@@ -1,81 +1,82 @@
 import { config } from "./../config";
 import { getTokens } from './../core';
 import { createOverlayMarkup, createToken, createFabButton } from "./componentFactory";
-class NegotiatorService {
-    constructor() {
-        this.eventReciever = (dataObject) => {
-            const { data, evt } = dataObject;
+var NegotiatorService = (function () {
+    function NegotiatorService() {
+        var _this = this;
+        this.eventReciever = function (dataObject) {
+            var data = dataObject.data, evt = dataObject.evt;
             switch (evt) {
                 case 'getTokenButtonHTML':
                     if (!data.tokenName)
                         return console.warn('token negotiator: overlay eventReciever() missing required parameters.');
-                    document.querySelector('.tk-overlay').innerHTML = this.createOverlayMarkup();
+                    document.querySelector('.tk-overlay').innerHTML = _this.createOverlayMarkup();
                     document.getElementsByClassName('overlay')[0].style.transition = 'all 0.2s ease-out';
-                    this.configuration = {
+                    _this.configuration = {
                         filter: data.filter,
                         tokenName: data.tokenName,
                         options: data.options
                     };
-                    this.getTokens({
-                        filter: this.filter,
-                        tokenName: this.config.tokenName,
-                        tokensOrigin: this.config.tokenOrigin,
-                        localStorageItemName: this.config.localStorageItemName,
-                        tokenParser: this.config.tokenParser,
-                        unsignedTokenDataName: this.config.unsignedTokenDataName
-                    }).then((tokens) => {
-                        this.addTokens(tokens);
-                        this.eventSender.emitTokenButtonHTML();
+                    _this.getTokens({
+                        filter: _this.filter,
+                        tokenName: _this.config.tokenName,
+                        tokensOrigin: _this.config.tokenOrigin,
+                        localStorageItemName: _this.config.localStorageItemName,
+                        tokenParser: _this.config.tokenParser,
+                        unsignedTokenDataName: _this.config.unsignedTokenDataName
+                    }).then(function (tokens) {
+                        _this.addTokens(tokens);
+                        _this.eventSender.emitTokenButtonHTML();
                     });
                     break;
                 case 'setSelectedTokens':
-                    this.eventSender.emitSelectedTokens();
+                    _this.eventSender.emitSelectedTokens();
                     break;
                 case 'setCloseOverlay':
-                    const element = document.querySelector(".tk-overlay .overlay");
-                    const isOpen = element.classList.contains("open");
+                    var element = document.querySelector(".tk-overlay .overlay");
+                    var isOpen = element.classList.contains("open");
                     if (isOpen)
-                        this.overlayClickHandler();
+                        _this.overlayClickHandler();
                     break;
                 case 'setToggleOverlayHandler':
-                    this.eventSender.emitOverlayToggleState();
+                    _this.eventSender.emitOverlayToggleState();
                     break;
             }
         };
         this.eventSender = {
-            emitTokenButtonHTML: () => {
+            emitTokenButtonHTML: function () {
                 window.top.postMessage({
                     evt: 'setTokenButtonHTML',
-                    button: this.createFabButton(this.config.fabButton)
+                    button: _this.createFabButton(_this.config.fabButton)
                 }, "*");
             },
-            emitSelectedTokens: () => {
+            emitSelectedTokens: function () {
                 window.top.postMessage({
                     evt: 'setSelectedTokens',
-                    selectedTokens: this.selectedTokens
+                    selectedTokens: _this.selectedTokens
                 }, "*");
             },
             overlayClickTimer: null,
-            emitOverlayToggleState: () => {
-                const toggleOverlayState = this.overlayClickHandler();
-                clearTimeout(this.overlayClickTimer);
+            emitOverlayToggleState: function () {
+                var toggleOverlayState = _this.overlayClickHandler();
+                clearTimeout(_this.overlayClickTimer);
                 if (toggleOverlayState === 'close')
-                    this.closeOverlay();
+                    _this.closeOverlay();
                 else
-                    this.showOverlay();
+                    _this.showOverlay();
             }
         };
-        this.closeOverlay = () => {
-            this.overlayClickTimer = setTimeout(() => {
+        this.closeOverlay = function () {
+            _this.overlayClickTimer = setTimeout(function () {
                 window.top.postMessage({ evt: 'hideOvelay', state: 'close' }, "*");
             }, 1000);
         };
-        this.showOverlay = () => {
+        this.showOverlay = function () {
             window.top.postMessage({ evt: 'showOverlay', state: 'open' }, "*");
         };
-        this.overlayClickHandler = () => {
-            const element = document.querySelector(".tk-overlay .overlay");
-            const isOpen = element.classList.contains("open");
+        this.overlayClickHandler = function () {
+            var element = document.querySelector(".tk-overlay .overlay");
+            var isOpen = element.classList.contains("open");
             element.classList.toggle("open");
             if (!isOpen) {
                 window.top.postMessage({ evt: 'hideOverlay', state: 'open' }, "*");
@@ -88,13 +89,13 @@ class NegotiatorService {
                 return 'close';
             }
         };
-        this.addTokens = (tokens) => {
-            const tokenContainer = document.querySelector('.tk-overlay .token-container');
-            this.addToken(tokenContainer, tokens.map((data, index) => {
-                return this.createToken(data, index, this.config.fabButton);
+        this.addTokens = function (tokens) {
+            var tokenContainer = document.querySelector('.tk-overlay .token-container');
+            _this.addToken(tokenContainer, tokens.map(function (data, index) {
+                return _this.createToken(data, index, _this.config.fabButton);
             }).join(''));
         };
-        this.addToken = (tokenContainer, str) => {
+        this.addToken = function (tokenContainer, str) {
             tokenContainer.innerHTML = str;
         };
         this.createOverlayMarkup = createOverlayMarkup;
@@ -104,15 +105,26 @@ class NegotiatorService {
         this.selectedTokenState = [];
     }
     ;
-    set configuration({ filter, tokenName, options }) {
-        this.filter = filter;
-        this.options = options;
-        this.config = config[tokenName];
-        this.tokenParser = this.config.tokenParser;
-    }
-    get selectedTokens() { return this.selectedTokenState; }
+    Object.defineProperty(NegotiatorService.prototype, "configuration", {
+        set: function (_a) {
+            var filter = _a.filter, tokenName = _a.tokenName, options = _a.options;
+            this.filter = filter;
+            this.options = options;
+            this.config = config[tokenName];
+            this.tokenParser = this.config.tokenParser;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(NegotiatorService.prototype, "selectedTokens", {
+        get: function () { return this.selectedTokenState; },
+        set: function (tokens) { this.selectedTokenState = tokens; },
+        enumerable: false,
+        configurable: true
+    });
     ;
-    set selectedTokens(tokens) { this.selectedTokenState = tokens; }
     ;
-}
+    return NegotiatorService;
+}());
 export default NegotiatorService;
+//# sourceMappingURL=negotiatorService.js.map

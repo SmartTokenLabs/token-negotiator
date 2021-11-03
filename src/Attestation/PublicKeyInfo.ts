@@ -6,7 +6,7 @@ import {
   fromBER,  
 } from "asn1js";
 import { getParametersValue, clearProps } from "pvutils";
-import AlgorithmIdentifier from "./AlgorithmIdentifier.ts";
+import AlgorithmIdentifier from "./AlgorithmIdentifier";
 //**************************************************************************************
 /**
  * Class from RFC5280

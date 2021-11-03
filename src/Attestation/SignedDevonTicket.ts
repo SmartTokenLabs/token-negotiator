@@ -9,7 +9,7 @@ import {
   Utf8String
 } from "asn1js";
 import { getParametersValue, clearProps, bufferToHexCodes } from "pvutils";
-import PublicKeyInfo from "./PublicKeyInfo.ts";
+import PublicKeyInfo from "./PublicKeyInfo";
 
 export class DevconTicket {
   //**********************************************************************************

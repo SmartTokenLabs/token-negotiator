@@ -1,13 +1,14 @@
 import { BitString, compareSchema, Sequence, fromBER, } from "asn1js";
 import { getParametersValue, clearProps } from "pvutils";
-import AlgorithmIdentifier from "./AlgorithmIdentifier.ts";
-export default class PublicKeyInfo {
-    constructor(source = {}) {
+import AlgorithmIdentifier from "./AlgorithmIdentifier";
+var PublicKeyInfo = (function () {
+    function PublicKeyInfo(source) {
+        if (source === void 0) { source = {}; }
         if (typeof (source) == "string") {
             throw new TypeError("Not accepting string. For base64, convert to ArrayBuffer.");
         }
         if (source instanceof ArrayBuffer) {
-            const asn1 = fromBER(source);
+            var asn1 = fromBER(source);
             this.fromSchema(asn1.result);
         }
         else {
@@ -15,8 +16,9 @@ export default class PublicKeyInfo {
             this.publicKey = getParametersValue(source, "publicKey");
         }
     }
-    static schema(parameters = {}) {
-        const names = getParametersValue(parameters, "names", {});
+    PublicKeyInfo.schema = function (parameters) {
+        if (parameters === void 0) { parameters = {}; }
+        var names = getParametersValue(parameters, "names", {});
         return new Sequence({
             name: names.blockName || "",
             optional: true,
@@ -29,10 +31,10 @@ export default class PublicKeyInfo {
                 new BitString({ name: "publicKey" }),
             ],
         });
-    }
-    fromSchema(schema) {
+    };
+    PublicKeyInfo.prototype.fromSchema = function (schema) {
         clearProps(schema, ["signatureAlgorithm", "publicKey"]);
-        const asn1 = compareSchema(schema, schema, PublicKeyInfo.schema({
+        var asn1 = compareSchema(schema, schema, PublicKeyInfo.schema({
             names: {
                 signatureAlgorithm: "signatureAlgorithm",
                 publicKey: "publicKey",
@@ -40,5 +42,8 @@ export default class PublicKeyInfo {
         }));
         if (asn1.verified === false)
             throw new Error("Object's schema was not verified against input data for AlgorithmIdentifier");
-    }
-}
+    };
+    return PublicKeyInfo;
+}());
+export default PublicKeyInfo;
+//# sourceMappingURL=PublicKeyInfo.js.map

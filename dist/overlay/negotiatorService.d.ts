@@ -33,7 +33,7 @@ declare class NegotiatorService {
     };
     closeOverlay: () => void;
     showOverlay: () => void;
-    overlayClickHandler: () => "open" | "close";
+    overlayClickHandler: () => "close" | "open";
     addTokens: (tokens: any) => void;
     addToken: (tokenContainer: any, str: string) => void;
 }
