@@ -1,11 +1,13 @@
 {
   "name": "@tokenscript/token-negotiator",
-  "version": "1.0.0-alpha.87",
-  "description": "",
-  "main": "dist/index.js",
+  "version": "1.0.0-alpha.88",
+  "description": "Token-negotiator enables token attestations providing bridge between web 2.0 and 3.0.",
+  "main": "src/index.js",
   "scripts": {
     "test": "jest",
-    "build": "tsc"
+    "build": "npm run clean && tsc --outDir dist-common-js && tsc -m es6 --outDir dist && webpack --env production",
+    "build-dev": "npm run clean && tsc --outDir dist-common-js && tsc -m es6 --outDir dist && webpack --env development",
+    "clean": "shx rm -rf _bundles dist dist-common-js"
   },
   "repository": {
     "type": "git",
@@ -26,12 +28,18 @@
     "pvutils": "^1.0.17"
   },
   "devDependencies": {
+    "babel-loader": "^8.2.2",
     "@babel/preset-env": "^7.15.8",
     "@types/jest": "^27.0.2",
     "jest": "^27.3.1",
     "jest-junit": "^12.2.0",
+    "shx": "^0.3.3",
+    "terser-webpack-plugin": "^5.2.4",
     "ts-jest": "^27.0.7",
     "ts-loader": "^9.2.6",
-    "typescript": "^4.4.3"
+    "typescript": "^4.4.3",
+    "uglifyjs-webpack-plugin": "^2.2.0",
+    "webpack": "^5.38.1",
+    "webpack-cli": "^4.7.2"
   }
 }

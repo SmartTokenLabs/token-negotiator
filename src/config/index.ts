@@ -1,5 +1,5 @@
 // @ts-ignore
-import { SignedDevconTicket } from './../Attestation/SignedDevonTicket.js';
+import { SignedDevconTicket } from './../Attestation/SignedDevonTicket';
 
 /*
 

@@ -1,12 +1,12 @@
 import NegotiatorService from "./negotiatorService";
 import { applyDevelopmentMode } from "./devUtils";
-export class Overlay {
-    constructor() {
-        const negotiatorOverlayService = new NegotiatorService();
+var Overlay = (function () {
+    function Overlay() {
+        var negotiatorOverlayService = new NegotiatorService();
         window.addEventListener('message', function (event) { negotiatorOverlayService.eventReciever(event.data); }, false);
-        window.tokenToggleSelection = () => {
-            let output = [];
-            document.querySelectorAll('.token .mobileToggle').forEach((token) => {
+        window.tokenToggleSelection = function () {
+            var output = [];
+            document.querySelectorAll('.token .mobileToggle').forEach(function (token) {
                 if (token.checked === true)
                     output.push(JSON.parse(token.dataset.token));
             });
@@ -16,5 +16,8 @@ export class Overlay {
         if (window.top === window.self)
             applyDevelopmentMode('devcon-ticket', ".tokenSelectorContainerElement", "http://localhost:3002/", "dcTokens", negotiatorOverlayService);
     }
-}
+    return Overlay;
+}());
+export { Overlay };
 ;
+//# sourceMappingURL=index.js.map
