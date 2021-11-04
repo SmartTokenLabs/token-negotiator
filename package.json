@@ -1,8 +1,8 @@
 {
   "name": "@tokenscript/token-negotiator",
-  "version": "1.0.0-alpha.88",
+  "version": "1.0.0-alpha.89",
   "description": "Token-negotiator enables token attestations providing bridge between web 2.0 and 3.0.",
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "jest",
     "build": "npm run clean && tsc --outDir dist-common-js && tsc -m es6 --outDir dist && webpack --env production",
@@ -28,9 +28,9 @@
     "pvutils": "^1.0.17"
   },
   "devDependencies": {
-    "babel-loader": "^8.2.2",
     "@babel/preset-env": "^7.15.8",
     "@types/jest": "^27.0.2",
+    "babel-loader": "^8.2.2",
     "jest": "^27.3.1",
     "jest-junit": "^12.2.0",
     "shx": "^0.3.3",
