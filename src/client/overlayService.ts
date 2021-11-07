@@ -18,13 +18,12 @@ class OverlayService {
       this.filter
     );
 
-    window.addEventListener("click", this.onClickOutside);
-    // remove listener when destroying the widget
-    // window.removeEventListener("click", onClickOutside);
+    window.addEventListener("click", this.onClickOutsideOfOverlay);
+    // window.removeEventListener("click", onClickOutsideOfOverlay);
   }
 
-  onClickOutside = (e) => {
-    if(e.target.className !== "overlayFabButton"){
+  onClickOutsideOfOverlay = (e) => {
+    if(e.target.className !== "overlay-fab-button-tn"){
       this.eventSender.closeOverlay();
     } 
   };
@@ -61,17 +60,16 @@ class OverlayService {
     );
   }
 
-  // TODO move postMessage into eventSender
   embedClientOverlay(tokenName, tokenOverlayOrigin, options, filter) {
     setTimeout(() => {
       let refTokenSelector = document.querySelector(
         options.tokenSelectorContainer
       );
       if (refTokenSelector) {
-        const iframe = `<div class="${tokenName}OverlayWrapper"><iframe class="${tokenName}Overlay" style="border:0; resize: none; overflow: auto;" height="335px" width="376px" src="${tokenOverlayOrigin}" allowtransparency="true" title="outlet" frameborder="0" style="border:0" allowfullscreen frameborder="no" scrolling="no"></iframe></div>`;
+        const iframe = `<div class="${tokenName}-overlay-wrapper-tn"><iframe class="${tokenName}-overlay-tn" style="border:0; resize: none; overflow: auto;" height="335px" width="376px" src="${tokenOverlayOrigin}" allowtransparency="true" title="outlet" frameborder="0" style="border:0" allowfullscreen frameborder="no" scrolling="no"></iframe></div>`;
         refTokenSelector.innerHTML = iframe;
         let refOverlaySelector = document.querySelector(
-          `${options.tokenSelectorContainer} .${tokenName}Overlay`
+          `${options.tokenSelectorContainer} .${tokenName}-overlay`
         );
         this.refOverlaySelector = refOverlaySelector;
         refOverlaySelector.onload = function () {
@@ -94,9 +92,9 @@ class OverlayService {
   eventReciever(data) {
     switch (data.evt) {
       case "setTokenButtonHTML":
-        if (!document.getElementById("tokenButtonContainer")) {
+        if (!document.getElementById("token-button-container")) {
           let newDiv = document.createElement("div");
-          newDiv.setAttribute("id", "tokenButtonContainer");
+          newDiv.setAttribute("id", "token-button-container");
           newDiv.style.cssText = `
               display: flex; 
               justify-content: flex-end;
@@ -113,12 +111,12 @@ class OverlayService {
         break;
       case "hideOverlay":
         document.querySelector(
-          `${this.options.tokenSelectorContainer} .${this.config.tokenName}OverlayWrapper`
+          `${this.options.tokenSelectorContainer} .${this.config.tokenName}-overlay-wrapper`
         ).style.display = "none";
         break;
       case "showOverlay":
         document.querySelector(
-          `${this.options.tokenSelectorContainer} .${this.config.tokenName}OverlayWrapper`
+          `${this.options.tokenSelectorContainer} .${this.config.tokenName}-overlay-wrapper`
         ).style.display = "block";
         break;
     }

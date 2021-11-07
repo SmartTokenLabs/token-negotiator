@@ -30,6 +30,6 @@ export const createToken = (data: any, index: any, tokenImage: string) => {
 };
 
 export const createFabButton = (button: string) => {
-  return `<button class="overlayFabButton" onclick="negotiator.overlayClickHandler()" style="padding: 0; height:80px; width:80px; border: 0; box-shadow: 0 2px 5px 0 #676767; border-radius: 64px; cursor: pointer; z-index: 999; position: relative;"><div style="pointer-events: none;"><svg src=${button}></svg></div></button>`;
+  return `<button class="overlay-fab-button-tn" onclick="negotiator.overlayClickHandler()" style="padding: 0; height:80px; width:80px; border: 0; box-shadow: 0 2px 5px 0 #676767; border-radius: 64px; cursor: pointer; z-index: 999; position: relative;"><div style="pointer-events: none;"><svg src=${button}></svg></div></button>`;
 }
 

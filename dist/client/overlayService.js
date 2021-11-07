@@ -1,8 +1,8 @@
 var OverlayService = (function () {
     function OverlayService(config, options, filter) {
         var _this = this;
-        this.onClickOutside = function (e) {
-            if (e.target.className !== "overlayFabButton") {
+        this.onClickOutsideOfOverlay = function (e) {
+            if (e.target.className !== "overlay-fab-button-tn") {
                 _this.eventSender.closeOverlay();
             }
         };
@@ -20,7 +20,7 @@ var OverlayService = (function () {
         this.filter = filter;
         this.assignClientListener();
         this.embedClientOverlay(this.config.tokenName, this.config.tokenOverlayOrigin, this.options, this.filter);
-        window.addEventListener("click", this.onClickOutside);
+        window.addEventListener("click", this.onClickOutsideOfOverlay);
     }
     OverlayService.prototype.isEventFromOverlay = function (origin, tokenOverlayOrigin) {
         return origin === tokenOverlayOrigin;
@@ -58,9 +58,9 @@ var OverlayService = (function () {
     OverlayService.prototype.eventReciever = function (data) {
         switch (data.evt) {
             case "setTokenButtonHTML":
-                if (!document.getElementById("tokenButtonContainer")) {
+                if (!document.getElementById("token-button-container")) {
                     var newDiv = document.createElement("div");
-                    newDiv.setAttribute("id", "tokenButtonContainer");
+                    newDiv.setAttribute("id", "token-button-container");
                     newDiv.style.cssText = "\n              display: flex; \n              justify-content: flex-end;\n              margin: 10px;\n            ";
                     newDiv.innerHTML = data.button;
                     document.querySelector("" + this.options.tokenSelectorContainer).style.margin = "10px";

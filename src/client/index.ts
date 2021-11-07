@@ -16,18 +16,24 @@ export class Client {
 
   // negotiates using both passive and active flows.
   async negotiate() {
-    if(this.options.useOverlay === true) this.negotiateViaOverlay();
-    else {
-      const tokens = await getTokens({
-        filter: this.filter,
-        tokenName: this.config.tokenName,
-        tokensOrigin: this.config.tokenOrigin,
-        localStorageItemName: this.config.localStorageItemName,
-        tokenParser: this.config.tokenParser,
-        unsignedTokenDataName: this.config.unsignedTokenDataName
-      });
+    if(this.options.useOverlay === true){
+      this.negotiateViaOverlay();
+    } else {
+      const tokens = this.negotiateViaOutlet();
       return tokens;
     }
+  }
+
+  async negotiateViaOutlet() {
+    const tokens = await getTokens({
+      filter: this.filter,
+      tokenName: this.config.tokenName,
+      tokensOrigin: this.config.tokenOrigin,
+      localStorageItemName: this.config.localStorageItemName,
+      tokenParser: this.config.tokenParser,
+      unsignedTokenDataName: this.config.unsignedTokenDataName
+    });
+    return tokens;
   }
 
   // instantiates overlay

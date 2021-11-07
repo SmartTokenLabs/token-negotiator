@@ -1,6 +1,6 @@
 declare class OverlayService {
     constructor(config: any, options: any, filter: any);
-    onClickOutside: (e: any) => void;
+    onClickOutsideOfOverlay: (e: any) => void;
     eventSender: {
         closeOverlay: () => void;
     };
