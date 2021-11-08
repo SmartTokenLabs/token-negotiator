@@ -140,15 +140,18 @@ describe('core Spec', () => {
   //   openOutletIframe('http://localhost:3000', 'testing');
   // });
 
-  // test('expect to open outlet iframe', () => {
-  //   getTokens({
-  //     filter: {},
-  //     tokensOrigin: 'http://localhost:3002',
-  //     localStorageItemName: 'dcTokens',
-  //     tokenParser: SignedDevconTicket,
-  //     unsignedTokenDataName: 'ticket'
-  //   });
-  // });
+  // Jest Test onerror
+  // https://stackoverflow.com/questions/28584773/xmlhttprequest-testing-in-jest
+
+  test('expect to open outlet iframe', () => {
+    getTokens({
+      filter: {},
+      tokensOrigin: 'http://localhost:3002',
+      localStorageItemName: 'dcTokens',
+      tokenParser: SignedDevconTicket,
+      unsignedTokenDataName: 'ticket'
+    });
+  });
 
   // TODO: Check with Oleh - tokenUrlName
   test('expect to read new magic link', () => {

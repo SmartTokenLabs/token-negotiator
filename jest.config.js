@@ -17,5 +17,6 @@ module.exports = {
   "globals": {
     "window": {},
     "localStorage": {}
-  }
+  },
 };
+

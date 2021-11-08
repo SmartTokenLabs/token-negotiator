@@ -36,7 +36,6 @@ export class Client {
     return tokens;
   }
 
-  // instantiates overlay
   negotiateViaOverlay() {
     const overlayService = new OverlayService(this.config, this.options, this.filter); 
     this.overlayClickHandler = overlayService.overlayClickHandler;
@@ -127,8 +126,10 @@ export class Client {
       const json = await response.json();
       return json.address;
     } catch (e) {
-      console.error(e);
-      return '';
+      return {
+        success: false,
+        message: "validate ethkey request failed"
+      }
     }
   }
 
@@ -139,7 +140,6 @@ export class Client {
       json.success = true;
       return json;
     } catch (e) {
-      console.error(e);
       return {
         success: false,
         message: "UN request failed"

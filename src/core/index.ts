@@ -47,10 +47,7 @@ export const readTokens = (localStorageItemName: any) => {
     }
   } catch (e) {
     console.log('Cant parse tokens in LocalStorage');
-    // @ts-ignore
-    if (typeof callBack === "function") {
-      output.success = false;
-    }
+    output.success = false;
   }
   return output;
 }
