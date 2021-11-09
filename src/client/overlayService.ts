@@ -108,12 +108,12 @@ class OverlayService {
         break;
       case "hideOverlay":
         // TODO this could be optimised so this is referenced once.
-        const el = document.querySelector(`${this.options.tokenSelectorContainer} .${this.config.tokenName}-overlay-wrapper`);
+        const el = document.querySelector(`${this.options.tokenSelectorContainer} .${this.config.tokenName}-overlay-wrapper-tn`);
         if(el) el.style.display = "none";
         break;
       case "showOverlay":
         // TODO this could be optimised so this is referenced once.
-        const el = document.querySelector(`${this.options.tokenSelectorContainer} .${this.config.tokenName}-overlay-wrapper`);
+        const el = document.querySelector(`${this.options.tokenSelectorContainer} .${this.config.tokenName}-overlay-wrapper-tn`);
         if(el) el.style.display = "block";
         break;
     }

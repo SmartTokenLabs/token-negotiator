@@ -11,7 +11,7 @@ var OverlayService = (function () {
                 if (_this.refOverlaySelector && _this.refOverlaySelector.contentWindow) {
                     _this.refOverlaySelector.contentWindow.postMessage({
                         evt: "setCloseOverlay",
-                    }, "*");
+                    }, _this.config.tokenOverlayOrigin);
                 }
             },
         };
@@ -50,7 +50,7 @@ var OverlayService = (function () {
                             filter: filter,
                             options: options,
                         },
-                    }, "*");
+                    }, this.config.tokenOverlayOrigin);
                 };
             }
         }, 0);
@@ -71,12 +71,12 @@ var OverlayService = (function () {
                 }
                 break;
             case "hideOverlay":
-                var el = document.querySelector(this.options.tokenSelectorContainer + " ." + this.config.tokenName + "-overlay-wrapper");
+                var el = document.querySelector(this.options.tokenSelectorContainer + " ." + this.config.tokenName + "-overlay-wrapper-tn");
                 if (el)
                     el.style.display = "none";
                 break;
             case "showOverlay":
-                var el = document.querySelector(this.options.tokenSelectorContainer + " ." + this.config.tokenName + "-overlay-wrapper");
+                var el = document.querySelector(this.options.tokenSelectorContainer + " ." + this.config.tokenName + "-overlay-wrapper-tn");
                 if (el)
                     el.style.display = "block";
                 break;

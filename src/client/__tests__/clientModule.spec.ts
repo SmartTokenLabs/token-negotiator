@@ -34,13 +34,13 @@ describe('overlay service Spec', () => {
   test('expect overlay close trigger to be invoked', () => {
     const _config = config['devcon-ticket'];
     const overlayService = new OverlayService(_config, { tokenSelectorContainer: '.test' }, {}); 
-    document.body.innerHTML = '<div><div style="margin: 0" class="test devcon-ticket-overlay-wrapper"></div></div>';
+    document.body.innerHTML = '<div><div style="margin: 0" class="test devcon-ticket-overlay-wrapper-tn"></div></div>';
     overlayService.eventReciever({ evt: "hideOverlay" });
   });  
   test('expect overlay open trigger to be invoked', () => {
     const _config = config['devcon-ticket'];
     const overlayService = new OverlayService(_config, { tokenSelectorContainer: '.test' }, {}); 
-    document.body.innerHTML = '<div><div style="margin: 0" class="test devcon-ticket-overlay-wrapper"></div></div>';
+    document.body.innerHTML = '<div><div style="margin: 0" class="test devcon-ticket-overlay-wrapper-tn"></div></div>';
     overlayService.eventReciever({ evt: "showOverlay" });
   });  
   test('expect overlay click handler to be invoked', () => {
