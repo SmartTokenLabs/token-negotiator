@@ -41,13 +41,17 @@ describe('client spec', () => {
     
   test('tokenNegotiatorClient to connect Metamask And Get Address no window eth', async () => {
     const tokenNegotiatorClient = new Client({}, 'devcon-ticket', {});
-    tokenNegotiatorClient.connectMetamaskAndGetAddress();
+    expect(() => {
+      tokenNegotiatorClient.connectMetamaskAndGetAddress()
+    }).toThrow('Please install metamask to continue.');
   });
   
   test('tokenNegotiatorClient to connect Metamask And Get Address with window eth', async () => {
     window.ethereum = () => {};
     const tokenNegotiatorClient = new Client({}, 'devcon-ticket', {});
-    tokenNegotiatorClient.connectMetamaskAndGetAddress();
+    expect(() => {
+      tokenNegotiatorClient.connectMetamaskAndGetAddress()
+    }).toThrow('Please install metamask to continue.');
   });
   
   test('tokenNegotiatorClient to connect Metamask And Get Address with window eth', async () => {
