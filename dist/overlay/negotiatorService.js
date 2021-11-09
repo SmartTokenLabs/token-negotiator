@@ -48,13 +48,13 @@ var NegotiatorService = (function () {
                 window.top.postMessage({
                     evt: 'setTokenButtonHTML',
                     button: _this.createFabButton(_this.config.fabButton)
-                }, window.location.href);
+                }, document.referrer);
             },
             emitSelectedTokens: function () {
                 window.top.postMessage({
                     evt: 'setSelectedTokens',
                     selectedTokens: _this.selectedTokens
-                }, window.location.href);
+                }, document.referrer);
             },
             overlayClickTimer: null,
             emitOverlayToggleState: function () {
@@ -68,23 +68,23 @@ var NegotiatorService = (function () {
         };
         this.closeOverlay = function () {
             _this.overlayClickTimer = setTimeout(function () {
-                window.top.postMessage({ evt: 'hideOvelay', state: 'close' }, window.location.href);
+                window.top.postMessage({ evt: 'hideOvelay', state: 'close' }, document.referrer);
             }, 1000);
         };
         this.showOverlay = function () {
-            window.top.postMessage({ evt: 'showOverlay', state: 'open' }, window.location.href);
+            window.top.postMessage({ evt: 'showOverlay', state: 'open' }, document.referrer);
         };
         this.overlayClickHandler = function () {
             var element = document.querySelector(".tk-overlay .overlay");
             var isOpen = element.classList.contains("open");
             element.classList.toggle("open");
             if (!isOpen) {
-                window.top.postMessage({ evt: 'hideOverlay', state: 'open' }, window.location.href);
+                window.top.postMessage({ evt: 'hideOverlay', state: 'open' }, document.referrer);
                 element.classList.add("open");
                 return 'open';
             }
             else {
-                window.top.postMessage({ evt: 'hideOverlay', state: 'close' }, window.location.href);
+                window.top.postMessage({ evt: 'hideOverlay', state: 'close' }, document.referrer);
                 element.classList.remove("open");
                 return 'close';
             }

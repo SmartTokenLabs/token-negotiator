@@ -1,11 +1,13 @@
 {
   "name": "@tokenscript/token-negotiator",
-  "version": "1.0.0-alpha.89",
+  "version": "1.0.0-alpha.9",
   "description": "Token-negotiator enables token attestations providing bridge between web 2.0 and 3.0.",
   "main": "dist/index.js",
   "scripts": {
     "test": "jest",
-    "build": "npm run clean && tsc --outDir dist-common-js && tsc -m es6 --outDir dist && webpack --env production",
+    "build": "npm run clean && tsc -m es6 --outDir dist",
+    "build-common-js": "npm run clean && tsc --outDir dist-common-js && webpack --env production",
+    "build-umd": "npm run clean && webpack --env production",
     "build-dev": "npm run clean && tsc --outDir dist-common-js && tsc -m es6 --outDir dist && webpack --env development",
     "clean": "shx rm -rf _bundles dist dist-common-js"
   },

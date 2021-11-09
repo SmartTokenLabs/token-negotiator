@@ -36,7 +36,7 @@ class OverlayService {
           {
             evt: "setCloseOverlay",
           },
-          "*"
+          this.config.tokenOverlayOrigin
         );
       }
     },
@@ -80,7 +80,7 @@ class OverlayService {
                 options,
               },
             },
-            "*"
+            this.config.tokenOverlayOrigin
           );
         };
       }

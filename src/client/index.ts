@@ -41,6 +41,8 @@ export class Client {
     this.overlayClickHandler = overlayService.overlayClickHandler;
   }
 
+  // Common Client Functions - Active + Passive Flows.
+
   async connectMetamaskAndGetAddress() {
     if (!window.ethereum) throw new Error('Please install metamask to continue.');
     const userAddresses = await window.ethereum.request({ method: 'eth_requestAccounts' });
