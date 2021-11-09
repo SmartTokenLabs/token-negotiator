@@ -13,11 +13,15 @@ describe('client spec', () => {
   });
   
   test('tokenNegotiatorClient a failed new instance of client', () => {
-    const tokenNegotiatorClient = new Client({}, undefined, {});
+    expect(() => {
+      new Client({}, undefined, {})
+    }).toThrow('Please provide token name.');
   });
   
   test('tokenNegotiatorClient a failed new instance of client', () => {
-    const tokenNegotiatorClient = new Client({}, undefined, { options: { useOverlay: true }});
+    expect(() => {
+      new Client({}, undefined, { options: { useOverlay: true }})
+    }).toThrow('Please provide token name.');
   });
   
   test('tokenNegotiatorClient to negotiate tokens via overlay', async () => {

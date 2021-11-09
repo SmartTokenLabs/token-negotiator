@@ -72,9 +72,9 @@ var Client = (function () {
             });
         };
         if (!tokenName)
-            console.warn("Negotiator: tokenName is a required parameter");
+            throw new Error('Please provide token name.');
         if (options.useOverlay === true && !options.tokenSelectorContainer)
-            console.warn("Negotiator: options.tokenSelectorContainer is a required parameter");
+            throw new Error('tokenSelectorContainer is a required parameter when useOverlay is true.');
         this.tokenName = tokenName;
         this.config = config[tokenName];
         this.options = options;

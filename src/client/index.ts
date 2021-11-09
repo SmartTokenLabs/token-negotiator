@@ -6,8 +6,8 @@ import OverlayService from "./overlayService";
 export class Client {
 
   constructor(filter = {}, tokenName, options = {}) {
-    if (!tokenName) console.warn("Negotiator: tokenName is a required parameter");
-    if (options.useOverlay === true && !options.tokenSelectorContainer) console.warn("Negotiator: options.tokenSelectorContainer is a required parameter");
+    if (!tokenName) throw new Error('Please provide token name.');
+    if (options.useOverlay === true && !options.tokenSelectorContainer) throw new Error('tokenSelectorContainer is a required parameter when useOverlay is true.');
     this.tokenName = tokenName;
     this.config = config[tokenName];
     this.options = options;
