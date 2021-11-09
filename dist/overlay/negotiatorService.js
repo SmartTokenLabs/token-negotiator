@@ -48,13 +48,13 @@ var NegotiatorService = (function () {
                 window.top.postMessage({
                     evt: 'setTokenButtonHTML',
                     button: _this.createFabButton(_this.config.fabButton)
-                }, "*");
+                }, window.location.href);
             },
             emitSelectedTokens: function () {
                 window.top.postMessage({
                     evt: 'setSelectedTokens',
                     selectedTokens: _this.selectedTokens
-                }, "*");
+                }, window.location.href);
             },
             overlayClickTimer: null,
             emitOverlayToggleState: function () {
@@ -68,23 +68,23 @@ var NegotiatorService = (function () {
         };
         this.closeOverlay = function () {
             _this.overlayClickTimer = setTimeout(function () {
-                window.top.postMessage({ evt: 'hideOvelay', state: 'close' }, "*");
+                window.top.postMessage({ evt: 'hideOvelay', state: 'close' }, window.location.href);
             }, 1000);
         };
         this.showOverlay = function () {
-            window.top.postMessage({ evt: 'showOverlay', state: 'open' }, "*");
+            window.top.postMessage({ evt: 'showOverlay', state: 'open' }, window.location.href);
         };
         this.overlayClickHandler = function () {
             var element = document.querySelector(".tk-overlay .overlay");
             var isOpen = element.classList.contains("open");
             element.classList.toggle("open");
             if (!isOpen) {
-                window.top.postMessage({ evt: 'hideOverlay', state: 'open' }, "*");
+                window.top.postMessage({ evt: 'hideOverlay', state: 'open' }, window.location.href);
                 element.classList.add("open");
                 return 'open';
             }
             else {
-                window.top.postMessage({ evt: 'hideOverlay', state: 'close' }, "*");
+                window.top.postMessage({ evt: 'hideOverlay', state: 'close' }, window.location.href);
                 element.classList.remove("open");
                 return 'close';
             }

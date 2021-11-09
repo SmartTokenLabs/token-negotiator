@@ -66,7 +66,7 @@ var Client = (function () {
                         evt: 'getTokenProof',
                         localStorageItemName: localStorageItemName,
                         unsignedToken: unsignedToken
-                    }, "*");
+                    }, tokensOrigin);
                     resolve(true);
                 };
             });
@@ -84,12 +84,23 @@ var Client = (function () {
         return __awaiter(this, void 0, void 0, function () {
             var tokens;
             return __generator(this, function (_a) {
+                if (this.options.useOverlay === true) {
+                    this.negotiateViaOverlay();
+                }
+                else {
+                    tokens = this.negotiateViaOutlet();
+                    return [2, tokens];
+                }
+                return [2];
+            });
+        });
+    };
+    Client.prototype.negotiateViaOutlet = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var tokens;
+            return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0:
-                        if (!(this.options.useOverlay === true)) return [3, 1];
-                        this.negotiateViaOverlay();
-                        return [3, 3];
-                    case 1: return [4, getTokens({
+                    case 0: return [4, getTokens({
                             filter: this.filter,
                             tokenName: this.config.tokenName,
                             tokensOrigin: this.config.tokenOrigin,
@@ -97,10 +108,9 @@ var Client = (function () {
                             tokenParser: this.config.tokenParser,
                             unsignedTokenDataName: this.config.unsignedTokenDataName
                         })];
-                    case 2:
+                    case 1:
                         tokens = _a.sent();
                         return [2, tokens];
-                    case 3: return [2];
                 }
             });
         });
@@ -204,8 +214,10 @@ var Client = (function () {
                         return [2, json.address];
                     case 3:
                         e_2 = _a.sent();
-                        console.error(e_2);
-                        return [2, ''];
+                        return [2, {
+                                success: false,
+                                message: "validate ethkey request failed"
+                            }];
                     case 4: return [2];
                 }
             });
@@ -228,7 +240,6 @@ var Client = (function () {
                         return [2, json];
                     case 3:
                         e_3 = _a.sent();
-                        console.error(e_3);
                         return [2, {
                                 success: false,
                                 message: "UN request failed"

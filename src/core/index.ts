@@ -62,40 +62,59 @@ export const decodeTokens = (rawTokens: any, tokenParser: any, unsignedTokenData
   });
 };
 
-// rename this function to getTokensThroughIframe...
-export const openOutletIframe = (tokensOrigin: string, localStorageItemName: string) => {
-  return new Promise(function (resolve, reject) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', tokensOrigin);
-    xhr.onload = () => {
-      if (this.status === 200) {
-        const iframe = document.createElement('iframe');
-        iframe.src = tokensOrigin;
-        iframe.style.width = '1px';
-        iframe.style.height = '1px';
-        iframe.style.opacity = '0';
-        document.body.appendChild(iframe);
-        iframe.onload = () => {
-          iframe.contentWindow.postMessage({
-            evt: 'getTokens',
-            localStorageItemName: localStorageItemName
-          }, "*");
-          resolve(true);
-        };
-      } else {
-        reject({
-          status: this.status,
-          statusText: xhr.statusText
-        });
-      }
+// TODO: Review this type of implementation, which checks the URL is active 
+// before creating an Iframe. This does not work via local host without
+// some calibration e.g. proxy, extension, changes of security settings of browser.
+// export const openOutletIframe = (tokensOrigin: string, localStorageItemName: string) => {
+//   return new Promise(function (resolve, reject) {
+//     var xhr = new XMLHttpRequest();
+//     xhr.open('GET', tokensOrigin);
+//     xhr.onload = () => {
+//       if (this.status === 200) {
+//         const iframe = document.createElement('iframe');
+//         iframe.src = tokensOrigin;
+//         iframe.style.width = '1px';
+//         iframe.style.height = '1px';
+//         iframe.style.opacity = '0';
+//         document.body.appendChild(iframe);
+//         iframe.onload = () => {
+//           iframe.contentWindow.postMessage({
+//             evt: 'getTokens',
+//             localStorageItemName: localStorageItemName
+//           }, "*");
+//           resolve(true);
+//         };
+//       } else {
+//         reject({
+//           status: this.status,
+//           statusText: xhr.statusText
+//         });
+//       }
+//     };
+//     xhr.onerror = function () {
+//       reject({
+//         status: this.status,
+//         statusText: xhr.statusText
+//       });
+//     };
+//     xhr.send();
+//   });
+// }
+export const openOutletIframe = (tokensOrigin, localStorageItemName) => {
+  return new Promise((resolve, reject) => {
+    const iframe = document.createElement('iframe');
+    iframe.src = tokensOrigin;
+    iframe.style.width = '1px';
+    iframe.style.height = '1px';
+    iframe.style.opacity = '0';
+    document.body.appendChild(iframe);
+    iframe.onload = () => {
+      iframe.contentWindow.postMessage({
+        evt: 'getTokens',
+        localStorageItemName: localStorageItemName
+      }, tokensOrigin);
+      resolve(true);
     };
-    xhr.onerror = function () {
-      reject({
-        status: this.status,
-        statusText: xhr.statusText
-      });
-    };
-    xhr.send();
   });
 }
 

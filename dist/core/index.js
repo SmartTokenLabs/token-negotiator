@@ -79,9 +79,7 @@ export var readTokens = function (localStorageItemName) {
     }
     catch (e) {
         console.log('Cant parse tokens in LocalStorage');
-        if (typeof callBack === "function") {
-            output.success = false;
-        }
+        output.success = false;
     }
     return output;
 };
@@ -106,24 +104,29 @@ export var openOutletIframe = function (tokensOrigin, localStorageItemName) {
             iframe.contentWindow.postMessage({
                 evt: 'getTokens',
                 localStorageItemName: localStorageItemName
-            }, "*");
+            }, tokensOrigin);
             resolve(true);
         };
     });
 };
 export var getTokens = function (_a) {
-    var _b = _a.filter, filter = _b === void 0 ? {} : _b, tokenName = _a.tokenName, tokensOrigin = _a.tokensOrigin, localStorageItemName = _a.localStorageItemName, tokenParser = _a.tokenParser, unsignedTokenDataName = _a.unsignedTokenDataName;
+    var _b = _a.filter, filter = _b === void 0 ? {} : _b, tokensOrigin = _a.tokensOrigin, localStorageItemName = _a.localStorageItemName, tokenParser = _a.tokenParser, unsignedTokenDataName = _a.unsignedTokenDataName;
     return __awaiter(void 0, void 0, void 0, function () {
         return __generator(this, function (_c) {
             return [2, new Promise(function (resolve, reject) {
-                    window.addEventListener('message', function (event) {
-                        if (event.data.evt === 'setTokens') {
-                            var decodedTokens = decodeTokens(event.data.tokens.tokens, tokenParser, unsignedTokenDataName);
-                            var filteredTokens = filterTokens(decodedTokens, filter);
-                            resolve(filteredTokens);
-                        }
-                    }, false);
-                    openOutletIframe(tokensOrigin, localStorageItemName);
+                    openOutletIframe(tokensOrigin, localStorageItemName).then(function () {
+                        window.addEventListener('message', function (event) {
+                            if (event.data.evt === 'setTokens') {
+                                var decodedTokens = decodeTokens(event.data.tokens.tokens, tokenParser, unsignedTokenDataName);
+                                var filteredTokens = filterTokens(decodedTokens, filter);
+                                resolve(filteredTokens);
+                            }
+                        }, false);
+                    }).catch(function (error) {
+                        reject({
+                            error: error
+                        });
+                    });
                 })];
         });
     });

@@ -67,7 +67,7 @@ class OverlayService {
         const iframe = `<div class="${tokenName}-overlay-wrapper-tn"><iframe class="${tokenName}-overlay-tn" style="border:0; resize: none; overflow: auto;" height="335px" width="376px" src="${tokenOverlayOrigin}" allowtransparency="true" title="outlet" frameborder="0" style="border:0" allowfullscreen frameborder="no" scrolling="no"></iframe></div>`;
         refTokenSelector.innerHTML = iframe;
         let refOverlaySelector = document.querySelector(
-          `${options.tokenSelectorContainer} .${tokenName}-overlay`
+          `${options.tokenSelectorContainer} .${tokenName}-overlay-tn`
         );
         this.refOverlaySelector = refOverlaySelector;
         refOverlaySelector.onload = function () {
@@ -120,8 +120,8 @@ class OverlayService {
   }
 
   overlayClickHandler() {
-    const el = document.querySelector(`${this.options.tokenSelectorContainer} .${this.config.tokenName}Overlay`);
-    if(el) el.contentWindow.postMessage({ evt: "setToggleOverlayHandler" }, "*");
+    const el = document.querySelector(`${this.options.tokenSelectorContainer} .${this.config.tokenName}-overlay-tn`);
+    if(el) el.contentWindow.postMessage({ evt: "setToggleOverlayHandler" }, this.config.tokenOverlayOrigin);
   }
 }
 

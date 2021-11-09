@@ -102,7 +102,7 @@ export class Client {
           evt: 'getTokenProof',
           localStorageItemName: localStorageItemName,
           unsignedToken: unsignedToken
-        }, "*");
+        }, tokensOrigin);
         resolve(true);
       };
     });
