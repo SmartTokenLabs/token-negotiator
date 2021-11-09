@@ -78,7 +78,6 @@ export var readTokens = function (localStorageItemName) {
         }
     }
     catch (e) {
-        console.log('Cant parse tokens in LocalStorage');
         output.success = false;
     }
     return output;
