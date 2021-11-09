@@ -13,9 +13,10 @@ module.exports = {
   collectCoverage: true,
   coverageDirectory: '<rootDir>/reports/coverage/',
   testPathIgnorePatterns: ['dist'],
+  testEnvironment: 'jsdom',
   "globals": {
     "window": {},
     "localStorage": {}
-  }
+  },
 };
 

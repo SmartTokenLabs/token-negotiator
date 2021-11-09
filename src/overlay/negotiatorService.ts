@@ -98,14 +98,14 @@ class NegotiatorService {
       window.top.postMessage({
         evt: 'setTokenButtonHTML',
         button: this.createFabButton(this.config.fabButton)
-      }, "*");
+      }, document.referrer);
     },
     emitSelectedTokens: () => {
       window.top.postMessage({
         evt: 'setSelectedTokens',
         selectedTokens: this.selectedTokens
        },
-      "*");
+       document.referrer);
     },
     // @ts-ignore
     overlayClickTimer: null,
@@ -121,12 +121,12 @@ class NegotiatorService {
   closeOverlay = () => {
     // @ts-ignore
     this.overlayClickTimer = setTimeout(() => {
-      window.top.postMessage({ evt: 'hideOvelay', state: 'close' }, "*");
+      window.top.postMessage({ evt: 'hideOvelay', state: 'close' }, document.referrer);
     }, 1000);
   }
   
   showOverlay = () => {
-    window.top.postMessage({ evt: 'showOverlay', state: 'open' }, "*");
+    window.top.postMessage({ evt: 'showOverlay', state: 'open' }, document.referrer);
   }
 
   // recieved click event from client
@@ -135,11 +135,11 @@ class NegotiatorService {
     const isOpen = element.classList.contains("open");
     element.classList.toggle("open");
     if (!isOpen) {
-      window.top.postMessage({ evt: 'hideOverlay', state: 'open' }, "*");
+      window.top.postMessage({ evt: 'hideOverlay', state: 'open' }, document.referrer);
       element.classList.add("open");
       return 'open';
     } else {
-      window.top.postMessage({ evt: 'hideOverlay', state: 'close' }, "*");
+      window.top.postMessage({ evt: 'hideOverlay', state: 'close' }, document.referrer);
       element.classList.remove("open");
       return 'close';
     }

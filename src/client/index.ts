@@ -6,8 +6,8 @@ import OverlayService from "./overlayService";
 export class Client {
 
   constructor(filter = {}, tokenName, options = {}) {
-    if (!tokenName) console.warn("Negotiator: tokenName is a required parameter");
-    if (options.useOverlay === true && !options.tokenSelectorContainer) console.warn("Negotiator: options.tokenSelectorContainer is a required parameter");
+    if (!tokenName) throw new Error('Please provide token name.');
+    if (options.useOverlay === true && !options.tokenSelectorContainer) throw new Error('tokenSelectorContainer is a required parameter when useOverlay is true.');
     this.tokenName = tokenName;
     this.config = config[tokenName];
     this.options = options;
@@ -16,25 +16,32 @@ export class Client {
 
   // negotiates using both passive and active flows.
   async negotiate() {
-    if(this.options.useOverlay === true) this.negotiateViaOverlay();
-    else {
-      const tokens = await getTokens({
-        filter: this.filter,
-        tokenName: this.config.tokenName,
-        tokensOrigin: this.config.tokenOrigin,
-        localStorageItemName: this.config.localStorageItemName,
-        tokenParser: this.config.tokenParser,
-        unsignedTokenDataName: this.config.unsignedTokenDataName
-      });
+    if(this.options.useOverlay === true){
+      this.negotiateViaOverlay();
+    } else {
+      const tokens = this.negotiateViaOutlet();
       return tokens;
     }
   }
 
-  // instantiates overlay
+  async negotiateViaOutlet() {
+    const tokens = await getTokens({
+      filter: this.filter,
+      tokenName: this.config.tokenName,
+      tokensOrigin: this.config.tokenOrigin,
+      localStorageItemName: this.config.localStorageItemName,
+      tokenParser: this.config.tokenParser,
+      unsignedTokenDataName: this.config.unsignedTokenDataName
+    });
+    return tokens;
+  }
+
   negotiateViaOverlay() {
     const overlayService = new OverlayService(this.config, this.options, this.filter); 
     this.overlayClickHandler = overlayService.overlayClickHandler;
   }
+
+  // Common Client Functions - Active + Passive Flows.
 
   async connectMetamaskAndGetAddress() {
     if (!window.ethereum) throw new Error('Please install metamask to continue.');
@@ -97,7 +104,7 @@ export class Client {
           evt: 'getTokenProof',
           localStorageItemName: localStorageItemName,
           unsignedToken: unsignedToken
-        }, "*");
+        }, tokensOrigin);
         resolve(true);
       };
     });
@@ -121,8 +128,10 @@ export class Client {
       const json = await response.json();
       return json.address;
     } catch (e) {
-      console.error(e);
-      return '';
+      return {
+        success: false,
+        message: "validate ethkey request failed"
+      }
     }
   }
 
@@ -133,7 +142,6 @@ export class Client {
       json.success = true;
       return json;
     } catch (e) {
-      console.error(e);
       return {
         success: false,
         message: "UN request failed"
