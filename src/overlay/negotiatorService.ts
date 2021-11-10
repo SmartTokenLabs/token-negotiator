@@ -32,7 +32,7 @@ class NegotiatorService {
     // initial selected token state
     this.selectedTokenState = [];
   };
-  
+
   // applies negotiation config from client
   // @ts-ignore
   set configuration ({ filter, tokenName, options }) {

@@ -5,7 +5,7 @@ import { config } from "./../config/index";
 import OverlayService from "./overlayService";
 export class Client {
 
-  constructor(filter = {}, tokenName, options = {}) {
+  constructor({ tokenName, filter = {}, options = {} }) {
     if (!tokenName) throw new Error('Please provide token name.');
     if (options.useOverlay === true && !options.tokenSelectorContainer) throw new Error('tokenSelectorContainer is a required parameter when useOverlay is true.');
     this.tokenName = tokenName;
@@ -14,18 +14,14 @@ export class Client {
     this.filter = filter;
   }
 
-  // negotiates using both passive and active flows.
+  // direct negotiation to active or passive flows
   async negotiate() {
-    if(this.options.useOverlay === true){
-      this.negotiateViaOverlay();
-    } else {
-      const tokens = this.negotiateViaOutlet();
-      return tokens;
-    }
+    if(this.options.useOverlay === true) this.negotiateViaOverlay();
+    else return this.negotiateViaOutlet();
   }
 
   async negotiateViaOutlet() {
-    const tokens = await getTokens({
+    return getTokens({
       filter: this.filter,
       tokenName: this.config.tokenName,
       tokensOrigin: this.config.tokenOrigin,
@@ -33,7 +29,6 @@ export class Client {
       tokenParser: this.config.tokenParser,
       unsignedTokenDataName: this.config.unsignedTokenDataName
     });
-    return tokens;
   }
 
   negotiateViaOverlay() {
@@ -54,7 +49,7 @@ export class Client {
     await this.connectMetamaskAndGetAddress();
     let provider = new ethers.providers.Web3Provider(window.ethereum);
     let signer = provider.getSigner();
-    return await signer.signMessage(message);
+    return signer.signMessage(message);
   }
 
   // TODO implement this:
@@ -82,10 +77,9 @@ export class Client {
   async getTokenProofFromOutlet = (tokensOrigin, localStorageItemName, unsignedToken) => {
     this.getTokenProofFromOutletIframe(tokensOrigin, localStorageItemName, unsignedToken);
     return new Promise((resolve, reject) => {
-      window.addEventListener('message', function(event) { 
-        if(event.data.evt === 'setTokenProof') {
-          resolve(event.data.tokenProof);
-        }
+      window.addEventListener('message', function(event) {
+        if (event.origin !== tokensOrigin) reject();
+        if (event.data.evt === 'setTokenProof') resolve(event.data.tokenProof);
       }, false);
     })
   }

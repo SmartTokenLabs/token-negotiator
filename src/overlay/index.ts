@@ -10,7 +10,14 @@ export class Overlay {
     const negotiatorOverlayService = new NegotiatorService();
 
     // assign incoming event requests
-    window.addEventListener('message', function(event) { negotiatorOverlayService.eventReciever(event.data); }, false);
+    window.addEventListener('message', function(event) { 
+      // TODO rework this so the Overlay learns the token origin.
+      // if (
+      //   event.origin !== tokensOrigin ||
+      //   event.origin !== document.referrer
+      // ) reject();
+      negotiatorOverlayService.eventReciever(event.data); 
+    }, false);
 
     // tokenToggleSelection = Global overlay token selection toggle event from top client window
 

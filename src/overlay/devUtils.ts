@@ -1,14 +1,14 @@
-// @ts-nocheck
 // This creates a mock token and provides a mock overlay/modal
 export const applyDevelopmentMode = (
+  negotiatorService: any,
   tokenName = 'devcon-ticket',
   tokenSelectorContainer = ".tokenSelectorContainerElement",
   tokensOrigin = "http://localhost:3002/",
   localStorageItemName = "dcTokens",
-  negotiatorService: any,
   ) => {
   const dataEvtMock = { tokenName: tokenName, filter: {}, options: { tokenSelectorContainer: tokenSelectorContainer } };
-    document.querySelector('.tk-overlay').innerHTML = negotiatorService.createOverlayMarkup();
+    const overlayElRef:any = document.querySelector('.tk-overlay');
+    if (overlayElRef) overlayElRef.innerHTML = negotiatorService.createOverlayMarkup();
     negotiatorService.configuration = {
       filter: dataEvtMock.filter,
       tokenName: dataEvtMock.tokenName,
@@ -24,8 +24,9 @@ export const applyDevelopmentMode = (
     }).then((resultTokens: any) => {
       negotiatorService.addTokens(resultTokens);
     });
+    const overlayEl = document.getElementsByClassName('overlay')[0];
     // @ts-ignore
-    document.getElementsByClassName('overlay')[0].style.cssText = `opacity: 1; top: -320px; left: -278px;`;
+    if (overlayEl) overlayEl.style.cssText = `opacity: 1; top: -320px; left: -278px;`;
     let tag = document.createElement("div");
     tag.innerHTML = negotiatorService.createFabButton(negotiatorService.config.fabButton);
     document.getElementsByClassName('tk-overlay')[0].appendChild(tag);

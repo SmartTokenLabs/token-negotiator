@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const createOverlayMarkup = () => {
   return `
     <div class="overlay">

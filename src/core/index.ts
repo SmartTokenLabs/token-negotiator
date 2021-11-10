@@ -5,9 +5,7 @@ import { base64ToUint8array } from './../utils';
 
 // recieves decoded tokens, returns filtered list.
 export const filterTokens = (decodedTokens: any, filter = {}) => {
-  // @ts-ignore
-  if (Object.keys(filter).length === 0) filter = filter;
-  let res: any = [];
+  let tokens: any = [];
   if (
     decodedTokens.length
     && typeof filter === "object"
@@ -16,13 +14,10 @@ export const filterTokens = (decodedTokens: any, filter = {}) => {
     let filterKeys = Object.keys(filter);
     decodedTokens.forEach((token: any) => {
       let fitFilter = 1;
-      filterKeys.forEach(key => {
-        // @ts-ignore
-        if (token[key].toString() !== filter[key].toString()) fitFilter = 0;
-      })
-      if (fitFilter) res.push(token);
+      filterKeys.forEach(key => { if (token[key].toString() !== filter[key].toString()) fitFilter = 0; });
+      if (fitFilter) tokens.push(token);
     })
-    return res;
+    return tokens;
   } else {
     return decodedTokens;
   }
@@ -61,44 +56,6 @@ export const decodeTokens = (rawTokens: any, tokenParser: any, unsignedTokenData
   });
 };
 
-// TODO: Review this type of implementation, which checks the URL is active 
-// before creating an Iframe. This does not work via local host without
-// some calibration e.g. proxy, extension, changes of security settings of browser.
-// export const openOutletIframe = (tokensOrigin: string, localStorageItemName: string) => {
-//   return new Promise(function (resolve, reject) {
-//     var xhr = new XMLHttpRequest();
-//     xhr.open('GET', tokensOrigin);
-//     xhr.onload = () => {
-//       if (this.status === 200) {
-//         const iframe = document.createElement('iframe');
-//         iframe.src = tokensOrigin;
-//         iframe.style.width = '1px';
-//         iframe.style.height = '1px';
-//         iframe.style.opacity = '0';
-//         document.body.appendChild(iframe);
-//         iframe.onload = () => {
-//           iframe.contentWindow.postMessage({
-//             evt: 'getTokens',
-//             localStorageItemName: localStorageItemName
-//           }, "*");
-//           resolve(true);
-//         };
-//       } else {
-//         reject({
-//           status: this.status,
-//           statusText: xhr.statusText
-//         });
-//       }
-//     };
-//     xhr.onerror = function () {
-//       reject({
-//         status: this.status,
-//         statusText: xhr.statusText
-//       });
-//     };
-//     xhr.send();
-//   });
-// }
 export const openOutletIframe = (tokensOrigin, localStorageItemName) => {
   return new Promise((resolve, reject) => {
     const iframe = document.createElement('iframe');
@@ -128,6 +85,7 @@ export const getTokens = async ({
   return new Promise((resolve, reject) => {
     openOutletIframe(tokensOrigin, localStorageItemName).then(() => {
       window.addEventListener('message', (event) => { 
+        if (event.origin !== tokensOrigin) reject();
         if(event.data.evt === 'setTokens') {
           const decodedTokens = decodeTokens(event.data.tokens.tokens, tokenParser, unsignedTokenDataName);
           const filteredTokens = filterTokens(decodedTokens, filter);

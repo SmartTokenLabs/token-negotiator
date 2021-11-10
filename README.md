@@ -46,7 +46,7 @@ until the end user has selected them via an token negotiator overlay web compone
     tokenSelectorContainer: ".tokenSelectorContainerElement" // an HTML container element for the overlay to load within
   };
 
-  const negotiator = new Client(filter, tokenName, options);
+  const negotiator = new Client({ tokenName, filter, options });
 
   negotiator.negotiate();
 
@@ -75,7 +75,7 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
 
   const options = {};
   
-  const negotiator = new Client(filter, tokenName, options);
+  const negotiator = new Client({ tokenName, filter, options });
 
   negotiator.negotiate().then(result => {
     if(result){

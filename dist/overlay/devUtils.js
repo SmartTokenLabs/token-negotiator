@@ -1,4 +1,4 @@
-export var applyDevelopmentMode = function (tokenName, tokenSelectorContainer, tokensOrigin, localStorageItemName, negotiatorService) {
+export var applyDevelopmentMode = function (negotiatorService, tokenName, tokenSelectorContainer, tokensOrigin, localStorageItemName) {
     if (tokenName === void 0) { tokenName = 'devcon-ticket'; }
     if (tokenSelectorContainer === void 0) { tokenSelectorContainer = ".tokenSelectorContainerElement"; }
     if (tokensOrigin === void 0) { tokensOrigin = "http://localhost:3002/"; }
