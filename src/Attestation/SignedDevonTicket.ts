@@ -124,7 +124,6 @@ export class SignedDevconTicket {
           .split('-').join('+')
           .split('.').join('=');
 
-      // source = Uint8Array.from(Buffer.from(base64str, 'base64')).buffer;
       if (typeof Buffer !== 'undefined') {
         source = Uint8Array.from(Buffer.from(base64str, 'base64')).buffer;
       } else {
@@ -232,8 +231,7 @@ export class SignedDevconTicket {
     //region Check the schema is valid
     const asn1 = compareSchema(schema, schema, SignedDevconTicket.schema());
 
-    if (asn1.verified === false)
-		throw new Error("Object's schema was not verified against input data for SignedDevconTicket");
+    if (asn1.verified === false) throw new Error("Object's schema was not verified against input data for SignedDevconTicket");
 
     //endregion
 

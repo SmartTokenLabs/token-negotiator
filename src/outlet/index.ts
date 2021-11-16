@@ -1,20 +1,26 @@
-// @ts-nocheck
 import {
   readMagicUrl
 } from '../core';
 import OutletService from "./outletService";
 import { config } from './../config';
 
-// The Outlet is a module used to read tokens from a query string
-// and store them into a localstorage with given params.
+declare global {
+  interface Window {
+    Authenticator:any;
+  }
+}
+
+function prop<T, K extends keyof T>(obj: T, key: K) { return obj[key]; };
+
+interface Config { tokenName: any };
 
 export class Outlet {
-  // @ts-ignore
-  constructor({ tokenName }) {
-    const _authenicator = window.Authenticator ? window.Authenticator : null;
-    const outletService = new OutletService(config[tokenName], _authenicator);
+  constructor(tokenConfig: Config) {
+    if(!window.Authenticator) throw new Error('Please ensure the authenticator exists.')
+    const _config = prop(config, tokenConfig.tokenName);
+    const outletService = new OutletService(_config, window.Authenticator);
     window.addEventListener('message', function(event) { outletService.eventReciever(event.data); }, false);
-    const { tokenUrlName, tokenSecretName, tokenIdName, localStorageItemName } = config[tokenName];
+    const { tokenUrlName, tokenSecretName, tokenIdName, localStorageItemName } = _config;
     readMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, localStorageItemName);
-  };
-}
+  }
+};

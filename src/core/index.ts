@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { base64ToUint8array } from './../utils';
 
-// core / common negotiator functions.
+// implements all common negotiator functions.
 
 // recieves decoded tokens, returns filtered list.
 export const filterTokens = (decodedTokens: any, filter = {}) => {
@@ -27,23 +27,21 @@ export const filterTokens = (decodedTokens: any, filter = {}) => {
 export const readTokens = (localStorageItemName: any) => {
   const storageTickets = localStorage.getItem(localStorageItemName);
   let tokens: any = [];
-  let output: any = { tokens: [], noTokens: true, success: true };
+  let output: any = [];
   try {
     if (storageTickets && storageTickets.length) {
       tokens = JSON.parse(storageTickets);
-      if (tokens.length !== 0) {
-        tokens.forEach((item: any) => {
-          if (item.token && item.secret) output.tokens.push(item);
-        })
-      }
-      if (output.tokens.length) {
-        output.noTokens = false;
-      }
+      return tokens;
     }
   } catch (e) {
-    output.success = false;
+    throw new Error('Please regenerate your tokens with magic link, the JSON is corrupted.');
   }
-  return output;
+  if (tokens.length && tokens.length !== 0) {
+    tokens.forEach((item: any) => {
+      if (item.token && item.secret) output.push(item);
+    })
+  }
+  return tokens;
 }
 
 // decode and return tokens
@@ -110,11 +108,15 @@ export const readMagicUrl = (tokenUrlName: string, tokenSecretName: string, toke
   if (!(tokenFromQuery && secretFromQuery)) return;
   let tokensOutput = readTokens(localStorageItemName);
   let isNewQueryTicket = true;
-  const tokens = tokensOutput.tokens.map((tokenData: any) => {
-    if (tokenData.token === tokenFromQuery) {
+  const tokens = tokensOutput.map((tokenData: any) => {
+    if (tokenData === tokenFromQuery) {
       isNewQueryTicket = false;
     }
+    if (isNewQueryTicket){
+      tokens.push({ token: tokenFromQuery, secret: secretFromQuery, id: idFromQuery, magic_link: window.location.href });
+    }
   });
-  if (isNewQueryTicket) tokens.push({ token: tokenFromQuery, secret: secretFromQuery, id: idFromQuery, magic_link: window.location.href });
-  storeMagicURL(tokens, localStorageItemName);
+  if(tokens.length) {
+    storeMagicURL(tokens, localStorageItemName);
+  }
 }

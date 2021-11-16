@@ -37,9 +37,6 @@ module.exports = {
       }
     ],
   },
-  resolve: {
-    extensions: ['.tsx', '.ts', '.js'],
-  },
   output: {
     path: path.resolve(__dirname, '_bundles'),
     filename: '[name].js',

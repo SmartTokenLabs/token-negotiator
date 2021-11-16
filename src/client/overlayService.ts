@@ -19,7 +19,6 @@ class OverlayService {
     );
 
     window.addEventListener("click", this.onClickOutsideOfOverlay);
-    // window.removeEventListener("click", onClickOutsideOfOverlay);
   }
 
   onClickOutsideOfOverlay = (e) => {
@@ -88,6 +87,8 @@ class OverlayService {
   }
 
   eventReciever(data) {
+    // TODO store/cache all elements once on load to simplify lib
+    const el = document.querySelector(`${this.options.tokenSelectorContainer} .${this.config.tokenName}-overlay-wrapper-tn`);
     switch (data.evt) {
       case "setTokenButtonHTML":
         if (!document.getElementById("token-button-container")) {
@@ -107,13 +108,9 @@ class OverlayService {
         }
         break;
       case "hideOverlay":
-        // TODO this could be optimised so this is referenced once.
-        const el = document.querySelector(`${this.options.tokenSelectorContainer} .${this.config.tokenName}-overlay-wrapper-tn`);
         if(el) el.style.display = "none";
         break;
       case "showOverlay":
-        // TODO this could be optimised so this is referenced once.
-        const el = document.querySelector(`${this.options.tokenSelectorContainer} .${this.config.tokenName}-overlay-wrapper-tn`);
         if(el) el.style.display = "block";
         break;
     }

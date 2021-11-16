@@ -24,6 +24,9 @@ window = {
   // @ts-ignore
   parent: {
     postMessage: jest.fn()
+  },
+  history: {
+    pushState: () => {}
   }
 }
 
@@ -49,7 +52,7 @@ global.localStorage = fakeLocalStorage;
 
 describe('core Spec', () => {
   test('expect to read tokens but none are there', () => {
-    expect(readTokens('testing')).toEqual({"noTokens": true, "success": true, "tokens": []});
+    expect(readTokens('testing')).toEqual([]);
   });
   // TODO NOT CORRECT OUTPUT
   // test('expect to read tokens (mock tokens created)', () => {
@@ -60,7 +63,7 @@ describe('core Spec', () => {
   //   ]
   //   localStorage.setItem('testing', tokens);
   //   console.log(localStorage.getItem('testing'));
-  //   expect(readTokens('testing')).toEqual({"noTokens": true, "success": true, "tokens": []});
+  //   expect(readTokens('testing')).toEqual([]);
   // });
   test('expect to decode missing params', () => {
     const rawTokens = [];
@@ -83,7 +86,7 @@ describe('core Spec', () => {
     )).toEqual([]);
   });
   test('expect to decode tokens', () => {
-    const rawTokens = [{"token":"MIGSMAkMATkCAQECAQwEQQQbX0WI0BzxKHYHBSbyFIt7L44Rxcxqv8rXGpFuuO-bBBZ6YTzmvDzQWbmq2OqsTclAxy3cN2wzmPywz2A_nn0lA0IAi1qN7894PWzmk2wyQUo4MtlKkO5NZGNfkt7A6BbrfZY_E58Zy6kqYsciBsJY7P-UO2vnjCG88Dzx6bL-pdkmshs=","secret":"10593082611958123069159986522878346963005475009650354554005852930286854271222","id":"nicktaras@hotmail.co.uk","magic_link":"https://devcontickets.herokuapp.com/outlet/?ticket=MIGSMAkMATkCAQECAQwEQQQbX0WI0BzxKHYHBSbyFIt7L44Rxcxqv8rXGpFuuO-bBBZ6YTzmvDzQWbmq2OqsTclAxy3cN2wzmPywz2A_nn0lA0IAi1qN7894PWzmk2wyQUo4MtlKkO5NZGNfkt7A6BbrfZY_E58Zy6kqYsciBsJY7P-UO2vnjCG88Dzx6bL-pdkmshs=&secret=10593082611958123069159986522878346963005475009650354554005852930286854271222&id=nicktaras@hotmail.co.uk"}];
+    const rawTokens = [{"token":"MIGSMAkMATkCAQECAQwEQQQbX0WI0BzxKHYHBSbyFIt7L44Rxcxqv8rXGpFuuO-bBBZ6YTzmvDzQWbmq2OqsTclAxy3cN2wzmPywz2A_nn0lA0IAi1qN7894PWzmk2wyQUo4MtlKkO5NZGNfkt7A6BbrfZY_E58Zy6kqYsciBsJY7P-UO2vnjCG88Dzx6bL-pdkmshs=","secret":"10593082611958123069159986522878346963005475009650354554005852930286854271222","id":"techniceth@gmail.co.uk","magic_link":"https://devcontickets.herokuapp.com/outlet/?ticket=MIGSMAkMATkCAQECAQwEQQQbX0WI0BzxKHYHBSbyFIt7L44Rxcxqv8rXGpFuuO-bBBZ6YTzmvDzQWbmq2OqsTclAxy3cN2wzmPywz2A_nn0lA0IAi1qN7894PWzmk2wyQUo4MtlKkO5NZGNfkt7A6BbrfZY_E58Zy6kqYsciBsJY7P-UO2vnjCG88Dzx6bL-pdkmshs=&secret=10593082611958123069159986522878346963005475009650354554005852930286854271222&id=techniceth@gmail.com"}];
     const tokenParser = SignedDevconTicket;
     const unsignedTokenDataName = 'ticket';
     expect(decodeTokens(
@@ -143,43 +146,75 @@ describe('core Spec', () => {
   // Jest Test onerror
   // https://stackoverflow.com/questions/28584773/xmlhttprequest-testing-in-jest
 
-  test('expect to open outlet iframe', () => {
-    getTokens({
+  test('expect to open outlet iframe', async () => {
+    // TODO use await and emulate flow.
+    const data = getTokens({
       filter: {},
       tokensOrigin: 'http://localhost:3002',
       localStorageItemName: 'dcTokens',
       tokenParser: SignedDevconTicket,
       unsignedTokenDataName: 'ticket'
     });
+    // expect(data).toBe("[effe]"); // test doesn't resolve.
   });
 
-  // TODO: Check with Oleh - tokenUrlName
   test('expect to read new magic link', () => {
-    window.history.pushState({}, 'Test Title', '/?ticket=MIGSMAkMATkCAQUCAQwEQQQsUB1tp0mEn0Zoc8Lu-c0ZJOHis3ynlUAuplV8jpJhMgGMuP4i2msZihJq0VeBBOhGLU-vhfkn_0DYsJ9J8djgA0IAScs-3TwdMQ6XSIu1z1nDRCWEzAMBWaVEHONiRlW0j5kTEXBKvgNHS5DsjGm2S84BKqHl3qucBHUOGjpt-6hEuxw=&secret=285996413010999512790264856198259265088323878963947294417758116344175800611&id=nicktaras83@gmail.com');
+    // window.location('href', '/?https://devcontickets.herokuapp.com/outlet/?ticket=MIGSMAkMATkCAQUCAQwEQQQsUB1tp0mEn0Zoc8Lu-c0ZJOHis3ynlUAuplV8jpJhMgGMuP4i2msZihJq0VeBBOhGLU-vhfkn_0DYsJ9J8djgA0IAScs-3TwdMQ6XSIu1z1nDRCWEzAMBWaVEHONiRlW0j5kTEXBKvgNHS5DsjGm2S84BKqHl3qucBHUOGjpt-6hEuxw=&secret=285996413010999512790264856198259265088323878963947294417758116344175800611&id=nicktaras83@gmail.com');
+    window.history.pushState({}, 'Test Title', '/?https://devcontickets.herokuapp.com/outlet/?ticket=MIGSMAkMATkCAQUCAQwEQQQsUB1tp0mEn0Zoc8Lu-c0ZJOHis3ynlUAuplV8jpJhMgGMuP4i2msZihJq0VeBBOhGLU-vhfkn_0DYsJ9J8djgA0IAScs-3TwdMQ6XSIu1z1nDRCWEzAMBWaVEHONiRlW0j5kTEXBKvgNHS5DsjGm2S84BKqHl3qucBHUOGjpt-6hEuxw=&secret=285996413010999512790264856198259265088323878963947294417758116344175800611&id=nicktaras83@gmail.com');
     readMagicUrl(
       'ticket',
       'secret',
       'id',
       'dcTokens'
     );
+    // check tokens - should contain token
+    // expect(localStorage.getItem('dcTokens')).toBe(
+    //   {
+    //     "token": "MIGSMAkMATkCAQUCAQwEQQQsUB1tp0mEn0Zoc8Lu-c0ZJOHis3ynlUAuplV8jpJhMgGMuP4i2msZihJq0VeBBOhGLU-vhfkn_0DYsJ9J8djgA0IAScs-3TwdMQ6XSIu1z1nDRCWEzAMBWaVEHONiRlW0j5kTEXBKvgNHS5DsjGm2S84BKqHl3qucBHUOGjpt-6hEuxw=",
+    //     "secret": "285996413010999512790264856198259265088323878963947294417758116344175800611",
+    //     "id": "nicktaras83@gmail.com",
+    //     "magic_link": "https://devcontickets.herokuapp.com/outlet/?ticket=MIGSMAkMATkCAQUCAQwEQQQsUB1tp0mEn0Zoc8Lu-c0ZJOHis3ynlUAuplV8jpJhMgGMuP4i2msZihJq0VeBBOhGLU-vhfkn_0DYsJ9J8djgA0IAScs-3TwdMQ6XSIu1z1nDRCWEzAMBWaVEHONiRlW0j5kTEXBKvgNHS5DsjGm2S84BKqHl3qucBHUOGjpt-6hEuxw=&secret=285996413010999512790264856198259265088323878963947294417758116344175800611&id=nicktaras83@gmail.com"
+    // });
   });
 
-  test('expect to re-read magic link which is not pushed to state', () => {
-    window.history.pushState({}, 'Test Title', '/?ticket=MIGSMAkMATkCAQUCAQwEQQQsUB1tp0mEn0Zoc8Lu-c0ZJOHis3ynlUAuplV8jpJhMgGMuP4i2msZihJq0VeBBOhGLU-vhfkn_0DYsJ9J8djgA0IAScs-3TwdMQ6XSIu1z1nDRCWEzAMBWaVEHONiRlW0j5kTEXBKvgNHS5DsjGm2S84BKqHl3qucBHUOGjpt-6hEuxw=&secret=285996413010999512790264856198259265088323878963947294417758116344175800611&id=nicktaras83@gmail.com');
-    readMagicUrl(
-      'ticket',
-      'secret',
-      'id',
-      'dcTokens'
-    );
-    // try to add again. This time it will exist and not be added to array.
-    readMagicUrl(
-      'ticket',
-      'secret',
-      'id',
-      'dcTokens'
-    );
-  });
+  // test('expect to re-read magic link which is not pushed to state', () => {
+  //   window.history.pushState({}, 'Test Title', '/?https://devcontickets.herokuapp.com/outlet/?ticket=MIGSMAkMATkCAQUCAQwEQQQsUB1tp0mEn0Zoc8Lu-c0ZJOHis3ynlUAuplV8jpJhMgGMuP4i2msZihJq0VeBBOhGLU-vhfkn_0DYsJ9J8djgA0IAScs-3TwdMQ6XSIu1z1nDRCWEzAMBWaVEHONiRlW0j5kTEXBKvgNHS5DsjGm2S84BKqHl3qucBHUOGjpt-6hEuxw=&secret=285996413010999512790264856198259265088323878963947294417758116344175800611&id=nicktaras83@gmail.com');
+  //   const tokens = [ 
+  //     { class: 'abc', type: 'gold' },
+  //     { class: 'def', type: 'silver' },
+  //     { class: 'ghi', type: 'bronze' },
+  //   ]
+  //   storeMagicURL(tokens, 'testing');
+  //   readMagicUrl(
+  //     'ticket',
+  //     'secret',
+  //     'id',
+  //     'dcTokens'
+  //   );
+  //   // try to add again. This time it will exist and not be added to array.
+  //   readMagicUrl(
+  //     'ticket',
+  //     'secret',
+  //     'id',
+  //     'dcTokens'
+  //   );
+  //   // try to add again. This time it will exist and not be added to array.
+  //   readMagicUrl(
+  //     'ticket',
+  //     'secret',
+  //     'id',
+  //     'dcTokens'
+  //   );
+  //   // check tokens - should contain token - investigate why tokens are missing.
+  //   expect(localStorage.getItem('dcTokens')).toBe(
+  //     {
+  //       "token": "MIGSMAkMATkCAQUCAQwEQQQsUB1tp0mEn0Zoc8Lu-c0ZJOHis3ynlUAuplV8jpJhMgGMuP4i2msZihJq0VeBBOhGLU-vhfkn_0DYsJ9J8djgA0IAScs-3TwdMQ6XSIu1z1nDRCWEzAMBWaVEHONiRlW0j5kTEXBKvgNHS5DsjGm2S84BKqHl3qucBHUOGjpt-6hEuxw=",
+  //       "secret": "285996413010999512790264856198259265088323878963947294417758116344175800611",
+  //       "id": "nicktaras83@gmail.com",
+  //       "magic_link": "https://devcontickets.herokuapp.com/outlet/?ticket=MIGSMAkMATkCAQUCAQwEQQQsUB1tp0mEn0Zoc8Lu-c0ZJOHis3ynlUAuplV8jpJhMgGMuP4i2msZihJq0VeBBOhGLU-vhfkn_0DYsJ9J8djgA0IAScs-3TwdMQ6XSIu1z1nDRCWEzAMBWaVEHONiRlW0j5kTEXBKvgNHS5DsjGm2S84BKqHl3qucBHUOGjpt-6hEuxw=&secret=285996413010999512790264856198259265088323878963947294417758116344175800611&id=nicktaras83@gmail.com"
+  //     }
+  //   );
+  // });
   
 });
 
