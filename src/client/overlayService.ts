@@ -121,7 +121,7 @@ class OverlayService {
 
   overlayClickHandler() {
     const el = document.querySelector(`${this.options.tokenSelectorContainer} .${this.config.tokenName}-overlay-tn`);
-    if(el) el.contentWindow.postMessage({ evt: "setToggleOverlayHandler" }, '*');
+    if(el) el.contentWindow.postMessage({ evt: "setToggleOverlayHandler" }, this.config.tokenOverlayOrigin);
   }
 }
 
