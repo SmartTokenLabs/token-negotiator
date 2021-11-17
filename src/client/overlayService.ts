@@ -80,7 +80,7 @@ class OverlayService {
                 options,
               },
             },
-            this.config.tokenOverlayOrigin
+            tokenOverlayOrigin
           );
         };
       }
