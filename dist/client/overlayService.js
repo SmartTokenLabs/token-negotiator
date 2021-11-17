@@ -11,7 +11,7 @@ var OverlayService = (function () {
                 if (_this.refOverlaySelector && _this.refOverlaySelector.contentWindow) {
                     _this.refOverlaySelector.contentWindow.postMessage({
                         evt: "setCloseOverlay",
-                    }, _this.config.tokenOverlayOrigin);
+                    }, '*');
                 }
             },
         };
@@ -28,8 +28,6 @@ var OverlayService = (function () {
     OverlayService.prototype.assignClientListener = function () {
         var _this = this;
         window.addEventListener("message", function (event) {
-            if (!_this.isEventFromOverlay(event.origin, _this.config.tokenOverlayOrigin))
-                return;
             _this.eventReciever(event.data);
         }, false);
     };
@@ -50,12 +48,13 @@ var OverlayService = (function () {
                             filter: filter,
                             options: options,
                         },
-                    }, this.config.tokenOverlayOrigin);
+                    }, '*');
                 };
             }
         }, 0);
     };
     OverlayService.prototype.eventReciever = function (data) {
+        var el = document.querySelector(this.options.tokenSelectorContainer + " ." + this.config.tokenName + "-overlay-wrapper-tn");
         switch (data.evt) {
             case "setTokenButtonHTML":
                 if (!document.getElementById("token-button-container")) {
@@ -71,12 +70,10 @@ var OverlayService = (function () {
                 }
                 break;
             case "hideOverlay":
-                var el = document.querySelector(this.options.tokenSelectorContainer + " ." + this.config.tokenName + "-overlay-wrapper-tn");
                 if (el)
                     el.style.display = "none";
                 break;
             case "showOverlay":
-                var el = document.querySelector(this.options.tokenSelectorContainer + " ." + this.config.tokenName + "-overlay-wrapper-tn");
                 if (el)
                     el.style.display = "block";
                 break;
@@ -85,7 +82,7 @@ var OverlayService = (function () {
     OverlayService.prototype.overlayClickHandler = function () {
         var el = document.querySelector(this.options.tokenSelectorContainer + " ." + this.config.tokenName + "-overlay-tn");
         if (el)
-            el.contentWindow.postMessage({ evt: "setToggleOverlayHandler" }, this.config.tokenOverlayOrigin);
+            el.contentWindow.postMessage({ evt: "setToggleOverlayHandler" }, '*');
     };
     return OverlayService;
 }());

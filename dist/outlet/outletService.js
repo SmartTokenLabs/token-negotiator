@@ -19,13 +19,13 @@ var OutletService = (function () {
                 window.parent.postMessage({
                     evt: 'setTokens',
                     tokens: tokens
-                }, "*");
+                }, '*');
             },
             emitTokenProof: function (tokenProof) {
                 window.parent.postMessage({
                     evt: 'setTokenProof',
                     tokenProof: tokenProof
-                }, "*");
+                }, '*');
             },
         };
         if (config && Authenticator) {
@@ -36,12 +36,13 @@ var OutletService = (function () {
             console.warn('OutletService: Please provide the config and Authenticator to use this module service');
         }
     }
-    ;
     OutletService.prototype.rawTokenCheck = function (unsignedToken, localStorageItemName, tokenParser) {
         var _this = this;
         var rawTokenData = this.getRawToken(unsignedToken, localStorageItemName, tokenParser);
-        if (!rawTokenData)
+        if (!rawTokenData) {
             return null;
+        }
+        ;
         var base64ticket = rawTokenData.token;
         var ticketSecret = rawTokenData.secret;
         var tokenObj = {
@@ -49,35 +50,35 @@ var OutletService = (function () {
             ticketSecret: ticketSecret,
             attestationOrigin: this.config.attestationOrigin,
         };
-        if (rawTokenData && rawTokenData.id)
+        if (rawTokenData && rawTokenData.id) {
             tokenObj.email = rawTokenData.id;
-        if (rawTokenData && rawTokenData.magic_link)
+        }
+        if (rawTokenData && rawTokenData.magic_link) {
             tokenObj.magicLink = rawTokenData.magic_link;
+        }
         this.authenticator.getAuthenticationBlob(tokenObj, function () {
             _this.eventSender.emitTokenProof(tokenProof);
         });
     };
     OutletService.prototype.getRawToken = function (unsignedToken, localStorageItemName, tokenParser) {
         var _this = this;
-        if (!unsignedToken || !Object.keys(unsignedToken).length)
-            return;
-        var tokensOutput = readTokens(localStorageItemName);
-        if (tokensOutput.success && !tokensOutput.noTokens) {
-            var rawTokens = tokensOutput.tokens;
-            var token_1 = {};
-            if (rawTokens.length) {
-                rawTokens.forEach(function (tokenData) {
-                    if (tokenData.token) {
-                        var decodedToken = new tokenParser(base64ToUint8array(tokenData.token).buffer);
-                        if (decodedToken && decodedToken[_this.config.unsignedTokenDataName]) {
-                            var decodedTokenData = decodedToken[_this.config.unsignedTokenDataName];
-                            if (compareObjects(decodedTokenData, unsignedToken))
-                                token_1 = tokenData;
-                        }
+        if (!unsignedToken || !Object.keys(unsignedToken)) {
+            throw new Error('Missing Params.');
+        }
+        var rawTokens = readTokens(localStorageItemName);
+        var token = {};
+        if (rawTokens.length) {
+            rawTokens.forEach(function (tokenData) {
+                var decodedToken = new tokenParser(base64ToUint8array(tokenData).buffer);
+                if (decodedToken && decodedToken[_this.config.unsignedTokenDataName]) {
+                    var decodedTokenData = decodedToken[_this.config.unsignedTokenDataName];
+                    var matchFound = compareObjects(decodedTokenData, unsignedToken);
+                    if (matchFound) {
+                        token = tokenData;
                     }
-                });
-            }
-            return token_1;
+                }
+            });
+            return token;
         }
         else {
             return null;

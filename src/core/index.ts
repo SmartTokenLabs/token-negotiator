@@ -66,7 +66,8 @@ export const openOutletIframe = (tokensOrigin, localStorageItemName) => {
       iframe.contentWindow.postMessage({
         evt: 'getTokens',
         localStorageItemName: localStorageItemName
-      }, tokensOrigin);
+      }, '*');
+      // tokensOrigin
       resolve(true);
     };
   });
@@ -85,7 +86,7 @@ export const getTokens = async ({
       window.addEventListener('message', (event) => { 
         if (event.origin !== tokensOrigin) reject();
         if(event.data.evt === 'setTokens') {
-          const decodedTokens = decodeTokens(event.data.tokens.tokens, tokenParser, unsignedTokenDataName);
+          const decodedTokens = decodeTokens(event.data.tokens, tokenParser, unsignedTokenDataName);
           const filteredTokens = filterTokens(decodedTokens, filter);
           resolve(filteredTokens);
         }

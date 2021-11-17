@@ -21,7 +21,7 @@ export class Client {
   }
 
   async negotiateViaOutlet() {
-    return getTokens({
+    return await getTokens({
       filter: this.filter,
       tokenName: this.config.tokenName,
       tokensOrigin: this.config.tokenOrigin,
@@ -49,7 +49,7 @@ export class Client {
     await this.connectMetamaskAndGetAddress();
     let provider = new ethers.providers.Web3Provider(window.ethereum);
     let signer = provider.getSigner();
-    return signer.signMessage(message);
+    return await signer.signMessage(message);
   }
 
   // TODO implement this:
@@ -98,7 +98,8 @@ export class Client {
           evt: 'getTokenProof',
           localStorageItemName: localStorageItemName,
           unsignedToken: unsignedToken
-        }, tokensOrigin);
+        }, '*');
+        // tokensOrigin
         resolve(true);
       };
     });

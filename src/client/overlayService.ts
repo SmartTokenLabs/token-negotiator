@@ -6,25 +6,15 @@ class OverlayService {
     this.config = config;
     this.options = options;
     this.filter = filter;
-    // listen to incoming events
     this.assignClientListener();
-    // embed the overlay html component into view and request from overlay origin
-    // the button mark up which can be rendered into view and used to access the overlay
-    // by the end user.
-    this.embedClientOverlay(
-      this.config.tokenName,
-      this.config.tokenOverlayOrigin,
-      this.options,
-      this.filter
-    );
-
+    this.embedClientOverlay(this.config.tokenName, this.config.tokenOverlayOrigin, this.options, this.filter);
     window.addEventListener("click", this.onClickOutsideOfOverlay);
   }
 
   onClickOutsideOfOverlay = (e) => {
-    if(e.target.className !== "overlay-fab-button-tn"){
+    if (e.target.className !== "overlay-fab-button-tn") {
       this.eventSender.closeOverlay();
-    } 
+    }
   };
 
   // sends events
@@ -35,8 +25,9 @@ class OverlayService {
           {
             evt: "setCloseOverlay",
           },
-          this.config.tokenOverlayOrigin
+          '*'
         );
+        // this.config.tokenOverlayOrigin
       }
     },
   };
@@ -49,10 +40,10 @@ class OverlayService {
     window.addEventListener(
       "message",
       (event) => {
-        if (
-          !this.isEventFromOverlay(event.origin, this.config.tokenOverlayOrigin)
-        )
-          return;
+        // if (
+        //   !this.isEventFromOverlay(event.origin, this.config.tokenOverlayOrigin)
+        // )
+        //   return;
         this.eventReciever(event.data);
       },
       false
@@ -79,8 +70,9 @@ class OverlayService {
                 options,
               },
             },
-            this.config.tokenOverlayOrigin
+            '*'
           );
+          // tokenOverlayOrigin
         };
       }
     }, 0);
@@ -101,24 +93,24 @@ class OverlayService {
             `;
           newElement.innerHTML = data.button;
           const tokenSelectorContainer = document.querySelector(`${this.options.tokenSelectorContainer}`);
-          if(tokenSelectorContainer){
+          if (tokenSelectorContainer) {
             tokenSelectorContainer.style.margin = "10px";
             tokenSelectorContainer.append(newElement);
           }
         }
         break;
       case "hideOverlay":
-        if(el) el.style.display = "none";
+        if (el) el.style.display = "none";
         break;
       case "showOverlay":
-        if(el) el.style.display = "block";
+        if (el) el.style.display = "block";
         break;
     }
   }
 
   overlayClickHandler() {
     const el = document.querySelector(`${this.options.tokenSelectorContainer} .${this.config.tokenName}-overlay-tn`);
-    if(el) el.contentWindow.postMessage({ evt: "setToggleOverlayHandler" }, this.config.tokenOverlayOrigin);
+    if (el) el.contentWindow.postMessage({ evt: "setToggleOverlayHandler" }, '*');
   }
 }
 

@@ -4,7 +4,9 @@ export var applyDevelopmentMode = function (negotiatorService, tokenName, tokenS
     if (tokensOrigin === void 0) { tokensOrigin = "http://localhost:3002/"; }
     if (localStorageItemName === void 0) { localStorageItemName = "dcTokens"; }
     var dataEvtMock = { tokenName: tokenName, filter: {}, options: { tokenSelectorContainer: tokenSelectorContainer } };
-    document.querySelector('.tk-overlay').innerHTML = negotiatorService.createOverlayMarkup();
+    var overlayElRef = document.querySelector('.tk-overlay');
+    if (overlayElRef)
+        overlayElRef.innerHTML = negotiatorService.createOverlayMarkup();
     negotiatorService.configuration = {
         filter: dataEvtMock.filter,
         tokenName: dataEvtMock.tokenName,
@@ -20,7 +22,9 @@ export var applyDevelopmentMode = function (negotiatorService, tokenName, tokenS
     }).then(function (resultTokens) {
         negotiatorService.addTokens(resultTokens);
     });
-    document.getElementsByClassName('overlay')[0].style.cssText = "opacity: 1; top: -320px; left: -278px;";
+    var overlayEl = document.getElementsByClassName('overlay')[0];
+    if (overlayEl)
+        overlayEl.style.cssText = "opacity: 1; top: -320px; left: -278px;";
     var tag = document.createElement("div");
     tag.innerHTML = negotiatorService.createFabButton(negotiatorService.config.fabButton);
     document.getElementsByClassName('tk-overlay')[0].appendChild(tag);

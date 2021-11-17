@@ -39,17 +39,17 @@ import { getTokens } from "./../core/index";
 import { config } from "./../config/index";
 import OverlayService from "./overlayService";
 var Client = (function () {
-    function Client(filter, tokenName, options) {
+    function Client(_a) {
         var _this = this;
-        if (filter === void 0) { filter = {}; }
-        if (options === void 0) { options = {}; }
+        var tokenName = _a.tokenName, _b = _a.filter, filter = _b === void 0 ? {} : _b, _c = _a.options, options = _c === void 0 ? {} : _c;
         this.getTokenProofFromOutlet = function (tokensOrigin, localStorageItemName, unsignedToken) {
             _this.getTokenProofFromOutletIframe(tokensOrigin, localStorageItemName, unsignedToken);
             return new Promise(function (resolve, reject) {
                 window.addEventListener('message', function (event) {
-                    if (event.data.evt === 'setTokenProof') {
+                    if (event.origin !== tokensOrigin)
+                        reject();
+                    if (event.data.evt === 'setTokenProof')
                         resolve(event.data.tokenProof);
-                    }
                 }, false);
             });
         };
@@ -66,7 +66,7 @@ var Client = (function () {
                         evt: 'getTokenProof',
                         localStorageItemName: localStorageItemName,
                         unsignedToken: unsignedToken
-                    }, tokensOrigin);
+                    }, '*');
                     resolve(true);
                 };
             });
@@ -82,22 +82,17 @@ var Client = (function () {
     }
     Client.prototype.negotiate = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var tokens;
             return __generator(this, function (_a) {
-                if (this.options.useOverlay === true) {
+                if (this.options.useOverlay === true)
                     this.negotiateViaOverlay();
-                }
-                else {
-                    tokens = this.negotiateViaOutlet();
-                    return [2, tokens];
-                }
+                else
+                    return [2, this.negotiateViaOutlet()];
                 return [2];
             });
         });
     };
     Client.prototype.negotiateViaOutlet = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var tokens;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4, getTokens({
@@ -108,9 +103,7 @@ var Client = (function () {
                             tokenParser: this.config.tokenParser,
                             unsignedTokenDataName: this.config.unsignedTokenDataName
                         })];
-                    case 1:
-                        tokens = _a.sent();
-                        return [2, tokens];
+                    case 1: return [2, _a.sent()];
                 }
             });
         });

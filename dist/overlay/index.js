@@ -3,7 +3,9 @@ import { applyDevelopmentMode } from "./devUtils";
 var Overlay = (function () {
     function Overlay() {
         var negotiatorOverlayService = new NegotiatorService();
-        window.addEventListener('message', function (event) { negotiatorOverlayService.eventReciever(event.data); }, false);
+        window.addEventListener('message', function (event) {
+            negotiatorOverlayService.eventReciever(event.data);
+        }, false);
         window.tokenToggleSelection = function () {
             var output = [];
             document.querySelectorAll('.token .mobileToggle').forEach(function (token) {
@@ -13,11 +15,9 @@ var Overlay = (function () {
             negotiatorOverlayService.selectedTokens = output;
             negotiatorOverlayService.eventSender.emitSelectedTokens();
         };
-        if (window.top === window.self)
-            applyDevelopmentMode('devcon-ticket', ".tokenSelectorContainerElement", "http://localhost:3002/", "dcTokens", negotiatorOverlayService);
+        applyDevelopmentMode(negotiatorOverlayService, 'devcon-ticket', ".tokenSelectorContainerElement", "http://localhost:3002/", "dcTokens");
     }
     return Overlay;
 }());
 export { Overlay };
-;
 //# sourceMappingURL=index.js.map

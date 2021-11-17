@@ -37,23 +37,19 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 import { base64ToUint8array } from './../utils';
 export var filterTokens = function (decodedTokens, filter) {
     if (filter === void 0) { filter = {}; }
-    if (Object.keys(filter).length === 0)
-        filter = filter;
-    var res = [];
+    var tokens = [];
     if (decodedTokens.length
         && typeof filter === "object"
         && Object.keys(filter).length) {
         var filterKeys_1 = Object.keys(filter);
         decodedTokens.forEach(function (token) {
             var fitFilter = 1;
-            filterKeys_1.forEach(function (key) {
-                if (token[key].toString() !== filter[key].toString())
-                    fitFilter = 0;
-            });
+            filterKeys_1.forEach(function (key) { if (token[key].toString() !== filter[key].toString())
+                fitFilter = 0; });
             if (fitFilter)
-                res.push(token);
+                tokens.push(token);
         });
-        return res;
+        return tokens;
     }
     else {
         return decodedTokens;
@@ -62,25 +58,23 @@ export var filterTokens = function (decodedTokens, filter) {
 export var readTokens = function (localStorageItemName) {
     var storageTickets = localStorage.getItem(localStorageItemName);
     var tokens = [];
-    var output = { tokens: [], noTokens: true, success: true };
+    var output = [];
     try {
         if (storageTickets && storageTickets.length) {
             tokens = JSON.parse(storageTickets);
-            if (tokens.length !== 0) {
-                tokens.forEach(function (item) {
-                    if (item.token && item.secret)
-                        output.tokens.push(item);
-                });
-            }
-            if (output.tokens.length) {
-                output.noTokens = false;
-            }
+            return tokens;
         }
     }
     catch (e) {
-        output.success = false;
+        throw new Error('Please regenerate your tokens with magic link, the JSON is corrupted.');
     }
-    return output;
+    if (tokens.length && tokens.length !== 0) {
+        tokens.forEach(function (item) {
+            if (item.token && item.secret)
+                output.push(item);
+        });
+    }
+    return tokens;
 };
 export var decodeTokens = function (rawTokens, tokenParser, unsignedTokenDataName) {
     return rawTokens.map(function (tokenData) {
@@ -103,7 +97,7 @@ export var openOutletIframe = function (tokensOrigin, localStorageItemName) {
             iframe.contentWindow.postMessage({
                 evt: 'getTokens',
                 localStorageItemName: localStorageItemName
-            }, tokensOrigin);
+            }, '*');
             resolve(true);
         };
     });
@@ -115,8 +109,10 @@ export var getTokens = function (_a) {
             return [2, new Promise(function (resolve, reject) {
                     openOutletIframe(tokensOrigin, localStorageItemName).then(function () {
                         window.addEventListener('message', function (event) {
+                            if (event.origin !== tokensOrigin)
+                                reject();
                             if (event.data.evt === 'setTokens') {
-                                var decodedTokens = decodeTokens(event.data.tokens.tokens, tokenParser, unsignedTokenDataName);
+                                var decodedTokens = decodeTokens(event.data.tokens, tokenParser, unsignedTokenDataName);
                                 var filteredTokens = filterTokens(decodedTokens, filter);
                                 resolve(filteredTokens);
                             }
@@ -140,13 +136,16 @@ export var readMagicUrl = function (tokenUrlName, tokenSecretName, tokenIdName, 
         return;
     var tokensOutput = readTokens(localStorageItemName);
     var isNewQueryTicket = true;
-    var tokens = tokensOutput.tokens.map(function (tokenData) {
-        if (tokenData.token === tokenFromQuery) {
+    var tokens = tokensOutput.map(function (tokenData) {
+        if (tokenData === tokenFromQuery) {
             isNewQueryTicket = false;
         }
+        if (isNewQueryTicket) {
+            tokens.push({ token: tokenFromQuery, secret: secretFromQuery, id: idFromQuery, magic_link: window.location.href });
+        }
     });
-    if (isNewQueryTicket)
-        tokens.push({ token: tokenFromQuery, secret: secretFromQuery, id: idFromQuery, magic_link: window.location.href });
-    storeMagicURL(tokens, localStorageItemName);
+    if (tokens.length) {
+        storeMagicURL(tokens, localStorageItemName);
+    }
 };
 //# sourceMappingURL=index.js.map

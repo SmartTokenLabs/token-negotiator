@@ -38,12 +38,13 @@ export class Overlay {
     }
 
     // DEV MODE ONLY: Enabling live css / development changes
-    if (!env.production && window.top === window.self) applyDevelopmentMode(
+    // if (!env.production && window.top === window.self) 
+    applyDevelopmentMode(
+      negotiatorOverlayService,
       'devcon-ticket',
       ".tokenSelectorContainerElement",
       "http://localhost:3002/",
-      "dcTokens",
-      negotiatorOverlayService,
+      "dcTokens"
     );
   }
 }

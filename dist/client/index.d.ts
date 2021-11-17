@@ -1,5 +1,9 @@
 export declare class Client {
-    constructor(filter: {} | undefined, tokenName: any, options?: {});
+    constructor({ tokenName, filter, options }: {
+        tokenName: any;
+        filter?: {} | undefined;
+        options?: {} | undefined;
+    });
     negotiate(): Promise<unknown>;
     negotiateViaOutlet(): Promise<unknown>;
     negotiateViaOverlay(): void;

@@ -37,13 +37,15 @@ class OutletService {
       window.parent.postMessage({
         evt: 'setTokens',
         tokens: tokens
-      }, document.referrer);
+      }, '*');
     },
+    // document.referrer
     emitTokenProof: (tokenProof: any) => {
       window.parent.postMessage({
         evt: 'setTokenProof',
         tokenProof: tokenProof
-      }, document.referrer);
+      }, '*');
+      // document.referrer
     },
   }
 
