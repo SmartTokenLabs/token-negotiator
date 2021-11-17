@@ -80,7 +80,7 @@ class OverlayService {
                 options,
               },
             },
-            this.config.tokenOverlayOrigin
+            tokenOverlayOrigin
           );
         };
       }
@@ -121,7 +121,7 @@ class OverlayService {
 
   overlayClickHandler() {
     const el = document.querySelector(`${this.options.tokenSelectorContainer} .${this.config.tokenName}-overlay-tn`);
-    if(el) el.contentWindow.postMessage({ evt: "setToggleOverlayHandler" }, this.config.tokenOverlayOrigin);
+    if(el) el.contentWindow.postMessage({ evt: "setToggleOverlayHandler" }, '*');
   }
 }
 

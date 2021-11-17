@@ -50,7 +50,7 @@ var OverlayService = (function () {
                             filter: filter,
                             options: options,
                         },
-                    }, this.config.tokenOverlayOrigin);
+                    }, tokenOverlayOrigin);
                 };
             }
         }, 0);
@@ -85,7 +85,7 @@ var OverlayService = (function () {
     OverlayService.prototype.overlayClickHandler = function () {
         var el = document.querySelector(this.options.tokenSelectorContainer + " ." + this.config.tokenName + "-overlay-tn");
         if (el)
-            el.contentWindow.postMessage({ evt: "setToggleOverlayHandler" }, this.config.tokenOverlayOrigin);
+            el.contentWindow.postMessage({ evt: "setToggleOverlayHandler" }, '*');
     };
     return OverlayService;
 }());
