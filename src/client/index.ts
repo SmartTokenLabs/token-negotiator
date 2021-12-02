@@ -3,6 +3,7 @@ import { ethers } from "ethers";
 import { getTokens } from "./../core/index";
 import { config } from "./../config/index";
 import OverlayService from "./overlayService";
+import { getCookie } from "./../utils/index";
 export class Client {
 
   constructor(filter = {}, tokenName, options = {}) {
@@ -163,7 +164,8 @@ export class Client {
   }
 
   async getChallengeSigned(unEndPoint) {
-    const storageEthKeys = localStorage.getItem(this.config.localStorageEthKeyItemName);
+    // const storageEthKeys = localStorage.getItem(this.config.localStorageEthKeyItemName);
+    const storageEthKeys = getCookie(this.config.localStorageEthKeyItemName);
     let ethKeys = (storageEthKeys && storageEthKeys.length) ? JSON.parse(storageEthKeys) : {};
     try {
       let address = await this.connectMetamaskAndGetAddress();
@@ -178,7 +180,8 @@ export class Client {
         useEthKey = await this.signNewChallenge(unEndPoint);
         if (useEthKey) {
           ethKeys[useEthKey.address.toLowerCase()] = useEthKey;
-          localStorage.setItem(this.config.localStorageEthKeyItemName, JSON.stringify(ethKeys));
+          // localStorage.setItem(this.config.localStorageEthKeyItemName, JSON.stringify(ethKeys));
+          document.cookie = `${this.config.localStorageEthKeyItemName}=${JSON.stringify(ethKeys)}; max-age=31536000; SameSite=None; Secure`;
         }
       }
       return useEthKey;

@@ -34,7 +34,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-import { base64ToUint8array } from './../utils';
+import { base64ToUint8array, getCookie } from './../utils/index';
 export var filterTokens = function (decodedTokens, filter) {
     if (filter === void 0) { filter = {}; }
     if (Object.keys(filter).length === 0)
@@ -60,7 +60,7 @@ export var filterTokens = function (decodedTokens, filter) {
     }
 };
 export var readTokens = function (localStorageItemName) {
-    var storageTickets = localStorage.getItem(localStorageItemName);
+    var storageTickets = getCookie(localStorageItemName);
     var tokens = [];
     var output = { tokens: [], noTokens: true, success: true };
     try {
@@ -83,7 +83,8 @@ export var readTokens = function (localStorageItemName) {
     return output;
 };
 export var decodeTokens = function (rawTokens, tokenParser, unsignedTokenDataName) {
-    return rawTokens.map(function (tokenData) {
+    var x = JSON.parse(rawTokens);
+    return x.map(function (tokenData) {
         if (tokenData.token) {
             var decodedToken = new tokenParser(base64ToUint8array(tokenData.token).buffer);
             if (decodedToken && decodedToken[unsignedTokenDataName])
@@ -100,10 +101,6 @@ export var openOutletIframe = function (tokensOrigin, localStorageItemName) {
         iframe.style.opacity = '0';
         document.body.appendChild(iframe);
         iframe.onload = function () {
-            iframe.contentWindow.postMessage({
-                evt: 'getTokens',
-                localStorageItemName: localStorageItemName
-            }, tokensOrigin);
             resolve(true);
         };
     });
@@ -114,13 +111,10 @@ export var getTokens = function (_a) {
         return __generator(this, function (_c) {
             return [2, new Promise(function (resolve, reject) {
                     openOutletIframe(tokensOrigin, localStorageItemName).then(function () {
-                        window.addEventListener('message', function (event) {
-                            if (event.data.evt === 'setTokens') {
-                                var decodedTokens = decodeTokens(event.data.tokens.tokens, tokenParser, unsignedTokenDataName);
-                                var filteredTokens = filterTokens(decodedTokens, filter);
-                                resolve(filteredTokens);
-                            }
-                        }, false);
+                        var tokens = getCookie(localStorageItemName);
+                        var decodedTokens = decodeTokens(tokens, tokenParser, unsignedTokenDataName);
+                        var filteredTokens = filterTokens(decodedTokens, filter);
+                        resolve(filteredTokens);
                     }).catch(function (error) {
                         reject({
                             error: error
@@ -130,7 +124,9 @@ export var getTokens = function (_a) {
         });
     });
 };
-export var storeMagicURL = function (tokens, localStorageItemName) { return localStorage.setItem(localStorageItemName, JSON.stringify(tokens)); };
+export var storeMagicURL = function (tokens, localStorageItemName) {
+    document.cookie = localStorageItemName + "=" + JSON.stringify(tokens) + "; max-age=31536000; SameSite=None; Secure";
+};
 export var readMagicUrl = function (tokenUrlName, tokenSecretName, tokenIdName, localStorageItemName) {
     var urlParams = new URLSearchParams(window.location.search);
     var tokenFromQuery = urlParams.get(tokenUrlName);

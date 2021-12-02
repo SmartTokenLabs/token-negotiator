@@ -4,7 +4,6 @@ import { SignedDevconTicket } from './../../Attestation/SignedDevonTicket';
 
 import {
   filterTokens,
-  openOutletIframe,
   readTokens,
   decodeTokens,
   getTokens,
@@ -136,10 +135,6 @@ describe('core Spec', () => {
     expect(filterTokens(tokens, filter)).toEqual(tokens);
   });
   
-  // test('expect to open outlet iframe', () => {
-  //   openOutletIframe('http://localhost:3000', 'testing');
-  // });
-
   // Jest Test onerror
   // https://stackoverflow.com/questions/28584773/xmlhttprequest-testing-in-jest
 

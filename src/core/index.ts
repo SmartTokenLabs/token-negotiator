@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { base64ToUint8array } from './../utils';
+import { base64ToUint8array, getCookie } from './../utils/index';
 
 // core / common negotiator functions.
 
@@ -30,7 +30,8 @@ export const filterTokens = (decodedTokens: any, filter = {}) => {
 
 // recieves localstorage token reference tokens, returns filtered list.
 export const readTokens = (localStorageItemName: any) => {
-  const storageTickets = localStorage.getItem(localStorageItemName);
+  // const storageTickets = localStorage.getItem(localStorageItemName);
+  const storageTickets = getCookie(localStorageItemName);
   let tokens: any = [];
   let output: any = { tokens: [], noTokens: true, success: true };
   try {
@@ -53,52 +54,14 @@ export const readTokens = (localStorageItemName: any) => {
 
 // decode and return tokens
 export const decodeTokens = (rawTokens: any, tokenParser: any, unsignedTokenDataName: string) => {
-  return rawTokens.map((tokenData: any) => {
+  var x = JSON.parse(rawTokens);
+  return x.map((tokenData: any) => {
     if (tokenData.token) {
       let decodedToken = new tokenParser(base64ToUint8array(tokenData.token).buffer);
       if (decodedToken && decodedToken[unsignedTokenDataName]) return decodedToken[unsignedTokenDataName];
     }
   });
 };
-
-// TODO: Review this type of implementation, which checks the URL is active 
-// before creating an Iframe. This does not work via local host without
-// some calibration e.g. proxy, extension, changes of security settings of browser.
-// export const openOutletIframe = (tokensOrigin: string, localStorageItemName: string) => {
-//   return new Promise(function (resolve, reject) {
-//     var xhr = new XMLHttpRequest();
-//     xhr.open('GET', tokensOrigin);
-//     xhr.onload = () => {
-//       if (this.status === 200) {
-//         const iframe = document.createElement('iframe');
-//         iframe.src = tokensOrigin;
-//         iframe.style.width = '1px';
-//         iframe.style.height = '1px';
-//         iframe.style.opacity = '0';
-//         document.body.appendChild(iframe);
-//         iframe.onload = () => {
-//           iframe.contentWindow.postMessage({
-//             evt: 'getTokens',
-//             localStorageItemName: localStorageItemName
-//           }, "*");
-//           resolve(true);
-//         };
-//       } else {
-//         reject({
-//           status: this.status,
-//           statusText: xhr.statusText
-//         });
-//       }
-//     };
-//     xhr.onerror = function () {
-//       reject({
-//         status: this.status,
-//         statusText: xhr.statusText
-//       });
-//     };
-//     xhr.send();
-//   });
-// }
 export const openOutletIframe = (tokensOrigin, localStorageItemName) => {
   return new Promise((resolve, reject) => {
     const iframe = document.createElement('iframe');
@@ -108,14 +71,31 @@ export const openOutletIframe = (tokensOrigin, localStorageItemName) => {
     iframe.style.opacity = '0';
     document.body.appendChild(iframe);
     iframe.onload = () => {
-      iframe.contentWindow.postMessage({
-        evt: 'getTokens',
-        localStorageItemName: localStorageItemName
-      }, tokensOrigin);
+      
+      // TODO: See what is required at this stage. It maybe that no action is required and cookies can be read
+      // document.cookie = `dcTokens=[{"token":"MIGSMAkMATkCAQECAQwEQQQbX0WI0BzxKHYHBSbyFIt7L44Rxcxqv8rXGpFuuO-bBBZ6YTzmvDzQWbmq2OqsTclAxy3cN2wzmPywz2A_nn0lA0IAi1qN7894PWzmk2wyQUo4MtlKkO5NZGNfkt7A6BbrfZY_E58Zy6kqYsciBsJY7P-UO2vnjCG88Dzx6bL-pdkmshs=","secret":"10593082611958123069159986522878346963005475009650354554005852930286854271222","id":"nicktaras@hotmail.co.uk","magic_link":"https://devcontickets.herokuapp.com/outlet/?ticket=MIGSMAkMATkCAQECAQwEQQQbX0WI0BzxKHYHBSbyFIt7L44Rxcxqv8rXGpFuuO-bBBZ6YTzmvDzQWbmq2OqsTclAxy3cN2wzmPywz2A_nn0lA0IAi1qN7894PWzmk2wyQUo4MtlKkO5NZGNfkt7A6BbrfZY_E58Zy6kqYsciBsJY7P-UO2vnjCG88Dzx6bL-pdkmshs=&secret=10593082611958123069159986522878346963005475009650354554005852930286854271222&id=nicktaras@hotmail.co.uk"},{"token":"MIGSMAkMATkCAQUCAQwEQQQsUB1tp0mEn0Zoc8Lu-c0ZJOHis3ynlUAuplV8jpJhMgGMuP4i2msZihJq0VeBBOhGLU-vhfkn_0DYsJ9J8djgA0IAScs-3TwdMQ6XSIu1z1nDRCWEzAMBWaVEHONiRlW0j5kTEXBKvgNHS5DsjGm2S84BKqHl3qucBHUOGjpt-6hEuxw=","secret":"285996413010999512790264856198259265088323878963947294417758116344175800611","id":"nicktaras83@gmail.com","magic_link":"https://devcontickets.herokuapp.com/outlet/?ticket=MIGSMAkMATkCAQUCAQwEQQQsUB1tp0mEn0Zoc8Lu-c0ZJOHis3ynlUAuplV8jpJhMgGMuP4i2msZihJq0VeBBOhGLU-vhfkn_0DYsJ9J8djgA0IAScs-3TwdMQ6XSIu1z1nDRCWEzAMBWaVEHONiRlW0j5kTEXBKvgNHS5DsjGm2S84BKqHl3qucBHUOGjpt-6hEuxw=&secret=285996413010999512790264856198259265088323878963947294417758116344175800611&id=nicktaras83@gmail.com"},{"token":"MIGSMAkMATkCAQECAQwEQQQKeUkXpYEfS-G_OAq85nQHD5WM39T_Ol00r-4QKLwPmgl0JnCBEyb8AVruuSVqcEgvSiDu2TTIXLwdMJ6BgrUmA0IAi1qN7894PWzmk2wyQUo4MtlKkO5NZGNfkt7A6BbrfZY_E58Zy6kqYsciBsJY7P-UO2vnjCG88Dzx6bL-pdkmshs=","secret":"12719637406806243654230339844700051509369597731121204155497188964317169703492","id":"nicktaras@hotmail.co.uk","magic_link":"https://devcontickets.herokuapp.com/outlet/?ticket=MIGSMAkMATkCAQECAQwEQQQKeUkXpYEfS-G_OAq85nQHD5WM39T_Ol00r-4QKLwPmgl0JnCBEyb8AVruuSVqcEgvSiDu2TTIXLwdMJ6BgrUmA0IAi1qN7894PWzmk2wyQUo4MtlKkO5NZGNfkt7A6BbrfZY_E58Zy6kqYsciBsJY7P-UO2vnjCG88Dzx6bL-pdkmshs=&secret=12719637406806243654230339844700051509369597731121204155497188964317169703492&id=nicktaras@hotmail.co.uk"}]; max-age=31536000; SameSite=None;`;
+
       resolve(true);
     };
   });
 }
+// export const openOutletIframe = (tokensOrigin, localStorageItemName) => {
+//   return new Promise((resolve, reject) => {
+//     const iframe = document.createElement('iframe');
+//     iframe.src = tokensOrigin;
+//     iframe.style.width = '1px';
+//     iframe.style.height = '1px';
+//     iframe.style.opacity = '0';
+//     document.body.appendChild(iframe);
+//     iframe.onload = () => {
+//       iframe.contentWindow.postMessage({
+//         evt: 'getTokens',
+//         localStorageItemName: localStorageItemName
+//       }, tokensOrigin);
+//       resolve(true);
+//     };
+//   });
+// }
 
 // returns decode and filtered tokens
 export const getTokens = async ({
@@ -127,13 +107,10 @@ export const getTokens = async ({
 }) => {
   return new Promise((resolve, reject) => {
     openOutletIframe(tokensOrigin, localStorageItemName).then(() => {
-      window.addEventListener('message', (event) => { 
-        if(event.data.evt === 'setTokens') {
-          const decodedTokens = decodeTokens(event.data.tokens.tokens, tokenParser, unsignedTokenDataName);
-          const filteredTokens = filterTokens(decodedTokens, filter);
-          resolve(filteredTokens);
-        }
-      }, false);
+      const tokens = getCookie(localStorageItemName);
+      const decodedTokens = decodeTokens(tokens, tokenParser, unsignedTokenDataName);
+      const filteredTokens = filterTokens(decodedTokens, filter);
+      resolve(filteredTokens);
     }).catch((error) => {
       reject({
         error: error
@@ -141,8 +118,36 @@ export const getTokens = async ({
     });
   })
 }
+// export const getTokens = async ({
+//   filter = {},
+//   tokensOrigin,
+//   localStorageItemName,
+//   tokenParser,
+//   unsignedTokenDataName
+// }) => {
+//   return new Promise((resolve, reject) => {
+//     openOutletIframe(tokensOrigin, localStorageItemName).then(() => {
+//       window.addEventListener('message', (event) => { 
+//         if(event.data.evt === 'setTokens') {
+//           const decodedTokens = decodeTokens(event.data.tokens.tokens, tokenParser, unsignedTokenDataName);
+//           const filteredTokens = filterTokens(decodedTokens, filter);
+//           resolve(filteredTokens);
+//         }
+//       }, false);
+//     }).catch((error) => {
+//       reject({
+//         error: error
+//       })
+//     });
+//   })
+// }
 
-export const storeMagicURL = (tokens: any, localStorageItemName: string) => localStorage.setItem(localStorageItemName, JSON.stringify(tokens));
+// export const storeMagicURL = (tokens: any, localStorageItemName: string) => localStorage.setItem(localStorageItemName, JSON.stringify(tokens));
+export const storeMagicURL = (tokens: any, localStorageItemName: string) => {
+  // localStorage.setItem(localStorageItemName, JSON.stringify(tokens));
+  // document.cookie = `${localStorageItemName}=[{"token":"MIGSMAkMATkCAQECAQwEQQQbX0WI0BzxKHYHBSbyFIt7L44Rxcxqv8rXGpFuuO-bBBZ6YTzmvDzQWbmq2OqsTclAxy3cN2wzmPywz2A_nn0lA0IAi1qN7894PWzmk2wyQUo4MtlKkO5NZGNfkt7A6BbrfZY_E58Zy6kqYsciBsJY7P-UO2vnjCG88Dzx6bL-pdkmshs=","secret":"10593082611958123069159986522878346963005475009650354554005852930286854271222","id":"nicktaras@hotmail.co.uk","magic_link":"https://devcontickets.herokuapp.com/outlet/?ticket=MIGSMAkMATkCAQECAQwEQQQbX0WI0BzxKHYHBSbyFIt7L44Rxcxqv8rXGpFuuO-bBBZ6YTzmvDzQWbmq2OqsTclAxy3cN2wzmPywz2A_nn0lA0IAi1qN7894PWzmk2wyQUo4MtlKkO5NZGNfkt7A6BbrfZY_E58Zy6kqYsciBsJY7P-UO2vnjCG88Dzx6bL-pdkmshs=&secret=10593082611958123069159986522878346963005475009650354554005852930286854271222&id=nicktaras@hotmail.co.uk"},{"token":"MIGSMAkMATkCAQUCAQwEQQQsUB1tp0mEn0Zoc8Lu-c0ZJOHis3ynlUAuplV8jpJhMgGMuP4i2msZihJq0VeBBOhGLU-vhfkn_0DYsJ9J8djgA0IAScs-3TwdMQ6XSIu1z1nDRCWEzAMBWaVEHONiRlW0j5kTEXBKvgNHS5DsjGm2S84BKqHl3qucBHUOGjpt-6hEuxw=","secret":"285996413010999512790264856198259265088323878963947294417758116344175800611","id":"nicktaras83@gmail.com","magic_link":"https://devcontickets.herokuapp.com/outlet/?ticket=MIGSMAkMATkCAQUCAQwEQQQsUB1tp0mEn0Zoc8Lu-c0ZJOHis3ynlUAuplV8jpJhMgGMuP4i2msZihJq0VeBBOhGLU-vhfkn_0DYsJ9J8djgA0IAScs-3TwdMQ6XSIu1z1nDRCWEzAMBWaVEHONiRlW0j5kTEXBKvgNHS5DsjGm2S84BKqHl3qucBHUOGjpt-6hEuxw=&secret=285996413010999512790264856198259265088323878963947294417758116344175800611&id=nicktaras83@gmail.com"},{"token":"MIGSMAkMATkCAQECAQwEQQQKeUkXpYEfS-G_OAq85nQHD5WM39T_Ol00r-4QKLwPmgl0JnCBEyb8AVruuSVqcEgvSiDu2TTIXLwdMJ6BgrUmA0IAi1qN7894PWzmk2wyQUo4MtlKkO5NZGNfkt7A6BbrfZY_E58Zy6kqYsciBsJY7P-UO2vnjCG88Dzx6bL-pdkmshs=","secret":"12719637406806243654230339844700051509369597731121204155497188964317169703492","id":"nicktaras@hotmail.co.uk","magic_link":"https://devcontickets.herokuapp.com/outlet/?ticket=MIGSMAkMATkCAQECAQwEQQQKeUkXpYEfS-G_OAq85nQHD5WM39T_Ol00r-4QKLwPmgl0JnCBEyb8AVruuSVqcEgvSiDu2TTIXLwdMJ6BgrUmA0IAi1qN7894PWzmk2wyQUo4MtlKkO5NZGNfkt7A6BbrfZY_E58Zy6kqYsciBsJY7P-UO2vnjCG88Dzx6bL-pdkmshs=&secret=12719637406806243654230339844700051509369597731121204155497188964317169703492&id=nicktaras@hotmail.co.uk"}]; max-age=31536000; SameSite=None;`;
+  document.cookie = `${localStorageItemName}=${JSON.stringify(tokens)}; max-age=31536000; SameSite=None; Secure`;
+}
 
 export const readMagicUrl = (tokenUrlName: string, tokenSecretName: string, tokenIdName: string, localStorageItemName: string) => {
   const urlParams = new URLSearchParams(window.location.search);

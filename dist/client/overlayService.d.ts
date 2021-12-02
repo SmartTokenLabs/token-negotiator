@@ -7,6 +7,7 @@ declare class OverlayService {
     isEventFromOverlay(origin: any, tokenOverlayOrigin: any): boolean;
     assignClientListener(): void;
     embedClientOverlay(tokenName: any, tokenOverlayOrigin: any, options: any, filter: any): void;
+    setTokenButtonHTML(button: any): void;
     eventReciever(data: any): void;
     overlayClickHandler(): void;
 }

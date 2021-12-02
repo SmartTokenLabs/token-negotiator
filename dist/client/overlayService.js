@@ -1,3 +1,4 @@
+import { getCookie } from "./../utils/index";
 var OverlayService = (function () {
     function OverlayService(config, options, filter) {
         var _this = this;
@@ -40,36 +41,29 @@ var OverlayService = (function () {
             if (refTokenSelector) {
                 var iframe = "<div class=\"" + tokenName + "-overlay-wrapper-tn\"><iframe class=\"" + tokenName + "-overlay-tn\" style=\"border:0; resize: none; overflow: auto;\" height=\"335px\" width=\"376px\" src=\"" + tokenOverlayOrigin + "\" allowtransparency=\"true\" title=\"outlet\" frameborder=\"0\" style=\"border:0\" allowfullscreen frameborder=\"no\" scrolling=\"no\"></iframe></div>";
                 refTokenSelector.innerHTML = iframe;
-                var refOverlaySelector_1 = document.querySelector(options.tokenSelectorContainer + " ." + tokenName + "-overlay-tn");
-                _this.refOverlaySelector = refOverlaySelector_1;
-                refOverlaySelector_1.onload = function () {
-                    refOverlaySelector_1.contentWindow.postMessage({
-                        evt: "getTokenButtonHTML",
-                        data: {
-                            tokenName: tokenName,
-                            filter: filter,
-                            options: options,
-                        },
-                    }, tokenOverlayOrigin);
+                var refOverlaySelector = document.querySelector(options.tokenSelectorContainer + " ." + tokenName + "-overlay-tn");
+                _this.refOverlaySelector = refOverlaySelector;
+                refOverlaySelector.onload = function () {
+                    _this.setTokenButtonHTML(getCookie('fabbuttontn'));
                 };
             }
         }, 0);
     };
+    OverlayService.prototype.setTokenButtonHTML = function (button) {
+        if (!document.getElementById("token-button-container")) {
+            var newElement = document.createElement("div");
+            newElement.setAttribute("id", "token-button-container");
+            newElement.style.cssText = "\n          display: flex; \n          justify-content: flex-end;\n          margin: 10px;\n        ";
+            newElement.innerHTML = button;
+            var tokenSelectorContainer = document.querySelector("" + this.options.tokenSelectorContainer);
+            if (tokenSelectorContainer) {
+                tokenSelectorContainer.style.margin = "10px";
+                tokenSelectorContainer.append(newElement);
+            }
+        }
+    };
     OverlayService.prototype.eventReciever = function (data) {
         switch (data.evt) {
-            case "setTokenButtonHTML":
-                if (!document.getElementById("token-button-container")) {
-                    var newElement = document.createElement("div");
-                    newElement.setAttribute("id", "token-button-container");
-                    newElement.style.cssText = "\n              display: flex; \n              justify-content: flex-end;\n              margin: 10px;\n            ";
-                    newElement.innerHTML = data.button;
-                    var tokenSelectorContainer = document.querySelector("" + this.options.tokenSelectorContainer);
-                    if (tokenSelectorContainer) {
-                        tokenSelectorContainer.style.margin = "10px";
-                        tokenSelectorContainer.append(newElement);
-                    }
-                }
-                break;
             case "hideOverlay":
                 var el = document.querySelector(this.options.tokenSelectorContainer + " ." + this.config.tokenName + "-overlay-wrapper-tn");
                 if (el)
@@ -84,8 +78,8 @@ var OverlayService = (function () {
     };
     OverlayService.prototype.overlayClickHandler = function () {
         var el = document.querySelector(this.options.tokenSelectorContainer + " ." + this.config.tokenName + "-overlay-tn");
-        if (el)
-            el.contentWindow.postMessage({ evt: "setToggleOverlayHandler" }, '*');
+        if (el) {
+        }
     };
     return OverlayService;
 }());

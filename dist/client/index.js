@@ -38,6 +38,7 @@ import { ethers } from "ethers";
 import { getTokens } from "./../core/index";
 import { config } from "./../config/index";
 import OverlayService from "./overlayService";
+import { getCookie } from "./../utils/index";
 var Client = (function () {
     function Client(filter, tokenName, options) {
         var _this = this;
@@ -266,7 +267,7 @@ var Client = (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        storageEthKeys = localStorage.getItem(this.config.localStorageEthKeyItemName);
+                        storageEthKeys = getCookie(this.config.localStorageEthKeyItemName);
                         ethKeys = (storageEthKeys && storageEthKeys.length) ? JSON.parse(storageEthKeys) : {};
                         _a.label = 1;
                     case 1:
@@ -287,7 +288,7 @@ var Client = (function () {
                         useEthKey = _a.sent();
                         if (useEthKey) {
                             ethKeys[useEthKey.address.toLowerCase()] = useEthKey;
-                            localStorage.setItem(this.config.localStorageEthKeyItemName, JSON.stringify(ethKeys));
+                            document.cookie = this.config.localStorageEthKeyItemName + "=" + JSON.stringify(ethKeys) + "; max-age=31536000; SameSite=None; Secure";
                         }
                         _a.label = 5;
                     case 5: return [2, useEthKey];
