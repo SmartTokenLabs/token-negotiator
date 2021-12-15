@@ -12,11 +12,14 @@ module.exports = {
   testTimeout: 300000,
   collectCoverage: true,
   coverageDirectory: '<rootDir>/reports/coverage/',
-  testPathIgnorePatterns: ['dist'],
+  testPathIgnorePatterns: ["dist"],
   testEnvironment: 'jsdom',
   "globals": {
     "window": {},
     "localStorage": {}
   },
+  moduleNameMapper: {
+    '\\.(css|less)$': '<rootDir>/test/jest/__mocks__/mock.js',
+  }
 };
 
