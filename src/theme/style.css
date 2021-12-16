@@ -143,12 +143,10 @@
 
 .overlay-fab-button-tn {
   padding: 0;
-  height: 60px;
+  height: 80px;
   width: 80px;
   border: 0;
-  /* background: black; */
-  /* box-shadow: 0 2px 5px 0 #676767; */
-  border-radius: 4px;
+  border-radius: 54px;
   cursor: pointer;
   z-index: 999;
   bottom: 0;
@@ -162,7 +160,6 @@
 
 .overlay-tn .overlay-content-tn:hover {
   transition: all 0.15s;
-  /* box-shadow: 0 2px 3px 0 #676767; */
   -webkit-transition: all 0.15s;
 }
 
@@ -192,14 +189,12 @@
   height: 266px;
   width: 355px;
   box-shadow: 0 2px 4px 0 rgba(103, 103, 103, 0.5);
-  /* background-color: #ffffff; */
   z-index: 888;
 }
 
 .overlay-tn .overlay-content-tn .brand-tn {
   width: 355px;
   height: 4px;
-  /* background-color: #000; */
 }
 
 .overlay-tn .overlay-content-tn .headline-tn {
@@ -209,7 +204,6 @@
   font-size: 1.2rem;
   font-weight: bold;
   line-height: 1.71rem;
-  /* color: #000000; */
 }
 
 .overlay-tn .overlay-content-tn .token-container-tn {

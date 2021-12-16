@@ -2,8 +2,8 @@ import { asyncHandle, requiredParams, logger } from './../utils/index';
 import { getTokens, getChallengeSigned, validateUseEthKey, connectMetamaskAndGetAddress, getTokenProof } from "../core/index";
 import { createOverlayMarkup, createFabButton, createToken } from './componentFactory';
 import { tokenLookup } from './../tokenLookup';
-// import './../Attestation/authenticator'; // JEST FIXME - BIGINT CASTING BUG
-import "./../theme/style.css"; // JEST FIXME - IGNORE .CSS files
+import './../Attestation/authenticator'; // JEST FIXME - BIGINT CASTING BUG
+import "./../theme/style.css";
 import './../vendor/keyShape';
 
 interface NegotiationInterface {
@@ -39,10 +39,10 @@ export class Client {
         const { type, issuers, options } = config;
 
         // @ts-ignore
-        this.authenticator = null; // new Authenticator();
+        this.authenticator = new Authenticator();
 
         // @ts-ignore
-        // requiredParams(this.authenticator, "authenticator is missing");
+        requiredParams(this.authenticator, "authenticator is missing");
 
         requiredParams(type, 'type is required.');
 
