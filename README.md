@@ -1,3 +1,7 @@
+# TODO's 
+
+- TS CSS Module Solution: https://spin.atomicobject.com/2020/06/22/css-module-typescript/
+
 # token-negotiator
 
 The token-negotiator is an NPM package designed for use with TokenScript. 

@@ -1,14 +1,13 @@
-import { readMagicUrl } from '../core';
-import OutletService from "./outletService";
-import { config } from './../config';
+import { readMagicUrl, storeMagicURL } from '../core';
+import { requiredParams } from '../utils/index';
+import { tokenLookup } from './../tokenLookup';
 var Outlet = (function () {
-    function Outlet(_a) {
-        var tokenName = _a.tokenName;
-        var _authenicator = window.Authenticator ? window.Authenticator : null;
-        var outletService = new OutletService(config[tokenName], _authenicator);
-        window.addEventListener('message', function (event) { outletService.eventReciever(event.data); }, false);
-        var _b = config[tokenName], tokenUrlName = _b.tokenUrlName, tokenSecretName = _b.tokenSecretName, tokenIdName = _b.tokenIdName, localStorageItemName = _b.localStorageItemName;
-        readMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, localStorageItemName);
+    function Outlet(config) {
+        var tokenName = config.tokenName;
+        requiredParams(tokenLookup[tokenName], "Please provide the token name");
+        var _a = tokenLookup[tokenName], tokenUrlName = _a.tokenUrlName, tokenSecretName = _a.tokenSecretName, tokenIdName = _a.tokenIdName, itemStorageKey = _a.itemStorageKey;
+        var tokens = readMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey);
+        storeMagicURL(tokens, itemStorageKey);
     }
     ;
     return Outlet;

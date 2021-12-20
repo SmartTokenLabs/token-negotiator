@@ -2,7 +2,7 @@ import { asyncHandle, requiredParams, logger } from './../utils/index';
 import { getTokens, getChallengeSigned, validateUseEthKey, connectMetamaskAndGetAddress, getTokenProof } from "../core/index";
 import { createOverlayMarkup, createFabButton, createToken } from './componentFactory';
 import { tokenLookup } from './../tokenLookup';
-import './../Attestation/authenticator'; // JEST FIXME - BIGINT CASTING BUG
+// import './../Attestation/authenticator'; // JEST FIXME - BIGINT CASTING BUG
 import "./../theme/style.css";
 import './../vendor/keyShape';
 
@@ -39,10 +39,10 @@ export class Client {
         const { type, issuers, options } = config;
 
         // @ts-ignore
-        this.authenticator = new Authenticator();
+        this.authenticator = null; // new Authenticator();
 
         // @ts-ignore
-        requiredParams(this.authenticator, "authenticator is missing");
+        // requiredParams(this.authenticator, "authenticator is missing");
 
         requiredParams(type, 'type is required.');
 
@@ -154,12 +154,14 @@ export class Client {
     }
 
     async passiveNegotiationStrategy() {
-
-        return { ...this.onChainTokens, ...this.offChainTokens };
-
+        let outputOnChain = this.onChainTokens;
+        delete outputOnChain.tokenKeys;
+        let outputOffChain = this.offChainTokens;
+        delete outputOffChain.tokenKeys;
+        return { ...outputOffChain, ...outputOnChain };
     }
 
-    async activeNegotiationStrategy() {
+    activeNegotiationStrategy() {
 
         this.embedClientOverlay();
 
@@ -297,7 +299,8 @@ export class Client {
 
     tokenToggleSelection() {
 
-        let selectedTokens: any = { "tokenKeys": [] };
+        // let selectedTokens: any = { "tokenKeys": [] };
+        let selectedTokens: any = {};
 
         document.querySelectorAll('.token-tn .mobileToggle-tn').forEach((token: any, index: number) => {
 
@@ -307,7 +310,7 @@ export class Client {
 
                 selectedTokens[token.dataset.key]['tokens'] = [];
 
-                selectedTokens.tokenKeys.push(token.dataset.key);
+                // selectedTokens.tokenKeys.push(token.dataset.key);
 
             }
 

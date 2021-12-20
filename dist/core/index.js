@@ -34,9 +34,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-import { base64ToUint8array, getCookie } from './../utils/index';
+import { base64ToUint8array, getCookie, requiredParams, compareObjects } from '../utils/index';
+import { ethers } from "ethers";
 export var filterTokens = function (decodedTokens, filter) {
-    if (filter === void 0) { filter = {}; }
     if (Object.keys(filter).length === 0)
         filter = filter;
     var res = [];
@@ -59,8 +59,8 @@ export var filterTokens = function (decodedTokens, filter) {
         return decodedTokens;
     }
 };
-export var readTokens = function (localStorageItemName) {
-    var storageTickets = getCookie(localStorageItemName);
+export var readTokens = function (itemStorageKey) {
+    var storageTickets = getCookie(itemStorageKey);
     var tokens = [];
     var output = { tokens: [], noTokens: true, success: true };
     try {
@@ -84,15 +84,20 @@ export var readTokens = function (localStorageItemName) {
 };
 export var decodeTokens = function (rawTokens, tokenParser, unsignedTokenDataName) {
     var x = JSON.parse(rawTokens);
-    return x.map(function (tokenData) {
-        if (tokenData.token) {
-            var decodedToken = new tokenParser(base64ToUint8array(tokenData.token).buffer);
-            if (decodedToken && decodedToken[unsignedTokenDataName])
-                return decodedToken[unsignedTokenDataName];
-        }
-    });
+    if (x.length) {
+        return x.map(function (tokenData) {
+            if (tokenData.token) {
+                var decodedToken = new tokenParser(base64ToUint8array(tokenData.token).buffer);
+                if (decodedToken && decodedToken[unsignedTokenDataName])
+                    return decodedToken[unsignedTokenDataName];
+            }
+        });
+    }
+    else {
+        return [];
+    }
 };
-export var openOutletIframe = function (tokensOrigin, localStorageItemName) {
+export var openOutletIframe = function (tokensOrigin) {
     return new Promise(function (resolve, reject) {
         var iframe = document.createElement('iframe');
         iframe.src = tokensOrigin;
@@ -105,36 +110,37 @@ export var openOutletIframe = function (tokensOrigin, localStorageItemName) {
         };
     });
 };
-export var getTokens = function (_a) {
-    var _b = _a.filter, filter = _b === void 0 ? {} : _b, tokensOrigin = _a.tokensOrigin, localStorageItemName = _a.localStorageItemName, tokenParser = _a.tokenParser, unsignedTokenDataName = _a.unsignedTokenDataName;
-    return __awaiter(void 0, void 0, void 0, function () {
-        return __generator(this, function (_c) {
-            return [2, new Promise(function (resolve, reject) {
-                    openOutletIframe(tokensOrigin, localStorageItemName).then(function () {
-                        var tokens = getCookie(localStorageItemName);
-                        var decodedTokens = decodeTokens(tokens, tokenParser, unsignedTokenDataName);
-                        var filteredTokens = filterTokens(decodedTokens, filter);
-                        resolve(filteredTokens);
-                    }).catch(function (error) {
-                        reject({
-                            error: error
-                        });
+export var getTokens = function (config) { return __awaiter(void 0, void 0, void 0, function () {
+    var filter, tokensOrigin, itemStorageKey, tokenParser, unsignedTokenDataName;
+    return __generator(this, function (_a) {
+        filter = config.filter, tokensOrigin = config.tokensOrigin, itemStorageKey = config.itemStorageKey, tokenParser = config.tokenParser, unsignedTokenDataName = config.unsignedTokenDataName;
+        return [2, new Promise(function (resolve, reject) {
+                openOutletIframe(tokensOrigin).then(function () {
+                    var tokens = getCookie(itemStorageKey);
+                    var decodedTokens = decodeTokens(tokens, tokenParser, unsignedTokenDataName);
+                    var filteredTokens = filterTokens(decodedTokens, filter);
+                    resolve(filteredTokens);
+                }).catch(function (error) {
+                    reject({
+                        error: error
                     });
-                })];
-        });
+                });
+            })];
     });
+}); };
+export var storeMagicURL = function (tokens, itemStorageKey) {
+    if (tokens) {
+        document.cookie = itemStorageKey + "=" + JSON.stringify(tokens) + "; max-age=31536000; SameSite=None; Secure";
+    }
 };
-export var storeMagicURL = function (tokens, localStorageItemName) {
-    document.cookie = localStorageItemName + "=" + JSON.stringify(tokens) + "; max-age=31536000; SameSite=None; Secure";
-};
-export var readMagicUrl = function (tokenUrlName, tokenSecretName, tokenIdName, localStorageItemName) {
+export var readMagicUrl = function (tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey) {
     var urlParams = new URLSearchParams(window.location.search);
     var tokenFromQuery = urlParams.get(tokenUrlName);
     var secretFromQuery = urlParams.get(tokenSecretName);
     var idFromQuery = urlParams.get(tokenIdName);
     if (!(tokenFromQuery && secretFromQuery))
         return;
-    var tokensOutput = readTokens(localStorageItemName);
+    var tokensOutput = readTokens(itemStorageKey);
     var isNewQueryTicket = true;
     var tokens = tokensOutput.tokens.map(function (tokenData) {
         if (tokenData.token === tokenFromQuery) {
@@ -143,6 +149,208 @@ export var readMagicUrl = function (tokenUrlName, tokenSecretName, tokenIdName, 
     });
     if (isNewQueryTicket)
         tokens.push({ token: tokenFromQuery, secret: secretFromQuery, id: idFromQuery, magic_link: window.location.href });
-    storeMagicURL(tokens, localStorageItemName);
+    return tokens;
+};
+export var ethKeyIsValid = function (ethKey) {
+    return ethKey.expiry >= Date.now();
+};
+export var validateUseEthKey = function (endPoint, data) { return __awaiter(void 0, void 0, void 0, function () {
+    var response, json, e_1;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                _a.trys.push([0, 3, , 4]);
+                return [4, fetch(endPoint, {
+                        method: 'POST',
+                        cache: 'no-cache',
+                        headers: { 'Content-Type': 'application/json' },
+                        redirect: 'follow',
+                        referrerPolicy: 'no-referrer',
+                        body: JSON.stringify(data)
+                    })];
+            case 1:
+                response = _a.sent();
+                return [4, response.json()];
+            case 2:
+                json = _a.sent();
+                return [2, json.address];
+            case 3:
+                e_1 = _a.sent();
+                return [2, {
+                        success: false,
+                        message: "validate ethkey request failed"
+                    }];
+            case 4: return [2];
+        }
+    });
+}); };
+export var getUnpredictableNumber = function (endPoint) { return __awaiter(void 0, void 0, void 0, function () {
+    var response, json, e_2;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                _a.trys.push([0, 3, , 4]);
+                return [4, fetch(endPoint)];
+            case 1:
+                response = _a.sent();
+                return [4, response.json()];
+            case 2:
+                json = _a.sent();
+                json.success = true;
+                return [2, json];
+            case 3:
+                e_2 = _a.sent();
+                return [2, {
+                        success: false,
+                        message: "UN request failed"
+                    }];
+            case 4: return [2];
+        }
+    });
+}); };
+export var getChallengeSigned = function (tokenIssuer) { return __awaiter(void 0, void 0, void 0, function () {
+    var storageEthKeys, ethKeys, address, useEthKey, e_3;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                storageEthKeys = localStorage.getItem(tokenIssuer.ethKeyitemStorageKey);
+                ethKeys = (storageEthKeys && storageEthKeys.length) ? JSON.parse(storageEthKeys) : {};
+                _a.label = 1;
+            case 1:
+                _a.trys.push([1, 6, , 7]);
+                return [4, connectMetamaskAndGetAddress()];
+            case 2:
+                address = _a.sent();
+                address = address.toLowerCase();
+                useEthKey = void 0;
+                if (ethKeys && ethKeys[address] && !ethKeyIsValid(ethKeys[address])) {
+                    delete ethKeys[address];
+                }
+                if (!(ethKeys && ethKeys[address])) return [3, 3];
+                useEthKey = ethKeys[address];
+                return [3, 5];
+            case 3: return [4, signNewChallenge(tokenIssuer.unEndPoint)];
+            case 4:
+                useEthKey = _a.sent();
+                if (useEthKey) {
+                    ethKeys[useEthKey.address.toLowerCase()] = useEthKey;
+                    localStorage.setItem(tokenIssuer.ethKeyitemStorageKey, JSON.stringify(ethKeys));
+                }
+                _a.label = 5;
+            case 5: return [2, useEthKey];
+            case 6:
+                e_3 = _a.sent();
+                throw new Error(e_3);
+            case 7: return [2];
+        }
+    });
+}); };
+export var connectMetamaskAndGetAddress = function () { return __awaiter(void 0, void 0, void 0, function () {
+    var userAddresses;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                requiredParams(window.ethereum, 'Please install metamask to continue.');
+                return [4, window.ethereum.request({ method: 'eth_requestAccounts' })];
+            case 1:
+                userAddresses = _a.sent();
+                if (!userAddresses || !userAddresses.length)
+                    throw new Error("Active Wallet required");
+                return [2, userAddresses[0]];
+        }
+    });
+}); };
+export var getTokenProof = function (unsignedToken, tokenIssuer) {
+    return rawTokenCheck(unsignedToken, tokenIssuer);
+};
+export var signNewChallenge = function (unEndPoint) { return __awaiter(void 0, void 0, void 0, function () {
+    var res, UN, randomness, domain, expiry, messageToSign, signature, msgHash, msgHashBytes, recoveredAddress;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4, getUnpredictableNumber(unEndPoint)];
+            case 1:
+                res = _a.sent();
+                UN = res.number, randomness = res.randomness, domain = res.domain, expiry = res.expiration, messageToSign = res.messageToSign;
+                return [4, signMessageWithBrowserWallet(messageToSign)];
+            case 2:
+                signature = _a.sent();
+                msgHash = ethers.utils.hashMessage(messageToSign);
+                msgHashBytes = ethers.utils.arrayify(msgHash);
+                recoveredAddress = ethers.utils.recoverAddress(msgHashBytes, signature);
+                return [2, {
+                        address: recoveredAddress,
+                        expiry: expiry,
+                        domain: domain,
+                        randomness: randomness,
+                        signature: signature,
+                        UN: UN
+                    }];
+        }
+    });
+}); };
+export var signMessageWithBrowserWallet = function (message) { return __awaiter(void 0, void 0, void 0, function () {
+    var provider, signer;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4, connectMetamaskAndGetAddress()];
+            case 1:
+                _a.sent();
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                return [4, signer.signMessage(message)];
+            case 2: return [2, _a.sent()];
+        }
+    });
+}); };
+export var rawTokenCheck = function (unsignedToken, tokenIssuer) { return __awaiter(void 0, void 0, void 0, function () {
+    var rawTokenData, base64ticket, ticketSecret, tokenObj;
+    var _this = this;
+    return __generator(this, function (_a) {
+        rawTokenData = getRawToken(unsignedToken, tokenIssuer);
+        if (!rawTokenData)
+            return [2, null];
+        base64ticket = rawTokenData.token;
+        ticketSecret = rawTokenData.secret;
+        tokenObj = {
+            ticketBlob: base64ticket,
+            ticketSecret: ticketSecret,
+            attestationOrigin: tokenIssuer.attestationOrigin,
+        };
+        if (rawTokenData && rawTokenData.id)
+            tokenObj.email = rawTokenData.id;
+        if (rawTokenData && rawTokenData.magic_link)
+            tokenObj.magicLink = rawTokenData.magic_link;
+        return [2, new Promise(function (resolve, reject) {
+                _this.authenticator.getAuthenticationBlob(tokenObj, function (tokenProof) {
+                    resolve(tokenProof);
+                });
+            })];
+    });
+}); };
+export var getRawToken = function (unsignedToken, tokenIssuer) {
+    if (!unsignedToken || !Object.keys(unsignedToken).length)
+        return;
+    var tokensOutput = readTokens(tokenIssuer.itemStorageKey);
+    if (tokensOutput.success && !tokensOutput.noTokens) {
+        var rawTokens = tokensOutput.tokens;
+        var token_1 = {};
+        if (rawTokens.length) {
+            rawTokens.forEach(function (tokenData) {
+                if (tokenData.token) {
+                    var _tokenParser = tokenIssuer.tokenParser;
+                    var decodedToken = new _tokenParser(base64ToUint8array(tokenData.token).buffer);
+                    if (decodedToken && decodedToken[tokenIssuer.unsignedTokenDataName]) {
+                        var decodedTokenData = decodedToken[tokenIssuer.unsignedTokenDataName];
+                        if (compareObjects(decodedTokenData, unsignedToken))
+                            token_1 = tokenData;
+                    }
+                }
+            });
+        }
+        return token_1;
+    }
+    else {
+        return null;
+    }
 };
 //# sourceMappingURL=index.js.map

@@ -5,17 +5,16 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "jest",
-    "build": "npm run clean && tsc -m es6 --outDir dist",
-    "build-common-js": "npm run clean && tsc --outDir dist-common-js",
-    "build-umd": "npm run clean && webpack --env production",
-    "build-dev": "npm run clean && tsc --outDir dist-common-js && tsc -m es6 --outDir dist && webpack --env development",
-    "clean": "shx rm -rf _bundles dist dist-common-js"
+    "build": "npm run clean && tsc -m es6 --outDir dist && npm run copy-assets",
+    "build-common-js": "npm run clean && tsc --outDir dist && npm run copy-assets",
+    "copy-assets": "copyfiles ./src/theme/*.css dist/theme -V --flat && copyfiles ./src/theme/*.css dist/vendor -V --flat",
+    "clean": "shx rm -rf _bundles dist"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TokenScript/token-negotiator.git"
   },
-  "author": "Alchemynft <info@alchemynft.org>",
+  "author": "Smart Token Labs <info@alchemynft.org>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/TokenScript/token-negotiator/issues"
@@ -27,7 +26,8 @@
     "big-integer": "^1.6.48",
     "buffer": "^6.0.3",
     "ethers": "^5.4.0",
-    "pvutils": "^1.0.17"
+    "pvutils": "^1.0.17",
+    "style-loader": "^3.3.1"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.15.8",
@@ -35,6 +35,8 @@
     "@types/jsdom": "^16.2.13",
     "axios": "^0.24.0",
     "babel-loader": "^8.2.2",
+    "copyfiles": "^2.4.1",
+    "css-loader": "^6.5.1",
     "jest": "^27.3.1",
     "jest-junit": "^12.2.0",
     "shx": "^0.3.3",
@@ -42,8 +44,6 @@
     "ts-jest": "^27.0.7",
     "ts-loader": "^9.2.6",
     "typescript": "^4.4.3",
-    "uglifyjs-webpack-plugin": "^2.2.0",
-    "webpack": "^5.38.1",
-    "webpack-cli": "^4.7.2"
+    "typescript-plugin-css-modules": "^3.4.0"    
   }
 }
