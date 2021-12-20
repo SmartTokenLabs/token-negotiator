@@ -107,11 +107,12 @@ export const getTokens = async (config:GetTokenInterface) => {
   })
 }
 
+// not decoded?
+// const storageTickets = getCookie(itemStorageKey);
+
 export const storeMagicURL = (tokens: any, itemStorageKey: string) => {
   if(tokens){
-      // TODO add logic to add many e.g. if one exists, add more tokens.
-    // read cookie, get tokens [];
-    // push new tokens...
+    // Read Cookie for current tokens.... then....
     document.cookie = `${itemStorageKey}=${JSON.stringify(tokens)}; max-age=31536000; SameSite=None; Secure`;
   }
 }
