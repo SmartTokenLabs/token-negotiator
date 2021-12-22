@@ -49,15 +49,13 @@ import { asyncHandle, requiredParams, logger } from './../utils/index';
 import { getTokens, getChallengeSigned, validateUseEthKey, connectMetamaskAndGetAddress, getTokenProof } from "../core/index";
 import { createOverlayMarkup, createFabButton, createToken } from './componentFactory';
 import { tokenLookup } from './../tokenLookup';
-import './../Attestation/authenticator';
 import "./../theme/style.css";
 import './../vendor/keyShape';
 var Client = (function () {
     function Client(config) {
         var _this = this;
         var type = config.type, issuers = config.issuers, options = config.options;
-        this.authenticator = new Authenticator();
-        requiredParams(this.authenticator, "authenticator is missing");
+        this.authenticator = null;
         requiredParams(type, 'type is required.');
         requiredParams(issuers, 'issuers are missing.');
         this.type = type;

@@ -1,4 +1,3 @@
-import './../Attestation/authenticator';
 import "./../theme/style.css";
 import './../vendor/keyShape';
 interface NegotiationInterface {
