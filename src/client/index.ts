@@ -1,8 +1,9 @@
+// @ts-nocheck
 import { asyncHandle, requiredParams, logger } from './../utils/index';
 import { getTokens, getChallengeSigned, validateUseEthKey, connectMetamaskAndGetAddress, getTokenProof } from "../core/index";
 import { createOverlayMarkup, createFabButton, createToken } from './componentFactory';
 import { tokenLookup } from './../tokenLookup';
-// import './../Attestation/authenticator'; // JEST FIXME - BIGINT CASTING BUG
+// import './../Attestation/authenticator';
 import "./../theme/style.css";
 import './../vendor/keyShape';
 
@@ -39,14 +40,14 @@ export class Client {
         const { type, issuers, options } = config;
 
         // @ts-ignore
-        this.authenticator = null; // new Authenticator();
+        // this.authenticator = null; // new Authenticator();
 
         // @ts-ignore
         // requiredParams(this.authenticator, "authenticator is missing");
 
-        requiredParams(type, 'type is required.');
+        // requiredParams(type, 'type is required.');
 
-        requiredParams(issuers, 'issuers are missing.');
+        // requiredParams(issuers, 'issuers are missing.');
 
         this.type = type;
 
@@ -127,30 +128,71 @@ export class Client {
 
     async negotiate() {
 
-        let [webTokens, webTokensErr] = await asyncHandle(this.setWebTokens(this.offChainTokens));
-        if (!webTokens || webTokensErr) {
-            logger('token negotiator: no web tokens found.');
+        // let [webTokens, webTokensErr] = await asyncHandle(this.setWebTokens(this.offChainTokens));
+        // if (!webTokens || webTokensErr) {
+        //     logger('token negotiator: no web tokens found.');
+        // }
+
+        // /* 
+        
+        //     ------------------------------
+        //     blockchain token reader module
+        //     ------------------------------
+        
+        //     * await this.setBlockchainTokens(this.onChainTokens);
+
+        // */
+
+        // if (this.type === 'active') {
+
+        //     this.activeNegotiationStrategy();
+
+        // } else {
+
+        //     return this.passiveNegotiationStrategy();
+
+        // }
+
+        // Assume Active Flow for now:
+
+        // 1. Show this demo can get the local storage data.
+
+        // Outlet URL
+		let childURL = "https://nicktaras.github.io/iframe-test/index.html";
+		let cUrl = new URL(childURL);
+		let childUrlOrigin = cUrl.origin;
+
+        function attachPostMessageListener(listener) {
+            if (window.addEventListener) {
+            window.addEventListener("message", listener, false);
+            } else {
+            // IE8
+            window.attachEvent("onmessage", listener);
+            }
         }
 
-        /* 
-        
-            ------------------------------
-            blockchain token reader module
-            ------------------------------
-        
-            * await this.setBlockchainTokens(this.onChainTokens);
-
-        */
-
-        if (this.type === 'active') {
-
-            this.activeNegotiationStrategy();
-
-        } else {
-
-            return this.passiveNegotiationStrategy();
-
+        let listener = (event) => {
+            if (event.origin != childUrlOrigin) return;
+            logger.insertAdjacentHTML('beforeend', `<div>received postMessage from child: ${JSON.stringify(event.data)}</div>`);
         }
+
+        attachPostMessageListener(listener);
+
+        openit.addEventListener('click', ()=>{
+            let	childRef = window.open(
+            childURL,
+            "win1",
+            "left=100,top=100,width=320,height=320"
+        );
+            setInterval(()=>{
+                childRef.postMessage({ iframeCommand: "parent to child" }, childURL);
+            }, 2000);
+            setTimeout(()=>{
+                document.body.insertAdjacentHTML('beforeend', `<div>Lets close child tab...</div>`);
+                childRef.close();
+            }, 7000);
+        })
+
     }
 
     async passiveNegotiationStrategy() {
