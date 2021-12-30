@@ -316,9 +316,9 @@ export const rawTokenCheck = async (unsignedToken: any, tokenIssuer:any) => {
   return new Promise((resolve, reject) => {
       
       // @ts-ignore
-      this.authenticator.getAuthenticationBlob(tokenObj, (tokenProof) => {
-          resolve(tokenProof);
-      })
+      // this.authenticator.getAuthenticationBlob(tokenObj, (tokenProof) => {
+      //     resolve(tokenProof);
+      // })
 
     });
 

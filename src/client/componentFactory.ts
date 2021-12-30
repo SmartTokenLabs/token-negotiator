@@ -5,36 +5,100 @@ interface CreateTokenInterface {
   index: number;
   emblem: string;
   data: any;
+  toggleState: boolean;
 }
 
 export const createOverlayMarkup = (heading="Available Tokens") => {
   return `
     <div class="overlay-content-tn">
-      <div class="brand-tn"></div>
-      <p class="headline-tn">${heading}</p>
-      <div class="token-container-tn">
-        <p class="no-tokens-tn">No tokens available.</p>
+      <div class="inner-content-tn">
+        <div class="issuer-view-tn">
+          <div class="brand-tn"></div>
+          <p class="headline-tn">${heading}</p>
+          <ul class="token-issuer-list-container-tn" role="menubar"></ul>
+        </div>
+        <div class="token-view-tn">
+          <div class="brand-tn"></div>
+          <div style="display: flex">
+            <button class="back-to-menu-tn" onClick='navigateToTokensView(event)'>< back</button>
+            <p class="headline-tn token-name">Token Name Here</p>
+          </div>
+          <ul class="token-list-container-tn" role="menubar"></ul>
+        </div>
       </div>
     </div>
   `;
 };
 
-export const createToken = (config: CreateTokenInterface) => {
-  const { tokenIssuerKey, title, data, index, emblem } = config;
+//
+// export const createOverlayMarkupCookieSupported = (heading="Available Tokens") => {
+//   return `
+//     <div class="overlay-content-tn">
+//       <div class="brand-tn"></div>
+//       <p class="headline-tn">${heading}</p>
+//       <div class="token-issuer-list-container-tn"></div>
+//       <div class="token-container-tn">
+//         <p class="no-tokens-tn">No tokens available.</p>
+//       </div>
+//     </div>
+//   `;
+// };
+
+// export const createOverlayMarkupCookieSupported = (heading="Available Tokens") => {
+//   return `
+//     <div class="overlay-content-tn">
+//       <div class="brand-tn"></div>
+//       <p class="headline-tn">${heading}</p>
+//       <div class="token-container-tn">
+//         <p class="no-tokens-tn">No tokens available.</p>
+//       </div>
+//     </div>
+//   `;
+// };
+
+export const issuerConnect = (issuer:any) => {
   return `
-    <div class='token-tn'>
+    <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
+      <p class="issuer-connect-title">Devcon</p>
+      <button aria-hidden="false" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="connect-btn-tn" data-issuer="${issuer}" onClick='connectToken(event)'>Connect</button>
+      <button aria-hidden="true" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="tokens-btn-tn" data-issuer="${issuer}" onClick='navigateToTokensView(event)'>Tokens Available</button>
+    </li>
+  `;
+};
+
+export const createToken = (config: CreateTokenInterface) => {
+  const { tokenIssuerKey, title, data, index, emblem, toggleState } = config;
+  return `
+    <li class='token-tn'>
       <img class='emblem-tn' src=${emblem} />
       <div class='data-tn'>
           <p class='title-tn'>${title}</p>
           <p class='detail-tn'>#${index}</p>
         </div>
       <div class='toggle-tn'>
-        <input data-key='${tokenIssuerKey}' data-token='${JSON.stringify(data)}' onClick='tokenToggleSelection(event)' data-index='${index}' type='checkbox' name='toggle${index}' class='mobileToggle-tn toggle-tn' id='toggle${index}'>
+        <input ${toggleState === true ? 'checked' : '' } data-key='${tokenIssuerKey}' data-token='${JSON.stringify(data)}' onClick='tokenToggleSelection(event)' data-index='${index}' type='checkbox' name='toggle${index}' class='mobileToggle-tn toggle-tn' id='toggle${index}'>
         <label for='toggle${index}'></label>
       </div>
-    </div>
+    </li>
   `;
 };
+
+// export const createTokenCookieSupported = (config: CreateTokenInterface) => {
+//   const { tokenIssuerKey, title, data, index, emblem } = config;
+//   return `
+//     <div class='token-tn'>
+//       <img class='emblem-tn' src=${emblem} />
+//       <div class='data-tn'>
+//           <p class='title-tn'>${title}</p>
+//           <p class='detail-tn'>#${index}</p>
+//         </div>
+//       <div class='toggle-tn'>
+//         <input data-key='${tokenIssuerKey}' data-token='${JSON.stringify(data)}' onClick='tokenToggleSelection(event)' data-index='${index}' type='checkbox' name='toggle${index}' class='mobileToggle-tn toggle-tn' id='toggle${index}'>
+//         <label for='toggle${index}'></label>
+//       </div>
+//     </div>
+//   `;
+// };
 
 export const createFabButton = () => {
   return `
