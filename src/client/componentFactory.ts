@@ -1,7 +1,3 @@
-import "@fontsource/source-sans-pro/200.css"; 
-import "@fontsource/source-sans-pro/300.css"; 
-import "@fontsource/source-sans-pro/600.css"; 
-
 interface CreateTokenInterface {
   tokenIssuerKey: string;
   title: string;
@@ -22,11 +18,11 @@ export const createOverlayMarkup = (heading="Available Tokens") => {
           </div>
           <ul class="token-issuer-list-container-tn" role="menubar"></ul>
         </div>
-        <div class="token-view-tn">
+        <div class="token-view-tn" style="display: none;">
           <div class="brand-tn"></div>
           <div style="display: flex">
             <button class="back-to-menu-tn" onClick='navigateToTokensView(event)'>
-              <svg style="position: relative; top: 5px;" width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <svg style="position: relative; top: 1px;" width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
                   <g fill="none" fill-rule="evenodd">
                       <circle fill="#EFEFEF" cx="16" cy="16" r="16"/>
                       <path d="m10.2 15.8 7.173 7.56c.55.587 1.453.587 2.01 0a1.554 1.554 0 0 0 0-2.12l-5.158-5.44 5.157-5.44a1.554 1.554 0 0 0 0-2.12 1.367 1.367 0 0 0-2.009 0L10.2 15.8z" fill="#000" fill-rule="nonzero"/>

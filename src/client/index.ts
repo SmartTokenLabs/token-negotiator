@@ -437,8 +437,19 @@ export class Client {
 
     embedTokensIntoView(issuer){
 
-        if(!issuer) return;
+        const refTokenContainerSelector = document.getElementsByClassName("token-view-tn")[0];
+
+        if(!issuer) {
+
+            refTokenContainerSelector.style.display = 'none';
+            return;
+
+        };
             
+        refTokenContainerSelector.style.display = 'block';
+        
+        refTokenContainerSelector.scrollTo(0, 0);
+
         const refTokenContainerSelector = document.getElementsByClassName("token-list-container-tn")[0];
         
         refTokenContainerSelector.innerHTML = "";

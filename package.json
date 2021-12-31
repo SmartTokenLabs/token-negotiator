@@ -21,7 +21,6 @@
   },
   "homepage": "https://github.com/TokenScript/token-negotiator#readme",
   "dependencies": {
-    "@fontsource/source-sans-pro": "^4.5.1",
     "asn1js": "^2.0.26",
     "babel-jest": "^27.3.1",
     "big-integer": "^1.6.48",
