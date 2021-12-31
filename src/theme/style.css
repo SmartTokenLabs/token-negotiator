@@ -1,5 +1,9 @@
 /* light theme */
 
+.overlay-tn {
+  font-family: SourceSansPro;
+}
+
 .overlay-tn.light .overlay-fab-button-tn {
   background: black;
   box-shadow: 0 2px 5px 0 #676767;
@@ -20,7 +24,13 @@
 
 .overlay-tn.light .overlay-content-tn .token-tn .title-tn,
 .overlay-tn.light .overlay-content-tn .headline-tn {
+  font-weight: 700;
   color: #000000;
+  width: 100%;
+}
+
+.headline-container-tn {
+  border-bottom: 1px solid #ececec;
 }
 
 .overlay-tn.light .overlay-content-tn .token-tn {
@@ -45,7 +55,7 @@
 }
 
 .overlay-tn.light .overlay-content-tn .toggle-tn input.mobileToggle-tn+label:after {
-  background: #037fed;
+  background: #f1f1f1;
 }
 
 .overlay-tn.light .overlay-content-tn .toggle-tn input.mobileToggle-tn:checked+label {
@@ -202,7 +212,7 @@
 .overlay-tn .overlay-content-tn .headline-tn {
   width: 246px;
   margin: 0;
-  padding: 18px 16px 14px 16px;
+  padding: 21px 12px 13px 12px;
   font-size: 1.2rem;
   font-weight: bold;
   line-height: 1.71rem;
@@ -240,6 +250,12 @@
 .overlay-tn .overlay-content-tn .token-tn .data-tn {
   width: 175px;
   height: calc(1.3rem + 1.12rem);
+}
+
+.overlay-tn .token-title-tn {
+  padding: 0;
+  margin: 0;
+  font-weight: 400;
 }
 
 .overlay-tn .overlay-content-tn .token-tn .detail-tn {
@@ -295,7 +311,6 @@
   position: absolute;
   display: block;
   transition: 0.2s cubic-bezier(0.24, 0, 0.5, 1);
-
   height: 19px;
   width: 51px;
   top: 0;
@@ -342,9 +357,8 @@ li.issuer-connect-banner-tn {
   align-items: center;
   padding: 12px;
   height: 2.7rem;
-  color: white;
-  background: #005fcc;
-  border-bottom: 1px solid grey;
+  color: black;
+  border-bottom: 1px solid #ececec;
 }
 
 li.token-tn {
@@ -353,12 +367,13 @@ li.token-tn {
 }
 
 li.issuer-connect-banner-tn .connect-btn-tn, li.issuer-connect-banner-tn .tokens-btn-tn {
-    height: 2rem;
-    color: white;
+    font-size: 0.75em;
+    font-weight: 200;
+    color: black;
     border: none;
-    padding: 10px 10px 24px 10px;
+    padding: 7px 15px 7px 15px;
     border-radius: 23px;
-    background: #3b82d3;
+    background: #efefef;
     cursor: pointer;
 }
 

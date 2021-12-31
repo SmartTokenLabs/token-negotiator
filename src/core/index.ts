@@ -6,75 +6,138 @@ interface FilterInterface {
 }
 
 export const filterTokens = (decodedTokens: any, filter:FilterInterface) => {
+  
   if (Object.keys(filter).length === 0) filter = filter;
+  
   let res: any = [];
+  
   if (
+  
     decodedTokens.length
+  
     && typeof filter === "object"
+  
     && Object.keys(filter).length
-  ) {
+  
+    ) {
+  
     let filterKeys = Object.keys(filter);
+  
     decodedTokens.forEach((token: any) => {
+  
       let fitFilter = 1;
+  
       filterKeys.forEach(key => {
+  
         if (token[key].toString() !== filter[key].toString()) fitFilter = 0;
+  
       })
+  
       if (fitFilter) res.push(token);
+  
     })
+  
     return res;
+  
   } else {
+  
     return decodedTokens;
+  
   }
 }
 
 export const readTokens = (itemStorageKey: any) => {
+  
   const storageTickets = getCookie(itemStorageKey);
+  
   let tokens: any = [];
+  
   let output: any = { tokens: [], noTokens: true, success: true };
+  
   try {
+  
     if (storageTickets && storageTickets.length) {
+  
       tokens = JSON.parse(storageTickets);
+  
       if (tokens.length !== 0) {
+  
         tokens.forEach((item: any) => {
+  
           if (item.token && item.secret) output.tokens.push(item);
+  
         })
+  
       }
+  
       if (output.tokens.length) {
+  
         output.noTokens = false;
+  
       }
+  
     }
+  
   } catch (e) {
+  
     output.success = false;
+  
   }
+  
   return output;
+
 }
 
 export const decodeTokens = (rawTokens: any, tokenParser: any, unsignedTokenDataName: string) => {
+  
   var x = JSON.parse(rawTokens);
+  
   if(x.length) {
+  
     return x.map((tokenData: any) => {
+  
       if (tokenData.token) {
+  
         let decodedToken = new tokenParser(base64ToUint8array(tokenData.token).buffer);
+  
         if (decodedToken && decodedToken[unsignedTokenDataName]) return decodedToken[unsignedTokenDataName];
+  
       }
+  
     });
+  
   } else {
+  
     return [];
+  
   }
+
 };
 
 export const openOutletIframe = (tokensOrigin: any) => {
+  
   return new Promise((resolve, reject) => {
+  
     const iframe = document.createElement('iframe');
+  
     iframe.src = tokensOrigin;
+  
     iframe.style.width = '1px';
+  
     iframe.style.height = '1px';
+  
     iframe.style.opacity = '0';
+  
     document.body.appendChild(iframe);
+  
     iframe.onload = () => {
+  
       resolve(true);
+  
     };
+  
   });
+
 }
 
 interface GetTokenInterface {
@@ -86,6 +149,7 @@ interface GetTokenInterface {
 }
 
 export const getTokens = async (config:GetTokenInterface) => {
+  
   const { 
     filter,
     tokensOrigin,
@@ -93,41 +157,73 @@ export const getTokens = async (config:GetTokenInterface) => {
     tokenParser,
     unsignedTokenDataName
   } = config;
+  
   return new Promise((resolve, reject) => {
+    
     openOutletIframe(tokensOrigin).then(() => {
+    
       const tokens = getCookie(itemStorageKey);
+    
       const decodedTokens = decodeTokens(tokens, tokenParser, unsignedTokenDataName);
+    
       const filteredTokens = filterTokens(decodedTokens, filter);
+    
       resolve(filteredTokens);
+    
     }).catch((error) => {
+    
       reject({
+    
         error: error
+    
       })
+    
     });
-  })
+
+  });
+
 }
 
 export const storeMagicURL = (tokens: any, itemStorageKey: string) => {
+  
   if(tokens){
+  
     document.cookie = `${itemStorageKey}=${JSON.stringify(tokens)}; max-age=31536000; SameSite=None; Secure`;
+  
   }
+
 }
 
 export const readMagicUrl = (tokenUrlName: string, tokenSecretName: string, tokenIdName: string, itemStorageKey: string) => {
+  
   const urlParams = new URLSearchParams(window.location.search);
+  
   const tokenFromQuery = urlParams.get(tokenUrlName);
+  
   const secretFromQuery = urlParams.get(tokenSecretName);
+  
   const idFromQuery = urlParams.get(tokenIdName);
+  
   if (!(tokenFromQuery && secretFromQuery)) return;
+  
   let tokensOutput = readTokens(itemStorageKey);
+  
   let isNewQueryTicket = true;
+  
   const tokens = tokensOutput.tokens.map((tokenData: any) => {
+  
     if (tokenData.token === tokenFromQuery) {
+  
       isNewQueryTicket = false;
+  
     }
+  
   });
+  
   if (isNewQueryTicket) tokens.push({ token: tokenFromQuery, secret: secretFromQuery, id: idFromQuery, magic_link: window.location.href });
+  
   return tokens;
+  
 }
 
 

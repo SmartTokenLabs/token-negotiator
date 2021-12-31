@@ -304,7 +304,6 @@ export var signMessageWithBrowserWallet = function (message) { return __awaiter(
 }); };
 export var rawTokenCheck = function (unsignedToken, tokenIssuer) { return __awaiter(void 0, void 0, void 0, function () {
     var rawTokenData, base64ticket, ticketSecret, tokenObj;
-    var _this = this;
     return __generator(this, function (_a) {
         rawTokenData = getRawToken(unsignedToken, tokenIssuer);
         if (!rawTokenData)
@@ -321,9 +320,6 @@ export var rawTokenCheck = function (unsignedToken, tokenIssuer) { return __awai
         if (rawTokenData && rawTokenData.magic_link)
             tokenObj.magicLink = rawTokenData.magic_link;
         return [2, new Promise(function (resolve, reject) {
-                _this.authenticator.getAuthenticationBlob(tokenObj, function (tokenProof) {
-                    resolve(tokenProof);
-                });
             })];
     });
 }); };

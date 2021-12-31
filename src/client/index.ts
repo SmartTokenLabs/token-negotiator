@@ -3,14 +3,13 @@ import { asyncHandle, requiredParams, logger } from './../utils/index';
 import { getTokens, getChallengeSigned, validateUseEthKey, connectMetamaskAndGetAddress, getTokenProof } from "../core/index";
 import { createOverlayMarkup, createFabButton, createToken, issuerConnect } from './componentFactory';
 import { tokenLookup } from './../tokenLookup';
-// import './../Attestation/authenticator';
 import "./../theme/style.css";
 import './../vendor/keyShape';
 
 interface NegotiationInterface {
     type: string;
     issuers: string[];
-    options: any
+    options: any;
 }
 
 declare global {
@@ -64,6 +63,7 @@ export class Client {
         this.onChainTokens = { tokenKeys: [] };
 
         this.selectedTokens = {};
+
         /*
 
             this.onChainTokens / this.offChainTokens: {
@@ -156,6 +156,8 @@ export class Client {
 
     async passiveNegotiationStrategy() {
 
+        // Feature not supported when an end users third party cookies are disabled.
+
         let [webTokens, webTokensErr] = await asyncHandle(this.setWebTokens(this.offChainTokens));
 
         if (!webTokens || webTokensErr) {
@@ -188,56 +190,90 @@ export class Client {
 
     embedTokenConnectClientOverlay() {
 
-        let element = document.querySelector(".overlay-tn");
+        setTimeout(() => {
 
-        requiredParams(element, 'No overlay element found.');
+            let entryPointElement = document.querySelector(".overlay-tn");
 
-        if (element) {
+            requiredParams(entryPointElement, 'No entry point element with the class name of .overlay-tn found.');
 
-            element.innerHTML += createOverlayMarkup(this.options?.overlay?.heading);
-            element.innerHTML += createFabButton();
+            if (entryPointElement) {
 
-            let refIssuerContainerSelector = document.querySelector(".token-issuer-list-container-tn");
-            refIssuerContainerSelector.innerHTML = "";
+                entryPointElement.innerHTML += createOverlayMarkup(this.options?.overlay?.heading);
+                
+                entryPointElement.innerHTML += createFabButton();
+
+                let refIssuerContainerSelector = document.querySelector(".token-issuer-list-container-tn");
+                
+                refIssuerContainerSelector.innerHTML = "";
+                
+                this.offChainTokens.tokenKeys.map((issuer: string) => {
+
+                    refIssuerContainerSelector.innerHTML += issuerConnect(issuer);
+
+                });
+
+                this.assignFabButtonAnimation();
+                
+                this.addTheme();
+
+            }
+
+            // TODO - send TN to the elements instead of using this pattern
             
-            this.offChainTokens.tokenKeys.map((issuer: string) => {
+            window.tokenToggleSelection = this.tokenToggleSelection;
+            
+            window.connectToken = this.connectToken;
+            
+            window.navigateToTokensView = this.navigateToTokensView;
 
-                refIssuerContainerSelector.innerHTML += issuerConnect(issuer);
+            // TODO only attach once.
 
-            });
-
-            this.assignFabButtonAnimation();
-            this.addTheme();
-
-        }
-
-        // TODO - send TN to the elements instead of using this pattern
-        window.tokenToggleSelection = this.tokenToggleSelection;
-        window.connectToken = this.connectToken;
-        window.navigateToTokensView = this.navigateToTokensView;
-
-        function attachPostMessageListener(listener) {
-            if (window.addEventListener) {
-                window.addEventListener("message", listener, false);
-            } else {
-                // IE8
-                window.attachEvent("onmessage", listener);
+            function attachPostMessageListener(listener) {
+                
+                if (window.addEventListener) {
+                
+                    window.addEventListener("message", listener, false);
+                
+                } else {
+                
+                    // IE8
+                
+                    window.attachEvent("onmessage", listener);
+                
+                }
             }
-        }
 
-        let listener = (event) => {
-            if(event.data.evt === 'tokens') {
-                let childURL = tokenLookup[event.data.data.issuer].tokenOrigin;
-                let cUrl = new URL(childURL);
-                let childUrlOrigin = cUrl.origin;
-                if (event.origin != childUrlOrigin) return;
-                this.offChainTokens[event.data.data.issuer].tokens = event.data.data.tokens;
-                window.negotiator.issuerIframeRefs[event.data.data.issuer].close();
-                delete window.negotiator.issuerIframeRefs[event.data.data.issuer];
-                this.issuerConnected(event.data.data.issuer);
+            let listener = (event) => {
+                
+                if(event.data.evt === 'tokens') {
+                
+                    let childURL = tokenLookup[event.data.data.issuer].tokenOrigin;
+                
+                    let cUrl = new URL(childURL);
+                
+                    let childUrlOrigin = cUrl.origin;
+                
+                    if (event.origin != childUrlOrigin) return;
+                
+                    this.offChainTokens[event.data.data.issuer].tokens = event.data.data.tokens;
+                
+                    if(window.negotiator.issuerIframeRefs[event.data.data.issuer]) {
+
+                        window.negotiator.issuerIframeRefs[event.data.data.issuer].close();
+                    
+                        delete window.negotiator.issuerIframeRefs[event.data.data.issuer];
+                    
+                        this.issuerConnected(event.data.data.issuer);
+
+                    }
+                
+                }
+
             }
-        }
-        attachPostMessageListener(listener);
+
+            attachPostMessageListener(listener);
+
+        }, 0);
     }
     
     embedStandardClientOverlay() {
@@ -287,6 +323,7 @@ export class Client {
             });
 
             this.assignFabButtonAnimation();
+            
             this.addTheme();
 
         }

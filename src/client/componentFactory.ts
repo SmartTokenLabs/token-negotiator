@@ -1,3 +1,6 @@
+import "@fontsource/source-sans-pro/200.css"; 
+import "@fontsource/source-sans-pro/300.css"; 
+import "@fontsource/source-sans-pro/600.css"; 
 
 interface CreateTokenInterface {
   tokenIssuerKey: string;
@@ -14,13 +17,22 @@ export const createOverlayMarkup = (heading="Available Tokens") => {
       <div class="inner-content-tn">
         <div class="issuer-view-tn">
           <div class="brand-tn"></div>
-          <p class="headline-tn">${heading}</p>
+          <div class="headline-container-tn">
+            <p class="headline-tn">${heading}</p>
+          </div>
           <ul class="token-issuer-list-container-tn" role="menubar"></ul>
         </div>
         <div class="token-view-tn">
           <div class="brand-tn"></div>
           <div style="display: flex">
-            <button class="back-to-menu-tn" onClick='navigateToTokensView(event)'>< back</button>
+            <button class="back-to-menu-tn" onClick='navigateToTokensView(event)'>
+              <svg style="position: relative; top: 5px;" width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                  <g fill="none" fill-rule="evenodd">
+                      <circle fill="#EFEFEF" cx="16" cy="16" r="16"/>
+                      <path d="m10.2 15.8 7.173 7.56c.55.587 1.453.587 2.01 0a1.554 1.554 0 0 0 0-2.12l-5.158-5.44 5.157-5.44a1.554 1.554 0 0 0 0-2.12 1.367 1.367 0 0 0-2.009 0L10.2 15.8z" fill="#000" fill-rule="nonzero"/>
+                  </g>
+              </svg>
+            </button>
             <p class="headline-tn token-name">Token Name Here</p>
           </div>
           <ul class="token-list-container-tn" role="menubar"></ul>
@@ -72,7 +84,7 @@ export const createToken = (config: CreateTokenInterface) => {
     <li class='token-tn'>
       <img class='emblem-tn' src=${emblem} />
       <div class='data-tn'>
-          <p class='title-tn'>${title}</p>
+          <p class='token-title-tn'>${title}</p>
           <p class='detail-tn'>#${index}</p>
         </div>
       <div class='toggle-tn'>

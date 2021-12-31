@@ -177,6 +177,8 @@
   opacity: 1;
   transition: all .3s .1s;
   bottom: 88px;
+  padding: 0;
+  overflow-x: hidden;
 }
 
 .overlay-tn .overlay-content-tn {
@@ -193,7 +195,7 @@
 }
 
 .overlay-tn .overlay-content-tn .brand-tn {
-  width: 355px;
+  width: 100%;
   height: 4px;
 }
 
@@ -215,9 +217,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 354px;
   padding: 12px 0;
   border-top: solid 1px #e9e9e9;
+}
+
+.back-to-menu-tn {
+  margin-left: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
 }
 
 .overlay-tn .overlay-content-tn .token-tn:last-child {
@@ -326,6 +334,70 @@
   border: 3px solid #005fcc !important;
 }
 
+li.issuer-connect-banner-tn {
+  list-style-type:none;
+  padding: 0;
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  padding: 12px;
+  height: 2.7rem;
+  color: white;
+  background: #005fcc;
+  border-bottom: 1px solid grey;
+}
+
+li.token-tn {
+  width: 100%;
+  list-style-type: none;
+}
+
+li.issuer-connect-banner-tn .connect-btn-tn, li.issuer-connect-banner-tn .tokens-btn-tn {
+    height: 2rem;
+    color: white;
+    border: none;
+    padding: 10px 10px 24px 10px;
+    border-radius: 23px;
+    background: #3b82d3;
+    cursor: pointer;
+}
+
+li.issuer-connect-banner-tn .tokens-btn-tn {
+  display: none;
+}
+
+.token-issuer-list-container-tn, .token-list-container-tn {
+  padding: 0;
+  margin: 0;
+}
+
+.inner-content-tn {
+  width: 200%;
+  padding: 0;
+  display: flex;
+  position: relative;
+  left: 0;
+  transition: all 0.2s ease-out;
+  height: 0;
+}
+
+.issuer-view-tn, .token-view-tn {
+  width: 50%;
+}
+
+.overlay-content-tn.open .inner-content-tn {
+  position: relative;
+  left: -100%;
+}
+
+/* .overlay-content-tn.open {
+  overflow-y: scroll !important;
+} */
+
+.overlay-content-tn  {
+  overflow: scroll;
+}
+
 @keyframes a0_t {
   0% {
     transform: translate(13px, 28.5px) translate(-13px, -13.5px);
@@ -356,5 +428,23 @@
 
   100% {
     d: path('M29,1.4C29.4,1,29.9,.8,30.4,.8C30.9,.8,31.5,1,31.8,1.4L32.8,2.4C33.2,2.7,33.4,3.3,33.4,3.8C33.4,4.3,33.2,4.8,32.8,5.2L5.2,32.8C4.8,33.2,4.3,33.4,3.8,33.4C3.3,33.4,2.8,33.2,2.4,32.8L1.4,31.8C1,31.5,.8,30.9,.8,30.4C.8,29.9,1,29.4,1.4,29C1.4,29,29,1.4,29,1.4Z')
+  }
+}
+
+@media (max-width: 375px) {
+  .overlay-content-tn {
+    width: 328px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .overlay-content-tn {
+    width: 312px !important;
+  }
+}
+
+@media (max-width: 340px) {
+  .overlay-content-tn {
+    width: 274px !important;
   }
 }

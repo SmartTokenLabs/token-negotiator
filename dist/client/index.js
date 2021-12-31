@@ -47,7 +47,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 import { asyncHandle, requiredParams, logger } from './../utils/index';
 import { getTokens, getChallengeSigned, validateUseEthKey, connectMetamaskAndGetAddress, getTokenProof } from "../core/index";
-import { createOverlayMarkup, createFabButton, createToken } from './componentFactory';
+import { createOverlayMarkup, createFabButton, createToken, issuerConnect } from './componentFactory';
 import { tokenLookup } from './../tokenLookup';
 import "./../theme/style.css";
 import './../vendor/keyShape';
@@ -55,14 +55,13 @@ var Client = (function () {
     function Client(config) {
         var _this = this;
         var type = config.type, issuers = config.issuers, options = config.options;
-        this.authenticator = null;
-        requiredParams(type, 'type is required.');
-        requiredParams(issuers, 'issuers are missing.');
+        this.tokenLookup = tokenLookup;
         this.type = type;
         this.options = options;
         this.issuers = issuers;
         this.offChainTokens = { tokenKeys: [] };
         this.onChainTokens = { tokenKeys: [] };
+        this.selectedTokens = {};
         issuers.map(function (issuer) {
             if (tokenLookup[issuer].onChain === true) {
                 _this.onChainTokens.tokenKeys.push(issuer);
@@ -109,7 +108,20 @@ var Client = (function () {
     };
     Client.prototype.negotiate = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, webTokens, webTokensErr;
+            return __generator(this, function (_a) {
+                if (this.type === 'active') {
+                    this.activeNegotiationStrategy();
+                }
+                else {
+                    return [2, this.passiveNegotiationStrategy()];
+                }
+                return [2];
+            });
+        });
+    };
+    Client.prototype.passiveNegotiationStrategy = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, webTokens, webTokensErr, outputOnChain, outputOffChain;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0: return [4, asyncHandle(this.setWebTokens(this.offChainTokens))];
@@ -118,33 +130,61 @@ var Client = (function () {
                         if (!webTokens || webTokensErr) {
                             logger('token negotiator: no web tokens found.');
                         }
-                        if (this.type === 'active') {
-                            this.activeNegotiationStrategy();
-                        }
-                        else {
-                            return [2, this.passiveNegotiationStrategy()];
-                        }
-                        return [2];
+                        outputOnChain = this.onChainTokens;
+                        delete outputOnChain.tokenKeys;
+                        outputOffChain = this.offChainTokens;
+                        delete outputOffChain.tokenKeys;
+                        return [2, __assign(__assign({}, outputOffChain), outputOnChain)];
                 }
             });
         });
     };
-    Client.prototype.passiveNegotiationStrategy = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var outputOnChain, outputOffChain;
-            return __generator(this, function (_a) {
-                outputOnChain = this.onChainTokens;
-                delete outputOnChain.tokenKeys;
-                outputOffChain = this.offChainTokens;
-                delete outputOffChain.tokenKeys;
-                return [2, __assign(__assign({}, outputOffChain), outputOnChain)];
-            });
-        });
-    };
     Client.prototype.activeNegotiationStrategy = function () {
-        this.embedClientOverlay();
+        this.embedTokenConnectClientOverlay();
     };
-    Client.prototype.embedClientOverlay = function () {
+    Client.prototype.embedTokenConnectClientOverlay = function () {
+        var _this = this;
+        var _a, _b;
+        var element = document.querySelector(".overlay-tn");
+        requiredParams(element, 'No overlay element found.');
+        if (element) {
+            element.innerHTML += createOverlayMarkup((_b = (_a = this.options) === null || _a === void 0 ? void 0 : _a.overlay) === null || _b === void 0 ? void 0 : _b.heading);
+            element.innerHTML += createFabButton();
+            var refIssuerContainerSelector_1 = document.querySelector(".token-issuer-list-container-tn");
+            refIssuerContainerSelector_1.innerHTML = "";
+            this.offChainTokens.tokenKeys.map(function (issuer) {
+                refIssuerContainerSelector_1.innerHTML += issuerConnect(issuer);
+            });
+            this.assignFabButtonAnimation();
+            this.addTheme();
+        }
+        window.tokenToggleSelection = this.tokenToggleSelection;
+        window.connectToken = this.connectToken;
+        window.navigateToTokensView = this.navigateToTokensView;
+        function attachPostMessageListener(listener) {
+            if (window.addEventListener) {
+                window.addEventListener("message", listener, false);
+            }
+            else {
+                window.attachEvent("onmessage", listener);
+            }
+        }
+        var listener = function (event) {
+            if (event.data.evt === 'tokens') {
+                var childURL = tokenLookup[event.data.data.issuer].tokenOrigin;
+                var cUrl = new URL(childURL);
+                var childUrlOrigin = cUrl.origin;
+                if (event.origin != childUrlOrigin)
+                    return;
+                _this.offChainTokens[event.data.data.issuer].tokens = event.data.data.tokens;
+                window.negotiator.issuerIframeRefs[event.data.data.issuer].close();
+                delete window.negotiator.issuerIframeRefs[event.data.data.issuer];
+                _this.issuerConnected(event.data.data.issuer);
+            }
+        };
+        attachPostMessageListener(listener);
+    };
+    Client.prototype.embedStandardClientOverlay = function () {
         var _this = this;
         var _a, _b;
         var _index = 0;
@@ -214,19 +254,87 @@ var Client = (function () {
             this.openOverlay(false);
         }
     };
+    Client.prototype.issuerConnected = function (issuer) {
+        var connectBtn = document.querySelector("[data-issuer*=\"" + issuer + "\"] .connect-btn-tn");
+        var tokenBtn = document.querySelector("[data-issuer*=\"" + issuer + "\"] .tokens-btn-tn");
+        connectBtn.style.display = "none";
+        connectBtn.setAttribute('aria-hidden', true);
+        tokenBtn.style.display = "block";
+        tokenBtn.innerHTML = "View Tokens (" + this.offChainTokens[issuer].tokens.length + ")";
+        tokenBtn.setAttribute('aria-hidden', false);
+    };
+    Client.prototype.navigateToTokensView = function (event) {
+        var issuer = event.target.dataset.issuer;
+        window.negotiator.embedTokensIntoView(issuer);
+        window.negotiator.showTokenView(issuer);
+    };
+    Client.prototype.embedTokensIntoView = function (issuer) {
+        if (!issuer)
+            return;
+        var refTokenContainerSelector = document.getElementsByClassName("token-list-container-tn")[0];
+        refTokenContainerSelector.innerHTML = "";
+        var config = window.negotiator.tokenLookup[issuer];
+        var location = config.onChain ? 'onChainTokens' : 'offChainTokens';
+        document.getElementsByClassName("headline-tn token-name")[0].innerHTML = config.title;
+        window.negotiator[location][issuer].tokens.map(function (t, i) {
+            var _a;
+            var _b = tokenLookup[issuer], title = _b.title, emblem = _b.emblem;
+            var isSelected = false;
+            (_a = window.negotiator.selectedTokens[issuer]) === null || _a === void 0 ? void 0 : _a.tokens.map(function (st, si) {
+                if (t.toString() === st.toString())
+                    isSelected = true;
+            });
+            refTokenContainerSelector.innerHTML += createToken({
+                data: t,
+                tokenIssuerKey: issuer,
+                index: i,
+                title: title,
+                emblem: emblem,
+                toggleState: isSelected
+            });
+        });
+    };
+    Client.prototype.showTokenView = function (issuer) {
+        var element = document.getElementsByClassName("overlay-content-tn")[0];
+        element.classList.toggle("open");
+        if (issuer) {
+            var connectBtn = document.querySelector("[data-issuer*=\"" + issuer + "\"] .connect-btn-tn");
+            var tokenBtn = document.querySelector("[data-issuer*=\"" + issuer + "\"] .tokens-btn-tn");
+            connectBtn.setAttribute('aria-expanded', true);
+            tokenBtn.setAttribute('aria-expanded', true);
+        }
+        else {
+            var connectBtns = document.querySelectorAll(".connect-btn-tn");
+            var tokenBtns = document.querySelectorAll(".tokens-btn-tn");
+            connectBtns.forEach(function (userItem) {
+                userItem.setAttribute('aria-expanded', false);
+            });
+            tokenBtns.forEach(function (userItem) {
+                userItem.setAttribute('aria-expanded', false);
+            });
+        }
+    };
+    Client.prototype.connectToken = function (event) {
+        var issuer = event.target.dataset.issuer;
+        var tabRef = window.open(tokenLookup[issuer].tokenOrigin, "win1", "left=0,top=0,width=320,height=320");
+        if (!window.negotiator.issuerIframeRefs) {
+            window.negotiator.issuerIframeRefs = {};
+        }
+        window.negotiator.issuerIframeRefs[issuer] = tabRef;
+    };
     Client.prototype.tokenToggleSelection = function () {
-        var selectedTokens = {};
+        window.negotiator.selectedTokens = {};
         document.querySelectorAll('.token-tn .mobileToggle-tn').forEach(function (token, index) {
             if (index === 0) {
-                selectedTokens[token.dataset.key] = {};
-                selectedTokens[token.dataset.key]['tokens'] = [];
+                window.negotiator.selectedTokens[token.dataset.key] = {};
+                window.negotiator.selectedTokens[token.dataset.key]['tokens'] = [];
             }
             if (token.checked === true) {
                 var output = JSON.parse(token.dataset.token);
-                selectedTokens[token.dataset.key].tokens.push(output);
+                window.negotiator.selectedTokens[token.dataset.key].tokens.push(output);
             }
         });
-        window.postMessage({ evt: 'negotiatedTokensEvt', selectedTokens: selectedTokens }, window.location.origin);
+        window.postMessage({ evt: 'negotiatedTokensEvt', selectedTokens: window.negotiator.selectedTokens }, window.location.origin);
     };
     Client.prototype.authenticate = function (config) {
         return __awaiter(this, void 0, void 0, function () {
