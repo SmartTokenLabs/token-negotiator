@@ -101,7 +101,7 @@ export class Client {
             const { tokenOrigin, itemStorageKey, tokenParser, unsignedTokenDataName } = tokenLookup[issuer];
 
             const tokens = await getTokens({ filter: {}, tokensOrigin: tokenOrigin, itemStorageKey: itemStorageKey, tokenParser: tokenParser, unsignedTokenDataName: unsignedTokenDataName });
-
+            
             this.offChainTokens[issuer].tokens = tokens;
 
             return;
@@ -159,7 +159,6 @@ export class Client {
         // Feature not supported when an end users third party cookies are disabled.
 
         // let [webTokens, webTokensErr] = await asyncHandle(this.setWebTokens(this.offChainTokens));
-
         // if (!webTokens || webTokensErr) {
         //     logger('token negotiator: no web tokens found.');
         // }
@@ -247,9 +246,13 @@ export class Client {
 
             let listener = (event) => {
                 
+                // token proof event handler
+
                 if(event.data.evt === 'tokens') {
                 
-                    let childURL = tokenLookup[event.data.data.issuer].tokenOrigin;
+                    const issuer = event.data.data.issuer;
+
+                    let childURL = tokenLookup[issuer].tokenOrigin;
                 
                     let cUrl = new URL(childURL);
                 
@@ -257,15 +260,15 @@ export class Client {
                 
                     if (event.origin != childUrlOrigin) return;
                 
-                    this.offChainTokens[event.data.data.issuer].tokens = event.data.data.tokens;
+                    this.offChainTokens[issuer].tokens = event.data.data.tokens;
                 
-                    if(window.negotiator.issuerIframeRefs[event.data.data.issuer]) {
+                    if(window.negotiator.issuerIframeRefs[issuer]) {
 
-                        window.negotiator.issuerIframeRefs[event.data.data.issuer].close();
+                        window.negotiator.issuerIframeRefs[issuer].close();
                     
-                        delete window.negotiator.issuerIframeRefs[event.data.data.issuer];
+                        delete window.negotiator.issuerIframeRefs[issuer];
                     
-                        this.issuerConnected(event.data.data.issuer);
+                        this.issuerConnected(issuer);
 
                     }
                 

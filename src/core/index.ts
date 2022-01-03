@@ -5,190 +5,149 @@ interface FilterInterface {
   [key: string]: any
 }
 
-export const filterTokens = (decodedTokens: any, filter:FilterInterface) => {
-  
+export const filterTokens = (decodedTokens: any, filter: FilterInterface) => {
+
   if (Object.keys(filter).length === 0) filter = filter;
-  
+
   let res: any = [];
-  
+
   if (
-  
     decodedTokens.length
-  
     && typeof filter === "object"
-  
     && Object.keys(filter).length
-  
-    ) {
-  
+  ) {
+
     let filterKeys = Object.keys(filter);
-  
+
     decodedTokens.forEach((token: any) => {
-  
+
       let fitFilter = 1;
-  
+
       filterKeys.forEach(key => {
-  
+
         if (token[key].toString() !== filter[key].toString()) fitFilter = 0;
-  
+
       })
-  
+
       if (fitFilter) res.push(token);
-  
+
     })
-  
+
     return res;
-  
+
   } else {
-  
+
     return decodedTokens;
-  
+
   }
 }
 
 export const readTokens = (itemStorageKey: any) => {
-  
+
   const storageTickets = localStorage.getItem(itemStorageKey);
-  
+
   let tokens: any = [];
-  
+
   let output: any = { tokens: [], noTokens: true, success: true };
-  
+
   try {
-  
+
     if (storageTickets && storageTickets.length) {
-  
+
       tokens = JSON.parse(storageTickets);
-  
+
       if (tokens.length !== 0) {
-  
+
         tokens.forEach((item: any) => {
-  
+
           if (item.token && item.secret) output.tokens.push(item);
-  
+
         })
-  
+
       }
-  
+
       if (output.tokens.length) {
-  
+
         output.noTokens = false;
-  
+
       }
-  
+
     }
-  
+
   } catch (e) {
-  
+
     output.success = false;
-  
+
   }
-  
+
   return output;
 
 }
 
 export const decodeTokens = (rawTokens: any, tokenParser: any, unsignedTokenDataName: string) => {
-  
+
   var x = JSON.parse(rawTokens);
-  
-  if(x.length) {
-  
+
+  if (x.length) {
+
     return x.map((tokenData: any) => {
-  
+
       if (tokenData.token) {
-  
+
         let decodedToken = new tokenParser(base64ToUint8array(tokenData.token).buffer);
-  
+
         if (decodedToken && decodedToken[unsignedTokenDataName]) return decodedToken[unsignedTokenDataName];
-  
+
       }
-  
+
     });
-  
+
   } else {
-  
+
     return [];
-  
+
   }
 
 };
 
 export const openOutletIframe = (tokensOrigin: any) => {
-  
+
   return new Promise((resolve, reject) => {
-  
+
     const iframe = document.createElement('iframe');
-  
+
     iframe.src = tokensOrigin;
-  
+
     iframe.style.width = '1px';
-  
+
     iframe.style.height = '1px';
-  
+
     iframe.style.opacity = '0';
-  
+
     document.body.appendChild(iframe);
-  
+
     iframe.onload = () => {
-  
+
       resolve(true);
-  
+
     };
-  
+
   });
 
 }
 
 interface GetTokenInterface {
-  filter:any;
-  tokensOrigin:any;
-  itemStorageKey:any;
-  tokenParser:any;
-  unsignedTokenDataName:any;
-}
-
-export const getTokens = async (config:GetTokenInterface) => {
-  
-  const { 
-    filter,
-    tokensOrigin,
-    itemStorageKey,
-    tokenParser,
-    unsignedTokenDataName
-  } = config;
-  
-  return new Promise((resolve, reject) => {
-    
-    openOutletIframe(tokensOrigin).then(() => {
-    
-      // make sure this is coming from the outlet
-      const tokens = localStorage.getItem(itemStorageKey);
-    
-      const decodedTokens = decodeTokens(tokens, tokenParser, unsignedTokenDataName);
-    
-      const filteredTokens = filterTokens(decodedTokens, filter);
-    
-      resolve(filteredTokens);
-    
-    }).catch((error) => {
-    
-      reject({
-    
-        error: error
-    
-      })
-    
-    });
-
-  });
-
+  filter: any;
+  tokensOrigin: any;
+  itemStorageKey: any;
+  tokenParser: any;
+  unsignedTokenDataName: any;
 }
 
 export const storeMagicURL = (tokens: any, itemStorageKey: string) => {
-  
-  if(tokens){
-  
+
+  if (tokens) {
+
     localStorage.setItem(itemStorageKey, JSON.stringify(tokens));
 
   }
@@ -196,38 +155,38 @@ export const storeMagicURL = (tokens: any, itemStorageKey: string) => {
 }
 
 export const readMagicUrl = (tokenUrlName: string, tokenSecretName: string, tokenIdName: string, itemStorageKey: string) => {
-  
+
   const urlParams = new URLSearchParams(window.location.search);
-  
+
   const tokenFromQuery = urlParams.get(tokenUrlName);
-  
+
   const secretFromQuery = urlParams.get(tokenSecretName);
-  
+
   const idFromQuery = urlParams.get(tokenIdName);
-  
+
   if (!(tokenFromQuery && secretFromQuery)) return;
-  
+
   let tokensOutput = readTokens(itemStorageKey);
-  
+
   let isNewQueryTicket = true;
-  
+
   const tokens = tokensOutput.tokens.map((tokenData: any) => {
-  
+
     if (tokenData.token === tokenFromQuery) {
-  
+
       isNewQueryTicket = false;
-  
+
     }
-  
+
   });
-  
+
   if (isNewQueryTicket) {
     tokens.push({ token: tokenFromQuery, secret: secretFromQuery, id: idFromQuery, magic_link: window.location.href });
     return tokens;
   }
-  
+
   return [];
-  
+
 }
 
 
@@ -241,25 +200,25 @@ export const validateUseEthKey = async (endPoint: string, data: any) => {
 
   try {
 
-      const response = await fetch(endPoint, {
-          method: 'POST',
-          cache: 'no-cache',
-          headers: { 'Content-Type': 'application/json' },
-          redirect: 'follow',
-          referrerPolicy: 'no-referrer',
-          body: JSON.stringify(data)
-      });
+    const response = await fetch(endPoint, {
+      method: 'POST',
+      cache: 'no-cache',
+      headers: { 'Content-Type': 'application/json' },
+      redirect: 'follow',
+      referrerPolicy: 'no-referrer',
+      body: JSON.stringify(data)
+    });
 
-      const json = await response.json();
+    const json = await response.json();
 
-      return json.address;
+    return json.address;
 
   } catch (e) {
-      
-      return {
-          success: false,
-          message: "validate ethkey request failed"
-      }
+
+    return {
+      success: false,
+      message: "validate ethkey request failed"
+    }
 
   }
 
@@ -269,20 +228,20 @@ export const getUnpredictableNumber = async (endPoint: string) => {
 
   try {
 
-      const response = await fetch(endPoint);
-      
-      const json = await response.json();
-      
-      json.success = true;
-      
-      return json;
+    const response = await fetch(endPoint);
+
+    const json = await response.json();
+
+    json.success = true;
+
+    return json;
 
   } catch (e) {
-      
-      return {
-          success: false,
-          message: "UN request failed"
-      }
+
+    return {
+      success: false,
+      message: "UN request failed"
+    }
 
   }
 
@@ -295,42 +254,42 @@ export const getChallengeSigned = async (tokenIssuer: any) => {
   let ethKeys = (storageEthKeys && storageEthKeys.length) ? JSON.parse(storageEthKeys) : {};
 
   try {
-  
-      let address = await connectMetamaskAndGetAddress();
-      
-      address = address.toLowerCase();
-      
-      let useEthKey;
 
-      if (ethKeys && ethKeys[address] && !ethKeyIsValid(ethKeys[address])) {
+    let address = await connectMetamaskAndGetAddress();
 
-          delete ethKeys[address];
+    address = address.toLowerCase();
 
-      }
+    let useEthKey;
 
-      if (ethKeys && ethKeys[address]) {
+    if (ethKeys && ethKeys[address] && !ethKeyIsValid(ethKeys[address])) {
 
-          useEthKey = ethKeys[address];
+      delete ethKeys[address];
 
-      } else {
+    }
 
-          useEthKey = await signNewChallenge(tokenIssuer.unEndPoint);
+    if (ethKeys && ethKeys[address]) {
 
-          if (useEthKey) {
+      useEthKey = ethKeys[address];
 
-              ethKeys[useEthKey.address.toLowerCase()] = useEthKey;
+    } else {
 
-              localStorage.setItem(tokenIssuer.ethKeyitemStorageKey, JSON.stringify(ethKeys));
+      useEthKey = await signNewChallenge(tokenIssuer.unEndPoint);
 
-          }
+      if (useEthKey) {
+
+        ethKeys[useEthKey.address.toLowerCase()] = useEthKey;
+
+        localStorage.setItem(tokenIssuer.ethKeyitemStorageKey, JSON.stringify(ethKeys));
 
       }
-      
-      return useEthKey;
 
-  } catch (e:any) {
+    }
 
-      throw new Error(e);
+    return useEthKey;
+
+  } catch (e: any) {
+
+    throw new Error(e);
 
   }
 }
@@ -347,8 +306,8 @@ export const connectMetamaskAndGetAddress = async () => {
 
 }
 
-export const getTokenProof = (unsignedToken: any, tokenIssuer:any) => {
-  
+export const getTokenProof = (unsignedToken: any, tokenIssuer: any) => {
+
   return rawTokenCheck(unsignedToken, tokenIssuer);
 
 }
@@ -368,12 +327,12 @@ export const signNewChallenge = async (unEndPoint: string) => {
   const recoveredAddress = ethers.utils.recoverAddress(msgHashBytes, signature);
 
   return {
-      address: recoveredAddress,
-      expiry,
-      domain,
-      randomness,
-      signature,
-      UN
+    address: recoveredAddress,
+    expiry,
+    domain,
+    randomness,
+    signature,
+    UN
   };
 }
 
@@ -389,7 +348,7 @@ export const signMessageWithBrowserWallet = async (message: any) => {
 
 }
 
-export const rawTokenCheck = async (unsignedToken: any, tokenIssuer:any) => {
+export const rawTokenCheck = async (unsignedToken: any, tokenIssuer: any) => {
 
   let rawTokenData = getRawToken(unsignedToken, tokenIssuer);
 
@@ -402,29 +361,51 @@ export const rawTokenCheck = async (unsignedToken: any, tokenIssuer:any) => {
   let ticketSecret = rawTokenData.secret;
 
   let tokenObj = {
-      ticketBlob: base64ticket,
-      ticketSecret: ticketSecret,
-      attestationOrigin: tokenIssuer.attestationOrigin,
+    ticketBlob: base64ticket,
+    ticketSecret: ticketSecret,
+    attestationOrigin: tokenIssuer.attestationOrigin,
   };
 
   // @ts-ignore
   if (rawTokenData && rawTokenData.id) tokenObj.email = rawTokenData.id;
-      
+
   // @ts-ignore
   if (rawTokenData && rawTokenData.magic_link) tokenObj.magicLink = rawTokenData.magic_link;
 
   return new Promise((resolve, reject) => {
-      
-      // @ts-ignore
-      // this.authenticator.getAuthenticationBlob(tokenObj, (tokenProof) => {
-      //     resolve(tokenProof);
-      // })
 
-    });
+    // @ts-ignore
+    // this.authenticator.getAuthenticationBlob(tokenObj, (tokenProof) => {
+    //     resolve(tokenProof);
+    // })
+
+  });
 
 }
 
-export const getRawToken = (unsignedToken: any, tokenIssuer:any) => {
+interface GetTokenInterface {
+  filter: any;
+  tokensOrigin: any;
+}
+
+// returns decode and filtered tokens
+export const getTokens = async (config: GetTokenInterface) => {
+  const {
+    filter,
+    tokensOrigin
+  } = config;
+  return new Promise((resolve, reject) => {
+    window.addEventListener('message', (event) => {
+      if (event.data.evt === 'tokens') {
+        const filteredTokens = filterTokens(event.data.data.tokens, filter);
+        resolve(filteredTokens);
+      }
+    }, false);
+    openOutletIframe(tokensOrigin).then(() => { }).catch((error) => { });
+  })
+}
+
+export const getRawToken = (unsignedToken: any, tokenIssuer: any) => {
 
   if (!unsignedToken || !Object.keys(unsignedToken).length) return;
 
@@ -432,38 +413,83 @@ export const getRawToken = (unsignedToken: any, tokenIssuer:any) => {
 
   if (tokensOutput.success && !tokensOutput.noTokens) {
 
-      let rawTokens = tokensOutput.tokens;
+    let rawTokens = tokensOutput.tokens;
 
-      let token = {};
+    let token = {};
 
-      if (rawTokens.length) {
+    if (rawTokens.length) {
 
-          rawTokens.forEach((tokenData: any) => {
+      rawTokens.forEach((tokenData: any) => {
 
-              if (tokenData.token) {
+        if (tokenData.token) {
 
-                  const _tokenParser = tokenIssuer.tokenParser;
+          const _tokenParser = tokenIssuer.tokenParser;
 
-                  let decodedToken = new _tokenParser(base64ToUint8array(tokenData.token).buffer);
+          let decodedToken = new _tokenParser(base64ToUint8array(tokenData.token).buffer);
 
-                  if (decodedToken && decodedToken[tokenIssuer.unsignedTokenDataName]) {
+          if (decodedToken && decodedToken[tokenIssuer.unsignedTokenDataName]) {
 
-                      let decodedTokenData = decodedToken[tokenIssuer.unsignedTokenDataName];
+            let decodedTokenData = decodedToken[tokenIssuer.unsignedTokenDataName];
 
-                      if (compareObjects(decodedTokenData, unsignedToken)) token = tokenData;
+            if (compareObjects(decodedTokenData, unsignedToken)) token = tokenData;
 
-                  }
+          }
 
-              }
+        }
 
-          });
-      }
+      });
+    }
 
-      return token;
+    return token;
 
   } else {
 
-      return null;
+    return null;
 
   }
+
+  // export const getTokens = async (config:GetTokenInterface) => {
+  //   const { 
+  //     filter,
+  //     tokensOrigin,
+  //     itemStorageKey,
+  //     tokenParser,
+  //     unsignedTokenDataName
+  //   } = config;
+  //   return new Promise((resolve, reject) => {
+  //     openOutletIframe(tokensOrigin).then(() => {
+  //       // make sure this is coming from the outlet
+  //       const tokens = localStorage.getItem(itemStorageKey);
+  //       const decodedTokens = decodeTokens(tokens, tokenParser, unsignedTokenDataName);
+  //       const filteredTokens = filterTokens(decodedTokens, filter);
+  //       resolve(filteredTokens);
+  //     }).catch((error) => {
+  //       reject({
+  //         error: error
+  //       })
+  //     });
+  //   });
+  // }
+
+  // export const openOutletIframe = (tokensOrigin:string, itemStorageKey:string) => {
+  //   return new Promise((resolve, reject) => {
+  //     console.log('openOutletIframe: 1. create iframe');
+  //     const iframe = document.createElement('iframe');
+  //     iframe.src = tokensOrigin;
+  //     iframe.style.width = '1px';
+  //     iframe.style.height = '1px';
+  //     iframe.style.opacity = '0';
+  //     document.body.appendChild(iframe);
+  //     iframe.onload = () => {
+  //       // console.log('openOutletIframe: 2. getTokens from outlet', itemStorageKey, tokensOrigin);
+  //       // // @ts-ignore
+  //       // iframe.contentWindow.postMessage({
+  //       //   evt: 'getTokens',
+  //       //   itemStorageKey: itemStorageKey
+  //       // }, '*');
+  //       resolve(true);
+  //     };
+  //   });
+  // }
+
 }

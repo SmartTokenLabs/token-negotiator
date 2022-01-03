@@ -1,4 +1,4 @@
-import { readMagicUrl, storeMagicURL } from '../core';
+import { readMagicUrl, storeMagicURL, readTokens } from '../core';
 import { requiredParams } from '../utils/index';
 import { tokenLookup } from './../tokenLookup';
 import { decodeTokens, filterTokens } from './../core/index';
@@ -61,20 +61,47 @@ export class Outlet {
 
     let opener = window.opener;
 		
-    let parentURL = document.referrer;
+    let referrer = document.referrer;
     
-    if (opener && parentURL) {
+    var storageTokens = this.prepareTokenOutput( tokenName );
 
-      let pUrl = new URL(parentURL);
+    if (opener && referrer) {
+
+      let pUrl = new URL(referrer);
 
       let parentOrigin = pUrl.origin;
 
-      var storageTokens = this.prepareTokenOutput( tokenName );
-
       opener.postMessage({ evt: "tokens", data: { issuer: this.tokenName, tokens: storageTokens || [] }  }, parentOrigin);
 
-    }	
+    }	else {
+      
+      // Issue is that we dont know the filter for this.
+      // use evt send and rec.
+      window.parent.postMessage({ evt: "tokens", data: { issuer: this.tokenName, tokens: storageTokens || [] }  }, '*');
+      
+    }
 
   }
+
+  // TODO re-implement for authenticator:
+   
+  // eventReciever = (data: any) => {
+  //   switch (data.evt) {
+  //     case 'getTokenProof':
+  //       // TODO - if this can be done via the authenticator alone we can simplify this whole step and emit tokens on load
+  //       // this.rawTokenCheck(data.unsignedToken, this.config.itemStorageKey, this.config.tokenParser);
+  //     break;
+  //   }
+  // }
+
+  // eventSender = {
+  //   emitTokens: (tokens: any) => {
+  //   emitTokenProof: (tokenProof: any) => {
+  //     window.parent.postMessage({
+  //       evt: 'tokenProof',
+  //       tokenProof: tokenProof
+  //     }, "*");
+  //   },  
+  // }
 
 }
