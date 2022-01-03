@@ -32,10 +32,14 @@ export class Outlet {
 
     const tokens = readMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey);
 
-    storeMagicURL(tokens, itemStorageKey);
-    
-    this.sendTokens(tokenName);
+    if(tokens && tokens.length) {
 
+      storeMagicURL(tokens, itemStorageKey);
+    
+    }
+
+    this.sendTokens(tokenName);
+    
   };
 
   prepareTokenOutput ( tokenName:string ) {

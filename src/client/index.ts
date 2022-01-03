@@ -104,7 +104,7 @@ export class Client {
 
             this.offChainTokens[issuer].tokens = tokens;
 
-            return tokens;
+            return;
 
         }));
     }
@@ -158,11 +158,13 @@ export class Client {
 
         // Feature not supported when an end users third party cookies are disabled.
 
-        let [webTokens, webTokensErr] = await asyncHandle(this.setWebTokens(this.offChainTokens));
+        // let [webTokens, webTokensErr] = await asyncHandle(this.setWebTokens(this.offChainTokens));
 
-        if (!webTokens || webTokensErr) {
-            logger('token negotiator: no web tokens found.');
-        }
+        // if (!webTokens || webTokensErr) {
+        //     logger('token negotiator: no web tokens found.');
+        // }
+        
+        await asyncHandle(this.setWebTokens(this.offChainTokens));
 
         let outputOnChain = this.onChainTokens;
 
@@ -183,7 +185,7 @@ export class Client {
         // if Cross Browser Cookies are permitted
         // this.embedStandardClientOverlay();
 
-        // else Fall Back Flow
+        // else
         this.embedTokenConnectClientOverlay();
 
     }
@@ -606,6 +608,21 @@ export class Client {
 
     }
 
+    addTokenThroughTab(magicLink: any) {
+    
+        var tab = window.open(
+            magicLink,
+            "win1",
+            "left=0,top=0,width=320,height=320"
+        );
+        
+        setTimeout(() => {
+            tab?.close();
+        }, 2500);
+
+    }
+
+    // Cookie supported only
     addTokenThroughIframe(magicLink: any) {
         
         const iframe = document.createElement('iframe');

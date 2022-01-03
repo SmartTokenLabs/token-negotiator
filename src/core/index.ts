@@ -1,4 +1,4 @@
-import { base64ToUint8array, getCookie, requiredParams, compareObjects } from '../utils/index';
+import { base64ToUint8array, requiredParams, compareObjects } from '../utils/index';
 import { ethers } from "ethers";
 
 interface FilterInterface {
@@ -48,7 +48,7 @@ export const filterTokens = (decodedTokens: any, filter:FilterInterface) => {
 
 export const readTokens = (itemStorageKey: any) => {
   
-  const storageTickets = getCookie(itemStorageKey);
+  const storageTickets = localStorage.getItem(itemStorageKey);
   
   let tokens: any = [];
   
@@ -162,7 +162,8 @@ export const getTokens = async (config:GetTokenInterface) => {
     
     openOutletIframe(tokensOrigin).then(() => {
     
-      const tokens = getCookie(itemStorageKey);
+      // make sure this is coming from the outlet
+      const tokens = localStorage.getItem(itemStorageKey);
     
       const decodedTokens = decodeTokens(tokens, tokenParser, unsignedTokenDataName);
     
@@ -188,8 +189,8 @@ export const storeMagicURL = (tokens: any, itemStorageKey: string) => {
   
   if(tokens){
   
-    document.cookie = `${itemStorageKey}=${JSON.stringify(tokens)}; max-age=31536000; SameSite=None; Secure`;
-  
+    localStorage.setItem(itemStorageKey, JSON.stringify(tokens));
+
   }
 
 }
@@ -220,9 +221,12 @@ export const readMagicUrl = (tokenUrlName: string, tokenSecretName: string, toke
   
   });
   
-  if (isNewQueryTicket) tokens.push({ token: tokenFromQuery, secret: secretFromQuery, id: idFromQuery, magic_link: window.location.href });
+  if (isNewQueryTicket) {
+    tokens.push({ token: tokenFromQuery, secret: secretFromQuery, id: idFromQuery, magic_link: window.location.href });
+    return tokens;
+  }
   
-  return tokens;
+  return [];
   
 }
 
