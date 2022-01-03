@@ -128,6 +128,10 @@ export const openOutletIframe = (tokensOrigin: any) => {
 
     iframe.onload = () => {
 
+      //@ts-ignore
+      iframe.contentWindow.postMessage({
+        evt: 'getTokens'
+      }, tokensOrigin);
       resolve(true);
 
     };

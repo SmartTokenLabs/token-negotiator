@@ -56,7 +56,7 @@ export class Outlet {
     return filteredTokens;
     
   }
-
+ 
   sendTokens( tokenName:string ) {
 
     let opener = window.opener;
@@ -77,31 +77,40 @@ export class Outlet {
       
       // Issue is that we dont know the filter for this.
       // use evt send and rec.
-      window.parent.postMessage({ evt: "tokens", data: { issuer: this.tokenName, tokens: storageTokens || [] }  }, '*');
+      // window.parent.postMessage({ evt: "tokens", data: { issuer: this.tokenName, tokens: storageTokens || [] }  }, '*');
+      window.addEventListener('message', (event) => { this.eventReciever(event.data); }, false);
       
     }
 
   }
 
-  // TODO re-implement for authenticator:
-   
-  // eventReciever = (data: any) => {
-  //   switch (data.evt) {
-  //     case 'getTokenProof':
-  //       // TODO - if this can be done via the authenticator alone we can simplify this whole step and emit tokens on load
-  //       // this.rawTokenCheck(data.unsignedToken, this.config.itemStorageKey, this.config.tokenParser);
-  //     break;
-  //   }
-  // }
+  eventReciever = (data: any) => {
+    switch (data.evt) {
+      case 'getTokens': 
+        // TODO apply token filter to prepareTokenOutput
+        var storageTokens = this.prepareTokenOutput( this.tokenName );
+        this.eventSender.emitTokens(storageTokens);
+      break;
+      case 'getTokenProof':
+        // TODO - if this can be done via the authenticator alone we can simplify this whole step and emit tokens on load
+        // this.rawTokenCheck(data.unsignedToken, this.config.itemStorageKey, this.config.tokenParser);
+      break;
+    }
+  }
 
-  // eventSender = {
-  //   emitTokens: (tokens: any) => {
-  //   emitTokenProof: (tokenProof: any) => {
-  //     window.parent.postMessage({
-  //       evt: 'tokenProof',
-  //       tokenProof: tokenProof
-  //     }, "*");
-  //   },  
-  // }
+  eventSender = {
+    emitTokens: (tokens: any) => {
+      window.parent.postMessage({ 
+        evt: "tokens",
+        data: { issuer: this.tokenName, tokens: tokens }  
+      }, "*");
+    },
+    emitTokenProof: (tokenProof: any) => {
+      window.parent.postMessage({
+        evt: 'tokenProof',
+        tokenProof: tokenProof
+      }, "*");
+    },  
+  }
 
 }
