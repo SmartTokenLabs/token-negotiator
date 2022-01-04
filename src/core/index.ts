@@ -310,9 +310,18 @@ export const connectMetamaskAndGetAddress = async () => {
 
 }
 
-export const getTokenProof = (unsignedToken: any, tokenIssuer: any) => {
+export const getTokenProof = async (unsignedToken: any, tokenIssuer: any) => {
 
-  return rawTokenCheck(unsignedToken, tokenIssuer);
+  // open window to outlet
+  // trigger postMessage / opener - whichever works
+  // try to collect proof from outlet raw data
+  // return.
+
+  const output = rawTokenCheck(unsignedToken, tokenIssuer);
+
+  console.log('debug: ', output);
+
+  return output;
 
 }
 
@@ -355,6 +364,8 @@ export const signMessageWithBrowserWallet = async (message: any) => {
 export const rawTokenCheck = async (unsignedToken: any, tokenIssuer: any) => {
 
   let rawTokenData = getRawToken(unsignedToken, tokenIssuer);
+
+  console.log('raw token data', rawTokenData);
 
   if (!rawTokenData) return null;
 

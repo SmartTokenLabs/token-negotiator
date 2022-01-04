@@ -11,7 +11,7 @@ export declare class Outlet {
     config: any;
     tokenName: any;
     constructor(config: OutletInterface);
-    prepareTokenOutput(tokenName: string): any;
+    prepareTokenOutput(tokenName: string, filter: any): any;
     sendTokens(tokenName: string): void;
     eventReciever: (data: any) => void;
     eventSender: {

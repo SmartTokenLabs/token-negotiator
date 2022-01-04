@@ -1,4 +1,4 @@
-import { readMagicUrl, storeMagicURL, readTokens } from '../core';
+import { readMagicUrl, storeMagicURL, rawTokenCheck } from '../core';
 import { requiredParams } from '../utils/index';
 import { tokenLookup } from './../tokenLookup';
 import { decodeTokens, filterTokens } from './../core/index';
@@ -42,7 +42,7 @@ export class Outlet {
     
   };
 
-  prepareTokenOutput ( tokenName:string ) {
+  prepareTokenOutput ( tokenName:string, filter:any ) {
 
     const storageTokens = localStorage.getItem(tokenLookup[tokenName].itemStorageKey);
 
@@ -50,8 +50,7 @@ export class Outlet {
 
     const decodedTokens = decodeTokens(storageTokens, tokenLookup[tokenName].tokenParser, tokenLookup[tokenName].unsignedTokenDataName);
 
-    // FIXME: add filter
-    const filteredTokens = filterTokens(decodedTokens, {});
+    const filteredTokens = filterTokens(decodedTokens, filter);
 
     return filteredTokens;
     
@@ -63,21 +62,19 @@ export class Outlet {
 		
     let referrer = document.referrer;
     
-    var storageTokens = this.prepareTokenOutput( tokenName );
-
+    // TODO apply filter to this design flow:
     if (opener && referrer) {
 
       let pUrl = new URL(referrer);
 
       let parentOrigin = pUrl.origin;
 
+      var storageTokens = this.prepareTokenOutput( tokenName, {} );
+
       opener.postMessage({ evt: "tokens", data: { issuer: this.tokenName, tokens: storageTokens || [] }  }, parentOrigin);
 
     }	else {
       
-      // Issue is that we dont know the filter for this.
-      // use evt send and rec.
-      // window.parent.postMessage({ evt: "tokens", data: { issuer: this.tokenName, tokens: storageTokens || [] }  }, '*');
       window.addEventListener('message', (event) => { this.eventReciever(event.data); }, false);
       
     }
@@ -87,13 +84,12 @@ export class Outlet {
   eventReciever = (data: any) => {
     switch (data.evt) {
       case 'getTokens': 
-        // TODO apply token filter to prepareTokenOutput
-        var storageTokens = this.prepareTokenOutput( this.tokenName );
+        const filter = data?.data?.filter;
+        var storageTokens = this.prepareTokenOutput( this.tokenName, filter );
         this.eventSender.emitTokens(storageTokens);
       break;
       case 'getTokenProof':
-        // TODO - if this can be done via the authenticator alone we can simplify this whole step and emit tokens on load
-        // this.rawTokenCheck(data.unsignedToken, this.config.itemStorageKey, this.config.tokenParser);
+        rawTokenCheck(data.unsignedToken, this.config.itemStorageKey);
       break;
     }
   }

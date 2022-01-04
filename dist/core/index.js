@@ -247,9 +247,14 @@ export var connectMetamaskAndGetAddress = function () { return __awaiter(void 0,
         }
     });
 }); };
-export var getTokenProof = function (unsignedToken, tokenIssuer) {
-    return rawTokenCheck(unsignedToken, tokenIssuer);
-};
+export var getTokenProof = function (unsignedToken, tokenIssuer) { return __awaiter(void 0, void 0, void 0, function () {
+    var output;
+    return __generator(this, function (_a) {
+        output = rawTokenCheck(unsignedToken, tokenIssuer);
+        console.log('debug: ', output);
+        return [2, output];
+    });
+}); };
 export var signNewChallenge = function (unEndPoint) { return __awaiter(void 0, void 0, void 0, function () {
     var res, UN, randomness, domain, expiry, messageToSign, signature, msgHash, msgHashBytes, recoveredAddress;
     return __generator(this, function (_a) {
@@ -293,6 +298,7 @@ export var rawTokenCheck = function (unsignedToken, tokenIssuer) { return __awai
     var rawTokenData, base64ticket, ticketSecret, tokenObj;
     return __generator(this, function (_a) {
         rawTokenData = getRawToken(unsignedToken, tokenIssuer);
+        console.log('raw token data', rawTokenData);
         if (!rawTokenData)
             return [2, null];
         base64ticket = rawTokenData.token;
