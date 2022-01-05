@@ -19,7 +19,6 @@ export declare const validateUseEthKey: (endPoint: string, data: any) => Promise
 export declare const getUnpredictableNumber: (endPoint: string) => Promise<any>;
 export declare const getChallengeSigned: (tokenIssuer: any) => Promise<any>;
 export declare const connectMetamaskAndGetAddress: () => Promise<any>;
-export declare const getTokenProof: (unsignedToken: any, tokenIssuer: any) => Promise<unknown>;
 export declare const signNewChallenge: (unEndPoint: string) => Promise<{
     address: string;
     expiry: any;
@@ -29,7 +28,11 @@ export declare const signNewChallenge: (unEndPoint: string) => Promise<{
     UN: any;
 }>;
 export declare const signMessageWithBrowserWallet: (message: any) => Promise<string>;
-export declare const rawTokenCheck: (unsignedToken: any, tokenIssuer: any) => Promise<unknown>;
+export declare const rawTokenCheck: (unsignedToken: any, tokenIssuer: any) => Promise<{
+    ticketBlob: any;
+    ticketSecret: any;
+    attestationOrigin: any;
+} | null>;
 interface GetTokenInterface {
     filter: any;
     tokensOrigin: any;

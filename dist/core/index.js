@@ -247,14 +247,6 @@ export var connectMetamaskAndGetAddress = function () { return __awaiter(void 0,
         }
     });
 }); };
-export var getTokenProof = function (unsignedToken, tokenIssuer) { return __awaiter(void 0, void 0, void 0, function () {
-    var output;
-    return __generator(this, function (_a) {
-        output = rawTokenCheck(unsignedToken, tokenIssuer);
-        console.log('debug: ', output);
-        return [2, output];
-    });
-}); };
 export var signNewChallenge = function (unEndPoint) { return __awaiter(void 0, void 0, void 0, function () {
     var res, UN, randomness, domain, expiry, messageToSign, signature, msgHash, msgHashBytes, recoveredAddress;
     return __generator(this, function (_a) {
@@ -298,7 +290,6 @@ export var rawTokenCheck = function (unsignedToken, tokenIssuer) { return __awai
     var rawTokenData, base64ticket, ticketSecret, tokenObj;
     return __generator(this, function (_a) {
         rawTokenData = getRawToken(unsignedToken, tokenIssuer);
-        console.log('raw token data', rawTokenData);
         if (!rawTokenData)
             return [2, null];
         base64ticket = rawTokenData.token;
@@ -312,8 +303,8 @@ export var rawTokenCheck = function (unsignedToken, tokenIssuer) { return __awai
             tokenObj.email = rawTokenData.id;
         if (rawTokenData && rawTokenData.magic_link)
             tokenObj.magicLink = rawTokenData.magic_link;
-        return [2, new Promise(function (resolve, reject) {
-            })];
+        console.log('good to go....', tokenObj);
+        return [2, tokenObj];
     });
 }); };
 export var getTokens = function (config) { return __awaiter(void 0, void 0, void 0, function () {
@@ -345,8 +336,9 @@ export var getRawToken = function (unsignedToken, tokenIssuer) {
                     var decodedToken = new _tokenParser(base64ToUint8array(tokenData.token).buffer);
                     if (decodedToken && decodedToken[tokenIssuer.unsignedTokenDataName]) {
                         var decodedTokenData = decodedToken[tokenIssuer.unsignedTokenDataName];
-                        if (compareObjects(decodedTokenData, unsignedToken))
+                        if (compareObjects(decodedTokenData, unsignedToken)) {
                             token_1 = tokenData;
+                        }
                     }
                 }
             });

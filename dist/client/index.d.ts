@@ -21,6 +21,7 @@ export declare class Client {
     issuers: string[];
     issuerIframeRefs: {};
     type: string;
+    filter: {};
     options: any;
     offChainTokens: any;
     onChainTokens: any;
@@ -45,10 +46,13 @@ export declare class Client {
     tokenToggleSelection(): void;
     authenticate(config: AuthenticateInterface): Promise<{
         status: boolean;
-        useEthKey: any;
-        proof: unknown;
-    }>;
+        useEthKey: null;
+        proof: null;
+    } | undefined>;
+    getTokenProof(unsignedToken: any, issuer: any): Promise<void>;
+    eventReciever: (event: any) => void;
     addTokenThroughTab(magicLink: any): void;
     addTokenThroughIframe(magicLink: any): void;
+    attachPostMessageListener(listener: any): void;
 }
 export {};

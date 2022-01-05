@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { asyncHandle, requiredParams, logger } from './../utils/index';
-import { getTokens, getChallengeSigned, validateUseEthKey, connectMetamaskAndGetAddress, getTokenProof } from "../core/index";
-import { createOverlayMarkup, createFabButton, createToken, issuerConnect } from './componentFactory';
+import { getTokens, getChallengeSigned, validateUseEthKey, connectMetamaskAndGetAddress } from "../core/index";
+import { createOverlayMarkup, createFabButton, createToken, issuerConnectTab } from './componentFactory';
 import { tokenLookup } from './../tokenLookup';
 import "./../theme/style.css";
 import './../vendor/keyShape';
@@ -31,6 +31,7 @@ export class Client {
     issuers: string[];
     issuerIframeRefs:{};
     type: string;
+    filter:{};
     options: any;
     offChainTokens: any;
     onChainTokens: any;
@@ -38,7 +39,7 @@ export class Client {
 
     constructor(config: NegotiationInterface) {
 
-        const { type, issuers, options } = config;
+        const { type, issuers, options, filter } = config;
 
         // @ts-ignore
         // this.authenticator = null; // new Authenticator();
@@ -55,6 +56,8 @@ export class Client {
         this.type = type;
 
         this.options = options;
+        
+        this.filter = filter ? filter : {};
 
         this.issuers = issuers;
 
@@ -91,6 +94,9 @@ export class Client {
             }
 
         });
+
+        // Adjust all events to come into the event reciever only.
+        this.attachPostMessageListener(this.eventReciever);
 
     }
 
@@ -209,7 +215,8 @@ export class Client {
                 
                 this.offChainTokens.tokenKeys.map((issuer: string) => {
 
-                    refIssuerContainerSelector.innerHTML += issuerConnect(issuer);
+                    // TODO rename issuerConnect to something that helps explain this is markup.
+                    refIssuerContainerSelector.innerHTML += issuerConnectTab(issuer);
 
                 });
 
@@ -219,64 +226,13 @@ export class Client {
 
             }
 
-            // TODO - send TN to the elements instead of using this pattern
+            // TODO - hoisted methods to window scope. Change how this is done.
             
             window.tokenToggleSelection = this.tokenToggleSelection;
             
             window.connectToken = this.connectToken;
             
             window.navigateToTokensView = this.navigateToTokensView;
-
-            // TODO only attach once.
-
-            function attachPostMessageListener(listener) {
-                
-                if (window.addEventListener) {
-                
-                    window.addEventListener("message", listener, false);
-                
-                } else {
-                
-                    // IE8
-                
-                    window.attachEvent("onmessage", listener);
-                
-                }
-            }
-
-            let listener = (event) => {
-                
-                // token proof event handler
-
-                if(event.data.evt === 'tokens') {
-                
-                    const issuer = event.data.data.issuer;
-
-                    let childURL = tokenLookup[issuer].tokenOrigin;
-                
-                    let cUrl = new URL(childURL);
-                
-                    let childUrlOrigin = cUrl.origin;
-                
-                    if (event.origin != childUrlOrigin) return;
-                
-                    this.offChainTokens[issuer].tokens = event.data.data.tokens;
-                
-                    if(window.negotiator.issuerIframeRefs[issuer]) {
-
-                        window.negotiator.issuerIframeRefs[issuer].close();
-                    
-                        delete window.negotiator.issuerIframeRefs[issuer];
-                    
-                        this.issuerConnected(issuer);
-
-                    }
-                
-                }
-
-            }
-
-            attachPostMessageListener(listener);
 
         }, 0);
     }
@@ -534,9 +490,10 @@ export class Client {
     connectToken(event) {
         
         const issuer = event.target.dataset.issuer;
+        const filter = window.negotiator.filter ? JSON.stringify(window.negotiator.filter) : '{}';
         
         let	tabRef = window.open(
-            tokenLookup[issuer].tokenOrigin,
+            `${tokenLookup[issuer].tokenOrigin}?action=get-tokens&filter=${filter}`,
             "win1",
             "left=0,top=0,width=320,height=320"
         );
@@ -573,9 +530,10 @@ export class Client {
 
         });
 
-        window.postMessage({ evt: 'negotiatedTokensEvt', selectedTokens: window.negotiator.selectedTokens }, window.location.origin);
-
+        // event sender... 
+        window.postMessage({ evt: 'token-negotiator-tokens', selectedTokens: window.negotiator.selectedTokens }, window.location.origin);
     }
+
 
     async authenticate(config: AuthenticateInterface) {
 
@@ -583,10 +541,9 @@ export class Client {
 
         const { unEndPoint, onChain } = tokenLookup[issuer];
 
-        // TODO handle onchain
         if (onChain === true || !unsignedToken || !unEndPoint) return { status: false, useEthKey: null, proof: null };
 
-        try {
+        // try {
 
             let useEthKey = await getChallengeSigned(tokenLookup[issuer]);
 
@@ -596,21 +553,86 @@ export class Client {
 
             if (walletAddress.toLowerCase() !== attestedAddress.toLowerCase()) throw new Error('useEthKey validation failed.');
 
-            const tokenProof = await getTokenProof(
-                unsignedToken,
-                tokenLookup[issuer]
-            );
+            this.getTokenProof(unsignedToken, issuer);
+        
+        // } catch (e) {
 
-            return { status: true, useEthKey, proof: tokenProof };
+            // requiredParams(null, "Could not authenticate token");
 
-        } catch (e) {
-
-            return { status: false, useEthKey: null, proof: null };
-
-        }
+        // }
 
     }
 
+    async getTokenProof (unsignedToken: any, issuer: any) {
+        
+        let	tabRef = window.open(
+            `${tokenLookup[issuer].tokenOrigin}?action=get-token-proof&token=${JSON.stringify(unsignedToken)}&issuer=${issuer}`,
+            "win1",
+            `left=0,top=0,width=${window.innerWidth},height=${window.innerHeight}`
+        );
+
+        if(!window.negotiator.issuerIframeRefs) {
+            window.negotiator.issuerIframeRefs = {};
+        }
+
+        window.negotiator.issuerIframeRefs[issuer] = tabRef;
+
+        // normal flow: 3rd party cookie flow.
+
+        // this.eventSender.getTokenProof(unsignedToken, tokenIssuer);
+
+    }
+
+    eventReciever = (event: any) => {
+
+        switch (event.data.evt) {
+
+          case 'tokens': 
+                    
+                const issuer = event.data.data.issuer;
+
+                let childURL = tokenLookup[issuer].tokenOrigin;
+            
+                let cUrl = new URL(childURL);
+            
+                let childUrlOrigin = cUrl.origin;
+            
+                if (event.origin != childUrlOrigin) return;
+            
+                this.offChainTokens[issuer].tokens = event.data.data.tokens;
+            
+                if(window.negotiator.issuerIframeRefs[issuer]) {
+
+                    window.negotiator.issuerIframeRefs[issuer].close();
+
+                    delete window.negotiator.issuerIframeRefs[issuer];
+                
+                    this.issuerConnected(issuer);
+
+                }
+            
+          break;
+
+          case 'proof': 
+
+            window.postMessage({ evt: 'token-negotiator-token-proof', proof: event.data.data.proof, issuer: event.data.data.issuer }, window.location.origin);
+            window.negotiator.issuerIframeRefs[event.data.data.issuer].close();
+
+          break;
+
+        }
+      }
+    
+    // Cannot Post Message? Cross Origin Third Party Cookies Solution.
+    // eventSender = {
+    //     getTokenProof: (unsignedToken: any, tokenIssuer: any) => {
+    //         window.postMessage({ 
+    //             evt: "getTokenProof",
+    //             data: { unsignedToken: unsignedToken, tokenIssuer: tokenIssuer }
+    //         }, "*"); // tokenLookup[tokenIssuer].tokenOrigin
+    //     }
+    // }
+    
     addTokenThroughTab(magicLink: any) {
     
         var tab = window.open(
@@ -640,6 +662,21 @@ export class Client {
         
         document.body.appendChild(iframe);
         
+    }
+
+    attachPostMessageListener(listener) {
+                
+        if (window.addEventListener) {
+        
+            window.addEventListener("message", listener, false);
+        
+        } else {
+        
+            // IE8
+        
+            window.attachEvent("onmessage", listener);
+        
+        }
     }
 
 }

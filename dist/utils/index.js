@@ -43,7 +43,18 @@ export var requiredParams = function (item, msg) {
         throw new Error(msg);
 };
 export var compareObjects = function (o1, o2) {
-    return (JSON.stringify(o1) === JSON.stringify(o2));
+    var keys1 = Object.keys(o1);
+    var keys2 = Object.keys(o2);
+    if (keys1.length !== keys2.length) {
+        return false;
+    }
+    for (var _i = 0, keys1_1 = keys1; _i < keys1_1.length; _i++) {
+        var key = keys1_1[_i];
+        if (o1[key] !== o2[key]) {
+            return false;
+        }
+    }
+    return true;
 };
 export var base64ToUint8array = function (base64str) {
     base64str = base64str.split('-').join('+').split('_').join('/').split('.').join('=');

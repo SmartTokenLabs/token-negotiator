@@ -310,21 +310,6 @@ export const connectMetamaskAndGetAddress = async () => {
 
 }
 
-export const getTokenProof = async (unsignedToken: any, tokenIssuer: any) => {
-
-  // open window to outlet
-  // trigger postMessage / opener - whichever works
-  // try to collect proof from outlet raw data
-  // return.
-
-  const output = rawTokenCheck(unsignedToken, tokenIssuer);
-
-  console.log('debug: ', output);
-
-  return output;
-
-}
-
 export const signNewChallenge = async (unEndPoint: string) => {
 
   let res = await getUnpredictableNumber(unEndPoint);
@@ -363,9 +348,11 @@ export const signMessageWithBrowserWallet = async (message: any) => {
 
 export const rawTokenCheck = async (unsignedToken: any, tokenIssuer: any) => {
 
-  let rawTokenData = getRawToken(unsignedToken, tokenIssuer);
+  // currently meta mask is needed to move beyond this point. 
+  // however the err msg given is not obvious that this is the issue.
+  requiredParams(window.ethereum, 'Please install metamask to continue.');
 
-  console.log('raw token data', rawTokenData);
+  let rawTokenData = getRawToken(unsignedToken, tokenIssuer);
 
   if (!rawTokenData) return null;
 
@@ -387,14 +374,7 @@ export const rawTokenCheck = async (unsignedToken: any, tokenIssuer: any) => {
   // @ts-ignore
   if (rawTokenData && rawTokenData.magic_link) tokenObj.magicLink = rawTokenData.magic_link;
 
-  return new Promise((resolve, reject) => {
-
-    // @ts-ignore
-    // this.authenticator.getAuthenticationBlob(tokenObj, (tokenProof) => {
-    //     resolve(tokenProof);
-    // })
-
-  });
+  return tokenObj;
 
 }
 
@@ -446,7 +426,10 @@ export const getRawToken = (unsignedToken: any, tokenIssuer: any) => {
 
             let decodedTokenData = decodedToken[tokenIssuer.unsignedTokenDataName];
 
-            if (compareObjects(decodedTokenData, unsignedToken)) token = tokenData;
+            if (compareObjects(decodedTokenData, unsignedToken)){
+
+              token = tokenData;
+            } 
 
           }
 
@@ -462,49 +445,5 @@ export const getRawToken = (unsignedToken: any, tokenIssuer: any) => {
     return null;
 
   }
-
-  // export const getTokens = async (config:GetTokenInterface) => {
-  //   const { 
-  //     filter,
-  //     tokensOrigin,
-  //     itemStorageKey,
-  //     tokenParser,
-  //     unsignedTokenDataName
-  //   } = config;
-  //   return new Promise((resolve, reject) => {
-  //     openOutletIframe(tokensOrigin).then(() => {
-  //       // make sure this is coming from the outlet
-  //       const tokens = localStorage.getItem(itemStorageKey);
-  //       const decodedTokens = decodeTokens(tokens, tokenParser, unsignedTokenDataName);
-  //       const filteredTokens = filterTokens(decodedTokens, filter);
-  //       resolve(filteredTokens);
-  //     }).catch((error) => {
-  //       reject({
-  //         error: error
-  //       })
-  //     });
-  //   });
-  // }
-
-  // export const openOutletIframe = (tokensOrigin:string, itemStorageKey:string) => {
-  //   return new Promise((resolve, reject) => {
-  //     console.log('openOutletIframe: 1. create iframe');
-  //     const iframe = document.createElement('iframe');
-  //     iframe.src = tokensOrigin;
-  //     iframe.style.width = '1px';
-  //     iframe.style.height = '1px';
-  //     iframe.style.opacity = '0';
-  //     document.body.appendChild(iframe);
-  //     iframe.onload = () => {
-  //       // console.log('openOutletIframe: 2. getTokens from outlet', itemStorageKey, tokensOrigin);
-  //       // // @ts-ignore
-  //       // iframe.contentWindow.postMessage({
-  //       //   evt: 'getTokens',
-  //       //   itemStorageKey: itemStorageKey
-  //       // }, '*');
-  //       resolve(true);
-  //     };
-  //   });
-  // }
 
 }

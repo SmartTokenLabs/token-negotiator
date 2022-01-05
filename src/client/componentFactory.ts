@@ -64,7 +64,7 @@ export const createOverlayMarkup = (heading="Available Tokens") => {
 //   `;
 // };
 
-export const issuerConnect = (issuer:any) => {
+export const issuerConnectTab = (issuer:any) => {
   return `
     <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
       <p class="issuer-connect-title">Devcon</p>
