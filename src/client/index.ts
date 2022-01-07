@@ -1,10 +1,17 @@
 // @ts-nocheck
 import { asyncHandle, requiredParams, attachPostMessageListener, logger } from './../utils/index';
-import { getTokensIframe, getChallengeSigned, validateUseEthKey, connectMetamaskAndGetAddress } from "../core/index";
+import { getChallengeSigned, validateUseEthKey, connectMetamaskAndGetAddress } from "../core/index";
 import { createOverlayMarkup, createFabButton, createToken, issuerConnectTab, issuerConnectIframe } from './componentFactory';
 import { tokenLookup } from './../tokenLookup';
 import "./../theme/style.css";
 import './../vendor/keyShape';
+
+interface GetTokenInterface {
+    issuer:string;
+    filter: any;
+    tokensOrigin: any;
+    negotiationType: string;
+}
 
 interface NegotiationInterface {
     type: string;
@@ -29,13 +36,13 @@ interface AuthenticateInterface {
 export class Client {
 
     issuers: string[];
-    issuerIframeRefs:{};
+    issuerIframeRefs: {};
     type: string;
-    filter:{};
+    filter: {};
     options: any;
     offChainTokens: any;
     onChainTokens: any;
-    selectedTokens:any;
+    selectedTokens: any;
 
     constructor(config: NegotiationInterface) {
 
@@ -50,7 +57,7 @@ export class Client {
         this.type = type;
 
         this.options = options;
-        
+
         this.filter = filter ? filter : {};
 
         this.issuers = issuers;
@@ -73,7 +80,7 @@ export class Client {
         */
 
         issuers.map((issuer: any) => {
-            
+
             if (tokenLookup[issuer].onChain === true) {
 
                 this.onChainTokens.tokenKeys.push(issuer);
@@ -93,9 +100,80 @@ export class Client {
         // timeout used to apply single instances
 
         attachPostMessageListener(this.eventReciever);
-            
+
         // TODO look at creating scope for this lib without relying on the users implementation variable which is used at this time.
         // e.g. window.negotiator = this;
+
+    }
+
+    async openIframe(url: any) {
+
+        return new Promise((resolve, reject) => {
+
+            const iframe = document.createElement('iframe');
+
+            iframe.src = url;
+
+            iframe.style.width = '1px';
+
+            iframe.style.height = '1px';
+
+            iframe.style.opacity = '0';
+
+            document.body.appendChild(iframe);
+
+            iframe.onload = () => {
+
+                resolve(iframe);
+
+            };
+
+        });
+
+    }
+
+    async getTokensIframe(config: GetTokenInterface) {
+
+        const {
+            issuer,
+            filter,
+            tokensOrigin,
+            negotiationType
+        } = config;
+
+        return new Promise((resolve, reject) => {
+
+            let listener = (event: any) => {
+
+                if (event.data.evt === 'set-iframe-issuer-tokens-passive') {
+
+                    resolve(event.data.data.tokens);
+
+                }
+
+            }
+
+            attachPostMessageListener(listener);
+
+            this.openIframe(`${tokensOrigin}?action=get-iframe-issuer-tokens&type=${negotiationType}&filter=${JSON.stringify(filter)}`).then((iframeRef) => {
+
+                if (iframeRef) {
+
+                    iframeRef.contentWindow.postMessage({
+                        evt: 'getTokens'
+                    }, tokensOrigin);
+                    
+                    if (!window.negotiator.issuerIframeRefs) {
+                        window.negotiator.issuerIframeRefs = {};
+                    }
+            
+                    window.negotiator.issuerIframeRefs[issuer] = iframeRef;
+    
+                }
+
+            }).catch((error) => { });
+
+        });
 
     }
 
@@ -105,8 +183,8 @@ export class Client {
 
             const { tokenOrigin } = tokenLookup[issuer];
 
-            const tokens = await getTokensIframe({ filter: this.filter, tokensOrigin: tokenOrigin, negotiationType: 'passive' });
-            
+            const tokens = await this.getTokensIframe({ issuer: issuer, filter: this.filter, tokensOrigin: tokenOrigin, negotiationType: 'passive' });
+
             this.offChainTokens[issuer].tokens = tokens;
 
             return;
@@ -164,9 +242,9 @@ export class Client {
 
     }
 
-    async activeNegotiationStrategy(iframeStorageSupport:boolean) {
+    async activeNegotiationStrategy(iframeStorageSupport: boolean) {
 
-        if(!iframeStorageSupport) {
+        if (!iframeStorageSupport) {
 
             this.embedTokenConnectClientOverlayTab();
 
@@ -178,7 +256,7 @@ export class Client {
 
     }
 
-    async passiveNegotiationStrategy(iframeStorageSupport:boolean) {
+    async passiveNegotiationStrategy(iframeStorageSupport: boolean) {
 
         // Feature not supported when an end users third party cookies are disabled
         // because the use of a tab requires a user gesture at this time.
@@ -216,13 +294,13 @@ export class Client {
             if (entryPointElement) {
 
                 entryPointElement.innerHTML += createOverlayMarkup(this.options?.overlay?.heading);
-                
+
                 entryPointElement.innerHTML += createFabButton();
 
                 let refIssuerContainerSelector = document.querySelector(".token-issuer-list-container-tn");
-                
+
                 refIssuerContainerSelector.innerHTML = "";
-                
+
                 this.offChainTokens.tokenKeys.map((issuer: string) => {
 
                     refIssuerContainerSelector.innerHTML += issuerConnectIframe(issuer);
@@ -230,11 +308,11 @@ export class Client {
                 });
 
                 this.assignFabButtonAnimation();
-                
+
                 this.addTheme();
 
             }
-            
+
             window.tokenToggleSelection = this.tokenToggleSelection;
             window.connectTokenIssuerWithIframe = this.connectTokenIssuerWithIframe;
             window.navigateToTokensView = this.navigateToTokensView;
@@ -253,13 +331,13 @@ export class Client {
             if (entryPointElement) {
 
                 entryPointElement.innerHTML += createOverlayMarkup(this.options?.overlay?.heading);
-                
+
                 entryPointElement.innerHTML += createFabButton();
 
                 let refIssuerContainerSelector = document.querySelector(".token-issuer-list-container-tn");
-                
+
                 refIssuerContainerSelector.innerHTML = "";
-                
+
                 this.offChainTokens.tokenKeys.map((issuer: string) => {
 
                     refIssuerContainerSelector.innerHTML += issuerConnectTab(issuer);
@@ -267,18 +345,18 @@ export class Client {
                 });
 
                 this.assignFabButtonAnimation();
-                
+
                 this.addTheme();
 
             }
-            
+
             window.tokenToggleSelection = this.tokenToggleSelection;
             window.connectTokenIssuerWithTab = this.connectTokenIssuerWithTab;
             window.navigateToTokensView = this.navigateToTokensView;
 
         }, 0);
     }
-    
+
     embedIframeClientOverlay() {
 
         let _index = 0;
@@ -326,7 +404,7 @@ export class Client {
             });
 
             this.assignFabButtonAnimation();
-            
+
             this.addTheme();
 
         }
@@ -410,26 +488,26 @@ export class Client {
 
     }
 
-    issuerConnected(issuer:string) {
-        
+    issuerConnected(issuer: string) {
+
         const connectBtn = document.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`);
-        
+
         const tokenBtn = document.querySelector(`[data-issuer*="${issuer}"] .tokens-btn-tn`);
-        
+
         connectBtn.style.display = "none";
-        
+
         connectBtn.setAttribute('aria-hidden', true);
-        
+
         tokenBtn.style.display = "block";
-        
+
         tokenBtn.innerHTML = `View Tokens (${this.offChainTokens[issuer].tokens.length})`;
-        
+
         tokenBtn.setAttribute('aria-hidden', false);
-        
+
     }
 
-    navigateToTokensView(event:any) {
-        
+    navigateToTokensView(event: any) {
+
         const issuer = event.target.dataset.issuer;
 
         window.negotiator.embedTokensIntoView(issuer);
@@ -438,67 +516,67 @@ export class Client {
 
     }
 
-    embedTokensIntoView(issuer){
+    embedTokensIntoView(issuer) {
 
         const refTokenContainerSelector = document.getElementsByClassName("token-view-tn")[0];
 
-        if(!issuer) {
+        if (!issuer) {
 
             refTokenContainerSelector.style.display = 'none';
             return;
 
         };
-            
+
         refTokenContainerSelector.style.display = 'block';
-        
+
         refTokenContainerSelector.scrollTo(0, 0);
 
         const refTokenContainerSelector = document.getElementsByClassName("token-list-container-tn")[0];
-        
+
         refTokenContainerSelector.innerHTML = "";
 
         const config = window.negotiator.tokenLookup[issuer];
-        
+
         const location = config.onChain ? 'onChainTokens' : 'offChainTokens';
 
         document.getElementsByClassName("headline-tn token-name")[0].innerHTML = config.title;
 
-        window.negotiator[location][issuer].tokens.map((t: any, i:any) => {
+        window.negotiator[location][issuer].tokens.map((t: any, i: any) => {
 
             // TODO - Memory usage: load extra tokens when user scrolls to bottom of issuer
             // if(i < 25) {
 
-                const { title, emblem } = tokenLookup[issuer];
+            const { title, emblem } = tokenLookup[issuer];
 
-                let isSelected = false;
+            let isSelected = false;
 
-                // TODO Define a constant value that can be checked
-                // regardless of which issuer token to speed up this check
-                window.negotiator.selectedTokens[issuer]?.tokens.map((st, si) => {
-                    if(t.toString() === st.toString()) isSelected = true;
-                });
+            // TODO Define a constant value that can be checked
+            // regardless of which issuer token to speed up this check
+            window.negotiator.selectedTokens[issuer]?.tokens.map((st, si) => {
+                if (t.toString() === st.toString()) isSelected = true;
+            });
 
-                // @ts-ignore
-                refTokenContainerSelector.innerHTML += createToken({
-                    data: t,
-                    tokenIssuerKey: issuer,
-                    index: i,
-                    title: title,
-                    emblem: emblem,
-                    toggleState: isSelected
-                });
+            // @ts-ignore
+            refTokenContainerSelector.innerHTML += createToken({
+                data: t,
+                tokenIssuerKey: issuer,
+                index: i,
+                title: title,
+                emblem: emblem,
+                toggleState: isSelected
+            });
 
             // }
 
         });
     }
 
-    showTokenView(issuer:string) {
+    showTokenView(issuer: string) {
 
         var element = document.getElementsByClassName("overlay-content-tn")[0];
         element.classList.toggle("open");
 
-        if(issuer){
+        if (issuer) {
 
             const connectBtn = document.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`);
 
@@ -514,13 +592,13 @@ export class Client {
 
             const tokenBtns = document.querySelectorAll(`.tokens-btn-tn`);
 
-            connectBtns.forEach(function(userItem) {
+            connectBtns.forEach(function (userItem) {
 
                 userItem.setAttribute('aria-expanded', false);
 
             });
 
-            tokenBtns.forEach(function(userItem) {
+            tokenBtns.forEach(function (userItem) {
 
                 userItem.setAttribute('aria-expanded', false);
 
@@ -534,26 +612,26 @@ export class Client {
         const issuer = event.currentTarget.dataset.issuer;
 
         const filter = window.negotiator.filter ? window.negotiator.filter : {};
-        
+
         const tokensOrigin = window.negotiator.tokenLookup[issuer].tokenOrigin;
 
-        getTokensIframe({ filter: filter, tokensOrigin: tokensOrigin, negotiationType: 'active' });
+        window.negotiator.getTokensIframe({ issuer: issuer, filter: filter, tokensOrigin: tokensOrigin, negotiationType: 'active' });
 
     }
 
     connectTokenIssuerWithTab(event) {
-            
+
         const issuer = event.target.dataset.issuer;
-        
+
         const filter = window.negotiator.filter ? JSON.stringify(window.negotiator.filter) : '{}';
-        
-        let	tabRef = window.open(
+
+        let tabRef = window.open(
             `${tokenLookup[issuer].tokenOrigin}?action=get-tab-issuer-tokens&filter=${filter}`,
             "win1",
             "left=0,top=0,width=320,height=320"
         );
 
-        if(!window.negotiator.issuerIframeRefs) {
+        if (!window.negotiator.issuerIframeRefs) {
             window.negotiator.issuerIframeRefs = {};
         }
 
@@ -586,7 +664,7 @@ export class Client {
         });
 
         window.negotiator.eventSender.emitTokensToClient();
-        
+
     }
 
 
@@ -600,33 +678,35 @@ export class Client {
 
         // try {
 
-            let useEthKey = await getChallengeSigned(tokenLookup[issuer]);
+        let useEthKey = await getChallengeSigned(tokenLookup[issuer]);
 
-            const attestedAddress = await validateUseEthKey(unEndPoint, useEthKey);
+        const attestedAddress = await validateUseEthKey(unEndPoint, useEthKey);
 
-            const walletAddress = await connectMetamaskAndGetAddress();
+        const walletAddress = await connectMetamaskAndGetAddress();
 
-            if (walletAddress.toLowerCase() !== attestedAddress.toLowerCase()) throw new Error('useEthKey validation failed.');
+        if (walletAddress.toLowerCase() !== attestedAddress.toLowerCase()) throw new Error('useEthKey validation failed.');
 
-            this.getTokenProof(unsignedToken, issuer);
-        
+        this.getTokenProof(unsignedToken, issuer);
+
         // } catch (e) {
 
-            // requiredParams(null, "Could not authenticate token");
+        // requiredParams(null, "Could not authenticate token");
 
         // }
 
     }
 
-    async getTokenProof (unsignedToken: any, issuer: any) {
-        
-        let	tabRef = window.open(
+    async getTokenProof(unsignedToken: any, issuer: any) {
+
+        let tabRef = window.open(
             `${tokenLookup[issuer].tokenOrigin}?action=get-token-proof&token=${JSON.stringify(unsignedToken)}&issuer=${issuer}`,
             "win1",
             `left=0,top=0,width=${window.innerWidth},height=${window.innerHeight}`
         );
 
-        if(!window.negotiator.issuerIframeRefs) {
+        // issue with passive.
+
+        if (!window.negotiator.issuerIframeRefs) {
             window.negotiator.issuerIframeRefs = {};
         }
 
@@ -642,7 +722,7 @@ export class Client {
         emitTokensToClient: () => {
             window.postMessage({ evt: 'token-negotiator-tokens', selectedTokens: window.negotiator.selectedTokens }, window.location.origin);
         },
-        emitProofToClient: (proof:any, issuer: any) => {
+        emitProofToClient: (proof: any, issuer: any) => {
             window.postMessage({ evt: 'token-negotiator-token-proof', proof: proof, issuer: issuer }, window.location.origin);
         }
     }
@@ -651,67 +731,67 @@ export class Client {
 
         switch (event.data.evt) {
 
-          case 'set-tab-issuer-tokens': 
-                    
+            case 'set-tab-issuer-tokens':
+
                 const issuer = event.data.data.issuer;
 
                 let childURL = tokenLookup[issuer].tokenOrigin;
-            
+
                 let cUrl = new URL(childURL);
-            
+
                 let childUrlOrigin = cUrl.origin;
-            
+
                 if (event.origin != childUrlOrigin) return;
-            
+
                 this.offChainTokens[issuer].tokens = event.data.data.tokens;
-            
-                if(window.negotiator.issuerIframeRefs[issuer]) {
+
+                if (window.negotiator.issuerIframeRefs[issuer]) {
 
                     window.negotiator.issuerIframeRefs[issuer].close();
 
                     delete window.negotiator.issuerIframeRefs[issuer];
-                
+
                     this.issuerConnected(issuer);
 
                 }
-            
-          break;
-          
-          case 'set-iframe-issuer-tokens-active':
 
-            const issuer = event.data.data.issuer;
-        
-            this.offChainTokens[issuer].tokens = event.data.data.tokens;
+                break;
 
-            this.issuerConnected(issuer);
-            
-          break;
-          
-          case 'proof': 
+            case 'set-iframe-issuer-tokens-active':
 
-            if (window.negotiator.issuerIframeRefs[event.data.data.issuer]) {
+                const issuer = event.data.data.issuer;
 
-                window.negotiator.issuerIframeRefs[event.data.data.issuer].close();
+                this.offChainTokens[issuer].tokens = event.data.data.tokens;
 
-                delete window.negotiator.issuerIframeRefs[event.data.data.issuer];
+                this.issuerConnected(issuer);
 
-            }
+                break;
 
-            this.eventSender.emitProofToClient(event.data.data.proof, event.data.data.issuer);
+            case 'proof':
 
-          break;
+                if (window.negotiator.issuerIframeRefs[event.data.data.issuer]) {
+
+                    window.negotiator.issuerIframeRefs[event.data.data.issuer].close();
+
+                    // delete window.negotiator.issuerIframeRefs[event.data.data.issuer];
+
+                }
+
+                this.eventSender.emitProofToClient(event.data.data.proof, event.data.data.issuer);
+
+                break;
 
         }
     }
-        
+
     addTokenThroughTab(magicLink: any) {
-    
+
         var tab = window.open(
             magicLink,
             "win1",
             "left=0,top=0,width=320,height=320"
         );
-        
+
         // TODO use an event to determine when the window has loaded
         setTimeout(() => {
             tab?.close();
@@ -719,35 +799,24 @@ export class Client {
 
     }
 
-    // Cookie supported only
     addTokenThroughIframe(magicLink: any) {
-        
-        const iframe = document.createElement('iframe');
-        
-        iframe.src = magicLink;
-        
-        iframe.style.width = '1px';
-        
-        iframe.style.height = '1px';
-        
-        iframe.style.opacity = '0';
-        
-        document.body.appendChild(iframe);
-        
+
+        this.openIframe(magicLink);
+
     }
 
     async thirdPartyCookieSupportCheck(tokensOrigin: any) {
-        
+
         const iframe = document.createElement('iframe');
-        
+
         iframe.src = tokensOrigin + '?action=cookie-support-check';
-        
+
         iframe.style.width = '1px';
-        
+
         iframe.style.height = '1px';
-        
+
         iframe.style.opacity = '0';
-        
+
         document.body.appendChild(iframe);
 
         return new Promise((resolve) => {
@@ -756,23 +825,15 @@ export class Client {
 
                 if (event.data.evt === 'cookie-support-check') {
 
-                    // TODO
-                    // removeChild(iframe);
-
-                    console.log('support for third party cookies: ', event.data.data.thirdPartyCookies ? true : false);
-                    
                     resolve(event.data.data.thirdPartyCookies ? true : false);
 
                 }
 
-                // allow 15 seconds for this check to be completed (expectation it can be done within 2-3 seconds).
+                // allow 15 seconds for this check to be completed
                 // falling back to solution that will work across all devices.
-                setTimeout(() => { 
+                setTimeout(() => {
 
-                    // TODO
-                    // removeChild(iframe);
-
-                    resolve(null) 
+                    resolve(null)
 
                 }, 15000);
 
@@ -781,7 +842,7 @@ export class Client {
             attachPostMessageListener(listener);
 
         })
-        
+
     }
 
 }

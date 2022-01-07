@@ -46,7 +46,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 import { asyncHandle, requiredParams, attachPostMessageListener } from './../utils/index';
-import { getTokensIframe, getChallengeSigned, validateUseEthKey, connectMetamaskAndGetAddress } from "../core/index";
+import { getChallengeSigned, validateUseEthKey, connectMetamaskAndGetAddress } from "../core/index";
 import { createOverlayMarkup, createFabButton, createToken, issuerConnectTab, issuerConnectIframe } from './componentFactory';
 import { tokenLookup } from './../tokenLookup';
 import "./../theme/style.css";
@@ -86,7 +86,6 @@ var Client = (function () {
                 case 'proof':
                     if (window.negotiator.issuerIframeRefs[event.data.data.issuer]) {
                         window.negotiator.issuerIframeRefs[event.data.data.issuer].close();
-                        delete window.negotiator.issuerIframeRefs[event.data.data.issuer];
                     }
                     _this.eventSender.emitProofToClient(event.data.data.proof, event.data.data.issuer);
                     break;
@@ -115,6 +114,51 @@ var Client = (function () {
         });
         attachPostMessageListener(this.eventReciever);
     }
+    Client.prototype.openIframe = function (url) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2, new Promise(function (resolve, reject) {
+                        var iframe = document.createElement('iframe');
+                        iframe.src = url;
+                        iframe.style.width = '1px';
+                        iframe.style.height = '1px';
+                        iframe.style.opacity = '0';
+                        document.body.appendChild(iframe);
+                        iframe.onload = function () {
+                            resolve(iframe);
+                        };
+                    })];
+            });
+        });
+    };
+    Client.prototype.getTokensIframe = function (config) {
+        return __awaiter(this, void 0, void 0, function () {
+            var issuer, filter, tokensOrigin, negotiationType;
+            var _this = this;
+            return __generator(this, function (_a) {
+                issuer = config.issuer, filter = config.filter, tokensOrigin = config.tokensOrigin, negotiationType = config.negotiationType;
+                return [2, new Promise(function (resolve, reject) {
+                        var listener = function (event) {
+                            if (event.data.evt === 'set-iframe-issuer-tokens-passive') {
+                                resolve(event.data.data.tokens);
+                            }
+                        };
+                        attachPostMessageListener(listener);
+                        _this.openIframe(tokensOrigin + "?action=get-iframe-issuer-tokens&type=" + negotiationType + "&filter=" + JSON.stringify(filter)).then(function (iframeRef) {
+                            if (iframeRef) {
+                                iframeRef.contentWindow.postMessage({
+                                    evt: 'getTokens'
+                                }, tokensOrigin);
+                                if (!window.negotiator.issuerIframeRefs) {
+                                    window.negotiator.issuerIframeRefs = {};
+                                }
+                                window.negotiator.issuerIframeRefs[issuer] = iframeRef;
+                            }
+                        }).catch(function (error) { });
+                    })];
+            });
+        });
+    };
     Client.prototype.setPassiveNegotiationWebTokens = function (offChainTokens) {
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
@@ -126,7 +170,7 @@ var Client = (function () {
                                 switch (_a.label) {
                                     case 0:
                                         tokenOrigin = tokenLookup[issuer].tokenOrigin;
-                                        return [4, getTokensIframe({ filter: this.filter, tokensOrigin: tokenOrigin, negotiationType: 'passive' })];
+                                        return [4, this.getTokensIframe({ issuer: issuer, filter: this.filter, tokensOrigin: tokenOrigin, negotiationType: 'passive' })];
                                     case 1:
                                         tokens = _a.sent();
                                         this.offChainTokens[issuer].tokens = tokens;
@@ -389,7 +433,7 @@ var Client = (function () {
         var issuer = event.currentTarget.dataset.issuer;
         var filter = window.negotiator.filter ? window.negotiator.filter : {};
         var tokensOrigin = window.negotiator.tokenLookup[issuer].tokenOrigin;
-        getTokensIframe({ filter: filter, tokensOrigin: tokensOrigin, negotiationType: 'active' });
+        window.negotiator.getTokensIframe({ issuer: issuer, filter: filter, tokensOrigin: tokensOrigin, negotiationType: 'active' });
     };
     Client.prototype.connectTokenIssuerWithTab = function (event) {
         var issuer = event.target.dataset.issuer;
@@ -461,12 +505,7 @@ var Client = (function () {
         }, 2500);
     };
     Client.prototype.addTokenThroughIframe = function (magicLink) {
-        var iframe = document.createElement('iframe');
-        iframe.src = magicLink;
-        iframe.style.width = '1px';
-        iframe.style.height = '1px';
-        iframe.style.opacity = '0';
-        document.body.appendChild(iframe);
+        this.openIframe(magicLink);
     };
     Client.prototype.thirdPartyCookieSupportCheck = function (tokensOrigin) {
         return __awaiter(this, void 0, void 0, function () {
@@ -481,7 +520,6 @@ var Client = (function () {
                 return [2, new Promise(function (resolve) {
                         var listener = function (event) {
                             if (event.data.evt === 'cookie-support-check') {
-                                console.log('support for third party cookies: ', event.data.data.thirdPartyCookies ? true : false);
                                 resolve(event.data.data.thirdPartyCookies ? true : false);
                             }
                             setTimeout(function () {

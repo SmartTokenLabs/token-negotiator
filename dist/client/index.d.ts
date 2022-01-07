@@ -1,5 +1,11 @@
 import "./../theme/style.css";
 import './../vendor/keyShape';
+interface GetTokenInterface {
+    issuer: string;
+    filter: any;
+    tokensOrigin: any;
+    negotiationType: string;
+}
 interface NegotiationInterface {
     type: string;
     issuers: string[];
@@ -27,6 +33,8 @@ export declare class Client {
     onChainTokens: any;
     selectedTokens: any;
     constructor(config: NegotiationInterface);
+    openIframe(url: any): Promise<unknown>;
+    getTokensIframe(config: GetTokenInterface): Promise<unknown>;
     setPassiveNegotiationWebTokens(offChainTokens: any): Promise<void>;
     setBlockChainTokens(onChainTokens: any): Promise<void>;
     negotiate(): Promise<any>;

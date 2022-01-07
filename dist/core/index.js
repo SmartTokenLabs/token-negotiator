@@ -34,7 +34,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-import { base64ToUint8array, requiredParams, compareObjects, attachPostMessageListener } from '../utils/index';
+import { base64ToUint8array, requiredParams, compareObjects } from '../utils/index';
 import { ethers } from "ethers";
 export var filterTokens = function (decodedTokens, filter) {
     if (Object.keys(filter).length === 0)
@@ -96,22 +96,6 @@ export var decodeTokens = function (rawTokens, tokenParser, unsignedTokenDataNam
     else {
         return [];
     }
-};
-export var openOutletIframe = function (tokensOrigin) {
-    return new Promise(function (resolve, reject) {
-        var iframe = document.createElement('iframe');
-        iframe.src = tokensOrigin;
-        iframe.style.width = '1px';
-        iframe.style.height = '1px';
-        iframe.style.opacity = '0';
-        document.body.appendChild(iframe);
-        iframe.onload = function () {
-            iframe.contentWindow.postMessage({
-                evt: 'getTokens'
-            }, tokensOrigin);
-            resolve(true);
-        };
-    });
 };
 export var storeMagicURL = function (tokens, itemStorageKey) {
     if (tokens) {
@@ -305,21 +289,6 @@ export var rawTokenCheck = function (unsignedToken, tokenIssuer) { return __awai
         if (rawTokenData && rawTokenData.magic_link)
             tokenObj.magicLink = rawTokenData.magic_link;
         return [2, tokenObj];
-    });
-}); };
-export var getTokensIframe = function (config) { return __awaiter(void 0, void 0, void 0, function () {
-    var filter, tokensOrigin, negotiationType;
-    return __generator(this, function (_a) {
-        filter = config.filter, tokensOrigin = config.tokensOrigin, negotiationType = config.negotiationType;
-        return [2, new Promise(function (resolve, reject) {
-                var listener = function (event) {
-                    if (event.data.evt === 'set-iframe-issuer-tokens-passive') {
-                        resolve(event.data.data.tokens);
-                    }
-                };
-                attachPostMessageListener(listener);
-                openOutletIframe(tokensOrigin + "?action=get-iframe-issuer-tokens&type=" + negotiationType + "&filter=" + JSON.stringify(filter)).then(function () { }).catch(function (error) { });
-            })];
     });
 }); };
 export var getRawToken = function (unsignedToken, tokenIssuer) {

@@ -110,42 +110,6 @@ export const decodeTokens = (rawTokens: any, tokenParser: any, unsignedTokenData
 
 };
 
-// TODO create the same flow to get both TOKENS & PROOF
-// for browsers that support third party cookies.
-
-// Only works for Chrome etc. Conisder re-working all of this
-// so it's all done via events for consistency.
-
-export const openOutletIframe = (tokensOrigin: any) => {
-
-  return new Promise((resolve, reject) => {
-
-    const iframe = document.createElement('iframe');
-
-    iframe.src = tokensOrigin;
-
-    iframe.style.width = '1px';
-
-    iframe.style.height = '1px';
-
-    iframe.style.opacity = '0';
-
-    document.body.appendChild(iframe);
-
-    iframe.onload = () => {
-
-      //@ts-ignore
-      iframe.contentWindow.postMessage({
-        evt: 'getTokens'
-      }, tokensOrigin);
-      resolve(true);
-
-    };
-
-  });
-
-}
-
 interface GetTokenInterface {
   filter: any;
   tokensOrigin: any;
@@ -381,40 +345,6 @@ export const rawTokenCheck = async (unsignedToken: any, tokenIssuer: any) => {
   if (rawTokenData && rawTokenData.magic_link) tokenObj.magicLink = rawTokenData.magic_link;
 
   return tokenObj;
-
-}
-
-interface GetTokenInterface {
-  filter: any;
-  tokensOrigin: any; 
-  negotiationType: string;
-}
-
-export const getTokensIframe = async (config: GetTokenInterface) => {
-  
-  const {
-    filter,
-    tokensOrigin,
-    negotiationType
-  } = config;
-
-  return new Promise((resolve, reject) => {
-    
-    let listener = (event:any) => {
-
-      if (event.data.evt === 'set-iframe-issuer-tokens-passive') {
-
-        resolve(event.data.data.tokens);
-
-      }
-
-    }
-    
-    attachPostMessageListener(listener);
-
-    openOutletIframe(`${tokensOrigin}?action=get-iframe-issuer-tokens&type=${negotiationType}&filter=${JSON.stringify(filter)}`).then(() => { }).catch((error) => { });
-
-  });
 
 }
 
