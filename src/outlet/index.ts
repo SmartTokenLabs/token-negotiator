@@ -1,5 +1,5 @@
 import { readMagicUrl, storeMagicURL, rawTokenCheck } from '../core';
-import { requiredParams } from '../utils/index';
+import { requiredParams, attachPostMessageListener } from '../utils/index';
 import { tokenLookup } from './../tokenLookup';
 import { decodeTokens, filterTokens } from './../core/index';
 
@@ -29,42 +29,90 @@ export class Outlet {
 
     requiredParams(tokenLookup[tokenName], "Please provide the token name when installing token outlet");
     
-    const { tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey } = this.tokenIssuer;
-
-    const tokens = readMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey);
-
-    if(tokens && tokens.length) {
-
-      storeMagicURL(tokens, itemStorageKey);
-    
-    }
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const action = urlParams.get('action');
-
-    if(action === 'get-tokens') {
-
-      this.sendTokens(tokenName);
-
-    } else if (action === 'get-token-proof') {
-
-      const token = urlParams.get('token');
-
-      requiredParams(token, "unsigned token is missing");
-
-      this.sendTokenProof(token);
-
-    } else {
-
-      requiredParams(null, "Please provide an action");
-
-    }
-
-    // TODO - create a condition / check that determines if this is accepted.
-    // for third party cookies / cross origin communication
-    window.addEventListener('message', (event) => { this.eventReciever(event); }, false);
+    this.pageOnLoadEventHandler();
     
   };
+
+  getDataFromQuery ( itemKey:any ) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const item = urlParams.get(itemKey);
+    return item ? item : undefined;
+  }
+
+  getFilter(){
+    const filter = this.getDataFromQuery('filter');
+    return filter ? JSON.parse(filter) : {};
+  }
+  
+  pageOnLoadEventHandler () {
+
+    const action = this.getDataFromQuery('action');
+
+    // Outlet Page OnLoad Event Handler
+
+    switch (action) {
+
+      case 'get-iframe-issuer-tokens':
+
+        const negotiationType = this.getDataFromQuery('type');
+
+        if (negotiationType) {
+          
+          this.getIframeIssuerTokens(this.tokenName, this.getFilter(), negotiationType);
+
+        } else {
+
+          requiredParams(negotiationType, "negotiation type required to handle this event");
+
+        }
+
+      break;
+
+      case 'get-tab-issuer-tokens':
+
+        this.getTabIssuerTokens(this.tokenName, this.getFilter());
+      
+      break;
+
+      case 'get-token-proof':
+
+        const token = this.getDataFromQuery('token');
+
+        requiredParams(token, "unsigned token is missing");
+  
+        this.sendTokenProof(token);
+
+      break;
+
+      case 'set-magic-url':
+
+        // store local storage item that can be later used to check if third party cookies are allowed.
+        // Note: This test can only be performed when the localstorage / cookie is assigned, then later requested.
+        localStorage.setItem('cookie-support-check', 'test');
+
+        const { tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey } = this.tokenIssuer;
+
+        const tokens = readMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey);    
+
+        if(tokens && tokens.length) storeMagicURL(tokens, itemStorageKey);
+      
+      break;
+
+      case 'cookie-support-check':
+
+        this.eventSender.emitCookieSupport();
+      
+      break;
+
+      default:
+
+        requiredParams(null, "Please provide a valid action");
+
+      break;
+
+    }
+
+  }
 
   prepareTokenOutput ( tokenName:string, filter: any ) {
 
@@ -110,8 +158,17 @@ export class Outlet {
     });     
 
   }
+
+  getIframeIssuerTokens ( tokenName:string, filter:any, negotiationType:string ) {
+
+    var storageTokens = this.prepareTokenOutput( tokenName, filter);
+
+    if (negotiationType === 'passive') this.eventSender.emitIframeIssuerTokensPassive(storageTokens);
+    else this.eventSender.emitIframeIssuerTokensActive(storageTokens);
+
+  }
  
-  sendTokens( tokenName:string ) {
+  getTabIssuerTokens ( tokenName:string, filter:any ) {
 
     let opener = window.opener;
 		
@@ -123,43 +180,58 @@ export class Outlet {
 
       let parentOrigin = pUrl.origin;
 
-      const urlParams = new URLSearchParams(window.location.search);
-      
-      const findFilter = urlParams.get('filter');
-
-      const filter = findFilter ? JSON.parse(findFilter) : {};
-
       var storageTokens = this.prepareTokenOutput( tokenName, filter );
 
-      opener.postMessage({ evt: "tokens", data: { issuer: this.tokenName, tokens: storageTokens || [] }  }, parentOrigin);
+      this.eventSender.emitTabIssuerTokens(opener, storageTokens, parentOrigin);
 
     }	
 
   }
 
-  eventReciever = (event: any) => {
-    switch (event.data.evt) {
-      case 'getTokens': 
-        const filter = event.data?.data?.filter;
-        var storageTokens = this.prepareTokenOutput( this.tokenName, filter );
-        this.eventSender.emitTokens(storageTokens);
-      break;
-      case 'getTokenProof':
-        const unsignedToken = JSON.parse(JSON.stringify(event.data.data.unsignedToken));
-        rawTokenCheck(unsignedToken, this.tokenIssuer).then((tokenProof) => {
-          this.eventSender.emitTokenProof(tokenProof);
-        });        
-      break;
-    }
-  }
+  // eventReciever = (event: any) => {
+  //   switch (event.data.evt) {
+  //     case 'getTokenProof':
+  //       const unsignedToken = JSON.parse(JSON.stringify(event.data.data.unsignedToken));
+  //       rawTokenCheck(unsignedToken, this.tokenIssuer).then((tokenProof) => {
+  //         this.eventSender.emitTokenProof(tokenProof);
+  //       });        
+  //     break;
+  //   }
+  // }
 
-  // TODO Pipe all event management through here.
-  // determining which type of PostMessage should be utilised.
   eventSender = {
-    emitTokens: (tokens: any) => {
+    emitCookieSupport: () => {
       window.parent.postMessage({ 
-        evt: "tokens",
-        data: { issuer: this.tokenName, tokens: tokens }  
+        evt: "cookie-support-check",
+        data: { thirdPartyCookies: localStorage.getItem('cookie-support-check') }
+      }, document.referrer);
+    },
+    emitTabIssuerTokens: (opener: any, storageTokens: any, parentOrigin: any) => {
+      opener.postMessage({ 
+        evt: "set-tab-issuer-tokens",
+        data: {
+          issuer: this.tokenName, 
+          tokens: storageTokens
+        }  
+      },
+      parentOrigin);
+    },
+    emitIframeIssuerTokensPassive: (tokens: any) => {
+      window.parent.postMessage({
+        evt: "set-iframe-issuer-tokens-passive",
+        data: { 
+          issuer: this.tokenName, 
+          tokens: tokens 
+        }  
+      }, document.referrer);
+    },
+    emitIframeIssuerTokensActive: (tokens: any) => {
+      window.parent.postMessage({
+        evt: "set-iframe-issuer-tokens-active",
+        data: { 
+          issuer: this.tokenName, 
+          tokens: tokens 
+        }  
       }, document.referrer);
     },
     emitTokenProof: (tokenProof: any) => {

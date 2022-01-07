@@ -36,7 +36,8 @@ export declare const rawTokenCheck: (unsignedToken: any, tokenIssuer: any) => Pr
 interface GetTokenInterface {
     filter: any;
     tokensOrigin: any;
+    negotiationType: string;
 }
-export declare const getTokens: (config: GetTokenInterface) => Promise<unknown>;
+export declare const getTokensIframe: (config: GetTokenInterface) => Promise<unknown>;
 export declare const getRawToken: (unsignedToken: any, tokenIssuer: any) => {} | null | undefined;
 export {};

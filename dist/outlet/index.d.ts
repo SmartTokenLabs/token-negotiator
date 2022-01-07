@@ -12,12 +12,18 @@ export declare class Outlet {
     tokenName: any;
     tokenIssuer: any;
     constructor(config: OutletInterface);
+    getDataFromQuery(itemKey: any): string | undefined;
+    getFilter(): any;
+    pageOnLoadEventHandler(): void;
     prepareTokenOutput(tokenName: string, filter: any): any;
     sendTokenProof(token: any): "error" | undefined;
-    sendTokens(tokenName: string): void;
-    eventReciever: (event: any) => void;
+    getIframeIssuerTokens(tokenName: string, filter: any, negotiationType: string): void;
+    getTabIssuerTokens(tokenName: string, filter: any): void;
     eventSender: {
-        emitTokens: (tokens: any) => void;
+        emitCookieSupport: () => void;
+        emitTabIssuerTokens: (opener: any, storageTokens: any, parentOrigin: any) => void;
+        emitIframeIssuerTokensPassive: (tokens: any) => void;
+        emitIframeIssuerTokensActive: (tokens: any) => void;
         emitTokenProof: (tokenProof: any) => void;
     };
 }

@@ -50,3 +50,19 @@ export const asyncHandle = async (promise:any) => {
   }
   
 }
+
+export const attachPostMessageListener = (listener:any) => {
+                
+  if (window.addEventListener) {
+  
+      window.addEventListener("message", listener, false);
+  
+  } else {
+  
+      // IE8
+  
+      // @ts-ignore
+      window.attachEvent("onmessage", listener);
+  
+  }
+}

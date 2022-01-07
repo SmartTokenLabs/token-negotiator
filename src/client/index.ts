@@ -1,7 +1,7 @@
 // @ts-nocheck
-import { asyncHandle, requiredParams, logger } from './../utils/index';
-import { getTokens, getChallengeSigned, validateUseEthKey, connectMetamaskAndGetAddress } from "../core/index";
-import { createOverlayMarkup, createFabButton, createToken, issuerConnectTab } from './componentFactory';
+import { asyncHandle, requiredParams, attachPostMessageListener, logger } from './../utils/index';
+import { getTokensIframe, getChallengeSigned, validateUseEthKey, connectMetamaskAndGetAddress } from "../core/index";
+import { createOverlayMarkup, createFabButton, createToken, issuerConnectTab, issuerConnectIframe } from './componentFactory';
 import { tokenLookup } from './../tokenLookup';
 import "./../theme/style.css";
 import './../vendor/keyShape';
@@ -41,15 +41,9 @@ export class Client {
 
         const { type, issuers, options, filter } = config;
 
-        // @ts-ignore
-        // this.authenticator = null; // new Authenticator();
+        requiredParams(type, 'type is required.');
 
-        // @ts-ignore
-        // requiredParams(this.authenticator, "authenticator is missing");
-
-        // requiredParams(type, 'type is required.');
-
-        // requiredParams(issuers, 'issuers are missing.');
+        requiredParams(issuers, 'issuers are missing.');
 
         this.tokenLookup = tokenLookup;
 
@@ -79,6 +73,7 @@ export class Client {
         */
 
         issuers.map((issuer: any) => {
+            
             if (tokenLookup[issuer].onChain === true) {
 
                 this.onChainTokens.tokenKeys.push(issuer);
@@ -95,18 +90,22 @@ export class Client {
 
         });
 
-        // Adjust all events to come into the event reciever only.
-        this.attachPostMessageListener(this.eventReciever);
+        // timeout used to apply single instances
+
+        attachPostMessageListener(this.eventReciever);
+            
+        // TODO look at creating scope for this lib without relying on the users implementation variable which is used at this time.
+        // e.g. window.negotiator = this;
 
     }
 
-    async setWebTokens(offChainTokens: any) {
+    async setPassiveNegotiationWebTokens(offChainTokens: any) {
 
         await Promise.all(offChainTokens.tokenKeys.map(async (issuer: string): Promise<any> => {
 
-            const { tokenOrigin, itemStorageKey, tokenParser, unsignedTokenDataName } = tokenLookup[issuer];
+            const { tokenOrigin } = tokenLookup[issuer];
 
-            const tokens = await getTokens({ filter: {}, tokensOrigin: tokenOrigin, itemStorageKey: itemStorageKey, tokenParser: tokenParser, unsignedTokenDataName: unsignedTokenDataName });
+            const tokens = await getTokensIframe({ filter: this.filter, tokensOrigin: tokenOrigin, negotiationType: 'passive' });
             
             this.offChainTokens[issuer].tokens = tokens;
 
@@ -148,54 +147,65 @@ export class Client {
 
         */
 
+        this.iframeStorageSupport = await this.thirdPartyCookieSupportCheck(tokenLookup[this.offChainTokens.tokenKeys[0]].tokenOrigin);
+
+        // if storage support - embed iframe for active and passive negotiation flows.
+        // else open with window each time.
+
         if (this.type === 'active') {
 
-            this.activeNegotiationStrategy();
+            this.activeNegotiationStrategy(this.iframeStorageSupport);
 
         } else {
 
-            return this.passiveNegotiationStrategy();
+            return this.passiveNegotiationStrategy(this.iframeStorageSupport);
 
         }
 
     }
 
-    async passiveNegotiationStrategy() {
+    async activeNegotiationStrategy(iframeStorageSupport:boolean) {
 
-        // Feature not supported when an end users third party cookies are disabled.
+        if(!iframeStorageSupport) {
 
-        // let [webTokens, webTokensErr] = await asyncHandle(this.setWebTokens(this.offChainTokens));
-        // if (!webTokens || webTokensErr) {
-        //     logger('token negotiator: no web tokens found.');
-        // }
-        
-        await asyncHandle(this.setWebTokens(this.offChainTokens));
+            this.embedTokenConnectClientOverlayTab();
 
-        let outputOnChain = this.onChainTokens;
+        } else {
 
-        delete outputOnChain.tokenKeys;
+            this.embedTokenConnectClientOverlayIframe();
 
-        let outputOffChain = this.offChainTokens;
-
-        delete outputOffChain.tokenKeys;
-
-        return { ...outputOffChain, ...outputOnChain };
+        }
 
     }
 
-    activeNegotiationStrategy() {
+    async passiveNegotiationStrategy(iframeStorageSupport:boolean) {
 
-        // see: https://medium.com/devscollab/detecting-whether-3rd-party-cookies-are-enabled-or-not-in-javascript-4328715a527b
+        // Feature not supported when an end users third party cookies are disabled
+        // because the use of a tab requires a user gesture at this time.
 
-        // if Cross Browser Cookies are permitted
-        // this.embedStandardClientOverlay();
+        if (iframeStorageSupport) {
 
-        // else
-        this.embedTokenConnectClientOverlay();
+            await asyncHandle(this.setPassiveNegotiationWebTokens(this.offChainTokens));
+
+            let outputOnChain = this.onChainTokens;
+
+            delete outputOnChain.tokenKeys;
+
+            let outputOffChain = this.offChainTokens;
+
+            delete outputOffChain.tokenKeys;
+
+            return { ...outputOffChain, ...outputOnChain };
+
+        } else {
+
+            console.log('Enable 3rd party cookies to use this feature.');
+
+        }
 
     }
 
-    embedTokenConnectClientOverlay() {
+    embedTokenConnectClientOverlayIframe() {
 
         setTimeout(() => {
 
@@ -215,7 +225,43 @@ export class Client {
                 
                 this.offChainTokens.tokenKeys.map((issuer: string) => {
 
-                    // TODO rename issuerConnect to something that helps explain this is markup.
+                    refIssuerContainerSelector.innerHTML += issuerConnectIframe(issuer);
+
+                });
+
+                this.assignFabButtonAnimation();
+                
+                this.addTheme();
+
+            }
+            
+            window.tokenToggleSelection = this.tokenToggleSelection;
+            window.connectTokenIssuerWithIframe = this.connectTokenIssuerWithIframe;
+            window.navigateToTokensView = this.navigateToTokensView;
+
+        }, 0);
+    }
+
+    embedTokenConnectClientOverlayTab() {
+
+        setTimeout(() => {
+
+            let entryPointElement = document.querySelector(".overlay-tn");
+
+            requiredParams(entryPointElement, 'No entry point element with the class name of .overlay-tn found.');
+
+            if (entryPointElement) {
+
+                entryPointElement.innerHTML += createOverlayMarkup(this.options?.overlay?.heading);
+                
+                entryPointElement.innerHTML += createFabButton();
+
+                let refIssuerContainerSelector = document.querySelector(".token-issuer-list-container-tn");
+                
+                refIssuerContainerSelector.innerHTML = "";
+                
+                this.offChainTokens.tokenKeys.map((issuer: string) => {
+
                     refIssuerContainerSelector.innerHTML += issuerConnectTab(issuer);
 
                 });
@@ -225,19 +271,15 @@ export class Client {
                 this.addTheme();
 
             }
-
-            // TODO - hoisted methods to window scope. Change how this is done.
             
             window.tokenToggleSelection = this.tokenToggleSelection;
-            
-            window.connectToken = this.connectToken;
-            
+            window.connectTokenIssuerWithTab = this.connectTokenIssuerWithTab;
             window.navigateToTokensView = this.navigateToTokensView;
 
         }, 0);
     }
     
-    embedStandardClientOverlay() {
+    embedIframeClientOverlay() {
 
         let _index = 0;
 
@@ -487,13 +529,26 @@ export class Client {
         }
     }
 
-    connectToken(event) {
+    connectTokenIssuerWithIframe(event) {
+
+        const issuer = event.currentTarget.dataset.issuer;
+
+        const filter = window.negotiator.filter ? window.negotiator.filter : {};
         
+        const tokensOrigin = window.negotiator.tokenLookup[issuer].tokenOrigin;
+
+        getTokensIframe({ filter: filter, tokensOrigin: tokensOrigin, negotiationType: 'active' });
+
+    }
+
+    connectTokenIssuerWithTab(event) {
+            
         const issuer = event.target.dataset.issuer;
+        
         const filter = window.negotiator.filter ? JSON.stringify(window.negotiator.filter) : '{}';
         
         let	tabRef = window.open(
-            `${tokenLookup[issuer].tokenOrigin}?action=get-tokens&filter=${filter}`,
+            `${tokenLookup[issuer].tokenOrigin}?action=get-tab-issuer-tokens&filter=${filter}`,
             "win1",
             "left=0,top=0,width=320,height=320"
         );
@@ -530,8 +585,8 @@ export class Client {
 
         });
 
-        // event sender... 
-        window.postMessage({ evt: 'token-negotiator-tokens', selectedTokens: window.negotiator.selectedTokens }, window.location.origin);
+        window.negotiator.eventSender.emitTokensToClient();
+        
     }
 
 
@@ -579,15 +634,24 @@ export class Client {
 
         // normal flow: 3rd party cookie flow.
 
-        // this.eventSender.getTokenProof(unsignedToken, tokenIssuer);
+        // this.eventSender.getTokenProof(unsignedToken, tokenIssuer); // then ?
 
+    }
+
+    eventSender = {
+        emitTokensToClient: () => {
+            window.postMessage({ evt: 'token-negotiator-tokens', selectedTokens: window.negotiator.selectedTokens }, window.location.origin);
+        },
+        emitProofToClient: (proof:any, issuer: any) => {
+            window.postMessage({ evt: 'token-negotiator-token-proof', proof: proof, issuer: issuer }, window.location.origin);
+        }
     }
 
     eventReciever = (event: any) => {
 
         switch (event.data.evt) {
 
-          case 'tokens': 
+          case 'set-tab-issuer-tokens': 
                     
                 const issuer = event.data.data.issuer;
 
@@ -612,27 +676,34 @@ export class Client {
                 }
             
           break;
+          
+          case 'set-iframe-issuer-tokens-active':
 
+            const issuer = event.data.data.issuer;
+        
+            this.offChainTokens[issuer].tokens = event.data.data.tokens;
+
+            this.issuerConnected(issuer);
+            
+          break;
+          
           case 'proof': 
 
-            window.postMessage({ evt: 'token-negotiator-token-proof', proof: event.data.data.proof, issuer: event.data.data.issuer }, window.location.origin);
-            window.negotiator.issuerIframeRefs[event.data.data.issuer].close();
+            if (window.negotiator.issuerIframeRefs[event.data.data.issuer]) {
+
+                window.negotiator.issuerIframeRefs[event.data.data.issuer].close();
+
+                delete window.negotiator.issuerIframeRefs[event.data.data.issuer];
+
+            }
+
+            this.eventSender.emitProofToClient(event.data.data.proof, event.data.data.issuer);
 
           break;
 
         }
-      }
-    
-    // Cannot Post Message? Cross Origin Third Party Cookies Solution.
-    // eventSender = {
-    //     getTokenProof: (unsignedToken: any, tokenIssuer: any) => {
-    //         window.postMessage({ 
-    //             evt: "getTokenProof",
-    //             data: { unsignedToken: unsignedToken, tokenIssuer: tokenIssuer }
-    //         }, "*"); // tokenLookup[tokenIssuer].tokenOrigin
-    //     }
-    // }
-    
+    }
+        
     addTokenThroughTab(magicLink: any) {
     
         var tab = window.open(
@@ -641,6 +712,7 @@ export class Client {
             "left=0,top=0,width=320,height=320"
         );
         
+        // TODO use an event to determine when the window has loaded
         setTimeout(() => {
             tab?.close();
         }, 2500);
@@ -664,19 +736,52 @@ export class Client {
         
     }
 
-    attachPostMessageListener(listener) {
-                
-        if (window.addEventListener) {
+    async thirdPartyCookieSupportCheck(tokensOrigin: any) {
         
-            window.addEventListener("message", listener, false);
+        const iframe = document.createElement('iframe');
         
-        } else {
+        iframe.src = tokensOrigin + '?action=cookie-support-check';
         
-            // IE8
+        iframe.style.width = '1px';
         
-            window.attachEvent("onmessage", listener);
+        iframe.style.height = '1px';
         
-        }
+        iframe.style.opacity = '0';
+        
+        document.body.appendChild(iframe);
+
+        return new Promise((resolve) => {
+
+            let listener = (event) => {
+
+                if (event.data.evt === 'cookie-support-check') {
+
+                    // TODO
+                    // removeChild(iframe);
+
+                    console.log('support for third party cookies: ', event.data.data.thirdPartyCookies ? true : false);
+                    
+                    resolve(event.data.data.thirdPartyCookies ? true : false);
+
+                }
+
+                // allow 15 seconds for this check to be completed (expectation it can be done within 2-3 seconds).
+                // falling back to solution that will work across all devices.
+                setTimeout(() => { 
+
+                    // TODO
+                    // removeChild(iframe);
+
+                    resolve(null) 
+
+                }, 15000);
+
+            };
+
+            attachPostMessageListener(listener);
+
+        })
+        
     }
 
 }

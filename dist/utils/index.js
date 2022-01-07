@@ -77,4 +77,12 @@ export var asyncHandle = function (promise) { return __awaiter(void 0, void 0, v
         }
     });
 }); };
+export var attachPostMessageListener = function (listener) {
+    if (window.addEventListener) {
+        window.addEventListener("message", listener, false);
+    }
+    else {
+        window.attachEvent("onmessage", listener);
+    }
+};
 //# sourceMappingURL=index.js.map

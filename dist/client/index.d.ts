@@ -27,13 +27,14 @@ export declare class Client {
     onChainTokens: any;
     selectedTokens: any;
     constructor(config: NegotiationInterface);
-    setWebTokens(offChainTokens: any): Promise<void>;
+    setPassiveNegotiationWebTokens(offChainTokens: any): Promise<void>;
     setBlockChainTokens(onChainTokens: any): Promise<void>;
     negotiate(): Promise<any>;
-    passiveNegotiationStrategy(): Promise<any>;
-    activeNegotiationStrategy(): void;
-    embedTokenConnectClientOverlay(): void;
-    embedStandardClientOverlay(): void;
+    activeNegotiationStrategy(iframeStorageSupport: boolean): Promise<void>;
+    passiveNegotiationStrategy(iframeStorageSupport: boolean): Promise<any>;
+    embedTokenConnectClientOverlayIframe(): void;
+    embedTokenConnectClientOverlayTab(): void;
+    embedIframeClientOverlay(): void;
     addTheme(): void;
     assignFabButtonAnimation(): void;
     openOverlay(openOverlay: boolean): void;
@@ -42,7 +43,8 @@ export declare class Client {
     navigateToTokensView(event: any): void;
     embedTokensIntoView(issuer: any): void;
     showTokenView(issuer: string): void;
-    connectToken(event: any): void;
+    connectTokenIssuerWithIframe(event: any): void;
+    connectTokenIssuerWithTab(event: any): void;
     tokenToggleSelection(): void;
     authenticate(config: AuthenticateInterface): Promise<{
         status: boolean;
@@ -50,9 +52,13 @@ export declare class Client {
         proof: null;
     } | undefined>;
     getTokenProof(unsignedToken: any, issuer: any): Promise<void>;
+    eventSender: {
+        emitTokensToClient: () => void;
+        emitProofToClient: (proof: any, issuer: any) => void;
+    };
     eventReciever: (event: any) => void;
     addTokenThroughTab(magicLink: any): void;
     addTokenThroughIframe(magicLink: any): void;
-    attachPostMessageListener(listener: any): void;
+    thirdPartyCookieSupportCheck(tokensOrigin: any): Promise<unknown>;
 }
 export {};

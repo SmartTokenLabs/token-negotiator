@@ -68,7 +68,17 @@ export const issuerConnectTab = (issuer:any) => {
   return `
     <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
       <p class="issuer-connect-title">Devcon</p>
-      <button aria-hidden="false" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="connect-btn-tn" data-issuer="${issuer}" onClick='connectToken(event)'>Connect</button>
+      <button aria-hidden="false" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="connect-btn-tn" data-issuer="${issuer}" onClick='connectTokenIssuerWithTab(event)'>Connect</button>
+      <button aria-hidden="true" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="tokens-btn-tn" data-issuer="${issuer}" onClick='navigateToTokensView(event)'>Tokens Available</button>
+    </li>
+  `;
+};
+
+export const issuerConnectIframe = (issuer:any) => {
+  return `
+    <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
+      <p class="issuer-connect-title">Devcon</p>
+      <button aria-hidden="false" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="connect-btn-tn" data-issuer="${issuer}" onClick='connectTokenIssuerWithIframe(event)'>Connect</button>
       <button aria-hidden="true" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="tokens-btn-tn" data-issuer="${issuer}" onClick='navigateToTokensView(event)'>Tokens Available</button>
     </li>
   `;
