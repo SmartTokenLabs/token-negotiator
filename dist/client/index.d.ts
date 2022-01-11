@@ -25,7 +25,7 @@ interface AuthenticateInterface {
 }
 export declare class Client {
     issuers: string[];
-    issuerIframeRefs: {};
+    issuerTabInstanceRefs: {};
     type: string;
     filter: {};
     options: any;
@@ -37,9 +37,9 @@ export declare class Client {
     getTokensIframe(config: GetTokenInterface): Promise<unknown>;
     setPassiveNegotiationWebTokens(offChainTokens: any): Promise<void>;
     setBlockChainTokens(onChainTokens: any): Promise<void>;
-    negotiate(): Promise<any>;
-    activeNegotiationStrategy(iframeStorageSupport: boolean): Promise<void>;
-    passiveNegotiationStrategy(iframeStorageSupport: boolean): Promise<any>;
+    negotiate(): Promise<void>;
+    activeNegotiationStrategy(): Promise<void>;
+    passiveNegotiationStrategy(): Promise<void>;
     embedTokenConnectClientOverlayIframe(): void;
     embedTokenConnectClientOverlayTab(): void;
     embedIframeClientOverlay(): void;
@@ -54,19 +54,23 @@ export declare class Client {
     connectTokenIssuerWithIframe(event: any): void;
     connectTokenIssuerWithTab(event: any): void;
     tokenToggleSelection(): void;
-    authenticate(config: AuthenticateInterface): Promise<{
+    authenticate(config: AuthenticateInterface): Promise<void>;
+    checkPublicAddressMatch(issuer: string, unsignedToken: any): Promise<true | {
         status: boolean;
         useEthKey: null;
         proof: null;
     } | undefined>;
-    getTokenProof(unsignedToken: any, issuer: any): Promise<void>;
+    getTokenProofIframe(issuer: any, unsignedToken: any): Promise<unknown>;
+    getTokenProofTab(issuer: any, unsignedToken: any): Promise<void>;
     eventSender: {
-        emitTokensToClient: () => void;
+        emitAllTokensToClient: (tokens: any) => void;
+        emitSelectedTokensToClient: () => void;
         emitProofToClient: (proof: any, issuer: any) => void;
     };
     eventReciever: (event: any) => void;
     addTokenThroughTab(magicLink: any): void;
     addTokenThroughIframe(magicLink: any): void;
     thirdPartyCookieSupportCheck(tokensOrigin: any): Promise<unknown>;
+    on(type: string, callback: any, data: any): any;
 }
 export {};

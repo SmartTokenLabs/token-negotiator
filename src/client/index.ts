@@ -36,7 +36,7 @@ interface AuthenticateInterface {
 export class Client {
 
     issuers: string[];
-    issuerIframeRefs: {};
+    issuerTabInstanceRefs: {};
     type: string;
     filter: {};
     options: any;
@@ -67,6 +67,10 @@ export class Client {
         this.onChainTokens = { tokenKeys: [] };
 
         this.selectedTokens = {};
+
+        this.clientCallBackEvents = {};
+
+        this.iframeStorageSupport = false;
 
         /*
 
@@ -147,7 +151,7 @@ export class Client {
 
                 if (event.data.evt === 'set-iframe-issuer-tokens-passive') {
 
-                    resolve(event.data.data.tokens);
+                    resolve(event.data.tokens);
 
                 }
 
@@ -163,11 +167,11 @@ export class Client {
                         evt: 'getTokens'
                     }, tokensOrigin);
                     
-                    if (!window.negotiator.issuerIframeRefs) {
-                        window.negotiator.issuerIframeRefs = {};
+                    if (!window.negotiator.issuerTabInstanceRefs) {
+                        window.negotiator.issuerTabInstanceRefs = {};
                     }
             
-                    window.negotiator.issuerIframeRefs[issuer] = iframeRef;
+                    window.negotiator.issuerTabInstanceRefs[issuer] = iframeRef;
     
                 }
 
@@ -232,36 +236,38 @@ export class Client {
 
         if (this.type === 'active') {
 
-            this.activeNegotiationStrategy(this.iframeStorageSupport);
+            this.activeNegotiationStrategy();
 
         } else {
 
-            return this.passiveNegotiationStrategy(this.iframeStorageSupport);
+            return await this.passiveNegotiationStrategy();
 
         }
 
     }
 
-    async activeNegotiationStrategy(iframeStorageSupport: boolean) {
+    async activeNegotiationStrategy() {
 
-        if (!iframeStorageSupport) {
-
-            this.embedTokenConnectClientOverlayTab();
-
-        } else {
+        if (this.iframeStorageSupport) {
 
             this.embedTokenConnectClientOverlayIframe();
 
+        } else {
+
+            this.embedTokenConnectClientOverlayTab();
+
         }
 
     }
 
-    async passiveNegotiationStrategy(iframeStorageSupport: boolean) {
+    async passiveNegotiationStrategy() {
 
         // Feature not supported when an end users third party cookies are disabled
         // because the use of a tab requires a user gesture at this time.
 
-        if (iframeStorageSupport) {
+        // FIXME
+        
+        if (this.iframeStorageSupport) {
 
             await asyncHandle(this.setPassiveNegotiationWebTokens(this.offChainTokens));
 
@@ -273,11 +279,11 @@ export class Client {
 
             delete outputOffChain.tokenKeys;
 
-            return { ...outputOffChain, ...outputOnChain };
+            window.negotiator.eventSender.emitAllTokensToClient({ ...outputOffChain, ...outputOnChain });
 
         } else {
 
-            console.log('Enable 3rd party cookies to use this feature.');
+            console.log('Enable 3rd party cookies via your browser settings to use this negotiation type.');
 
         }
 
@@ -631,11 +637,11 @@ export class Client {
             "left=0,top=0,width=320,height=320"
         );
 
-        if (!window.negotiator.issuerIframeRefs) {
-            window.negotiator.issuerIframeRefs = {};
+        if (!window.negotiator.issuerTabInstanceRefs) {
+            window.negotiator.issuerTabInstanceRefs = {};
         }
 
-        window.negotiator.issuerIframeRefs[issuer] = tabRef;
+        window.negotiator.issuerTabInstanceRefs[issuer] = tabRef;
 
     }
 
@@ -663,67 +669,103 @@ export class Client {
 
         });
 
-        window.negotiator.eventSender.emitTokensToClient();
+        window.negotiator.eventSender.emitSelectedTokensToClient();
 
     }
 
-
+    // TODO use this pattern - simplify all steps around logic into functions and embed the if / else storage support.
     async authenticate(config: AuthenticateInterface) {
 
         const { issuer, unsignedToken } = config;
+
+        requiredParams((issuer && unsignedToken), { status: false, useEthKey: null, proof: null });
+
+        const addressMatch = await this.checkPublicAddressMatch(issuer, unsignedToken);
+
+        // TODO emit
+        if(!addressMatch) {
+            // { status: false, useEthKey: null, proof: null };
+            return;
+        }
+
+        if(this.iframeStorageSupport === true) await this.getTokenProofIframe(issuer, unsignedToken);
+        else this.getTokenProofTab(issuer, unsignedToken);
+
+    }
+
+    async checkPublicAddressMatch (issuer:string, unsignedToken:any) {
 
         const { unEndPoint, onChain } = tokenLookup[issuer];
 
         if (onChain === true || !unsignedToken || !unEndPoint) return { status: false, useEthKey: null, proof: null };
 
-        // try {
+        try {
 
-        let useEthKey = await getChallengeSigned(tokenLookup[issuer]);
+            let useEthKey = await getChallengeSigned(tokenLookup[issuer]);
 
-        const attestedAddress = await validateUseEthKey(unEndPoint, useEthKey);
+            const attestedAddress = await validateUseEthKey(unEndPoint, useEthKey);
 
-        const walletAddress = await connectMetamaskAndGetAddress();
+            const walletAddress = await connectMetamaskAndGetAddress();
 
-        if (walletAddress.toLowerCase() !== attestedAddress.toLowerCase()) throw new Error('useEthKey validation failed.');
+            if (walletAddress.toLowerCase() !== attestedAddress.toLowerCase()) throw new Error('useEthKey validation failed.');
 
-        this.getTokenProof(unsignedToken, issuer);
+            return true;
 
-        // } catch (e) {
+        } catch (e) {
 
-        // requiredParams(null, "Could not authenticate token");
+            requiredParams(null, "Could not authenticate token");
 
-        // }
+        }
 
     }
 
-    async getTokenProof(unsignedToken: any, issuer: any) {
+    async getTokenProofIframe (issuer: any, unsignedToken: any) {
+        return new Promise((resolve, reject) => {
+            const iframe = document.createElement('iframe');
+            iframe.src = `${tokenLookup[issuer].tokenOrigin}?action=get-token-proof&token=${JSON.stringify(unsignedToken)}&issuer=${issuer}&type=iframe`;
+            iframe.style.width = '1px';
+            iframe.style.height = '1px';
+            iframe.style.opacity = '0';
+            document.body.appendChild(iframe);
+            iframe.onload = () => {
+                resolve(true);
+            };
+        });
+    }
+
+    async getTokenProofTab(issuer: any, unsignedToken: any) {
 
         let tabRef = window.open(
-            `${tokenLookup[issuer].tokenOrigin}?action=get-token-proof&token=${JSON.stringify(unsignedToken)}&issuer=${issuer}`,
+            `${tokenLookup[issuer].tokenOrigin}?action=get-token-proof&token=${JSON.stringify(unsignedToken)}&issuer=${issuer}&type=tab`,
             "win1",
             `left=0,top=0,width=${window.innerWidth},height=${window.innerHeight}`
         );
 
         // issue with passive.
 
-        if (!window.negotiator.issuerIframeRefs) {
-            window.negotiator.issuerIframeRefs = {};
+        if (!window.negotiator.issuerTabInstanceRefs) {
+            window.negotiator.issuerTabInstanceRefs = {};
         }
 
-        window.negotiator.issuerIframeRefs[issuer] = tabRef;
-
-        // normal flow: 3rd party cookie flow.
-
-        // this.eventSender.getTokenProof(unsignedToken, tokenIssuer); // then ?
+        window.negotiator.issuerTabInstanceRefs[issuer] = tabRef;
 
     }
 
     eventSender = {
-        emitTokensToClient: () => {
-            window.postMessage({ evt: 'token-negotiator-tokens', selectedTokens: window.negotiator.selectedTokens }, window.location.origin);
+        emitAllTokensToClient: (tokens:any) => {
+
+            this.on("tokens", null, tokens);
+
+        },
+        emitSelectedTokensToClient: () => {
+            
+            this.on("tokens-selected", null, { selectedTokens: window.negotiator.selectedTokens });
+
         },
         emitProofToClient: (proof: any, issuer: any) => {
-            window.postMessage({ evt: 'token-negotiator-token-proof', proof: proof, issuer: issuer }, window.location.origin);
+
+            this.on("token-proof", null, { proof: proof, issuer: issuer });
+
         }
     }
 
@@ -733,7 +775,7 @@ export class Client {
 
             case 'set-tab-issuer-tokens':
 
-                const issuer = event.data.data.issuer;
+                const issuer = event.data.issuer;
 
                 let childURL = tokenLookup[issuer].tokenOrigin;
 
@@ -743,13 +785,13 @@ export class Client {
 
                 if (event.origin != childUrlOrigin) return;
 
-                this.offChainTokens[issuer].tokens = event.data.data.tokens;
+                this.offChainTokens[issuer].tokens = event.data.tokens;
 
-                if (window.negotiator.issuerIframeRefs[issuer]) {
+                if (window.negotiator.issuerTabInstanceRefs[issuer]) {
 
-                    window.negotiator.issuerIframeRefs[issuer].close();
+                    window.negotiator.issuerTabInstanceRefs[issuer].close();
 
-                    delete window.negotiator.issuerIframeRefs[issuer];
+                    delete window.negotiator.issuerTabInstanceRefs[issuer];
 
                     this.issuerConnected(issuer);
 
@@ -759,25 +801,29 @@ export class Client {
 
             case 'set-iframe-issuer-tokens-active':
 
-                const issuer = event.data.data.issuer;
+                const issuer = event.data.issuer;
 
-                this.offChainTokens[issuer].tokens = event.data.data.tokens;
+                this.offChainTokens[issuer].tokens = event.data.tokens;
 
                 this.issuerConnected(issuer);
 
                 break;
 
-            case 'proof':
+            case 'proof-tab':
 
-                if (window.negotiator.issuerIframeRefs[event.data.data.issuer]) {
+                if (window.negotiator.issuerTabInstanceRefs && window.negotiator.issuerTabInstanceRefs[event.data.issuer] && !this.iframeStorageSupport) {
 
-                    window.negotiator.issuerIframeRefs[event.data.data.issuer].close();
+                    window.negotiator.issuerTabInstanceRefs[event.data.issuer].close();
 
-                    // delete window.negotiator.issuerIframeRefs[event.data.data.issuer];
+                    delete window.negotiator.issuerTabInstanceRefs[event.data.issuer];
 
                 }
 
-                this.eventSender.emitProofToClient(event.data.data.proof, event.data.data.issuer);
+                // no break intended.
+
+            case 'proof-iframe':
+
+                this.eventSender.emitProofToClient(event.data.proof, event.data.issuer);
 
                 break;
 
@@ -814,7 +860,7 @@ export class Client {
         iframe.style.width = '1px';
 
         iframe.style.height = '1px';
-
+ 
         iframe.style.opacity = '0';
 
         document.body.appendChild(iframe);
@@ -825,23 +871,46 @@ export class Client {
 
                 if (event.data.evt === 'cookie-support-check') {
 
-                    resolve(event.data.data.thirdPartyCookies ? true : false);
+                    resolve(event.data.thirdPartyCookies ? true : false);
 
                 }
 
-                // allow 15 seconds for this check to be completed
+                // allow 10 seconds for this check to be completed
                 // falling back to solution that will work across all devices.
                 setTimeout(() => {
 
-                    resolve(null)
+                    resolve(false);
 
-                }, 15000);
+                }, 10000);
 
             };
 
             attachPostMessageListener(listener);
 
         })
+
+    }
+
+    // Send data to client website
+    public on (type:string, callback:any, data:any) {
+
+        requiredParams(type, "Event type is not defined");
+
+        if (callback) {
+
+            this.clientCallBackEvents[type] = callback;
+
+        } else {
+
+            // developer may not wish to listen to all event types.
+
+            if(this.clientCallBackEvents[type]) {
+             
+                return this.clientCallBackEvents[type].call(type, data);
+
+            }
+
+        }
 
     }
 

@@ -9,42 +9,46 @@ var Outlet = (function () {
             emitCookieSupport: function () {
                 window.parent.postMessage({
                     evt: "cookie-support-check",
-                    data: { thirdPartyCookies: localStorage.getItem('cookie-support-check') }
+                    thirdPartyCookies: localStorage.getItem('cookie-support-check')
                 }, document.referrer);
             },
             emitTabIssuerTokens: function (opener, storageTokens, parentOrigin) {
                 opener.postMessage({
                     evt: "set-tab-issuer-tokens",
-                    data: {
-                        issuer: _this.tokenName,
-                        tokens: storageTokens
-                    }
+                    issuer: _this.tokenName,
+                    tokens: storageTokens
                 }, parentOrigin);
             },
             emitIframeIssuerTokensPassive: function (tokens) {
                 window.parent.postMessage({
                     evt: "set-iframe-issuer-tokens-passive",
-                    data: {
-                        issuer: _this.tokenName,
-                        tokens: tokens
-                    }
+                    issuer: _this.tokenName,
+                    tokens: tokens
                 }, document.referrer);
             },
             emitIframeIssuerTokensActive: function (tokens) {
                 window.parent.postMessage({
                     evt: "set-iframe-issuer-tokens-active",
-                    data: {
-                        issuer: _this.tokenName,
-                        tokens: tokens
-                    }
+                    issuer: _this.tokenName,
+                    tokens: tokens
                 }, document.referrer);
             },
-            emitTokenProof: function (tokenProof) {
+            emitTokenProofIframe: function (tokenProof) {
                 window.parent.postMessage({
-                    evt: 'proof',
-                    data: { tokenProof: JSON.stringify(tokenProof) }
+                    evt: 'proof-iframe',
+                    proof: JSON.stringify(tokenProof),
+                    issuer: _this.tokenName
                 }, document.referrer);
             },
+            emitTokenProofTab: function (tokenProof) {
+                var opener = window.opener;
+                var referrer = document.referrer;
+                if (opener && referrer) {
+                    var pUrl = new URL(referrer);
+                    var parentOrigin = pUrl.origin;
+                    opener.postMessage({ evt: "proof-tab", proof: tokenProof, issuer: _this.tokenName }, parentOrigin);
+                }
+            }
         };
         var tokenName = config.tokenName;
         this.tokenName = tokenName;
@@ -80,7 +84,8 @@ var Outlet = (function () {
             case 'get-token-proof':
                 var token = this.getDataFromQuery('token');
                 requiredParams(token, "unsigned token is missing");
-                this.sendTokenProof(token);
+                var isTabOrIframe = this.getDataFromQuery('type');
+                this.sendTokenProof(token, isTabOrIframe);
                 break;
             case 'set-magic-url':
                 localStorage.setItem('cookie-support-check', 'test');
@@ -105,21 +110,18 @@ var Outlet = (function () {
         var filteredTokens = filterTokens(decodedTokens, filter);
         return filteredTokens;
     };
-    Outlet.prototype.sendTokenProof = function (token) {
+    Outlet.prototype.sendTokenProof = function (token, type) {
         var _this = this;
         if (!token)
             return 'error';
         var unsignedToken = JSON.parse(token);
         rawTokenCheck(unsignedToken, this.tokenIssuer).then(function (tokenObj) {
-            var opener = window.opener;
-            var referrer = document.referrer;
-            if (opener && referrer) {
-                var pUrl = new URL(referrer);
-                var parentOrigin_1 = pUrl.origin;
-                window.authenticator.getAuthenticationBlob(tokenObj, function (tokenProof) {
-                    opener.postMessage({ evt: "proof", data: { proof: tokenProof, issuer: _this.tokenName } }, parentOrigin_1);
-                });
-            }
+            window.authenticator.getAuthenticationBlob(tokenObj, function (tokenProof) {
+                if (type === 'iframe')
+                    _this.eventSender.emitTokenProofIframe(tokenProof);
+                else
+                    _this.eventSender.emitTokenProofTab(tokenProof);
+            });
         });
     };
     Outlet.prototype.getIframeIssuerTokens = function (tokenName, filter, negotiationType) {

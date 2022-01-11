@@ -16,7 +16,7 @@ export declare class Outlet {
     getFilter(): any;
     pageOnLoadEventHandler(): void;
     prepareTokenOutput(tokenName: string, filter: any): any;
-    sendTokenProof(token: any): "error" | undefined;
+    sendTokenProof(token: any, type: any): "error" | undefined;
     getIframeIssuerTokens(tokenName: string, filter: any, negotiationType: string): void;
     getTabIssuerTokens(tokenName: string, filter: any): void;
     eventSender: {
@@ -24,7 +24,8 @@ export declare class Outlet {
         emitTabIssuerTokens: (opener: any, storageTokens: any, parentOrigin: any) => void;
         emitIframeIssuerTokensPassive: (tokens: any) => void;
         emitIframeIssuerTokensActive: (tokens: any) => void;
-        emitTokenProof: (tokenProof: any) => void;
+        emitTokenProofIframe: (tokenProof: any) => void;
+        emitTokenProofTab: (tokenProof: any) => void;
     };
 }
 export {};

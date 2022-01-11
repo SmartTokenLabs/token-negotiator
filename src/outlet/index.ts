@@ -1,5 +1,5 @@
 import { readMagicUrl, storeMagicURL, rawTokenCheck } from '../core';
-import { requiredParams, attachPostMessageListener } from '../utils/index';
+import { requiredParams } from '../utils/index';
 import { tokenLookup } from './../tokenLookup';
 import { decodeTokens, filterTokens } from './../core/index';
 
@@ -76,14 +76,16 @@ export class Outlet {
 
       case 'get-token-proof':
 
-        const token = this.getDataFromQuery('token');
+        var token = this.getDataFromQuery('token');
 
         requiredParams(token, "unsigned token is missing");
+
+        const isTabOrIframe = this.getDataFromQuery('type');
   
-        this.sendTokenProof(token);
+        this.sendTokenProof(token, isTabOrIframe);
 
       break;
-
+      
       case 'set-magic-url':
 
         // store local storage item that can be later used to check if third party cookies are allowed.
@@ -128,7 +130,7 @@ export class Outlet {
     
   }
 
-  sendTokenProof ( token: any ) {
+  sendTokenProof ( token: any, type:any ) {
 
     if(!token) return 'error';
 
@@ -136,24 +138,13 @@ export class Outlet {
 
     rawTokenCheck(unsignedToken, this.tokenIssuer).then((tokenObj) => {
 
-      let opener = window.opener;
-		
-      let referrer = document.referrer;
+      //@ts-ignore
+      window.authenticator.getAuthenticationBlob(tokenObj, (tokenProof) => {
       
-      if (opener && referrer) {
-
-        let pUrl = new URL(referrer);
-
-        let parentOrigin = pUrl.origin;
-
-        //@ts-ignore
-        window.authenticator.getAuthenticationBlob(tokenObj, (tokenProof) => {
+        if(type === 'iframe') this.eventSender.emitTokenProofIframe(tokenProof);
+        else this.eventSender.emitTokenProofTab(tokenProof); 
         
-          opener.postMessage({ evt: "proof", data: { proof: tokenProof, issuer: this.tokenName }  }, parentOrigin);
-
-        });
-
-      }	
+      });
           
     });     
 
@@ -188,58 +179,71 @@ export class Outlet {
 
   }
 
-  // eventReciever = (event: any) => {
-  //   switch (event.data.evt) {
-  //     case 'getTokenProof':
-  //       const unsignedToken = JSON.parse(JSON.stringify(event.data.data.unsignedToken));
-  //       rawTokenCheck(unsignedToken, this.tokenIssuer).then((tokenProof) => {
-  //         this.eventSender.emitTokenProof(tokenProof);
-  //       });        
-  //     break;
-  //   }
-  // }
-
   eventSender = {
+
     emitCookieSupport: () => {
+      
       window.parent.postMessage({ 
         evt: "cookie-support-check",
-        data: { thirdPartyCookies: localStorage.getItem('cookie-support-check') }
+        thirdPartyCookies: localStorage.getItem('cookie-support-check')
       }, document.referrer);
+
     },
     emitTabIssuerTokens: (opener: any, storageTokens: any, parentOrigin: any) => {
+
       opener.postMessage({ 
         evt: "set-tab-issuer-tokens",
-        data: {
-          issuer: this.tokenName, 
-          tokens: storageTokens
-        }  
+        issuer: this.tokenName, 
+        tokens: storageTokens
       },
       parentOrigin);
+
     },
     emitIframeIssuerTokensPassive: (tokens: any) => {
+
       window.parent.postMessage({
         evt: "set-iframe-issuer-tokens-passive",
-        data: { 
-          issuer: this.tokenName, 
-          tokens: tokens 
-        }  
+        issuer: this.tokenName, 
+        tokens: tokens 
       }, document.referrer);
+
     },
     emitIframeIssuerTokensActive: (tokens: any) => {
+
       window.parent.postMessage({
         evt: "set-iframe-issuer-tokens-active",
-        data: { 
-          issuer: this.tokenName, 
-          tokens: tokens 
-        }  
+        issuer: this.tokenName, 
+        tokens: tokens 
       }, document.referrer);
+
     },
-    emitTokenProof: (tokenProof: any) => {
+    emitTokenProofIframe: (tokenProof: any) => {
+      
       window.parent.postMessage({
-        evt: 'proof',
-        data: { tokenProof: JSON.stringify(tokenProof) }
+        evt: 'proof-iframe',
+        proof: JSON.stringify(tokenProof),
+        issuer: this.tokenName
       }, document.referrer);
+
     },  
+    emitTokenProofTab: (tokenProof: any) => {
+      
+      let opener = window.opener;
+
+      let referrer = document.referrer;
+      
+      if (opener && referrer) {
+
+        let pUrl = new URL(referrer);
+
+        let parentOrigin = pUrl.origin;
+      
+        opener.postMessage({ evt: "proof-tab", proof: tokenProof, issuer: this.tokenName }, parentOrigin);
+
+      }
+
+    }
+
   }
 
 }
