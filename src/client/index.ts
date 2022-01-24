@@ -1,8 +1,9 @@
 // @ts-nocheck
 import { asyncHandle, requiredParams, attachPostMessageListener, logger } from './../utils/index';
 import { getChallengeSigned, validateUseEthKey, connectMetamaskAndGetAddress } from "../core/index";
-import { createOverlayMarkup, createFabButton, createToken, issuerConnectTab, issuerConnectIframe } from './componentFactory';
+import { createWalletSelectionViewMarkup, createOpeningViewMarkup, createIssuerViewMarkup, createFabButtonMarkup, createTokenMarkup, issuerConnectTabMarkup, issuerConnectIframeMarkup } from './componentFactory';
 import { tokenLookup } from './../tokenLookup';
+import Web3WalletProvider from './../utils/Web3WalletProvider';
 import "./../theme/style.css";
 import './../vendor/keyShape';
 
@@ -44,6 +45,7 @@ export class Client {
     onChainTokens: any;
     selectedTokens: any;
     iframeStorageSupport: any;
+    web3WalletProvider:any;
 
     constructor(config: NegotiationInterface) {
 
@@ -113,7 +115,11 @@ export class Client {
         window.embedTokensIntoView = this.embedTokensIntoView.bind(this);
         window.showTokenView = this.showTokenView.bind(this);
         window.connectTokenIssuerWithIframe = this.connectTokenIssuerWithIframe.bind(this);
+        window.negotiatorConnectToWallet = this.negotiatorConnectToWallet.bind(this);
+        window.negotiatorUpdateOverlayViewState = this.updateOverlayViewState.bind(this);
 
+        // currently custom to Token Negotiator
+        this.web3WalletProvider = new Web3WalletProvider();
     }
 
     async openIframe(url: any) {
@@ -139,6 +145,26 @@ export class Client {
             };
 
         });
+
+    }
+
+    async negotiatorConnectToWallet (walletType:string) {
+    
+        const walletAddress = await this.web3WalletProvider.connectWith(walletType);
+
+        if (walletAddress) {
+
+            setTimeout(() => {
+
+                this.updateOverlayViewState("ISSUER");
+
+            }, 200);
+
+        } else { 
+
+            // Please Try again state e.g. a View that says what went wrong that can be closed.
+
+        }
 
     }
 
@@ -235,16 +261,16 @@ export class Client {
 
         */
 
-        this.iframeStorageSupport = await this.thirdPartyCookieSupportCheck(tokenLookup[this.offChainTokens.tokenKeys[0]].tokenOrigin);
-
         // if storage support - embed iframe for active and passive negotiation flows.
         // else open with window each time.
 
         if (this.type === 'active') {
 
-            this.activeNegotiationStrategy(this.iframeStorageSupport);
+            this.activeNegotiationStrategy();
 
         } else {
+
+            this.iframeStorageSupport = await this.thirdPartyCookieSupportCheck(tokenLookup[this.offChainTokens.tokenKeys[0]].tokenOrigin);
 
             this.passiveNegotiationStrategy(this.iframeStorageSupport);
 
@@ -252,17 +278,31 @@ export class Client {
 
     }
 
-    async activeNegotiationStrategy(iframeStorageSupport: boolean) {
+    async activeNegotiationStrategy() {
 
-        if (iframeStorageSupport === true) {
+        setTimeout(() => {
 
-            this.embedTokenConnectClientOverlayIframe();
+            let entryPointElement = document.querySelector(".overlay-tn");
 
-        } else {
+            requiredParams(entryPointElement, 'No entry point element with the class name of .overlay-tn found.');
 
-            this.embedTokenConnectClientOverlayTab();
+            if (entryPointElement) {
 
-        }
+                entryPointElement.innerHTML += '<div class="overlay-content-tn"></div>';
+
+                this.updateOverlayViewState("INTRO");
+
+                entryPointElement.innerHTML += createFabButtonMarkup();
+
+                this.assignFabButtonAnimation();
+
+                this.addTheme();
+
+            }
+
+        }, 0);
+
+        this.iframeStorageSupport = await this.thirdPartyCookieSupportCheck(tokenLookup[this.offChainTokens.tokenKeys[0]].tokenOrigin);
 
     }
 
@@ -293,6 +333,49 @@ export class Client {
 
     }
 
+    updateOverlayViewState(state:string) {
+
+        let entryPointContentElement = document.querySelector(".overlay-content-tn");
+
+        if(state === "INTRO") {
+
+            entryPointContentElement.innerHTML = createOpeningViewMarkup();
+
+        }
+
+        if(state === "CONNECT_WALLET") {
+
+            let entryPointContentElement = document.querySelector(".overlay-content-tn");
+
+            entryPointContentElement.innerHTML = createWalletSelectionViewMarkup();
+
+        }
+
+        if(state === "ISSUER") { // issuer and tokens view
+
+            entryPointContentElement.innerHTML = createIssuerViewMarkup(this.options?.overlay?.heading);
+                
+            let refIssuerContainerSelector = document.querySelector(".token-issuer-list-container-tn");
+
+            refIssuerContainerSelector.innerHTML = "";
+
+            this.offChainTokens.tokenKeys.map((issuer: string) => {
+
+                if (this.iframeStorageSupport === true) {
+
+                    refIssuerContainerSelector.innerHTML += issuerConnectIframeMarkup(issuer);
+                
+                } else {
+
+                    refIssuerContainerSelector.innerHTML += issuerConnectTabMarkup(issuer);
+
+                }
+
+            });
+
+        }
+    }
+
     embedTokenConnectClientOverlayIframe() {
 
         setTimeout(() => {
@@ -303,52 +386,11 @@ export class Client {
 
             if (entryPointElement) {
 
-                entryPointElement.innerHTML += createOverlayMarkup(this.options?.overlay?.heading);
+                entryPointElement.innerHTML += '<div class="overlay-content-tn"></div>';
 
-                entryPointElement.innerHTML += createFabButton();
-                
-                let refIssuerContainerSelector = document.querySelector(".token-issuer-list-container-tn");
+                this.updateOverlayViewState("INTRO");
 
-                refIssuerContainerSelector.innerHTML = "";
-
-                this.offChainTokens.tokenKeys.map((issuer: string) => {
-
-                    refIssuerContainerSelector.innerHTML += issuerConnectIframe(issuer);
-
-                });
-
-                this.assignFabButtonAnimation();
-
-                this.addTheme();
-
-            }
-
-        }, 0);
-    }
-
-    embedTokenConnectClientOverlayTab() {
-
-        setTimeout(() => {
-
-            let entryPointElement = document.querySelector(".overlay-tn");
-
-            requiredParams(entryPointElement, 'No entry point element with the class name of .overlay-tn found.');
-
-            if (entryPointElement) {
-
-                entryPointElement.innerHTML += createOverlayMarkup(this.options?.overlay?.heading);
-
-                entryPointElement.innerHTML += createFabButton();
-
-                let refIssuerContainerSelector = document.querySelector(".token-issuer-list-container-tn");
-
-                refIssuerContainerSelector.innerHTML = "";
-
-                this.offChainTokens.tokenKeys.map((issuer: string) => {
-
-                    refIssuerContainerSelector.innerHTML += issuerConnectTab(issuer);
-
-                });
+                entryPointElement.innerHTML += createFabButtonMarkup();
 
                 this.assignFabButtonAnimation();
 
@@ -371,7 +413,7 @@ export class Client {
 
             element.innerHTML += createOverlayMarkup(this.options?.overlay?.heading);
 
-            element.innerHTML += createFabButton();
+            element.innerHTML += createFabButtonMarkup();
 
             let refTokenContainerSelector = document.querySelector(".token-container-tn");
 
@@ -389,7 +431,7 @@ export class Client {
                         const { title, emblem } = tokenLookup[issuer];
 
                         // @ts-ignore
-                        refTokenContainerSelector.innerHTML += createToken({
+                        refTokenContainerSelector.innerHTML += createTokenMarkup({
                             data: t,
                             tokenIssuerKey: issuer,
                             index: _index,
@@ -563,7 +605,7 @@ export class Client {
             });
 
             // @ts-ignore
-            refTokenContainerSelector.innerHTML += createToken({
+            refTokenContainerSelector.innerHTML += createTokenMarkup({
                 data: t,
                 tokenIssuerKey: issuer,
                 index: i,
@@ -693,6 +735,8 @@ export class Client {
 
     async authenticate(config: AuthenticateInterface) {
 
+        debugger;
+
         const { issuer, unsignedToken } = config;
 
         requiredParams((issuer && unsignedToken), { status: false, useEthKey: null, proof: null });
@@ -720,7 +764,7 @@ export class Client {
 
         try {
 
-            let useEthKey = await getChallengeSigned(tokenLookup[issuer]);
+            let useEthKey = await getChallengeSigned(tokenLookup[issuer], this.web3WalletProvider);
 
             const attestedAddress = await validateUseEthKey(unEndPoint, useEthKey);
 

@@ -2,21 +2,20 @@ import WalletConnectProvider from "@walletconnect/web3-provider";
 import Fortmatic from 'fortmatic';
 import Portis from '@portis/web3';
 import Web3 from 'web3';
+import { ethers } from "ethers";
 import Torus from "@toruslabs/torus-embed";
 import Authereum from 'authereum';
 
 // walletAddressProvider is designed to collect a stateful list of user 
 // owned addressess from multiple networks.
 
-export class Web3WalletAddressProvider {
+class Web3WalletProvider {
 
-    callBackFn: any;
     state: any;
     registeredWalletProviders:any;
-    WalletConnectChainId:any;
     networks: any;
 
-    constructor( walletType:string ) {
+    constructor() {
 
         this.networks = {
             1: {
@@ -43,64 +42,60 @@ export class Web3WalletAddressProvider {
         }
 
         // @ts-ignore
-        this.state = { addresses: [ /* { address, chainName, networkId } */ ] };
-
-        // @ts-ignore
-        this.callBackFn = null;
+        this.state = { addresses: [ /* { address, chainName, chainId, provider } */ ] };
 
         // @ts-ignore
         this.registeredWalletProviders = {};
-
-        this.connect(walletType);
         
     }
 
-    // event hook of new addresses added to the module
-    onUpdate( callBackFn?:any ) {
+    async connectWith ( walletType: string ) {
 
-        if(callBackFn) {
+        if(!walletType) throw new Error('Please provide a Wallet type to connect with.');
 
-            this.callBackFn = callBackFn;
+        // @ts-ignore
+        if(this[walletType]) {
+            
+            // @ts-ignore
+            const address = await this[walletType]();
 
+            console.log('address', address);
+
+            return address;
+             
         } else {
 
-            return this.callBackFn.call(null, this.state.addresses);
+            throw new Error('Wallet type not found');
 
         }
 
-    }
+    };
 
-    connect ( walletType: string) {
+    async signWith ( message: string, walletData: any ) {
 
         // @ts-ignore
-        this[walletType]();
+        let provider = new ethers.providers.Web3Provider(walletData.provider);
+  
+        let signer = provider.getSigner();
+  
+        return await signer.signMessage(message);
 
-    };
+    }
 
-    registerNewWalletProvider ( walletType: any, walletProvierInstance:any ) {
+    getConnectedWalletData () {
 
-        this.registeredWalletProviders[walletType] = { instance: walletProvierInstance };
+        return this.state.addresses;
 
-    };
-    
-    unRegisterWalletProvider ( walletType: any ) {
+    }
 
-        delete this.registeredWalletProviders[walletType];
-
-    };
-
-    registerNewWalletAddress ( address:string, chainId:string ) {
+    registerNewWalletAddress ( address:string, chainId:string, provider:any ) {
 
         // @ts-ignore
         const chainName = this.networks[chainId].chainName;
         
-        this.state.addresses.push({ address, chainName, chainId });
+        this.state.addresses.push({ address, chainName, chainId, provider });
 
-        console.log('connect with MM', this.state);
-
-        debugger;
-
-        this.onUpdate();
+        return this.state.addresses;
 
     };
 
@@ -134,6 +129,9 @@ export class Web3WalletAddressProvider {
       
         // @ts-ignore
         if (typeof window.ethereum !== 'undefined') {
+
+            //@ts-ignore
+            // await ethereum.enable(); // fall back may be needed for FF to open Extension Prompt.
             
             // @ts-ignore
             const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
@@ -143,10 +141,14 @@ export class Web3WalletAddressProvider {
 
             const accountAddress = accounts[0];
 
-            console.log('connect with MM', accountAddress);
-
             // @ts-ignore
-            this.registerNewWalletAddress(accountAddress, parseInt(hexChainId, 16));
+            const registeredWalletAddress = this.registerNewWalletAddress(accountAddress, parseInt(hexChainId, 16), ethereum);
+
+            return registeredWalletAddress;
+
+        } else {
+
+            throw new Error("MetaMask is not available. Please check the extension is supported and active.");
 
         }
         
@@ -164,20 +166,18 @@ export class Web3WalletAddressProvider {
         // Subscribe to accounts change
         walletConnectProvider.on("accountsChanged", (accounts: string[]) => {
 
-            if (this.WalletConnectChainId) {
+            console.log(accounts);
 
-                this.registerNewWalletAddress(accounts[0], this.WalletConnectChainId);
+            const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], '1', walletConnectProvider);
+
+            return registeredWalletAddress;
                 
-            }
-
         });
             
         // Subscribe to chainId change
         walletConnectProvider.on("chainChanged", (chainId: number) => {
 
             console.log(chainId);
-
-            this.WalletConnectChainId = chainId;
 
         });
         
@@ -186,15 +186,10 @@ export class Web3WalletAddressProvider {
 
             console.log(code, reason);
 
-            this.unRegisterWalletProvider("WalletConnect");
-
         });
         
         //  Enable session (triggers QR Code modal)
         walletConnectProvider.enable();
-
-        // register reference to provider
-        this.registerNewWalletProvider( "WalletConnect", walletConnectProvider );
 
     };
 
@@ -204,16 +199,20 @@ export class Web3WalletAddressProvider {
 
         // https://replit.com/@fortmatic/demo-kitchen-sink
 
-        const fm = new Fortmatic('pk_test_96DF5BB9127A2C79');
+        // const fm = new Fortmatic('pk_test_96DF5BB9127A2C79');
+
+        const fm = new Fortmatic('pk_live_7F5E8827DC55A364');
         
+        const fortmaticProvider = fm.getProvider();
+
         // @ts-ignore
-        const web3 = new Web3(fm.getProvider());
+        const web3 = new Web3(fortmaticProvider);
 
         const { accounts, chainId } = await this.getWeb3ChainIdAndAccounts( web3 );
 
-        this.registerNewWalletAddress(accounts[0], chainId);
+        const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], chainId, fortmaticProvider);
 
-        this.registerNewWalletProvider( "Fortmatic", web3 );
+        return registeredWalletAddress;
 
     };
 
@@ -232,9 +231,9 @@ export class Web3WalletAddressProvider {
 
         const { accounts, chainId } = await this.getWeb3ChainIdAndAccounts( web3 );
 
-        this.registerNewWalletAddress(accounts[0], chainId);
+        const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], chainId, torus.provider);
 
-        this.registerNewWalletProvider( "Fortmatic", web3 );
+        return registeredWalletAddress;
 
     };
 
@@ -252,10 +251,10 @@ export class Web3WalletAddressProvider {
 
         const { accounts, chainId } = await this.getWeb3ChainIdAndAccounts( web3 );
 
-        this.registerNewWalletAddress(accounts[0], chainId);
+        const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], chainId, portis.provider);
 
-        this.registerNewWalletProvider( "Fortmatic", web3 );
-
+        return registeredWalletAddress;
+        
     };
 
     async Authereum  () {
@@ -270,20 +269,28 @@ export class Web3WalletAddressProvider {
 
         await authereumProvider.enable();
 
-        // register reference to provider
-        this.registerNewWalletProvider( "Authereum", authereumProvider );
-
         const { accounts, chainId } = await this.getWeb3ChainIdAndAccounts( web3 );
 
-        this.registerNewWalletAddress(accounts[0], chainId);
+        const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], chainId, authereumProvider);
+
+        return registeredWalletAddress;
 
     };
 
 }
 
-// walletAddressProvider.connect('WalletConnect');
-// walletAddressProvider.connect('Fortmatic');
-// walletAddressProvider.connect('Portis');
-// walletAddressProvider.connect('Torus');
-// walletAddressProvider.connect('Authereum');
-// walletAddressProvider.connect('MetaMask');
+export default Web3WalletProvider;
+
+// @ts-ignore
+// window.web3WalletProvider = new Web3WalletProvider();
+// @ts-ignore
+// window.web3WalletProvider.connectWith('WalletConnect');
+// @ts-ignore
+// window.web3WalletProvider.signWith("msg", window.web3WalletProvider.getConnectedWalletData()[0]);
+// examples for each type:
+// walletAddressProvider.connectWith('WalletConnect');
+// walletAddressProvider.connectWith('Fortmatic'); (works)
+// walletAddressProvider.connectWith('Portis'); (works)
+// walletAddressProvider.connectWith('Torus'); (works)
+// walletAddressProvider.connectWith('Authereum');
+// walletAddressProvider.connectWith('MetaMask'); (works)

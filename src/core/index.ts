@@ -1,4 +1,4 @@
-import { base64ToUint8array, requiredParams, compareObjects, attachPostMessageListener } from '../utils/index';
+import { base64ToUint8array, requiredParams, compareObjects } from '../utils/index';
 import { ethers } from "ethers";
 
 interface FilterInterface {
@@ -213,7 +213,7 @@ export const getUnpredictableNumber = async (endPoint: string) => {
 
 }
 
-export const getChallengeSigned = async (tokenIssuer: any) => {
+export const getChallengeSigned = async (tokenIssuer: any, web3WalletProvider:any) => {
 
   const storageEthKeys = localStorage.getItem(tokenIssuer.ethKeyitemStorageKey);
 
@@ -221,7 +221,18 @@ export const getChallengeSigned = async (tokenIssuer: any) => {
 
   try {
 
-    let address = await connectMetamaskAndGetAddress();
+    let address = web3WalletProvider.getConnectedWalletData()[0].address;
+
+    if (!address) {
+
+      await web3WalletProvider.connect("MetaMask");
+
+      address = web3WalletProvider.getConnectedWalletData()[0].address;
+
+    }
+
+    // if Passive Flow ( IF PASSIVE WORKS, REMOVE THIS CODE).
+    // let address = await connectMetamaskAndGetAddress();
 
     address = address.toLowerCase();
 
@@ -239,7 +250,7 @@ export const getChallengeSigned = async (tokenIssuer: any) => {
 
     } else {
 
-      useEthKey = await signNewChallenge(tokenIssuer.unEndPoint);
+      useEthKey = await signNewChallenge(tokenIssuer.unEndPoint, web3WalletProvider);
 
       if (useEthKey) {
 
@@ -260,13 +271,27 @@ export const getChallengeSigned = async (tokenIssuer: any) => {
   }
 }
 
-export const signNewChallenge = async (unEndPoint: string) => {
+export const connectMetamaskAndGetAddress = async () => {
+
+  requiredParams(window.ethereum, 'Please install metamask to continue.');
+
+  const userAddresses = await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+  if (!userAddresses || !userAddresses.length) throw new Error("Active Wallet required");
+
+  return userAddresses[0];
+
+}
+
+export const signNewChallenge = async (unEndPoint: string, web3WalletProvider:any) => {
+
+  console.log('sign new challenge');
 
   let res = await getUnpredictableNumber(unEndPoint);
 
   const { number: UN, randomness, domain, expiration: expiry, messageToSign } = res;
 
-  let signature = await signMessageWithBrowserWallet(messageToSign);
+  let signature = await signMessageWithBrowserWallet(messageToSign, web3WalletProvider);
 
   const msgHash = ethers.utils.hashMessage(messageToSign);
 
@@ -284,25 +309,16 @@ export const signNewChallenge = async (unEndPoint: string) => {
   };
 }
 
-export const signMessageWithBrowserWallet = async (message: any) => {
+export const signMessageWithBrowserWallet = async (message: any, web3WalletProvider: any) => {
 
-  // const walletAddressProvider = new Web3WalletAddressProvider('MetaMask');
+  // For testing paste this into the console.
+  // window.negotiator.authenticate({ 
+  //   issuer: "devcon", 
+  //   unsignedToken: { 
+  //     devconId: "6", ticketClass: 0, ticketId: "417541561854"
+  //   }});
 
-  // walletAddressProvider.onUpdate(( addresses:any ) => {
-      // 
-      // console.log('addresses', addresses);
-  // 
-  // });
-  
-  // await connectMetamaskAndGetAddress();
-  
-  // Sign with selected Wallet here. 
-
-  let provider = new ethers.providers.Web3Provider(window.ethereum);
-
-  let signer = provider.getSigner();
-
-  return await signer.signMessage(message);
+  return await web3WalletProvider.signWith(message, web3WalletProvider.getConnectedWalletData()[0]);
 
 }
 
