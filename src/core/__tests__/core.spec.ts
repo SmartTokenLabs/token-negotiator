@@ -138,17 +138,6 @@ describe('core Spec', () => {
   // Jest Test onerror
   // https://stackoverflow.com/questions/28584773/xmlhttprequest-testing-in-jest
 
-  test('expect to open outlet iframe', () => {
-    getTokens({
-      filter: {},
-      tokensOrigin: 'http://localhost:3002',
-      localStorageItemName: 'dcTokens',
-      tokenParser: SignedDevconTicket,
-      unsignedTokenDataName: 'ticket'
-    });
-  });
-
-  // TODO: Check with Oleh - tokenUrlName
   test('expect to read new magic link', () => {
     window.history.pushState({}, 'Test Title', '/?ticket=MIGSMAkMATkCAQUCAQwEQQQsUB1tp0mEn0Zoc8Lu-c0ZJOHis3ynlUAuplV8jpJhMgGMuP4i2msZihJq0VeBBOhGLU-vhfkn_0DYsJ9J8djgA0IAScs-3TwdMQ6XSIu1z1nDRCWEzAMBWaVEHONiRlW0j5kTEXBKvgNHS5DsjGm2S84BKqHl3qucBHUOGjpt-6hEuxw=&secret=285996413010999512790264856198259265088323878963947294417758116344175800611&id=nicktaras83@gmail.com');
     readMagicUrl(

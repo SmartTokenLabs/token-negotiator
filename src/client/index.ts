@@ -43,6 +43,7 @@ export class Client {
     offChainTokens: any;
     onChainTokens: any;
     selectedTokens: any;
+    iframeStorageSupport: any;
 
     constructor(config: NegotiationInterface) {
 
@@ -101,12 +102,17 @@ export class Client {
 
         });
 
-        // timeout used to apply single instances
-
+        // assign event receiver
         attachPostMessageListener(this.eventReciever);
 
-        // TODO look at creating scope for this lib without relying on the users implementation variable which is used at this time.
-        // e.g. window.negotiator = this;
+        // bind functions used externally. TODO use lib references, rather than hoisting to window scope.
+        window.overlayClickHandler = this.overlayClickHandler.bind(this);
+        window.tokenToggleSelection = this.tokenToggleSelection.bind(this);
+        window.connectTokenIssuerWithTab = this.connectTokenIssuerWithTab.bind(this);
+        window.navigateToTokensView = this.navigateToTokensView.bind(this);
+        window.embedTokensIntoView = this.embedTokensIntoView.bind(this);
+        window.showTokenView = this.showTokenView.bind(this);
+        window.connectTokenIssuerWithIframe = this.connectTokenIssuerWithIframe.bind(this);
 
     }
 
@@ -167,12 +173,12 @@ export class Client {
                         evt: 'getTokens'
                     }, tokensOrigin);
                     
-                    if (!window.negotiator.issuerTabInstanceRefs) {
-                        window.negotiator.issuerTabInstanceRefs = {};
+                    if (!this.issuerTabInstanceRefs) {
+                        this.issuerTabInstanceRefs = {};
                     }
             
-                    window.negotiator.issuerTabInstanceRefs[issuer] = iframeRef;
-    
+                    this.issuerTabInstanceRefs[issuer] = iframeRef;
+                    
                 }
 
             }).catch((error) => { });
@@ -236,19 +242,19 @@ export class Client {
 
         if (this.type === 'active') {
 
-            this.activeNegotiationStrategy();
+            this.activeNegotiationStrategy(this.iframeStorageSupport);
 
         } else {
 
-            return await this.passiveNegotiationStrategy();
+            this.passiveNegotiationStrategy(this.iframeStorageSupport);
 
         }
 
     }
 
-    async activeNegotiationStrategy() {
+    async activeNegotiationStrategy(iframeStorageSupport: boolean) {
 
-        if (this.iframeStorageSupport) {
+        if (iframeStorageSupport === true) {
 
             this.embedTokenConnectClientOverlayIframe();
 
@@ -260,14 +266,12 @@ export class Client {
 
     }
 
-    async passiveNegotiationStrategy() {
+    async passiveNegotiationStrategy(iframeStorageSupport: boolean) {
 
         // Feature not supported when an end users third party cookies are disabled
         // because the use of a tab requires a user gesture at this time.
-
-        // FIXME
         
-        if (this.iframeStorageSupport) {
+        if (iframeStorageSupport === true) {
 
             await asyncHandle(this.setPassiveNegotiationWebTokens(this.offChainTokens));
 
@@ -279,7 +283,7 @@ export class Client {
 
             delete outputOffChain.tokenKeys;
 
-            window.negotiator.eventSender.emitAllTokensToClient({ ...outputOffChain, ...outputOnChain });
+            this.eventSender.emitAllTokensToClient({ ...outputOffChain, ...outputOnChain });
 
         } else {
 
@@ -302,7 +306,7 @@ export class Client {
                 entryPointElement.innerHTML += createOverlayMarkup(this.options?.overlay?.heading);
 
                 entryPointElement.innerHTML += createFabButton();
-
+                
                 let refIssuerContainerSelector = document.querySelector(".token-issuer-list-container-tn");
 
                 refIssuerContainerSelector.innerHTML = "";
@@ -318,10 +322,6 @@ export class Client {
                 this.addTheme();
 
             }
-
-            window.tokenToggleSelection = this.tokenToggleSelection;
-            window.connectTokenIssuerWithIframe = this.connectTokenIssuerWithIframe;
-            window.navigateToTokensView = this.navigateToTokensView;
 
         }, 0);
     }
@@ -355,10 +355,6 @@ export class Client {
                 this.addTheme();
 
             }
-
-            window.tokenToggleSelection = this.tokenToggleSelection;
-            window.connectTokenIssuerWithTab = this.connectTokenIssuerWithTab;
-            window.navigateToTokensView = this.navigateToTokensView;
 
         }, 0);
     }
@@ -502,13 +498,15 @@ export class Client {
 
         connectBtn.style.display = "none";
 
-        connectBtn.setAttribute('aria-hidden', true);
+        connectBtn.setAttribute('tabIndex', -1);
 
         tokenBtn.style.display = "block";
 
         tokenBtn.innerHTML = `View Tokens (${this.offChainTokens[issuer].tokens.length})`;
+        
+        tokenBtn.setAttribute('aria-label', `Navigate to select from ${this.offChainTokens[issuer].tokens.length} of your ${issuer} tokens`);
 
-        tokenBtn.setAttribute('aria-hidden', false);
+        tokenBtn.setAttribute('tabIndex', 1);
 
     }
 
@@ -516,9 +514,9 @@ export class Client {
 
         const issuer = event.target.dataset.issuer;
 
-        window.negotiator.embedTokensIntoView(issuer);
+        this.embedTokensIntoView(issuer);
 
-        window.negotiator.showTokenView(issuer);
+        this.showTokenView(issuer);
 
     }
 
@@ -541,13 +539,13 @@ export class Client {
 
         refTokenContainerSelector.innerHTML = "";
 
-        const config = window.negotiator.tokenLookup[issuer];
+        const config = this.tokenLookup[issuer];
 
         const location = config.onChain ? 'onChainTokens' : 'offChainTokens';
 
         document.getElementsByClassName("headline-tn token-name")[0].innerHTML = config.title;
 
-        window.negotiator[location][issuer].tokens.map((t: any, i: any) => {
+        this[location][issuer].tokens.map((t: any, i: any) => {
 
             // TODO - Memory usage: load extra tokens when user scrolls to bottom of issuer
             // if(i < 25) {
@@ -556,10 +554,12 @@ export class Client {
 
             let isSelected = false;
 
-            // TODO Define a constant value that can be checked
-            // regardless of which issuer token to speed up this check
-            window.negotiator.selectedTokens[issuer]?.tokens.map((st, si) => {
+            // TODO Define a constant value that can be checked regardless of which issuer token to speed up this check.
+
+            this.selectedTokens[issuer]?.tokens.map((st, si) => {
+
                 if (t.toString() === st.toString()) isSelected = true;
+
             });
 
             // @ts-ignore
@@ -590,8 +590,16 @@ export class Client {
 
             connectBtn.setAttribute('aria-expanded', true);
 
-            tokenBtn.setAttribute('aria-expanded', true);
+            tokenBtn.setAttribute('aria-expanded', false);
 
+            const issuerViewEl = document.querySelector(`.issuer-view-tn`);
+
+            const tokenViewEl = document.querySelector(`.token-view-tn`);
+            
+            issuerViewEl.setAttribute('aria-hidden', false);
+            
+            tokenViewEl.setAttribute('aria-hidden', true);
+            
         } else {
 
             const connectBtns = document.querySelectorAll(`.connect-btn-tn`);
@@ -610,6 +618,14 @@ export class Client {
 
             });
 
+            const issuerViewEl = document.querySelector(`.issuer-view-tn`);
+            
+            const tokenViewEl = document.querySelector(`.token-view-tn`);
+            
+            issuerViewEl.setAttribute('aria-hidden', true);
+            
+            tokenViewEl.setAttribute('aria-hidden', false);
+            
         }
     }
 
@@ -617,11 +633,11 @@ export class Client {
 
         const issuer = event.currentTarget.dataset.issuer;
 
-        const filter = window.negotiator.filter ? window.negotiator.filter : {};
+        const filter = this.filter ? this.filter : {};
 
-        const tokensOrigin = window.negotiator.tokenLookup[issuer].tokenOrigin;
-
-        window.negotiator.getTokensIframe({ issuer: issuer, filter: filter, tokensOrigin: tokensOrigin, negotiationType: 'active' });
+        const tokensOrigin = this.tokenLookup[issuer].tokenOrigin;
+        
+        this.getTokensIframe({ issuer: issuer, filter: filter, tokensOrigin: tokensOrigin, negotiationType: 'active' });
 
     }
 
@@ -629,7 +645,7 @@ export class Client {
 
         const issuer = event.target.dataset.issuer;
 
-        const filter = window.negotiator.filter ? JSON.stringify(window.negotiator.filter) : '{}';
+        const filter = this.filter ? JSON.stringify(this.filter) : '{}';
 
         let tabRef = window.open(
             `${tokenLookup[issuer].tokenOrigin}?action=get-tab-issuer-tokens&filter=${filter}`,
@@ -637,43 +653,44 @@ export class Client {
             "left=0,top=0,width=320,height=320"
         );
 
-        if (!window.negotiator.issuerTabInstanceRefs) {
-            window.negotiator.issuerTabInstanceRefs = {};
-        }
+        if (!this.issuerTabInstanceRefs) {
 
-        window.negotiator.issuerTabInstanceRefs[issuer] = tabRef;
+            this.issuerTabInstanceRefs = {};
+
+        }
+        
+        this.issuerTabInstanceRefs[issuer] = tabRef;
 
     }
 
     tokenToggleSelection() {
 
-        window.negotiator.selectedTokens = {};
-
+        this.selectedTokens = {};
+        
         document.querySelectorAll('.token-tn .mobileToggle-tn').forEach((token: any, index: number) => {
 
             if (index === 0) {
 
-                window.negotiator.selectedTokens[token.dataset.key] = {};
-
-                window.negotiator.selectedTokens[token.dataset.key]['tokens'] = [];
-
+                this.selectedTokens[token.dataset.key] = {};
+                
+                this.selectedTokens[token.dataset.key]['tokens'] = [];
+            
             }
 
             if (token.checked === true) {
 
                 let output = JSON.parse(token.dataset.token);
 
-                window.negotiator.selectedTokens[token.dataset.key].tokens.push(output);
-
+                this.selectedTokens[token.dataset.key].tokens.push(output);
+                
             }
 
         });
 
-        window.negotiator.eventSender.emitSelectedTokensToClient();
+        this.eventSender.emitSelectedTokensToClient();
 
     }
 
-    // TODO use this pattern - simplify all steps around logic into functions and embed the if / else storage support.
     async authenticate(config: AuthenticateInterface) {
 
         const { issuer, unsignedToken } = config;
@@ -688,7 +705,9 @@ export class Client {
             return;
         }
 
-        if(this.iframeStorageSupport === true) await this.getTokenProofIframe(issuer, unsignedToken);
+        const iframeStorageSupport = await this.thirdPartyCookieSupportCheck(tokenLookup[this.offChainTokens.tokenKeys[0]].tokenOrigin);
+
+        if(iframeStorageSupport === true) await this.getTokenProofIframe(issuer, unsignedToken);
         else this.getTokenProofTab(issuer, unsignedToken);
 
     }
@@ -743,11 +762,13 @@ export class Client {
 
         // issue with passive.
 
-        if (!window.negotiator.issuerTabInstanceRefs) {
-            window.negotiator.issuerTabInstanceRefs = {};
-        }
+        if (!this.issuerTabInstanceRefs) {
+            
+            this.issuerTabInstanceRefs = {};
 
-        window.negotiator.issuerTabInstanceRefs[issuer] = tabRef;
+        }
+        
+        this.issuerTabInstanceRefs[issuer] = tabRef;
 
     }
 
@@ -759,7 +780,7 @@ export class Client {
         },
         emitSelectedTokensToClient: () => {
             
-            this.on("tokens-selected", null, { selectedTokens: window.negotiator.selectedTokens });
+            this.on("tokens-selected", null, { selectedTokens: this.selectedTokens });
 
         },
         emitProofToClient: (proof: any, issuer: any) => {
@@ -787,11 +808,11 @@ export class Client {
 
                 this.offChainTokens[issuer].tokens = event.data.tokens;
 
-                if (window.negotiator.issuerTabInstanceRefs[issuer]) {
+                if (this.issuerTabInstanceRefs[issuer]) {
 
-                    window.negotiator.issuerTabInstanceRefs[issuer].close();
+                    this.issuerTabInstanceRefs[issuer].close();
 
-                    delete window.negotiator.issuerTabInstanceRefs[issuer];
+                    delete this.issuerTabInstanceRefs[issuer];
 
                     this.issuerConnected(issuer);
 
@@ -811,11 +832,11 @@ export class Client {
 
             case 'proof-tab':
 
-                if (window.negotiator.issuerTabInstanceRefs && window.negotiator.issuerTabInstanceRefs[event.data.issuer] && !this.iframeStorageSupport) {
+                if (this.issuerTabInstanceRefs && this.issuerTabInstanceRefs[event.data.issuer] && this.iframeStorageSupport === false) {
 
-                    window.negotiator.issuerTabInstanceRefs[event.data.issuer].close();
+                    this.issuerTabInstanceRefs[event.data.issuer].close();
 
-                    delete window.negotiator.issuerTabInstanceRefs[event.data.issuer];
+                    delete this.issuerTabInstanceRefs[event.data.issuer];
 
                 }
 
@@ -838,10 +859,7 @@ export class Client {
             "left=0,top=0,width=320,height=320"
         );
 
-        // TODO use an event to determine when the window has loaded
-        setTimeout(() => {
-            tab?.close();
-        }, 2500);
+        setTimeout(() => { tab?.close(); }, 2500);
 
     }
 
@@ -875,8 +893,6 @@ export class Client {
 
                 }
 
-                // allow 10 seconds for this check to be completed
-                // falling back to solution that will work across all devices.
                 setTimeout(() => {
 
                     resolve(false);
@@ -891,18 +907,19 @@ export class Client {
 
     }
 
-    // Send data to client website
-    public on (type:string, callback:any, data:any) {
+    on (type:string, callback?:any, data?:any) {
 
         requiredParams(type, "Event type is not defined");
 
         if (callback) {
 
+            // assign callback reference to web developers event e.g. negotiator.on('tokens', (tokensForWebPage) => { ... }));
+            
             this.clientCallBackEvents[type] = callback;
 
         } else {
 
-            // developer may not wish to listen to all event types.
+            // event types: 'tokens', 'tokens-selected', 'proof'
 
             if(this.clientCallBackEvents[type]) {
              

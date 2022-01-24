@@ -295,6 +295,7 @@
 
 .overlay-tn .overlay-content-tn .token-tn .emblem-tn {
   width: 89px;
+  min-height: 48px;
   margin: 0 14px;
 }
 

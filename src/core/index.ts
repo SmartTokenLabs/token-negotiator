@@ -110,14 +110,6 @@ export const decodeTokens = (rawTokens: any, tokenParser: any, unsignedTokenData
 
 };
 
-interface GetTokenInterface {
-  filter: any;
-  tokensOrigin: any;
-  itemStorageKey: any;
-  tokenParser: any;
-  unsignedTokenDataName: any;
-}
-
 export const storeMagicURL = (tokens: any, itemStorageKey: string) => {
 
   if (tokens) {
@@ -268,18 +260,6 @@ export const getChallengeSigned = async (tokenIssuer: any) => {
   }
 }
 
-export const connectMetamaskAndGetAddress = async () => {
-
-  requiredParams(window.ethereum, 'Please install metamask to continue.');
-
-  const userAddresses = await window.ethereum.request({ method: 'eth_requestAccounts' });
-
-  if (!userAddresses || !userAddresses.length) throw new Error("Active Wallet required");
-
-  return userAddresses[0];
-
-}
-
 export const signNewChallenge = async (unEndPoint: string) => {
 
   let res = await getUnpredictableNumber(unEndPoint);
@@ -306,7 +286,17 @@ export const signNewChallenge = async (unEndPoint: string) => {
 
 export const signMessageWithBrowserWallet = async (message: any) => {
 
-  await connectMetamaskAndGetAddress();
+  // const walletAddressProvider = new Web3WalletAddressProvider('MetaMask');
+
+  // walletAddressProvider.onUpdate(( addresses:any ) => {
+      // 
+      // console.log('addresses', addresses);
+  // 
+  // });
+  
+  // await connectMetamaskAndGetAddress();
+  
+  // Sign with selected Wallet here. 
 
   let provider = new ethers.providers.Web3Provider(window.ethereum);
 

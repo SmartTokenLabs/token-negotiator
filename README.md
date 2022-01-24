@@ -43,25 +43,39 @@ until the end user has selected them via an token negotiator overlay web compone
 
   let tokens = [];
 
-  const tokenName = "devcon-ticket";
+  // configure
 
-  const options = { 
-    useOverlay: true, // enables active negotiation
-    tokenSelectorContainer: ".tokenSelectorContainerElement" // an HTML container element for the overlay to load within
-  };
+  const negotiator = new Client({
+    type: 'active',
+    issuers: ['devcon'],
+    options: {
+      overlay: {
+        heading: "Get discount with Ticket",
+        theme: "light",
+        position: "bottom-right"
+      }
+    },
+    filter: {}
+  });
 
-  const negotiator = new Client(filter, tokenName, options);
+  // invoke
 
   negotiator.negotiate();
 
-  window.addEventListener('message', (event) => {
-    switch(event.data.evt) {
-      case 'setSelectedTokens':
-        tokens = event.data.selectedTokens;
-        // do something with tokens here.
-        break;
-    }
-  }, false);
+  // event hooks
+
+  negotiator.on("tokens-selected", (tokens) => { 
+    
+    // use tokens
+
+  });
+
+  negotiator.on("token-proof", (proof) => { 
+          
+    // use proof
+
+  });
+
 ```
 ### Passive Negotiation of tokens
 
@@ -71,25 +85,23 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
 
   import { Client } from '@tokenscript/token-negotiator';
 
-  let tokens = [];
+  const negotiator = new Client({
+    type: 'passive',
+    issuers: tokenIssuers,
+    options: {}
+  });
 
-  const filter = {};
+  negotiator.on('tokens', (issuerTokens) => {
+    
+    // use tokens
 
-  const tokenName = "devcon-ticket";
+  });
 
-  const options = {};
-  
-  const negotiator = new Client(filter, tokenName, options);
+  negotiator.on("token-proof", (tokenProof) => {
 
-  negotiator.negotiate().then(result => {
-    if(result){
-      tokens = result;
-      // do something with tokens here.
-    }
-    }).catch((err) => {
-      console.log('error', err);
-    }
-  );
+    // use proof
+
+  });
 
 ````
 
@@ -99,36 +111,41 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
 
  /**
   * @param {Object} filter { 'devconId': 6, 'class': 'gold' } (optional rule to fiter tokens by keys and values - this acts as a simple filter where you cannot at this time filter many from the same key).
-  * @param {String} tokenName token name identifier to negotiate 
+  * @param {String} type passive or active
+  * @param {String} issuers list of issuers tokens you choose to support (on / off chain)
   * @param {Object} options
-  * @param {Boolean} options[useOverlay] optional rule to use token issuer overlay
-  * @param {Object} options[tokenSelectorContainer] HTML Selector location to inject token issuer overlay when use overlay is set as true
+  * @param {Object} options[overlay] object to configure the overlay
+  * @param {String} options[overlay][heading] overlay heading
+  * @param {String} options[overlay][theme] light or dark modes
+  * @param {String} options[overlay][position] position (not currently functional) ("bottom-right"...)
   */
  negotiator.negotiate(
    filter,
-   tokenName,
+   issuers,
    options
  )
 
 ````
 ### Authenticate ownership of Token
 
-At the stage of negotiation, the client has learnt about the tokens which can be used to provide soft features such as
-what discount could be applied with ownership of a token or entry to a VIP lounge for browsing purposes. The Token Negotiator can be then used to attest that the end user has ownership rights to the token, via the authenticate method.
+Authenicating ownership of the token will provide a proof with a limited expiry.
 
 ```javascript
 
   /**
-  * @param {URL} unEndPoint end point that returns the following JSON payload { un: number, expiry: date } 
-  * @param {object} unsignedToken token to attest
-  * @returns {object} { ethKey (object), proof (object) }
+  * @param {String} issuer token issuer
+  * @param {Object} unsignedToken token to attest
   */
-  const { useToken, useEthKey } = await negotiator.authenticate({ 
-    unEndPoint, 
+  negotiator.authenticate({ 
+    issuer, 
     unsignedToken 
   });
 
-  // un is a short lived unpredictable number that a server can provide towards the authenticated use of a token.
+  negotiator.on('proof', () => {
+
+    // the proof will be recieved here (valid or failed)
+
+  });
 
 ```
 

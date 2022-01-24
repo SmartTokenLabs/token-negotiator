@@ -7,8 +7,8 @@ describe('util Spec object comparison', () => {
     expect(compareObjects(a, b)).toEqual(true);
   });
   test('expect a to be b deep comparison', () => {
-    const a = { data: { transaction: { address: '0x', uint: '100', bytes: '53454553', bool: true } }};
-    const b = { data: { transaction: { address: '0x', uint: '100', bytes: '53454553', bool: true } }};
+    const a = { token: 'a', type: 'gold', class:'x' };
+    const b = { type: 'gold', token: 'a', class:'x' };
     expect(compareObjects(a, b)).toEqual(true);
   });
   test('expect a not to be b shallow comparison', () => {
