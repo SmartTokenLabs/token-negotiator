@@ -75,6 +75,14 @@ export class Client {
 
         this.iframeStorageSupport = false;
 
+        if(this.type === "active") {
+         
+            this.openingHeading = this.options?.overlay?.openingHeading
+            this.issuerHeading = this.options?.overlay?.issuerHeading;
+            this.repeatAction = this.options?.overlay?.repeatAction;
+            
+        }
+
         /*
 
             this.onChainTokens / this.offChainTokens: {
@@ -152,6 +160,8 @@ export class Client {
     
         const walletAddress = await this.web3WalletProvider.connectWith(walletType);
 
+        logger('wallet address found: ', walletAddress);
+
         if (walletAddress) {
 
             setTimeout(() => {
@@ -207,7 +217,7 @@ export class Client {
                     
                 }
 
-            }).catch((error) => { });
+            });
 
         });
 
@@ -327,7 +337,7 @@ export class Client {
 
         } else {
 
-            console.log('Enable 3rd party cookies via your browser settings to use this negotiation type.');
+            logger('Enable 3rd party cookies via your browser settings to use this negotiation type.');
 
         }
 
@@ -339,21 +349,19 @@ export class Client {
 
         if(state === "INTRO") {
 
-            entryPointContentElement.innerHTML = createOpeningViewMarkup();
+            entryPointContentElement.innerHTML = createOpeningViewMarkup(this.openingHeading);
 
         }
 
         if(state === "CONNECT_WALLET") {
 
-            let entryPointContentElement = document.querySelector(".overlay-content-tn");
-
-            entryPointContentElement.innerHTML = createWalletSelectionViewMarkup();
+            entryPointContentElement.innerHTML = createWalletSelectionViewMarkup(this.iframeStorageSupport);
 
         }
 
         if(state === "ISSUER") { // issuer and tokens view
 
-            entryPointContentElement.innerHTML = createIssuerViewMarkup(this.options?.overlay?.heading);
+            entryPointContentElement.innerHTML = createIssuerViewMarkup(this.issuerHeading);
                 
             let refIssuerContainerSelector = document.querySelector(".token-issuer-list-container-tn");
 
@@ -363,11 +371,11 @@ export class Client {
 
                 if (this.iframeStorageSupport === true) {
 
-                    refIssuerContainerSelector.innerHTML += issuerConnectIframeMarkup(issuer);
+                    refIssuerContainerSelector.innerHTML += issuerConnectIframeMarkup(this.tokenLookup[issuer].title, issuer);
                 
                 } else {
 
-                    refIssuerContainerSelector.innerHTML += issuerConnectTabMarkup(issuer);
+                    refIssuerContainerSelector.innerHTML += issuerConnectTabMarkup(this.tokenLookup[issuer].title, issuer);
 
                 }
 
@@ -401,61 +409,61 @@ export class Client {
         }, 0);
     }
 
-    embedIframeClientOverlay() {
+    // embedIframeClientOverlay() {
 
-        let _index = 0;
+    //     let _index = 0;
 
-        let element = document.querySelector(".overlay-tn");
+    //     let element = document.querySelector(".overlay-tn");
 
-        requiredParams(element, 'No overlay element found.');
+    //     requiredParams(element, 'No overlay element found.');
 
-        if (element) {
+    //     if (element) {
 
-            element.innerHTML += createOverlayMarkup(this.options?.overlay?.heading);
+    //         element.innerHTML += createOverlayMarkup(this.issuerHeading);
 
-            element.innerHTML += createFabButtonMarkup();
+    //         element.innerHTML += createFabButtonMarkup();
 
-            let refTokenContainerSelector = document.querySelector(".token-container-tn");
+    //         let refTokenContainerSelector = document.querySelector(".token-container-tn");
 
-            this.offChainTokens.tokenKeys.map((issuer: string) => {
+    //         this.offChainTokens.tokenKeys.map((issuer: string) => {
 
-                const i = this.offChainTokens[issuer];
+    //             const i = this.offChainTokens[issuer];
 
-                if (i.tokens.length) {
+    //             if (i.tokens.length) {
 
-                    // @ts-ignore
-                    refTokenContainerSelector.innerHTML = "";
+    //                 // @ts-ignore
+    //                 refTokenContainerSelector.innerHTML = "";
 
-                    i.tokens.map((t: any) => {
+    //                 i.tokens.map((t: any) => {
 
-                        const { title, emblem } = tokenLookup[issuer];
+    //                     const { title, emblem } = tokenLookup[issuer];
 
-                        // @ts-ignore
-                        refTokenContainerSelector.innerHTML += createTokenMarkup({
-                            data: t,
-                            tokenIssuerKey: issuer,
-                            index: _index,
-                            title: title,
-                            emblem: emblem
-                        });
+    //                     // @ts-ignore
+    //                     refTokenContainerSelector.innerHTML += createTokenMarkup({
+    //                         data: t,
+    //                         tokenIssuerKey: issuer,
+    //                         index: _index,
+    //                         title: title,
+    //                         emblem: emblem
+    //                     });
 
-                        _index++;
+    //                     _index++;
 
-                    });
+    //                 });
 
-                }
+    //             }
 
-            });
+    //         });
 
-            this.assignFabButtonAnimation();
+    //         this.assignFabButtonAnimation();
 
-            this.addTheme();
+    //         this.addTheme();
 
-        }
+    //     }
 
-        window.tokenToggleSelection = this.tokenToggleSelection;
+    //     window.tokenToggleSelection = this.tokenToggleSelection;
 
-    }
+    // }
 
     addTheme() {
 
@@ -544,7 +552,9 @@ export class Client {
 
         tokenBtn.style.display = "block";
 
-        tokenBtn.innerHTML = `View Tokens (${this.offChainTokens[issuer].tokens.length})`;
+        console.log(this.selectedTokens[issuer]);
+
+        tokenBtn.innerHTML = `Selected Tokens (1/${this.offChainTokens[issuer].tokens.length})`;
         
         tokenBtn.setAttribute('aria-label', `Navigate to select from ${this.offChainTokens[issuer].tokens.length} of your ${issuer} tokens`);
 
@@ -681,6 +691,14 @@ export class Client {
         
         this.getTokensIframe({ issuer: issuer, filter: filter, tokensOrigin: tokensOrigin, negotiationType: 'active' });
 
+        setTimeout(() => {
+
+            event.target.innerHTML = this.repeatAction ? this.repeatAction : 'retry';
+
+            event.target.classList.add("retry");
+
+        }, 2500);
+
     }
 
     connectTokenIssuerWithTab(event) {
@@ -734,9 +752,7 @@ export class Client {
     }
 
     async authenticate(config: AuthenticateInterface) {
-
-        debugger;
-
+ 
         const { issuer, unsignedToken } = config;
 
         requiredParams((issuer && unsignedToken), { status: false, useEthKey: null, proof: null });
@@ -783,17 +799,29 @@ export class Client {
     }
 
     async getTokenProofIframe (issuer: any, unsignedToken: any) {
+        
         return new Promise((resolve, reject) => {
+
             const iframe = document.createElement('iframe');
+            
             iframe.src = `${tokenLookup[issuer].tokenOrigin}?action=get-token-proof&token=${JSON.stringify(unsignedToken)}&issuer=${issuer}&type=iframe`;
+            
             iframe.style.width = '1px';
+            
             iframe.style.height = '1px';
+            
             iframe.style.opacity = '0';
+            
             document.body.appendChild(iframe);
+
             iframe.onload = () => {
+
                 resolve(true);
+
             };
+
         });
+
     }
 
     async getTokenProofTab(issuer: any, unsignedToken: any) {

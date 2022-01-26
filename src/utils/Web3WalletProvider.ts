@@ -1,10 +1,14 @@
 import WalletConnectProvider from "@walletconnect/web3-provider";
-import Fortmatic from 'fortmatic';
-import Portis from '@portis/web3';
-import Web3 from 'web3';
-import { ethers } from "ethers";
 import Torus from "@toruslabs/torus-embed";
-import Authereum from 'authereum';
+import { ethers } from "ethers";
+import Web3 from 'web3';
+
+// TODO add to attestation id to enable e2e - to do this, uncomment each wallet provider within this module
+// and re-inject the html buttons inside the component factory.ts + re-install deps:
+// ("@portis/web3": "...","authereum": "....", "fortmatic": "...")
+// import Fortmatic from 'fortmatic';
+// import Portis from '@portis/web3';
+// import Authereum from 'authereum';
 
 // walletAddressProvider is designed to collect a stateful list of user 
 // owned addressess from multiple networks.
@@ -158,61 +162,42 @@ class Web3WalletProvider {
 
         console.log('connect Wallet Connect');
 
-        //  Create WalletConnect Provider
-        const walletConnectProvider = new WalletConnectProvider({
-            infuraId: "7753fa7b79d2469f97c156780fce37ac",
-        });
-        
-        // Subscribe to accounts change
-        walletConnectProvider.on("accountsChanged", (accounts: string[]) => {
-
-            console.log(accounts);
-
-            const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], '1', walletConnectProvider);
-
-            return registeredWalletAddress;
+        return new Promise((resolve, reject) => {
                 
-        });
+            //  Create WalletConnect Provider
+            const walletConnectProvider = new WalletConnectProvider({
+                infuraId: "7753fa7b79d2469f97c156780fce37ac",
+            });
+        
+            // Subscribe to accounts change
+            walletConnectProvider.on("accountsChanged", (accounts: string[]) => {
+
+                console.log(accounts);
+
+                const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], '1', walletConnectProvider);
+
+                resolve(registeredWalletAddress);
+                    
+            });
+                
+            // Subscribe to chainId change
+            walletConnectProvider.on("chainChanged", (chainId: number) => {
+
+                console.log(chainId);
+
+            });
             
-        // Subscribe to chainId change
-        walletConnectProvider.on("chainChanged", (chainId: number) => {
+            // Subscribe to session disconnection
+            walletConnectProvider.on("disconnect", (code: number, reason: string) => {
 
-            console.log(chainId);
+                console.log(code, reason);
+
+            });
+        
+            //  Enable session (triggers QR Code modal)
+            walletConnectProvider.enable();
 
         });
-        
-        // Subscribe to session disconnection
-        walletConnectProvider.on("disconnect", (code: number, reason: string) => {
-
-            console.log(code, reason);
-
-        });
-        
-        //  Enable session (triggers QR Code modal)
-        walletConnectProvider.enable();
-
-    };
-
-    async Fortmatic () {
-
-        console.log('connect Fortmatic');
-
-        // https://replit.com/@fortmatic/demo-kitchen-sink
-
-        // const fm = new Fortmatic('pk_test_96DF5BB9127A2C79');
-
-        const fm = new Fortmatic('pk_live_7F5E8827DC55A364');
-        
-        const fortmaticProvider = fm.getProvider();
-
-        // @ts-ignore
-        const web3 = new Web3(fortmaticProvider);
-
-        const { accounts, chainId } = await this.getWeb3ChainIdAndAccounts( web3 );
-
-        const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], chainId, fortmaticProvider);
-
-        return registeredWalletAddress;
 
     };
 
@@ -237,60 +222,77 @@ class Web3WalletProvider {
 
     };
 
-    async Portis () {
+    // async Fortmatic () {
 
-        console.log('connect Portis');
+    //     console.log('connect Fortmatic');
 
-        // https://docs.portis.io/#/methods
+    //     // https://replit.com/@fortmatic/demo-kitchen-sink
 
-        const portis = new Portis("211b48db-e8cc-4b68-82ad-bf781727ea9e", "rinkeby");
+    //     // const fm = new Fortmatic('pk_test_96DF5BB9127A2C79');
 
-        portis.onError(error => { console.log('portis error', error) });
-
-        const web3 = new Web3(portis.provider);
-
-        const { accounts, chainId } = await this.getWeb3ChainIdAndAccounts( web3 );
-
-        const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], chainId, portis.provider);
-
-        return registeredWalletAddress;
+    //     const fm = new Fortmatic('pk_live_7F5E8827DC55A364');
         
-    };
+    //     const fortmaticProvider = fm.getProvider();
 
-    async Authereum  () {
+    //     // @ts-ignore
+    //     const web3 = new Web3(fortmaticProvider);
 
-        console.log('connect Authereum');
+    //     const { accounts, chainId } = await this.getWeb3ChainIdAndAccounts( web3 );
 
-        const authereum = new Authereum('kovan');
+    //     const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], chainId, fortmaticProvider);
 
-        const authereumProvider = authereum.getProvider();
+    //     return registeredWalletAddress;
 
-        const web3 = new Web3(authereumProvider);
+    // };
 
-        await authereumProvider.enable();
+    // async Portis () {
 
-        const { accounts, chainId } = await this.getWeb3ChainIdAndAccounts( web3 );
+    //     console.log('connect Portis');
 
-        const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], chainId, authereumProvider);
+    //     // https://docs.portis.io/#/methods
 
-        return registeredWalletAddress;
+    //     const portis = new Portis("211b48db-e8cc-4b68-82ad-bf781727ea9e", "rinkeby");
 
-    };
+    //     portis.onError(error => { console.log('portis error', error) });
+
+    //     const web3 = new Web3(portis.provider);
+
+    //     const { accounts, chainId } = await this.getWeb3ChainIdAndAccounts( web3 );
+
+    //     const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], chainId, portis.provider);
+
+    //     return registeredWalletAddress;
+        
+    // };
+
+    // async Authereum  () {
+
+    //     console.log('connect Authereum');
+
+    //     const authereum = new Authereum('kovan');
+
+    //     const authereumProvider = authereum.getProvider();
+
+    //     const web3 = new Web3(authereumProvider);
+
+    //     await authereumProvider.enable();
+
+    //     const { accounts, chainId } = await this.getWeb3ChainIdAndAccounts( web3 );
+
+    //     const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], chainId, authereumProvider);
+
+    //     return registeredWalletAddress;
+
+    // };
 
 }
 
 export default Web3WalletProvider;
 
-// @ts-ignore
-// window.web3WalletProvider = new Web3WalletProvider();
-// @ts-ignore
-// window.web3WalletProvider.connectWith('WalletConnect');
-// @ts-ignore
-// window.web3WalletProvider.signWith("msg", window.web3WalletProvider.getConnectedWalletData()[0]);
-// examples for each type:
-// walletAddressProvider.connectWith('WalletConnect');
-// walletAddressProvider.connectWith('Fortmatic'); (works)
-// walletAddressProvider.connectWith('Portis'); (works)
-// walletAddressProvider.connectWith('Torus'); (works)
-// walletAddressProvider.connectWith('Authereum');
-// walletAddressProvider.connectWith('MetaMask'); (works)
+// Usage:
+// connect to this module:
+// web3WalletProvider = new Web3WalletProvider();
+// connect to a wallet (e.g. click event from user)
+// web3WalletProvider.connectWith('WalletConnect');
+// Sign a message (e.g. when user wished to prove owership of wallet as part of action);
+// web3WalletProvider.signWith("msg", window.web3WalletProvider.getConnectedWalletData()[0]);

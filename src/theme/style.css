@@ -11,6 +11,10 @@
   box-shadow: 0 2px 5px 0 #676767;
 }
 
+.overlay-tn.light .overlay-content-tn .opening-content-view-tn  {
+  background: white;
+}
+
 .overlay-tn.light .overlay-tn .overlay-content-tn .toggle-tn input.mobileToggle-tn+label:after {
   background: #037fed;
   box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.1), 0 4px 0px 0 hsla(0, 0%, 0%, 0.04), 0 4px 9px hsla(0, 0%, 0%, 0.13), 0 3px 3px hsla(0, 0%, 0%, 0.05);
@@ -21,11 +25,22 @@
   border-bottom: 1px solid #ececec;
 }
 
+.overlay-tn.light .opening-btn-tn:hover,
+.overlay-tn.light .tokens-btn-tn:hover,
+.overlay-tn.light .connect-btn-tn:hover {
+  background: #c5c5c5 !important;
+}
+
 .overlay-tn.light .opening-btn-tn,
 .overlay-tn.light li.issuer-connect-banner-tn .connect-btn-tn, 
 .overlay-tn.light li.issuer-connect-banner-tn .tokens-btn-tn {
   color: black;
   background: #efefef;
+}
+
+.overlay-tn.light li.issuer-connect-banner-tn .connect-btn-tn, 
+.overlay-tn.light li.issuer-connect-banner-tn .tokens-btn-tn {
+  border: 1px solid #efefef;
 }
 
 .overlay-tn.light .overlay-content-tn:hover {
@@ -93,10 +108,36 @@
   fill: white;
 }
 
+.overlay-tn.light .retry {
+  border-color: darkorange !important;
+}
+
+.overlay-tn.light .opening-heading-tn, .overlay-tn.dark .wallet-button-tn p {
+  color: black;
+}
+
 /* dark theme */
+
+.overlay-tn.dark .retry {
+  border-color: darkorange !important;
+}
 
 .overlay-tn.dark .headline-container-tn {
   border-bottom: 1px solid #101010;
+}
+
+.overlay-tn.dark .wallet-selection-view-tn,
+.overlay-tn.dark .overlay-content-tn .opening-content-view-tn  {
+  background: #000;
+}
+
+
+.overlay-tn.dark .opening-heading-tn, .overlay-tn.dark .wallet-button-tn p {
+  color: darkgrey;
+}
+
+.overlay-tn.dark .headline-container-tn p {
+  color: white;
 }
 
 .overlay-tn.dark li.issuer-connect-banner-tn {
@@ -160,6 +201,16 @@
   border: 1px solid gray;
 }
 
+.overlay-tn.dark li.issuer-connect-banner-tn .connect-btn-tn, 
+.overlay-tn.dark li.issuer-connect-banner-tn .tokens-btn-tn {
+  border: 1px solid #101010;
+}
+
+
+.connect-btn-tn {
+  transition: all 1s;
+}
+
 .overlay-tn.dark .overlay-content-tn .toggle-tn {
   background: black;
 }
@@ -197,6 +248,21 @@
   position: fixed;
   bottom: 24px;
   right: 24px;
+}
+
+.overlay-tn .wallet-button-tn,
+.overlay-tn .opening-btn-tn,
+.overlay-tn .tokens-btn-tn,
+.overlay-tn .connect-btn-tn {
+  transition: all 0.25s;
+}
+
+.overlay-tn .wallet-button-tn {
+  opacity: .8;
+}
+
+.overlay-tn .wallet-button-tn:hover {
+  opacity: 1;
 }
 
 .overlay-tn .no-tokens-tn {
@@ -462,7 +528,7 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
 .overlay-content-tn .wallet-selection-view-tn {
   position: absolute; 
   z-index: 100; 
-  height: 100%; 
+  height: inherit; 
   width: 100%; 
   background: white;
 }
@@ -485,7 +551,6 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
   z-index: 100; 
   height: calc(100% - 4px); 
   width: 100%; 
-  background: white;
 }
 
 .overlay-content-tn .opening-content-view-tn  {
@@ -493,7 +558,6 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
   z-index: 100; 
   height: 100%; 
   width: 100%; 
-  background: white;
 }
 
 .overlay-content-tn  {
@@ -514,7 +578,7 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
 }
 
 .wallet-button-tn {
-  margin: 12px;
+  margin: 16px;
   background: none;
 	color: inherit;
 	border: none;
@@ -524,6 +588,36 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
 	outline: inherit;
   width: 132px;
 }
+
+.skeleton-box {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+  background-color: #DDDBDD;
+}
+.skeleton-box::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0));
+  -webkit-animation: shimmer 2s infinite;
+          animation: shimmer 2s infinite;
+  content: "";
+}
+@-webkit-keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 
 @keyframes a0_t {
   0% {
