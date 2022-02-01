@@ -7,7 +7,7 @@
     "test": "jest",
     "build": "npm run clean && tsc -m es6 --outDir dist && npm run copy-assets",
     "build-umd": "npm run clean && webpack && npm run copy-assets",
-    "copy-assets": "copyfiles ./src/theme/*.css dist/theme -V --flat && copyfiles ./src/theme/*.css && copyfiles dist/vendor -V --flat",
+    "copy-assets": "copyfiles ./src/theme/*.css dist/theme -V --flat && ./src/vendor/*.js copyfiles dist/vendor -V --flat",
     "clean": "shx rm -rf _bundles dist"
   },
   "repository": {
