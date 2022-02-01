@@ -1,7 +1,3 @@
-# TODO's 
-
-- TS CSS Module Solution: https://spin.atomicobject.com/2020/06/22/css-module-typescript/
-
 # token-negotiator
 
 [![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Ftokenscript%2Ftoken-negotiator%2Fbadge%3Fref%3Dmain&style=flat)](https://actions-badge.atrox.dev/tokenscript/token-negotiator/goto?ref=main)
