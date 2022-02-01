@@ -2,10 +2,6 @@
 
 /* light theme */
 
-.overlay-tn {
-  font-family: SourceSansPro;
-}
-
 .overlay-tn.light .overlay-fab-button-tn {
   background: black;
   box-shadow: 0 2px 5px 0 #676767;
@@ -475,7 +471,6 @@ li.issuer-connect-banner-tn {
   align-items: center;
   padding: 12px;
   height: 2.7rem;
-  /* color: black; */
 }
 
 .opening-btn-tn, li.issuer-connect-banner-tn .connect-btn-tn, li.issuer-connect-banner-tn .tokens-btn-tn {

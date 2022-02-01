@@ -116,7 +116,7 @@ var Client = (function () {
             this.issuerHeading = (_d = (_c = this.options) === null || _c === void 0 ? void 0 : _c.overlay) === null || _d === void 0 ? void 0 : _d.issuerHeading;
             this.repeatAction = (_f = (_e = this.options) === null || _e === void 0 ? void 0 : _e.overlay) === null || _f === void 0 ? void 0 : _f.repeatAction;
         }
-        issuers.map(function (issuer) {
+        issuers.forEach(function (issuer) {
             if (tokenLookup[issuer].onChain === true) {
                 _this.onChainTokens.tokenKeys.push(issuer);
                 _this.onChainTokens[issuer] = { tokens: [] };

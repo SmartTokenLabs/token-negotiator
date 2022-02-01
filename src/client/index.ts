@@ -94,7 +94,7 @@ export class Client {
 
         */
 
-        issuers.map((issuer: any) => {
+        issuers.forEach((issuer: any) => {
 
             if (tokenLookup[issuer].onChain === true) {
 
