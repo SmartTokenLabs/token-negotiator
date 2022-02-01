@@ -465,11 +465,9 @@
 
 li.issuer-connect-banner-tn {
   list-style-type:none;
-  padding: 0;
   display: flex;
   justify-content: space-between; 
   align-items: center;
-  /* // NOSONAR */
   padding: 12px;
   height: 2.7rem;
 }
