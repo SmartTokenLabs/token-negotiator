@@ -6,13 +6,16 @@
   "scripts": {
     "test": "jest",
     "build": "npm run clean && tsc -m es6 --outDir dist && npm run copy-assets",
-    "build-common-js": "npm run clean && tsc --outDir dist && npm run copy-assets",
+    "build-umd": "npm run clean && webpack && npm run copy-assets",
     "copy-assets": "copyfiles ./src/theme/*.css dist/theme -V --flat && copyfiles ./src/theme/*.css dist/vendor -V --flat",
     "clean": "shx rm -rf _bundles dist"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TokenScript/token-negotiator.git"
+  },
+  "browser": {
+    "crypto": false
   },
   "author": "Smart Token Labs <info@alchemynft.org>",
   "license": "MIT",
@@ -36,21 +39,38 @@
   },
   "devDependencies": {
     "@babel/preset-env": "^7.15.8",
+    "@types/create-hash": "^1.2.2",
     "@types/jest": "^27.0.2",
     "@types/jsdom": "^16.2.13",
+    "@types/keccak": "^3.0.1",
     "@types/prop-types": "^15.7.4",
     "@types/react": "^17.0.38",
+    "@types/readable-stream": "^2.3.13",
+    "assert": "^2.0.0",
     "axios": "^0.24.0",
     "babel-loader": "^8.2.2",
+    "browserify": "^17.0.0",
+    "buffer-browserify": "^0.2.5",
     "copyfiles": "^2.4.1",
+    "crypto": "^1.0.1",
+    "crypto-browserify": "^3.12.0",
     "css-loader": "^6.5.1",
+    "envify": "^4.1.0",
+    "file-loader": "^6.2.0",
+    "https-browserify": "^1.0.0",
     "jest": "^27.3.1",
     "jest-junit": "^13.0.0",
+    "os-browserify": "^0.3.0",
+    "process": "^0.11.10",
     "shx": "^0.3.3",
+    "stream-browserify": "^3.0.0",
+    "stream-http": "^3.2.0",
     "terser-webpack-plugin": "^5.2.4",
     "ts-jest": "^27.0.7",
     "ts-loader": "^9.2.6",
     "typescript": "^4.4.3",
-    "typescript-plugin-css-modules": "^3.4.0"
+    "typescript-plugin-css-modules": "^3.4.0",
+    "url": "^0.11.0",
+    "webpack-cli": "^4.9.2"
   }
 }

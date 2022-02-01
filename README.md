@@ -25,7 +25,7 @@ https://github.com/TokenScript/token-negotiator-examples
 Within your web application / dapp install the token negotiator.
 
 ```sh
-npm i @tokenScript/token-negotiator
+  npm i @tokenScript/token-negotiator
 ```
 
 This library provides two ways to load tokens into your application, active or passive. 
@@ -48,14 +48,20 @@ until the end user has selected them via an token negotiator overlay web compone
   const negotiator = new Client({
     type: 'active',
     issuers: ['devcon'],
+    type: 'active',
+    issuers: [
+        'devcon'
+    ],
     options: {
-      overlay: {
-        heading: "Get discount with Ticket",
-        theme: "light",
-        position: "bottom-right"
-      }
-    },
-    filter: {}
+        overlay: {
+            openingHeading: "Open a new world of discounts available with your tokens.",
+            IssuerHeading: "Get discount with Ticket",
+            repeatAction: "try again",
+            theme: "light",
+            position: "bottom-right"
+        },
+        filters: {},
+    }
   });
 
   // invoke
@@ -105,32 +111,11 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
 
 ````
 
-### Negotiator Client Module API
-
-````javascript
-
- /**
-  * @param {Object} filter { 'devconId': 6, 'class': 'gold' } (optional rule to fiter tokens by keys and values - this acts as a simple filter where you cannot at this time filter many from the same key).
-  * @param {String} type passive or active
-  * @param {String} issuers list of issuers tokens you choose to support (on / off chain)
-  * @param {Object} options
-  * @param {Object} options[overlay] object to configure the overlay
-  * @param {String} options[overlay][heading] overlay heading
-  * @param {String} options[overlay][theme] light or dark modes
-  * @param {String} options[overlay][position] position (not currently functional) ("bottom-right"...)
-  */
- negotiator.negotiate(
-   filter,
-   issuers,
-   options
- )
-
-````
 ### Authenticate ownership of Token
 
 Authenicating ownership of the token will provide a proof with a limited expiry.
 
-```javascript
+````javascript
 
   /**
   * @param {String} issuer token issuer
@@ -147,7 +132,66 @@ Authenicating ownership of the token will provide a proof with a limited expiry.
 
   });
 
-```
+````
+
+Standard UMD export 
+
+Creating a UMD build
+
+````sh
+  
+  run `npm i` 
+
+  run `npm run build-umd`
+
+````
+
+Locate and copy the '/dist' folder to your website generated from the UMD build.
+
+Configure the library using the following example.
+
+````html
+
+  <!-- add the JS library -->
+  <script type="text/javascript" src="./dist/negotiator.js"></script>
+
+  <!-- add the HTML entry point for the Token Negotiator -->
+  <div class="overlay-tn"></div>
+
+  <!-- instantiate the library and include event hooks as required -->
+  <script>
+
+        var negotiator = new negotiator.Client({
+            type: 'active',
+            issuers: [
+                'devcon'
+            ],
+            options: {
+                overlay: {
+                    openingHeading: "Open a new world of discounts available with your tokens.",
+                    IssuerHeading: "Get discount with Ticket",
+                    repeatAction: "try again",
+                    theme: "light",
+                    position: "bottom-right"
+                },
+                filters: {},
+            }
+        });
+
+        negotiator.on("tokens-selected", (tokens) => {
+            console.log(tokens);
+        });
+
+        negotiator.on("token-proof", (proof) => {
+            console.log(proof);
+        });
+
+        negotiator.negotiate();
+
+    </script>
+
+
+````
 
 ## Tests
 

@@ -76,7 +76,7 @@ export class Outlet {
 
       case 'get-token-proof':
 
-        var token = this.getDataFromQuery('token');
+        const token = this.getDataFromQuery('token');
 
         requiredParams(token, "unsigned token is missing");
 
@@ -130,7 +130,7 @@ export class Outlet {
     
   }
 
-  sendTokenProof ( token: any, type:any ) {
+  sendTokenProof ( token: any, type:any) {
 
     if(!token) return 'error';
 

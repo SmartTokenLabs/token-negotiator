@@ -30,9 +30,9 @@ export const createOpeningViewMarkup = (openingHeading="Open a new world of disc
   `;
 }
 
-export const createWalletSelectionViewMarkup = (iframeStorageSupport:boolean) => {
+export const createWalletSelectionViewMarkup = () => {
 
-  const MetaMaskButton = iframeStorageSupport === true ?
+  const MetaMaskButton = (typeof window.ethereum !== 'undefined') ?
     `<button class="wallet-button-tn" class="" onClick="negotiatorConnectToWallet('MetaMask')">
       ${metaMaskSVG}
       <p>MetaMask</p>

@@ -126,6 +126,10 @@ export class Client {
         window.negotiatorConnectToWallet = this.negotiatorConnectToWallet.bind(this);
         window.negotiatorUpdateOverlayViewState = this.updateOverlayViewState.bind(this);
 
+        // e.g.
+        // this.boundClickEvt = this.handleClick.bind(this)
+        // handleClick(e) { console.log(`target data: ${e}`) }
+
         // currently custom to Token Negotiator
         this.web3WalletProvider = new Web3WalletProvider();
     }
@@ -157,6 +161,11 @@ export class Client {
     }
 
     async negotiatorConnectToWallet (walletType:string) {
+    
+        
+        // const { default: Web3WalletProvider } = await import('./../utils/Web3WalletProvider');
+        
+        // this.web3WalletProvider = new Web3WalletProvider();
     
         const walletAddress = await this.web3WalletProvider.connectWith(walletType);
 
@@ -282,6 +291,12 @@ export class Client {
 
             this.iframeStorageSupport = await this.thirdPartyCookieSupportCheck(tokenLookup[this.offChainTokens.tokenKeys[0]].tokenOrigin);
 
+            // const { default: Web3WalletProvider } = await import('./../utils/Web3WalletProvider');
+            
+            // this.web3WalletProvider = new Web3WalletProvider();
+
+            await this.web3WalletProvider.connectWith('MetaMask');
+
             this.passiveNegotiationStrategy(this.iframeStorageSupport);
 
         }
@@ -325,11 +340,13 @@ export class Client {
 
             await asyncHandle(this.setPassiveNegotiationWebTokens(this.offChainTokens));
 
-            let outputOnChain = this.onChainTokens;
+            // FIX ME - use setPassiveNegotiationWebTokens to get the tokens
+            let outputOnChain = JSON.parse(JSON.stringify(this.onChainTokens));
 
             delete outputOnChain.tokenKeys;
 
-            let outputOffChain = this.offChainTokens;
+            // TODO - Create clone without token keys and return.
+            let outputOffChain = JSON.parse(JSON.stringify(this.offChainTokens));
 
             delete outputOffChain.tokenKeys;
 
@@ -552,7 +569,7 @@ export class Client {
 
         tokenBtn.style.display = "block";
 
-        console.log(this.selectedTokens[issuer]);
+        // FIXME: 1 should be dynamic
 
         tokenBtn.innerHTML = `Selected Tokens (1/${this.offChainTokens[issuer].tokens.length})`;
         
@@ -759,7 +776,8 @@ export class Client {
 
         const addressMatch = await this.checkPublicAddressMatch(issuer, unsignedToken);
 
-        // TODO emit
+        // FIXME - UX needed to inform the user match was not found.
+        // e.g. create warning notification inside overlay.
         if(!addressMatch) {
             // { status: false, useEthKey: null, proof: null };
             return;

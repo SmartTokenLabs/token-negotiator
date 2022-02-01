@@ -2,6 +2,7 @@
   "compilerOptions": {
     "removeComments": true,
     "moduleResolution": "node",
+    "downlevelIteration": true,
     "baseUrl": ".",
     "module": "es6",
     "target": "es5",
