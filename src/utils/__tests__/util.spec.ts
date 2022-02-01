@@ -1,5 +1,8 @@
 import { compareObjects, base64ToUint8array } from './../index';
 
+// TODO: add unit tests for the following functions:
+// logger, requiredParams, asyncHandle, attachPostMessageListener.
+
 describe('util Spec object comparison', () => {
   test('expect a to be b shallow comparison', () => {
     const a = { data: 'In Ethereum, multi-signature wallets are implemented as a smart contract, that each of the approved external accounts sends a transaction to in order to "sign" a group transaction.' };
@@ -7,8 +10,8 @@ describe('util Spec object comparison', () => {
     expect(compareObjects(a, b)).toEqual(true);
   });
   test('expect a to be b deep comparison', () => {
-    const a = { data: { transaction: { address: '0x', uint: '100', bytes: '53454553', bool: true } }};
-    const b = { data: { transaction: { address: '0x', uint: '100', bytes: '53454553', bool: true } }};
+    const a = { token: 'a', type: 'gold', class:'x' };
+    const b = { type: 'gold', token: 'a', class:'x' };
     expect(compareObjects(a, b)).toEqual(true);
   });
   test('expect a not to be b shallow comparison', () => {
@@ -27,7 +30,6 @@ describe('util Spec object comparison', () => {
     expect(compareObjects(a, b)).toEqual(false);
   });
 });
-
 describe('util Spec base64ToUint8array', () => {
   test('expect base64 to be Uint8array', () => {
     expect(base64ToUint8array('RVJDNzIxLU5vbi1GdW5naWJsZS1Ub2tlbg==').toString()).toEqual([69, 82, 67, 55, 50, 49, 45, 78, 111, 110, 45, 70, 117, 110, 103, 105, 98, 108, 101, 45, 84, 111, 107, 101, 110].toString());

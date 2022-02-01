@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <script type="text/javascript" src="./dist/negotiator.js"></script>
+    
+</head>
+<body onload="init()">
+
+    <div class="overlay-tn"></div>
+    
+    <script>
+
+        function init() {
+
+            window.negotiator = new negotiator.Client({
+                type: 'active',
+                issuers: [
+                    'devcon',
+                    'devcon2'
+                ],
+                options: {
+                    overlay: {
+                        openingHeading: "Open a new world of discounts available with your tokens.",
+                        IssuerHeading: "Get discount with Ticket",
+                        repeatAction: "try again",
+                        theme: "light",
+                        position: "bottom-right"
+                    },
+                    filters: {},
+                }
+            });
+
+            window.negotiator.on("tokens-selected", (tokens) => {
+                console.log(tokens);
+            });
+
+            window.negotiator.on("token-proof", (proof) => {
+                console.log(proof);
+            });
+
+            window.negotiator.negotiate();
+
+        }
+
+    </script>
+
+</body>
+</html>

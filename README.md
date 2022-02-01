@@ -1,3 +1,7 @@
+# TODO's 
+
+- TS CSS Module Solution: https://spin.atomicobject.com/2020/06/22/css-module-typescript/
+
 # token-negotiator
 
 [![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Ftokenscript%2Ftoken-negotiator%2Fbadge%3Fref%3Dmain&style=flat)](https://actions-badge.atrox.dev/tokenscript/token-negotiator/goto?ref=main)
@@ -23,7 +27,7 @@ https://github.com/TokenScript/token-negotiator-examples
 Within your web application / dapp install the token negotiator.
 
 ```sh
-npm i @tokenScript/token-negotiator
+  npm i @tokenScript/token-negotiator
 ```
 
 This library provides two ways to load tokens into your application, active or passive. 
@@ -41,25 +45,45 @@ until the end user has selected them via an token negotiator overlay web compone
 
   let tokens = [];
 
-  const tokenName = "devcon-ticket";
+  // configure
 
-  const options = { 
-    useOverlay: true, // enables active negotiation
-    tokenSelectorContainer: ".tokenSelectorContainerElement" // an HTML container element for the overlay to load within
-  };
+  const negotiator = new Client({
+    type: 'active',
+    issuers: ['devcon'],
+    type: 'active',
+    issuers: [
+        'devcon'
+    ],
+    options: {
+        overlay: {
+            openingHeading: "Open a new world of discounts available with your tokens.",
+            IssuerHeading: "Get discount with Ticket",
+            repeatAction: "try again",
+            theme: "light",
+            position: "bottom-right"
+        },
+        filters: {},
+    }
+  });
 
-  const negotiator = new Client(filter, tokenName, options);
+  // invoke
 
   negotiator.negotiate();
 
-  window.addEventListener('message', (event) => {
-    switch(event.data.evt) {
-      case 'setSelectedTokens':
-        tokens = event.data.selectedTokens;
-        // do something with tokens here.
-        break;
-    }
-  }, false);
+  // event hooks
+
+  negotiator.on("tokens-selected", (tokens) => { 
+    
+    // use tokens
+
+  });
+
+  negotiator.on("token-proof", (proof) => { 
+          
+    // use proof
+
+  });
+
 ```
 ### Passive Negotiation of tokens
 
@@ -69,66 +93,107 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
 
   import { Client } from '@tokenscript/token-negotiator';
 
-  let tokens = [];
+  const negotiator = new Client({
+    type: 'passive',
+    issuers: tokenIssuers,
+    options: {}
+  });
 
-  const filter = {};
+  negotiator.on('tokens', (issuerTokens) => {
+    
+    // use tokens
 
-  const tokenName = "devcon-ticket";
+  });
 
-  const options = {};
-  
-  const negotiator = new Client(filter, tokenName, options);
+  negotiator.on("token-proof", (tokenProof) => {
 
-  negotiator.negotiate().then(result => {
-    if(result){
-      tokens = result;
-      // do something with tokens here.
-    }
-    }).catch((err) => {
-      console.log('error', err);
-    }
-  );
+    // use proof
+
+  });
 
 ````
 
-### Negotiator Client Module API
+### Authenticate ownership of Token
+
+Authenicating ownership of the token will provide a proof with a limited expiry.
 
 ````javascript
 
- /**
-  * @param {Object} filter { 'devconId': 6, 'class': 'gold' } (optional rule to fiter tokens by keys and values - this acts as a simple filter where you cannot at this time filter many from the same key).
-  * @param {String} tokenName token name identifier to negotiate 
-  * @param {Object} options
-  * @param {Boolean} options[useOverlay] optional rule to use token issuer overlay
-  * @param {Object} options[tokenSelectorContainer] HTML Selector location to inject token issuer overlay when use overlay is set as true
-  */
- negotiator.negotiate(
-   filter,
-   tokenName,
-   options
- )
-
-````
-### Authenticate ownership of Token
-
-At the stage of negotiation, the client has learnt about the tokens which can be used to provide soft features such as
-what discount could be applied with ownership of a token or entry to a VIP lounge for browsing purposes. The Token Negotiator can be then used to attest that the end user has ownership rights to the token, via the authenticate method.
-
-```javascript
-
   /**
-  * @param {URL} unEndPoint end point that returns the following JSON payload { un: number, expiry: date } 
-  * @param {object} unsignedToken token to attest
-  * @returns {object} { ethKey (object), proof (object) }
+  * @param {String} issuer token issuer
+  * @param {Object} unsignedToken token to attest
   */
-  const { useToken, useEthKey } = await negotiator.authenticate({ 
-    unEndPoint, 
+  negotiator.authenticate({ 
+    issuer, 
     unsignedToken 
   });
 
-  // un is a short lived unpredictable number that a server can provide towards the authenticated use of a token.
+  negotiator.on('proof', () => {
 
-```
+    // the proof will be recieved here (valid or failed)
+
+  });
+
+````
+
+Standard UMD export 
+
+Creating a UMD build
+
+````sh
+  
+  run `npm i` 
+
+  run `npm run build-umd`
+
+````
+
+Locate and copy the '/dist' folder to your website generated from the UMD build.
+
+Configure the library using the following example.
+
+````html
+
+  <!-- add the JS library -->
+  <script type="text/javascript" src="./dist/negotiator.js"></script>
+
+  <!-- add the HTML entry point for the Token Negotiator -->
+  <div class="overlay-tn"></div>
+
+  <!-- instantiate the library and include event hooks as required -->
+  <script>
+
+        var negotiator = new negotiator.Client({
+            type: 'active',
+            issuers: [
+                'devcon'
+            ],
+            options: {
+                overlay: {
+                    openingHeading: "Open a new world of discounts available with your tokens.",
+                    IssuerHeading: "Get discount with Ticket",
+                    repeatAction: "try again",
+                    theme: "light",
+                    position: "bottom-right"
+                },
+                filters: {},
+            }
+        });
+
+        negotiator.on("tokens-selected", (tokens) => {
+            console.log(tokens);
+        });
+
+        negotiator.on("token-proof", (proof) => {
+            console.log(proof);
+        });
+
+        negotiator.negotiate();
+
+    </script>
+
+
+````
 
 ## Tests
 

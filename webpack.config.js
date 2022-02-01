@@ -1,55 +1,77 @@
 const path = require('path');
-const { env } = require('process');
-const TerserPlugin = require("terser-webpack-plugin");
+const webpack = require('webpack');
 
-// Generates the UMD module output.
+// more polyfills will be required as the library extends to support blockchain and non blockchain token attestations.
 
 module.exports = {
-  mode: env.production ? 'production' : 'development',
-  devtool: 'inline-source-map',
-  entry: {
-    'token-negotiator.min': './src/index.ts'
-  },
-  resolve: {
-    extensions: ['.ts', '.tsx', '.js']
-  },
-  plugins: [],
-  optimization: {
-    minimize: true,
-    minimizer: [new TerserPlugin()],
-  },
-  module: {
-    rules: [
-      {
-        test: /\.tsx?$/,
-        use: 'ts-loader',
-        exclude: /node_modules/,
-      },
-      {
-        test: /\.m?js$/,
-        exclude: /(node_modules|bower_components)/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: ['@babel/preset-env']
-          }
-        }
-      }
+    mode: "production",
+    entry: './src/index.ts',
+    plugins: [
+        new webpack.ProvidePlugin({
+            Buffer: ['buffer', 'Buffer'],
+        }),
+        new webpack.ProvidePlugin({
+            process: 'process/browser',
+        })
     ],
-  },
-  resolve: {
-    extensions: ['.tsx', '.ts', '.js'],
-  },
-  output: {
-    path: path.resolve(__dirname, '_bundles'),
-    filename: '[name].js',
-    libraryTarget: 'umd',
-    library: 'token-negotiator',
-    umdNamedDefine: true
-  },
-  performance: {
-    hints: false,
-    maxEntrypointSize: 512000,
-    maxAssetSize: 512000,
-  }
+    module: {
+        rules: [
+            {
+                test: /\.tsx?$/,
+                exclude: /node_modules/,
+                use: [
+                    { loader: 'ts-loader', options: { transpileOnly: true } }
+                ]
+            },
+            {
+                test: /\.css$/i,
+                use: ["style-loader", "css-loader"],
+            },
+            {
+                test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
+                use: [
+                    {
+                        loader: 'file-loader',
+                        options: {
+                            name: '[name].[ext]',
+                            outputPath: 'fonts/'
+                        }
+                    }
+                ]
+            }
+        ],
+    },
+    resolve: {
+        alias: {
+            "process": "process/browser",
+            "Buffer": "buffer",
+            "stream": "stream-browserify"
+        },
+        extensions: ['.tsx', '.ts', '.js'],
+        fallback:
+        {
+            "buffer": require.resolve('buffer/'),
+            "http": require.resolve("stream-http"),
+            "os": require.resolve("os-browserify/browser"),
+            "https": require.resolve("https-browserify"),
+            "crypto": require.resolve("crypto-browserify"),
+            "stream": require.resolve("stream-browserify"),
+            "assert": require.resolve("assert/"),
+            "url": require.resolve("url/")
+        }
+    },
+    resolveLoader: {
+        modules: ['node_modules'],
+        extensions: ['.js', '.json'],
+        mainFields: ['loader', 'main']
+    },
+    output: {
+        library: 'negotiator',
+        filename: 'negotiator.js',
+        libraryTarget: 'umd',
+        path: path.resolve(__dirname, 'dist'),
+    },
+    optimization: {
+        minimize: true
+    }
 };

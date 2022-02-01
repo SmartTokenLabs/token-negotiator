@@ -2,6 +2,7 @@
   "compilerOptions": {
     "removeComments": true,
     "moduleResolution": "node",
+    "downlevelIteration": true,
     "baseUrl": ".",
     "module": "es6",
     "target": "es5",
@@ -18,5 +19,6 @@
     ]
   },
   "include": ["src"],
-  "exclude": ["node_modules", "**/__tests__/*", "examples"]
+  "exclude": ["node_modules", "**/__tests__/*", "examples"],
+  "plugins": [{ "name": "typescript-plugin-css-modules" }]
 }
