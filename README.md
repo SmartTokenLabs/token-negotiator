@@ -49,8 +49,6 @@ until the end user has selected them via an token negotiator overlay web compone
 
   const negotiator = new Client({
     type: 'active',
-    issuers: ['devcon'],
-    type: 'active',
     issuers: [
         'devcon'
     ],
@@ -95,7 +93,7 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
 
   const negotiator = new Client({
     type: 'passive',
-    issuers: tokenIssuers,
+    issuers: ['devcon'],
     options: {}
   });
 
