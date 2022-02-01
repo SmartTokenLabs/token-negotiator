@@ -197,7 +197,7 @@ run `npm run test`
 
 See Developers Page inside Wiki
 
-### Help / Questions / Improvements
+### Help / Questions / Improvements / Opportunities
 
 Please contact us or open an issue via github:
 Alchemynft <info@alchemynft.org>
