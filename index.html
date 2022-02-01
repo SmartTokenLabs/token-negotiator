@@ -7,41 +7,47 @@
     <title>Document</title>
 
     <script type="text/javascript" src="./dist/negotiator.js"></script>
+    
 </head>
-<body>
+<body onload="init()">
 
     <div class="overlay-tn"></div>
     
     <script>
 
-        window.negotiator = new negotiator.Client({
-            type: 'active',
-            issuers: [
-                'devcon',
-                'devcon2'
-            ],
-            options: {
-                overlay: {
-                    openingHeading: "Open a new world of discounts available with your tokens.",
-                    IssuerHeading: "Get discount with Ticket",
-                    repeatAction: "try again",
-                    theme: "light",
-                    position: "bottom-right"
-                },
-                filters: {},
-            }
-        });
+        function init() {
 
-        window.negotiator.on("tokens-selected", (tokens) => {
-            console.log(tokens);
-        });
+            window.negotiator = new negotiator.Client({
+                type: 'active',
+                issuers: [
+                    'devcon',
+                    'devcon2'
+                ],
+                options: {
+                    overlay: {
+                        openingHeading: "Open a new world of discounts available with your tokens.",
+                        IssuerHeading: "Get discount with Ticket",
+                        repeatAction: "try again",
+                        theme: "light",
+                        position: "bottom-right"
+                    },
+                    filters: {},
+                }
+            });
 
-        window.negotiator.on("token-proof", (proof) => {
-            console.log(proof);
-        });
+            window.negotiator.on("tokens-selected", (tokens) => {
+                console.log(tokens);
+            });
 
-        window.negotiator.negotiate();
+            window.negotiator.on("token-proof", (proof) => {
+                console.log(proof);
+            });
+
+            window.negotiator.negotiate();
+
+        }
 
     </script>
+
 </body>
 </html>

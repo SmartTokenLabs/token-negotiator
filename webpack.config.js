@@ -1,8 +1,19 @@
 const path = require('path');
+const webpack = require('webpack');
+
+// more polyfills will be required as the library extends to support blockchain and non blockchain token attestations.
 
 module.exports = {
     mode: "production",
     entry: './src/index.ts',
+    plugins: [
+        new webpack.ProvidePlugin({
+            Buffer: ['buffer', 'Buffer'],
+        }),
+        new webpack.ProvidePlugin({
+            process: 'process/browser',
+        })
+    ],
     module: {
         rules: [
             {
@@ -31,9 +42,15 @@ module.exports = {
         ],
     },
     resolve: {
+        alias: {
+            "process": "process/browser",
+            "Buffer": "buffer",
+            "stream": "stream-browserify"
+        },
         extensions: ['.tsx', '.ts', '.js'],
         fallback:
         {
+            "buffer": require.resolve('buffer/'),
             "http": require.resolve("stream-http"),
             "os": require.resolve("os-browserify/browser"),
             "https": require.resolve("https-browserify"),
@@ -54,15 +71,7 @@ module.exports = {
         libraryTarget: 'umd',
         path: path.resolve(__dirname, 'dist'),
     },
-    // watch: true,
-    watch: false,
-    watchOptions: {
-        aggregateTimeout: 200,
-        poll: 1000,
-        ignored: /node_modules/
-    },
     optimization: {
         minimize: true
     }
-
 };

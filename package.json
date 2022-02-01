@@ -1,6 +1,6 @@
 {
   "name": "@tokenscript/token-negotiator",
-  "version": "1.0.0-alpha.93",
+  "version": "1.0.0-alpha.94",
   "description": "Token-negotiator enables token attestations providing bridge between web 2.0 and 3.0.",
   "main": "dist/index.js",
   "scripts": {
@@ -27,17 +27,14 @@
     "@toruslabs/torus-embed": "^1.20.2",
     "@walletconnect/web3-provider": "^1.7.1",
     "asn1js": "^2.0.26",
-    "babel-jest": "^27.3.1",
     "big-integer": "^1.6.48",
-    "buffer": "^6.0.3",
     "ethers": "^5.4.0",
     "pvutils": "^1.0.17",
     "style-loader": "^3.3.1",
-    "tokenscript-attestation": "github:TokenScript/attestation#main",
-    "web3": "^1.7.0",
-    "web3modal": "^1.9.5"
+    "web3": "^1.7.0"
   },
   "devDependencies": {
+    "babel-jest": "^27.3.1",
     "@babel/preset-env": "^7.15.8",
     "@types/create-hash": "^1.2.2",
     "@types/jest": "^27.0.2",
@@ -50,6 +47,7 @@
     "axios": "^0.24.0",
     "babel-loader": "^8.2.2",
     "browserify": "^17.0.0",
+    "buffer": "^6.0.3",
     "buffer-browserify": "^0.2.5",
     "copyfiles": "^2.4.1",
     "crypto": "^1.0.1",
@@ -58,8 +56,10 @@
     "envify": "^4.1.0",
     "file-loader": "^6.2.0",
     "https-browserify": "^1.0.0",
+    "install": "^0.13.0",
     "jest": "^27.3.1",
     "jest-junit": "^13.0.0",
+    "npm": "^8.4.0",
     "os-browserify": "^0.3.0",
     "process": "^0.11.10",
     "shx": "^0.3.3",
