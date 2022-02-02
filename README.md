@@ -1,7 +1,5 @@
 # token-negotiator
 
-[![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Ftokenscript%2Ftoken-negotiator%2Fbadge%3Fref%3Dmain&style=flat)](https://actions-badge.atrox.dev/tokenscript/token-negotiator/goto?ref=main)
-
 The token-negotiator is an NPM package designed for use with TokenScript. 
 
 TokenScript is a framework which improves functionality, security and usability of blockchain token. It creates a layer between a blockchain and user devices, adding information, rules and functionalites.
@@ -204,3 +202,6 @@ Alchemynft <info@alchemynft.org>
 
 For a quick start to using this product please see: https://github.com/TokenScript/token-negotiator-examples/wiki/quick-start
 
+ <!--- 
+[![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Ftokenscript%2Ftoken-negotiator%2Fbadge%3Fref%3Dmain&style=flat)](https://actions-badge.atrox.dev/tokenscript/token-negotiator/goto?ref=main)
+--->
