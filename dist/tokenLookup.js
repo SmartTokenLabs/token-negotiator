@@ -2,7 +2,7 @@ import { SignedDevconTicket } from './Attestation/SignedDevonTicket';
 export var tokenLookup = {
     "devcon": {
         onChain: false,
-        tokenIssuerPublicKey: "TODO",
+        tokenIssuerPublicKey: "",
         title: 'Devcon',
         tokenName: 'devcon-ticket-local-3002',
         attestationOrigin: "https://stage.attestation.id/",
@@ -17,13 +17,13 @@ export var tokenLookup = {
         emblem: 'https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg',
         tokenParser: SignedDevconTicket
     },
-    "devcon2": {
+    "devcon-remote": {
         onChain: false,
-        tokenIssuerPublicKey: "TODO",
-        title: 'Devcon Test 2',
-        tokenName: 'devcon-ticket-local-3001',
+        tokenIssuerPublicKey: "",
+        title: 'Devcon',
+        tokenName: 'devcon',
         attestationOrigin: "https://stage.attestation.id/",
-        tokenOrigin: "http://localhost:3001/",
+        tokenOrigin: "https://devcontickets.herokuapp.com/outlet/",
         tokenUrlName: 'ticket',
         unEndPoint: 'https://crypto-verify.herokuapp.com/use-devcon-ticket',
         tokenSecretName: 'secret',
