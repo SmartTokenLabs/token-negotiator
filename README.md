@@ -176,7 +176,7 @@ Configure the library using the following example.
             }
         });
 
-        negotiator.on("tokens-selected", (tokens) => {
+        negotiator.on("tokens", (tokens) => {
             console.log(tokens);
         });
 
