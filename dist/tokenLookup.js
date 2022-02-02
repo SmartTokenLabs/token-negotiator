@@ -23,7 +23,7 @@ export var tokenLookup = {
         title: 'Devcon',
         tokenName: 'devcon',
         attestationOrigin: "https://stage.attestation.id/",
-        tokenOrigin: "https://devcontickets.herokuapp.com/outlet/",
+        tokenOrigin: "https://tokenscript.github.io/token-negotiator-examples/github-pages-use-only/token-outlet-website/build/",
         tokenUrlName: 'ticket',
         unEndPoint: 'https://crypto-verify.herokuapp.com/use-devcon-ticket',
         tokenSecretName: 'secret',
