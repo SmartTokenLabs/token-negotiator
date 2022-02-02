@@ -1,6 +1,8 @@
 # token-negotiator
 
+<!--
 [![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Ftokenscript%2Ftoken-negotiator%2Fbadge%3Fref%3Dmain&style=flat)](https://actions-badge.atrox.dev/tokenscript/token-negotiator/goto?ref=main)
+-->
 
 The token-negotiator is an NPM package designed for use with TokenScript. 
 
@@ -174,7 +176,7 @@ Configure the library using the following example.
             }
         });
 
-        negotiator.on("tokens-selected", (tokens) => {
+        negotiator.on("tokens", (tokens) => {
             console.log(tokens);
         });
 
