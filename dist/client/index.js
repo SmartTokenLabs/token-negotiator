@@ -394,7 +394,7 @@ var Client = (function () {
         connectBtn.style.display = "none";
         connectBtn.setAttribute('tabIndex', -1);
         tokenBtn.style.display = "block";
-        tokenBtn.innerHTML = "Selected Tokens (1/" + this.offChainTokens[issuer].tokens.length + ")";
+        tokenBtn.innerHTML = this.offChainTokens[issuer].tokens.length + " tokens available";
         tokenBtn.setAttribute('aria-label', "Navigate to select from " + this.offChainTokens[issuer].tokens.length + " of your " + issuer + " tokens");
         tokenBtn.setAttribute('tabIndex', 1);
     };

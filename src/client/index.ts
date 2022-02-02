@@ -569,9 +569,7 @@ export class Client {
 
         tokenBtn.style.display = "block";
 
-        // FIXME: 1 should be dynamic
-
-        tokenBtn.innerHTML = `Selected Tokens (1/${this.offChainTokens[issuer].tokens.length})`;
+        tokenBtn.innerHTML = `${this.offChainTokens[issuer].tokens.length} token/s available`;
         
         tokenBtn.setAttribute('aria-label', `Navigate to select from ${this.offChainTokens[issuer].tokens.length} of your ${issuer} tokens`);
 
