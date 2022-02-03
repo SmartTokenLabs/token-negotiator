@@ -40,6 +40,9 @@ To start, first include the following html element into your page, this is where
     <div className="overlay-tn"></div>
 ````
 
+The following Javascript configuration will connect to the Token Negotiator, embed the overlay html component and enable an end user to connect with the tokens
+listed inside the issuers array.
+
 ```javascript
   
   import { Client } from '@tokenscript/token-negotiator';
