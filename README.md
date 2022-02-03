@@ -32,8 +32,13 @@ This library provides two ways to load tokens into your application, active or p
 
 ### Active Negotiation of tokens
 
-This approach is designed with security in mind where the client website will not learn about the tokens
-until the end user has selected them via an token negotiator overlay web component loaded into the page.
+This approach is designed to share tokens with the client when the end user has selected them via an token negotiator overlay web component loaded into the page.
+
+To create an application using active negotiation first include the following html element into your page, this is where the token negotiator overlay will be embeded to connect with tokens. 
+
+````html
+    <div className="overlay-tn"></div>
+````
 
 ```javascript
   
