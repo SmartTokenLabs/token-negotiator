@@ -144,14 +144,14 @@ Authenicating ownership of the token will provide a proof with a limited expiry.
 
 ````
 
-Standard UMD export 
-
-Creating a UMD build
+Creating a UMD build, which will export the library as a single file.
 
 ````sh
   
+  // install dependancies
   run `npm i` 
 
+  // create the build
   run `npm run build-umd`
 
 ````
