@@ -114,7 +114,11 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
     // use proof
 
   });
+  
+  // invoke
 
+  negotiator.negotiate();
+  
 ````
 
 ### Authenticate ownership of Token
