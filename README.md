@@ -56,7 +56,7 @@ listed inside the issuers array.
   const negotiator = new Client({
     type: 'active',
     issuers: [
-        'devcon'
+        'devcon-remote'
     ],
     options: {
         overlay: {
@@ -99,7 +99,7 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
 
   const negotiator = new Client({
     type: 'passive',
-    issuers: ['devcon'],
+    issuers: ['devcon-remote'],
     options: {}
   });
 
@@ -174,7 +174,7 @@ Configure the library using the following example.
         var negotiator = new negotiator.Client({
             type: 'active',
             issuers: [
-                'devcon'
+                'devcon-remote'
             ],
             options: {
                 overlay: {
@@ -203,6 +203,16 @@ Configure the library using the following example.
 
 ````
 
+## Connecting to issuers
+
+Please see the token negotiator examples repository
+
+https://github.com/TokenScript/token-negotiator-examples/tree/main/token-outlet-website
+
+## New Token Issuers
+
+Please reach out to us at sayhi@smarttokenlabs.com
+
 ## Tests
 
 run `npm run test`
@@ -214,7 +224,7 @@ See Developers Page inside Wiki
 ### Help / Questions / Improvements
 
 Please contact us or open an issue via github:
-Alchemynft <info@alchemynft.org>
+sayhi@smarttokenlabs.com
 
 For a quick start to using this product please see: https://github.com/TokenScript/token-negotiator-examples/wiki/quick-start
 
