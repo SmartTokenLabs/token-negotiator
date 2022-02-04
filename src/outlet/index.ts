@@ -86,7 +86,13 @@ export class Outlet {
 
       break;
       
-      case 'set-magic-url':
+      case 'cookie-support-check':
+
+        this.eventSender.emitCookieSupport();
+      
+      break;
+
+      default:
 
         // store local storage item that can be later used to check if third party cookies are allowed.
         // Note: This test can only be performed when the localstorage / cookie is assigned, then later requested.
@@ -97,19 +103,7 @@ export class Outlet {
         const tokens = readMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey);    
 
         if(tokens && tokens.length) storeMagicURL(tokens, itemStorageKey);
-      
-      break;
-
-      case 'cookie-support-check':
-
-        this.eventSender.emitCookieSupport();
-      
-      break;
-
-      default:
-
-        requiredParams(null, "Please provide a valid action");
-
+        
       break;
 
     }

@@ -1,11 +1,9 @@
 // @ts-nocheck
-// import { Client } from "./../index";
+import { Client } from "./../index";
 
 describe('client spec', () => {
 
-  test('placeholder test whilst authenticator is broken', () => {
-    expect(1).toEqual(1);
-  });
+  test('placeholder test', () => { expect(1).toEqual(1) });
 
   // test('tokenNegotiatorClient a new instance of client', () => {
   //   const tokenNegotiatorClient = new Client({

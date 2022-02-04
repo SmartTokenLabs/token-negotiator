@@ -115,6 +115,7 @@ export var readMagicUrl = function (tokenUrlName, tokenSecretName, tokenIdName, 
         if (tokenData.token === tokenFromQuery) {
             isNewQueryTicket = false;
         }
+        return tokenData;
     });
     if (isNewQueryTicket) {
         tokens.push({ token: tokenFromQuery, secret: secretFromQuery, id: idFromQuery, magic_link: window.location.href });

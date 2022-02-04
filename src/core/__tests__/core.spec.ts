@@ -91,19 +91,19 @@ describe('core Spec', () => {
       unsignedTokenDataName
     )).toEqual([{"devconId": "9", "ticketClass": 12, "ticketId": 1}]);
   });
-//   test('expect store tokens inside cookies', () => {
-//     const tokens = [ 
-//       { class: 'abc', type: 'gold' },
-//       { class: 'def', type: 'silver' },
-//       { class: 'ghi', type: 'bronze' },
-//     ]
-//     storeMagicURL(tokens, 'testing');
-//     expect(global.localStorage.getItem('testing')).toBe(JSON.stringify([
-//       { class: 'abc', type: 'gold' },
-//       { class: 'def', type: 'silver' },
-//       { class: 'ghi', type: 'bronze' },
-//     ]));
-//   });
+  test('expect store tokens inside cookies', () => {
+    const tokens = [ 
+      { class: 'abc', type: 'gold' },
+      { class: 'def', type: 'silver' },
+      { class: 'ghi', type: 'bronze' },
+    ]
+    storeMagicURL(tokens, 'testing');
+    expect(global.localStorage.getItem('testing')).toBe(JSON.stringify([
+      { class: 'abc', type: 'gold' },
+      { class: 'def', type: 'silver' },
+      { class: 'ghi', type: 'bronze' },
+    ]));
+  });
   test('expect to be able to filter gold type tokens', () => {
     const tokens = [ 
       { class: 'abc', type: 'gold' },

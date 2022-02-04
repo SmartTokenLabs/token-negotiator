@@ -136,13 +136,15 @@ export const readMagicUrl = (tokenUrlName: string, tokenSecretName: string, toke
 
   let isNewQueryTicket = true;
 
-  const tokens = tokensOutput.tokens.map((tokenData: any) => {
+  let tokens = tokensOutput.tokens.map((tokenData: any) => {
 
     if (tokenData.token === tokenFromQuery) {
 
       isNewQueryTicket = false;
 
     }
+
+    return tokenData;
 
   });
 

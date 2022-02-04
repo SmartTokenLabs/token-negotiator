@@ -87,18 +87,15 @@ var Outlet = (function () {
                 var isTabOrIframe = this.getDataFromQuery('type');
                 this.sendTokenProof(token, isTabOrIframe);
                 break;
-            case 'set-magic-url':
+            case 'cookie-support-check':
+                this.eventSender.emitCookieSupport();
+                break;
+            default:
                 localStorage.setItem('cookie-support-check', 'test');
                 var _a = this.tokenIssuer, tokenUrlName = _a.tokenUrlName, tokenSecretName = _a.tokenSecretName, tokenIdName = _a.tokenIdName, itemStorageKey = _a.itemStorageKey;
                 var tokens = readMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey);
                 if (tokens && tokens.length)
                     storeMagicURL(tokens, itemStorageKey);
-                break;
-            case 'cookie-support-check':
-                this.eventSender.emitCookieSupport();
-                break;
-            default:
-                requiredParams(null, "Please provide a valid action");
                 break;
         }
     };
