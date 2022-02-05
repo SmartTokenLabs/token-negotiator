@@ -1,10 +1,6 @@
 # Welcome to our contributing guide <!-- omit in toc -->
 
-Thank you for investing your time in contributing to our project! Any contribution you make will be reflected on inside this repository :sparkles:. 
-
-In this guide you will get an overview of the contribution workflow from opening an issue, creating a PR, reviewing, and merging the PR.
-
-Use the table of contents icon <img src="./assets/images/table-of-contents.png" width="25" height="25" /> on the top left corner of this document to get to a specific section of this guide quickly.
+Thank you for investing your time in contributing to our project token-negotiator! Any contribution you make will be reflected on inside this repository :sparkles:. 
 
 ## New contributor guide
 
@@ -50,4 +46,6 @@ Once your PR is merged, your contributions will be publicly visible.
 
 Now you're part of the Smart Token Labs community.
 
+## Questions
 
+sayhi@smarttokenlabs.com
