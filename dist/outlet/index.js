@@ -12,9 +12,16 @@ var Outlet = (function () {
                     thirdPartyCookies: localStorage.getItem('cookie-support-check')
                 }, document.referrer);
             },
-            emitTabIssuerTokens: function (opener, storageTokens, parentOrigin) {
+            emitTabIssuerTokensPassive: function (opener, storageTokens, parentOrigin) {
                 opener.postMessage({
-                    evt: "set-tab-issuer-tokens",
+                    evt: "set-tab-issuer-tokens-passive",
+                    issuer: _this.tokenName,
+                    tokens: storageTokens
+                }, parentOrigin);
+            },
+            emitTabIssuerTokensActive: function (opener, storageTokens, parentOrigin) {
+                opener.postMessage({
+                    evt: "set-tab-issuer-tokens-active",
                     issuer: _this.tokenName,
                     tokens: storageTokens
                 }, parentOrigin);
@@ -79,7 +86,10 @@ var Outlet = (function () {
                 }
                 break;
             case 'get-tab-issuer-tokens':
-                this.getTabIssuerTokens(this.tokenName, this.getFilter());
+                var _a = this.getTabIssuerTokens(this.tokenName, this.getFilter()), storageTokens = _a.storageTokens, parentOrigin = _a.parentOrigin;
+                if (window.opener && storageTokens && parentOrigin) {
+                    this.eventSender.emitTabIssuerTokensActive(window.opener, storageTokens, parentOrigin);
+                }
                 break;
             case 'get-token-proof':
                 var token = this.getDataFromQuery('token');
@@ -92,10 +102,14 @@ var Outlet = (function () {
                 break;
             default:
                 localStorage.setItem('cookie-support-check', 'test');
-                var _a = this.tokenIssuer, tokenUrlName = _a.tokenUrlName, tokenSecretName = _a.tokenSecretName, tokenIdName = _a.tokenIdName, itemStorageKey = _a.itemStorageKey;
+                var _b = this.tokenIssuer, tokenUrlName = _b.tokenUrlName, tokenSecretName = _b.tokenSecretName, tokenIdName = _b.tokenIdName, itemStorageKey = _b.itemStorageKey;
                 var tokens = readMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey);
                 if (tokens && tokens.length)
                     storeMagicURL(tokens, itemStorageKey);
+                var _c = this.getTabIssuerTokens(this.tokenName, this.getFilter()), storageTokens = _c.storageTokens, parentOrigin = _c.parentOrigin;
+                if (window.opener && storageTokens && parentOrigin) {
+                    this.eventSender.emitTabIssuerTokensPassive(window.opener, storageTokens, parentOrigin);
+                }
                 break;
         }
     };
@@ -135,7 +149,7 @@ var Outlet = (function () {
             var pUrl = new URL(referrer);
             var parentOrigin = pUrl.origin;
             var storageTokens = this.prepareTokenOutput(tokenName, filter);
-            this.eventSender.emitTabIssuerTokens(opener, storageTokens, parentOrigin);
+            return { storageTokens: storageTokens, parentOrigin: parentOrigin };
         }
     };
     return Outlet;

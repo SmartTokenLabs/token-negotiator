@@ -70,7 +70,14 @@ export class Outlet {
 
       case 'get-tab-issuer-tokens':
 
-        this.getTabIssuerTokens(this.tokenName, this.getFilter());
+        // @ts-ignore
+        const { storageTokens, parentOrigin } = this.getTabIssuerTokens(this.tokenName, this.getFilter());
+
+        if(window.opener && storageTokens && parentOrigin) {
+            
+          this.eventSender.emitTabIssuerTokensActive(window.opener, storageTokens, parentOrigin);
+        
+        }
       
       break;
 
@@ -103,6 +110,15 @@ export class Outlet {
         const tokens = readMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey);    
 
         if(tokens && tokens.length) storeMagicURL(tokens, itemStorageKey);
+
+        // @ts-ignore
+        let { storageTokens, parentOrigin } = this.getTabIssuerTokens(this.tokenName, this.getFilter());
+
+        if(window.opener && storageTokens && parentOrigin) {
+
+          this.eventSender.emitTabIssuerTokensPassive(window.opener, storageTokens, parentOrigin);
+
+        }
         
       break;
 
@@ -167,9 +183,9 @@ export class Outlet {
 
       var storageTokens = this.prepareTokenOutput( tokenName, filter );
 
-      this.eventSender.emitTabIssuerTokens(opener, storageTokens, parentOrigin);
+      return { storageTokens, parentOrigin };
 
-    }	
+    }
 
   }
 
@@ -183,14 +199,48 @@ export class Outlet {
       }, document.referrer);
 
     },
-    emitTabIssuerTokens: (opener: any, storageTokens: any, parentOrigin: any) => {
+    emitTabIssuerTokensPassive: (opener: any, storageTokens: any, parentOrigin: any) => {
 
       opener.postMessage({ 
-        evt: "set-tab-issuer-tokens",
+        evt: "set-tab-issuer-tokens-passive",
         issuer: this.tokenName, 
         tokens: storageTokens
       },
       parentOrigin);
+
+      // let referrer = document.referrer;
+      
+      // if (opener && referrer) {
+
+      //   let pUrl = new URL(referrer);
+
+      //   let parentOrigin = pUrl.origin;
+      
+      //   opener.postMessage({ evt: "set-tab-issuer-tokens-passive", tokens: storageTokens, issuer: this.tokenName }, parentOrigin);
+
+      // }
+
+    },
+    emitTabIssuerTokensActive: (opener: any, storageTokens: any, parentOrigin: any) => {
+
+      opener.postMessage({ 
+        evt: "set-tab-issuer-tokens-active",
+        issuer: this.tokenName, 
+        tokens: storageTokens
+      },
+      parentOrigin);
+
+      // let referrer = document.referrer;
+      
+      // if (opener && referrer) {
+
+      //   let pUrl = new URL(referrer);
+
+      //   let parentOrigin = pUrl.origin;
+      
+      //   opener.postMessage({ evt: "set-tab-issuer-tokens-active", tokens: storageTokens, issuer: this.tokenName }, parentOrigin);
+
+      // }
 
     },
     emitIframeIssuerTokensPassive: (tokens: any) => {

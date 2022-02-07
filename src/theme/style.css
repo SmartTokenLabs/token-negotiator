@@ -365,6 +365,7 @@
 
 .overlay-tn .overlay-content-tn .token-tn .data-tn {
   width: 175px;
+  text-align: left;
   height: calc(1.3rem + 1.12rem);
 }
 

@@ -96,17 +96,25 @@ export class Client {
 
         issuers.forEach((issuer: any) => {
 
-            if (tokenLookup[issuer].onChain === true) {
+            if(tokenLookup[issuer]){
 
-                this.onChainTokens.tokenKeys.push(issuer);
+                if (tokenLookup[issuer].onChain === true) {
 
-                this.onChainTokens[issuer] = { tokens: [] };
+                    this.onChainTokens.tokenKeys.push(issuer);
+
+                    this.onChainTokens[issuer] = { tokens: [] };
+
+                } else {
+
+                    this.offChainTokens.tokenKeys.push(issuer);
+
+                    this.offChainTokens[issuer] = { tokens: [] };
+
+                }
 
             } else {
 
-                this.offChainTokens.tokenKeys.push(issuer);
-
-                this.offChainTokens[issuer] = { tokens: [] };
+                console.log('issuer could not be found: ', issuer);
 
             }
 
@@ -162,7 +170,6 @@ export class Client {
 
     async negotiatorConnectToWallet (walletType:string) {
     
-        
         // const { default: Web3WalletProvider } = await import('./../utils/Web3WalletProvider');
         
         // this.web3WalletProvider = new Web3WalletProvider();
@@ -295,7 +302,7 @@ export class Client {
             
             // this.web3WalletProvider = new Web3WalletProvider();
 
-            await this.web3WalletProvider.connectWith('MetaMask');
+            if(window.ethereum) await this.web3WalletProvider.connectWith('MetaMask');
 
             this.passiveNegotiationStrategy(this.iframeStorageSupport);
 
@@ -334,13 +341,12 @@ export class Client {
     async passiveNegotiationStrategy(iframeStorageSupport: boolean) {
 
         // Feature not supported when an end users third party cookies are disabled
-        // because the use of a tab requires a user gesture at this time.
+        // because the use of a tab requires a user gesture.
         
         if (iframeStorageSupport === true) {
 
             await asyncHandle(this.setPassiveNegotiationWebTokens(this.offChainTokens));
 
-            // FIX ME - use setPassiveNegotiationWebTokens to get the tokens
             let outputOnChain = JSON.parse(JSON.stringify(this.onChainTokens));
 
             delete outputOnChain.tokenKeys;
@@ -882,7 +888,7 @@ export class Client {
 
         switch (event.data.evt) {
 
-            case 'set-tab-issuer-tokens':
+            case 'set-tab-issuer-tokens-active':
 
                 const issuer = event.data.issuer;
 
@@ -905,6 +911,20 @@ export class Client {
                     this.issuerConnected(issuer);
 
                 }
+
+                break;
+            
+            case 'set-tab-issuer-tokens-passive':
+
+                const issuer = event.data.issuer;
+
+                const output = {};
+
+                output[issuer] = {};
+
+                output[issuer].tokens = event.data.tokens;
+
+                this.eventSender.emitAllTokensToClient(output);
 
                 break;
 
