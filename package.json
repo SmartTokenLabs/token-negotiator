@@ -1,13 +1,13 @@
 {
   "name": "@tokenscript/token-negotiator",
-  "version": "1.0.0-alpha.99",
+  "version": "1.0.1-alpha",
   "description": "Token-negotiator enables token attestations providing bridge between web 2.0 and 3.0.",
   "main": "dist/index.js",
   "scripts": {
     "test": "jest",
     "build": "npm run clean && tsc -m es6 --outDir dist && npm run copy-assets",
     "build-umd": "npm run clean && webpack && npm run copy-assets",
-    "copy-assets": "copyfiles ./src/theme/*.css dist/theme -V --flat && ./src/vendor/*.js copyfiles dist/vendor -V --flat",
+    "copy-assets": "copyfiles ./src/theme/*.css dist/theme -V --flat && copyfiles ./src/vendor/*.js dist/vendor -V --flat",
     "clean": "shx rm -rf _bundles dist"
   },
   "repository": {
@@ -17,7 +17,7 @@
   "browser": {
     "crypto": false
   },
-  "author": "Smart Token Labs <info@alchemynft.org>",
+  "author": "Smart Token Labs <sayhi@smarttokenlabs.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/TokenScript/token-negotiator/issues"

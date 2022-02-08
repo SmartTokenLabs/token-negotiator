@@ -69,7 +69,7 @@ var Client = (function () {
         };
         this.eventReciever = function (event) {
             switch (event.data.evt) {
-                case 'set-tab-issuer-tokens':
+                case 'set-tab-issuer-tokens-active':
                     var issuer = event.data.issuer;
                     var childURL = tokenLookup[issuer].tokenOrigin;
                     var cUrl = new URL(childURL);
@@ -82,6 +82,13 @@ var Client = (function () {
                         delete _this.issuerTabInstanceRefs[issuer];
                         _this.issuerConnected(issuer);
                     }
+                    break;
+                case 'set-tab-issuer-tokens-passive':
+                    var issuer = event.data.issuer;
+                    var output = {};
+                    output[issuer] = {};
+                    output[issuer].tokens = event.data.tokens;
+                    _this.eventSender.emitAllTokensToClient(output);
                     break;
                 case 'set-iframe-issuer-tokens-active':
                     var issuer = event.data.issuer;
@@ -117,13 +124,18 @@ var Client = (function () {
             this.repeatAction = (_f = (_e = this.options) === null || _e === void 0 ? void 0 : _e.overlay) === null || _f === void 0 ? void 0 : _f.repeatAction;
         }
         issuers.forEach(function (issuer) {
-            if (tokenLookup[issuer].onChain === true) {
-                _this.onChainTokens.tokenKeys.push(issuer);
-                _this.onChainTokens[issuer] = { tokens: [] };
+            if (tokenLookup[issuer]) {
+                if (tokenLookup[issuer].onChain === true) {
+                    _this.onChainTokens.tokenKeys.push(issuer);
+                    _this.onChainTokens[issuer] = { tokens: [] };
+                }
+                else {
+                    _this.offChainTokens.tokenKeys.push(issuer);
+                    _this.offChainTokens[issuer] = { tokens: [] };
+                }
             }
             else {
-                _this.offChainTokens.tokenKeys.push(issuer);
-                _this.offChainTokens[issuer] = { tokens: [] };
+                console.log('issuer could not be found: ', issuer);
             }
         });
         attachPostMessageListener(this.eventReciever);
@@ -246,18 +258,21 @@ var Client = (function () {
                     case 0:
                         if (!(this.type === 'active')) return [3, 1];
                         this.activeNegotiationStrategy();
-                        return [3, 4];
+                        return [3, 5];
                     case 1:
                         _a = this;
                         return [4, this.thirdPartyCookieSupportCheck(tokenLookup[this.offChainTokens.tokenKeys[0]].tokenOrigin)];
                     case 2:
                         _a.iframeStorageSupport = _b.sent();
+                        if (!window.ethereum) return [3, 4];
                         return [4, this.web3WalletProvider.connectWith('MetaMask')];
                     case 3:
                         _b.sent();
-                        this.passiveNegotiationStrategy(this.iframeStorageSupport);
                         _b.label = 4;
-                    case 4: return [2];
+                    case 4:
+                        this.passiveNegotiationStrategy(this.iframeStorageSupport);
+                        _b.label = 5;
+                    case 5: return [2];
                 }
             });
         });

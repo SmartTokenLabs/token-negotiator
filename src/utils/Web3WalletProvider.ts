@@ -1,14 +1,7 @@
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import Torus from "@toruslabs/torus-embed";
+import Web3 from "web3";
 import { ethers } from "ethers";
-import Web3 from 'web3';
-
-// TODO add to attestation id to enable e2e - to do this, uncomment each wallet provider within this module
-// and re-inject the html buttons inside the component factory.ts + re-install deps:
-// ("@portis/web3": "...","authereum": "....", "fortmatic": "...")
-// import Fortmatic from 'fortmatic';
-// import Portis from '@portis/web3';
-// import Authereum from 'authereum';
 
 // walletAddressProvider is designed to collect a stateful list of user 
 // owned addressess from multiple networks.
@@ -21,32 +14,8 @@ class Web3WalletProvider {
 
     constructor() {
 
-        this.networks = {
-            1: {
-                chainName: "Ethereum",
-            },
-            3: {
-                chainName: "Ropsten",
-            },
-            4: {
-                chainName: "Rinkeby",
-            },
-            5: {
-                chainName: "Goerli",
-            },
-            42: {
-                chainName: "Kovan",
-            },
-            85: {
-                chainName: "Polygon",
-            },
-            80001: {
-                chainName: "Mumbai",
-            },
-        }
-
         // @ts-ignore
-        this.state = { addresses: [ /* { address, chainName, chainId, provider } */ ] };
+        this.state = { addresses: [ /* { address, chainId, provider } */ ] };
 
         // @ts-ignore
         this.registeredWalletProviders = {};
@@ -93,11 +62,8 @@ class Web3WalletProvider {
     }
 
     registerNewWalletAddress ( address:string, chainId:string, provider:any ) {
-
-        // @ts-ignore
-        const chainName = this.networks[chainId].chainName;
         
-        this.state.addresses.push({ address, chainName, chainId, provider });
+        this.state.addresses.push({ address, chainId, provider });
 
         return this.state.addresses;
 
@@ -291,7 +257,7 @@ export default Web3WalletProvider;
 
 // Usage:
 // connect to this module:
-// web3WalletProvider = new Web3WalletProvider();
+// const web3WalletProvider = new Web3WalletProvider();
 // connect to a wallet (e.g. click event from user)
 // web3WalletProvider.connectWith('WalletConnect');
 // Sign a message (e.g. when user wished to prove owership of wallet as part of action);

@@ -36,33 +36,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import Torus from "@toruslabs/torus-embed";
+import Web3 from "web3";
 import { ethers } from "ethers";
-import Web3 from 'web3';
 var Web3WalletProvider = (function () {
     function Web3WalletProvider() {
-        this.networks = {
-            1: {
-                chainName: "Ethereum",
-            },
-            3: {
-                chainName: "Ropsten",
-            },
-            4: {
-                chainName: "Rinkeby",
-            },
-            5: {
-                chainName: "Goerli",
-            },
-            42: {
-                chainName: "Kovan",
-            },
-            85: {
-                chainName: "Polygon",
-            },
-            80001: {
-                chainName: "Mumbai",
-            },
-        };
         this.state = { addresses: [] };
         this.registeredWalletProviders = {};
     }
@@ -104,8 +81,7 @@ var Web3WalletProvider = (function () {
         return this.state.addresses;
     };
     Web3WalletProvider.prototype.registerNewWalletAddress = function (address, chainId, provider) {
-        var chainName = this.networks[chainId].chainName;
-        this.state.addresses.push({ address: address, chainName: chainName, chainId: chainId, provider: provider });
+        this.state.addresses.push({ address: address, chainId: chainId, provider: provider });
         return this.state.addresses;
     };
     ;
