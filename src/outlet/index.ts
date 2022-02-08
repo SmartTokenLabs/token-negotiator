@@ -185,6 +185,10 @@ export class Outlet {
 
       return { storageTokens, parentOrigin };
 
+    } else {
+
+      return { storageTokens: null, parentOrigin: null };
+
     }
 
   }

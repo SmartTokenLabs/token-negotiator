@@ -151,6 +151,9 @@ var Outlet = (function () {
             var storageTokens = this.prepareTokenOutput(tokenName, filter);
             return { storageTokens: storageTokens, parentOrigin: parentOrigin };
         }
+        else {
+            return { storageTokens: null, parentOrigin: null };
+        }
     };
     return Outlet;
 }());

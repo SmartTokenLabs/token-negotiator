@@ -1,6 +1,6 @@
 {
   "name": "@tokenscript/token-negotiator",
-  "version": "1.0.1-alpha.0",
+  "version": "1.0.1-alpha",
   "description": "Token-negotiator enables token attestations providing bridge between web 2.0 and 3.0.",
   "main": "dist/index.js",
   "scripts": {
@@ -17,7 +17,7 @@
   "browser": {
     "crypto": false
   },
-  "author": "Smart Token Labs <info@alchemynft.org>",
+  "author": "Smart Token Labs <sayhi@smarttokenlabs.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/TokenScript/token-negotiator/issues"

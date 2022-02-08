@@ -21,7 +21,10 @@ export declare class Outlet {
     getTabIssuerTokens(tokenName: string, filter: any): {
         storageTokens: any;
         parentOrigin: string;
-    } | undefined;
+    } | {
+        storageTokens: null;
+        parentOrigin: null;
+    };
     eventSender: {
         emitCookieSupport: () => void;
         emitTabIssuerTokensPassive: (opener: any, storageTokens: any, parentOrigin: any) => void;
