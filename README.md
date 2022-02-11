@@ -188,7 +188,7 @@ Configure the library using the following example.
             }
         });
 
-        negotiator.on("tokens", (tokens) => {
+        negotiator.on("tokens-selected", (tokens) => {
             console.log(tokens);
         });
 
@@ -203,15 +203,29 @@ Configure the library using the following example.
 
 ````
 
+## filters
+
+Key values applied to all tokens.
+
+````javascript
+
+  filter: {
+    'devconId': 6,
+    'ticketId': 417541561854,
+    'class': 'gold'
+  }
+
+````
+
 ## Connecting to issuers
 
-Please see the token negotiator examples repository
+Please see the token negotiator examples repository.
 
-https://github.com/TokenScript/token-negotiator-examples/tree/main/token-outlet-website
+[Token Negotiator Examples](https://github.com/TokenScript/token-negotiator-examples/tree/main/token-outlet-website)
 
 ## New Token Issuers
 
-Please reach out to us at sayhi@smarttokenlabs.com
+Please reach out to us at <sayhi@smarttokenlabs.com>
 
 ## Tests
 
@@ -219,13 +233,19 @@ run `npm run test`
 
 ## Development of this library.
 
-See Developers Page inside Wiki
+[Development WIKI](https://github.com/TokenScript/token-negotiator/wiki/developers)
 
 ### Help / Questions / Improvements
 
 Please contact us or open an issue via github:
 sayhi@smarttokenlabs.com
 
-For a quick start to using this product please see: https://github.com/TokenScript/token-negotiator-examples/wiki/quick-start
+### Quick Start
+
+To review working examples of the token negotiator please visit;
+
+[Our Wiki](https://github.com/TokenScript/token-negotiator/wiki)
+
+[Quick Start Guide](https://github.com/TokenScript/token-negotiator-examples/wiki/quick-start)
 
 

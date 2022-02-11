@@ -6,9 +6,18 @@ import {
   filterTokens,
   readTokens,
   decodeTokens,
-  getTokens,
   storeMagicURL,
-  readMagicUrl
+  readMagicUrl,
+  ethKeyIsValid,
+  validateUseEthKey,
+  getUnpredictableNumber,
+  getChallengeSigned,
+  connectMetamaskAndGetAddress,
+  signNewChallenge,
+  signMessageWithBrowserWallet,
+  rawTokenCheck,
+  getRawToken,
+  getTokens,
 } from './../index';
 
 // const mockToken = `?ticket="MIGWMA0MATYCBWE3ap3-AgEABEEEKJZVxMEXbkSZZBWnNUTX_5ieu8GUqf0bx_a0tBPF6QYskABaMJBYhDOXsmQt3csk_TfMZ2wdmfRkK7ePCOI2kgNCAOOZKRpcE6tLBuPbfE_SmwPk2wNjbj5vpa6kkD7eqQXvBOCa0WNo8dEHKvipeUGZZEWWjJKxooB44dEYdQO70Vgc"&secret=45845870684&id="mah@mah.com"`
@@ -50,17 +59,12 @@ describe('core Spec', () => {
   test('expect to read tokens but none are there', () => {
     expect(readTokens('testing')).toEqual({"noTokens": true, "success": true, "tokens": []});
   });
-  // TODO NOT CORRECT OUTPUT
-  // test('expect to read tokens (mock tokens created)', () => {
-  //   const tokens = [ 
-  //     { class: 'abc', type: 'gold' },
-  //     { class: 'def', type: 'silver' },
-  //     { class: 'ghi', type: 'bronze' },
-  //   ]
-  //   localStorage.setItem('testing', tokens);
-  //   console.log(localStorage.getItem('testing'));
-  //   expect(readTokens('testing')).toEqual({"noTokens": true, "success": true, "tokens": []});
-  // });
+  test('expect token ethKey to not have expired', () => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear()+1);
+    let ethKey = { expiry: d };
+    expect(ethKeyIsValid(ethKey)).toEqual(true);
+  });
   test('expect to decode missing params', () => {
     const rawTokens = '[]';
     const tokenParser = {};
