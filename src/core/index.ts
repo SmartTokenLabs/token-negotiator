@@ -25,7 +25,7 @@ export const filterTokens = (decodedTokens: any, filter: FilterInterface) => {
 
       filterKeys.forEach(key => {
 
-        if (token[key].toString() !== filter[key].toString()) fitFilter = 0;
+        if (token[key] && token[key].toString() !== filter[key].toString()) fitFilter = 0;
 
       })
 

@@ -188,7 +188,7 @@ Configure the library using the following example.
             }
         });
 
-        negotiator.on("tokens", (tokens) => {
+        negotiator.on("tokens-selected", (tokens) => {
             console.log(tokens);
         });
 
@@ -200,6 +200,20 @@ Configure the library using the following example.
 
     </script>
 
+
+````
+
+## filters
+
+Key values applied to all tokens.
+
+````javascript
+
+  filter: {
+    'devconId': 6,
+    'ticketId': 417541561854,
+    'class': 'gold'
+  }
 
 ````
 
