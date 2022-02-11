@@ -240,6 +240,12 @@ run `npm run test`
 Please contact us or open an issue via github:
 sayhi@smarttokenlabs.com
 
-[See Quick Start](https://github.com/TokenScript/token-negotiator-examples/wiki/quick-start)
+### Quick Start
+
+To review working examples of the token negotiator please visit;
+
+[Our Wiki](https://github.com/TokenScript/token-negotiator/wiki)
+
+[Quick Start Guide](https://github.com/TokenScript/token-negotiator-examples/wiki/quick-start)
 
 
