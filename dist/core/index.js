@@ -47,7 +47,7 @@ export var filterTokens = function (decodedTokens, filter) {
         decodedTokens.forEach(function (token) {
             var fitFilter = 1;
             filterKeys_1.forEach(function (key) {
-                if (token[key].toString() !== filter[key].toString())
+                if (token[key] && token[key].toString() !== filter[key].toString())
                     fitFilter = 0;
             });
             if (fitFilter)
