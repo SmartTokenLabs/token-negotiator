@@ -219,7 +219,7 @@ Key values applied to all tokens.
 
 ## Full attestations 
 
-To attest ownership of token attestations, another step is required which utilises another technology
+To attest full ownership of token attestations, another step is required which utilises another technology
 from SmartTokenLabs team, attestation.id. To complete this step, save the authenticator.js file into your project. This must be installed before using the Token Negotiator authenticate function.
 
 https://github.com/TokenScript/token-negotiator/blob/main/authenticator.js
