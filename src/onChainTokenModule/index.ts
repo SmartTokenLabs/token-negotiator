@@ -111,11 +111,9 @@ export class OnChainTokenModule {
         
         } 
 
-        if(chain.toLocaleLowerCase() === "mainnet") {
+        // TODO get OpenSea API key to enable the use of Mainnet.
 
-            // ...
-
-        }
+        return;
 
     }
     
