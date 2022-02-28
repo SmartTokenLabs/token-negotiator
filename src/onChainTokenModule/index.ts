@@ -100,7 +100,6 @@ export class OnChainTokenModule {
             return fetch(`https://rinkeby-api.opensea.io/api/v1/assets?asset_contract_address=${contractAddress}&collection=${openSeaSlug}&order_direction=desc&offset=0&limit=20`, options)
             .then(response => response.json())
             .then(response => {
-                console.log('res', response);
                 return  {
                     chain,
                     contractAddress,
@@ -221,20 +220,11 @@ export class OnChainTokenModule {
             .catch(err => console.error(err));
 
         }
+
+        // TODO get OpenSea API key to enable the use of Mainnet.
         
-        // if(chain === 'mainnet') {
-
-        //     fetch(`https://api.opensea.io/api/v1/assets?owner=${ownerAddress}&asset_contract_address=${contractAddress}&order_direction=desc&offset=${offset}&limit=${limit}`, options)
-        //     .then(response => response.json())
-        //     .then(response => console.log(response))
-        //     .catch(err => console.error(err));
-
-        // } else {
-
-        //     requiredParams(null, 'chain is not supported');
-
-        // }
-
+        return;
+        
     }
     
     async getTokensMoralis(address:string, chain:string, owner:string, offset=0, limit=20) {
