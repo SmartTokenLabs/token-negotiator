@@ -46,6 +46,9 @@
 .overlay-tn.light .overlay-content-tn {
   box-shadow: 0 2px 4px 0 rgba(103, 103, 103, 0.5);
   background-color: #ffffff;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 4px;
+  border-top-left-radius: 3px;
 }
 
 .overlay-tn.light .overlay-content-tn .brand-tn {
@@ -332,6 +335,8 @@
   font-size: 1.2rem;
   font-weight: bold;
   line-height: 1.71rem;
+  /* font-size: 1rem; */
+  /* padding: 11px 14px */
 }
 
 .overlay-tn .overlay-content-tn .token-container-tn {

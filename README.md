@@ -8,11 +8,14 @@ The token-negotiator is an NPM package designed for use with TokenScript.
 
 TokenScript is a framework which improves functionality, security and usability of blockchain token. It creates a layer between a blockchain and user devices, adding information, rules and functionalites.
 
-With a tokenScript and the Token-Negotiator, you can create and store attestations that can be utilised to create modern and custom tokenised web experiences. 
+With tokenScript's Token-Negotiator, you can create and store attestations that can be utilised to create modern and custom tokenised web experiences. 
 
-For further information about TokenScript please visit: [https://tokenscript.org/](tokenscript.org).
+(for new token issuers who are interested in using our technology please visit the following WIKI page: https://github.com/TokenScript/token-negotiator/wiki/Token-Issuer-Page).
 
-(for new token issuers please visit the following WIKI page: https://github.com/TokenScript/token-negotiator/wiki/Token-Issuer-Page).
+This version of the Token Negotiator supports:
+
+- off chain attestations
+- on chain verification of tokens
 
 ### Examples
 
@@ -57,6 +60,8 @@ listed inside the issuers array.
     type: 'active',
     issuers: [
         'devcon-remote'
+        { contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'rinkeby-punk' },
+        { contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
     ],
     options: {
         overlay: {
@@ -99,7 +104,11 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
 
   const negotiator = new Client({
     type: 'passive',
-    issuers: ['devcon-remote'],
+    issuers: [
+      'devcon-remote',
+      { contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'rinkeby-punk' },
+      { contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
+    ],
     options: {}
   });
 
@@ -257,4 +266,47 @@ To review working examples of the token negotiator please visit;
 
 [Quick Start Guide](https://github.com/TokenScript/token-negotiator-examples/wiki/quick-start)
 
+Flow:
 
+Part 1: 
+
+- NFT added to Token Negotiator { tokenScript: false, contractAddr: '0x', chain: 'eth' }
+- Contract is read to collect the image of the collection and title
+
+Part 2:
+
+- User connects wallet
+
+// initial API call to get a collection image and name
+
+// Payload:
+// collection.name: "OpenSea Creature Sale"
+// collection.image_url
+
+// const options = {method: 'GET'};
+ fetch('https://testnets-api.opensea.io/api/v1/asset_contract/0x381748c76f2b8871afbbe4578781cd24df34ae0d', options)
+  .then(response => response.json())
+  .then(response => console.log(response))
+  .catch(err => console.error(err));
+
+- Once connected we show the Image / Title to collection
+
+    if(chain === 'rinkeby') {
+
+        fetch(`https://rinkeby-api.opensea.io/api/v1/assets?owner=${ownerAddress}&asset_contract_address=${contractAddress}&order_direction=desc&offset=${offset}&limit=${limit}`, options)
+        .then(response => response.json())
+        .then(response => console.log(response))
+        .catch(err => console.error(err));
+        
+    }
+        
+    if(chain === 'mainnet') {
+
+        fetch(`https://api.opensea.io/api/v1/assets?owner=${ownerAddress}&asset_contract_address=${contractAddress}&order_direction=desc&offset=${offset}&limit=${limit}`, options)
+        .then(response => response.json())
+        .then(response => console.log(response))
+        .catch(err => console.error(err));
+
+    }
+
+- Connect button is ready for user to connect with their tokens (if they own that NFT)
