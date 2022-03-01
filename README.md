@@ -8,14 +8,13 @@ The token-negotiator is an NPM package designed for use with TokenScript.
 
 TokenScript is a framework which improves functionality, security and usability of blockchain token. It creates a layer between a blockchain and user devices, adding information, rules and functionalites.
 
-With tokenScript's Token-Negotiator, you can create and store attestations that can be utilised to create modern and custom tokenised web experiences. 
+With tokenScript's Token-Negotiator, you can build custom experiences with:
+
+- TokenScript enabled tokens (cryptogaphically designed off chain attestations)
+
+- On chain tokens within mainnet, polygon, optimism, mainnet, rinkeby, ropsten, goerli, kovan,bsc, mumbai, avalanche, fantom, arbitrum.
 
 (for new token issuers who are interested in using our technology please visit the following WIKI page: https://github.com/TokenScript/token-negotiator/wiki/Token-Issuer-Page).
-
-This version of the Token Negotiator supports:
-
-- off chain attestations
-- on chain verification of tokens
 
 ### Examples
 
@@ -265,3 +264,7 @@ To review working examples of the token negotiator please visit;
 [Our Wiki](https://github.com/TokenScript/token-negotiator/wiki)
 
 [Quick Start Guide](https://github.com/TokenScript/token-negotiator-examples/wiki/quick-start)
+
+### Roadmap of this library
+
+[Our Roadmap](https://github.com/TokenScript/token-negotiator/wiki/road-map)
