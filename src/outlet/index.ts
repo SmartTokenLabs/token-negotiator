@@ -221,6 +221,7 @@ export class Outlet {
         target = window.parent;
         origin = document.referrer;
       } else {
+        target = window.opener;
         let pUrl = new URL(document.referrer);
         origin = pUrl.origin;
       }
@@ -253,6 +254,7 @@ export class Outlet {
         target = window.parent;
         origin = document.referrer;
       } else {
+        target = window.opener;
         let pUrl = new URL(document.referrer);
         origin = pUrl.origin;
       }
@@ -273,6 +275,7 @@ export class Outlet {
         target = window.parent;
         origin = document.referrer;
       } else {
+        target = window.opener;
         let pUrl = new URL(document.referrer);
         origin = pUrl.origin;
       }

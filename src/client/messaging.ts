@@ -17,7 +17,7 @@ export enum MessageAction {
 
 export class Messaging {
 
-    iframeStorageSupport:boolean = null;
+    iframeStorageSupport:null|boolean = null;
     requestQueue = {};
 
     constructor() {
@@ -57,7 +57,8 @@ export class Messaging {
                 //if (iframeRef) {
 
                     this.setResponseListener(id, request.timeout, resolve, reject, ()=>{
-                        iframe.parentNode.removeChild(iframe);
+                        if (iframe?.parentNode)
+                            iframe.parentNode.removeChild(iframe);
                     });
 
                     // TODO: Is this required? won't the URL trigger it?
@@ -93,7 +94,7 @@ export class Messaging {
 
     }
 
-    private setResponseListener(id:any, timeout:number, resolve:any, reject:any, cleanUp:any){
+    private setResponseListener(id:any, timeout:number|undefined, resolve:any, reject:any, cleanUp:any){
 
         let received = false;
         let timer:any = null;
@@ -164,7 +165,8 @@ export class Messaging {
                     },
                     reject,
                     () => {
-                        iframe.parentNode.removeChild(iframe);
+                        if (iframe?.parentNode)
+                            iframe.parentNode.removeChild(iframe);
                     }
                 );
 
