@@ -383,7 +383,30 @@ export class Client {
 
     }
 
-    async passiveNegotiationStrategy() {
+    async setPassiveNegotiationOnChainTokens (onChainTokens: any) {
+
+        await Promise.all(onChainTokens.tokenKeys.map(async (issuerKey: string): Promise<any> => {
+
+            const tokens = await this.onChainTokenModule.connectOnChainToken(
+                issuerKey,
+                this.web3WalletProvider.getConnectedWalletData()[0].address
+            );
+
+            const output = {
+                data: {
+                    evt: 'set-on-chain-issuer-tokens-passive',
+                    tokens: tokens,
+                    issuer: issuerKey
+                }
+            }
+
+            this.eventReciever(output);
+
+        }));
+
+    }
+
+    async passiveNegotiationStrategy(iframeStorageSupport: boolean) {
 
         // Feature not supported when an end users third party cookies are disabled
         // because the use of a tab requires a user gesture.
@@ -399,6 +422,7 @@ export class Client {
         if (canUsePassive === true) {
 
             await asyncHandle(this.setPassiveNegotiationWebTokens(this.offChainTokens));
+            await asyncHandle(this.setPassiveNegotiationOnChainTokens(this.onChainTokens));
 
             let outputOnChain = JSON.parse(JSON.stringify(this.onChainTokens));
 
@@ -450,8 +474,6 @@ export class Client {
             });
             
             this.onChainTokens.tokenKeys.map((issuer: string) => {
-
-                console.log(issuer, this.tokenLookup);
 
                 refIssuerContainerSelector.innerHTML += issuerConnectMarkup(this.tokenLookup[issuer].title, this.tokenLookup[issuer].emblem, issuer);
 
@@ -805,7 +827,7 @@ export class Client {
 
         const tokens = await this.onChainTokenModule.connectOnChainToken(
             issuerKey,
-            '0x647935C1bfA643D27AFe0F32A5357975b56B771d'
+            this.web3WalletProvider.getConnectedWalletData()[0].address
         );
         
         const output = {
@@ -821,8 +843,6 @@ export class Client {
     }
 
     tokenToggleSelection() {
-
-        // this.selectedTokens = {};
         
         document.querySelectorAll('.token-tn .mobileToggle-tn').forEach((token: any, index: number) => {
 
@@ -1004,6 +1024,14 @@ export class Client {
 
                 break;
 
+            case 'set-on-chain-issuer-tokens-passive':
+
+                const issuer = event.data.issuer;
+
+                this.onChainTokens[issuer].tokens = event.data.tokens;
+
+                break;
+
             case 'proof-tab':
 
                 /*if (this.issuerTabInstanceRefs && this.issuerTabInstanceRefs[event.data.issuer] && this.iframeStorageSupport === false) {
@@ -1025,7 +1053,6 @@ export class Client {
         }
     }
 
-    // TODO: Let's create separation of responsibility and put the two below functions in a separate "Issuer" object?
     addTokenThroughTab(magicLink: any) {
 
         var tab = window.open(
