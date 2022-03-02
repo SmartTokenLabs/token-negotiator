@@ -67,6 +67,16 @@ export const attachPostMessageListener = (listener:any) => {
   }
 }
 
+export const removePostMessageListener = (listener:any) => {
+  if (window.addEventListener){
+    window.removeEventListener("message", listener);
+  } else {
+    // IE8
+    // @ts-ignore
+    window.detachEvent("onmessage", listener);
+  }
+}
+
 export const splitOnChainKey = (onChainKey: string) => {
   const splitData = onChainKey.split('.');
   return { 

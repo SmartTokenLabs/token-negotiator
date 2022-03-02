@@ -107,42 +107,16 @@ export const createIssuerViewMarkup = (heading="Available Tokens") => {
   `;
 };
 
-
-export const issuerConnectOnChainMarkup = (title:string, image:string, issuer:string) => {
+// TODO: render full list HTML from view controller
+export const issuerConnectMarkup = (title:string, image:string, issuer:string) => {
   return `
     <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
       <div style="display: flex; align-items: center;">
         <img style="height: 32px; width: 32px; border-radius: 45px; margin-right: 9px;" src="${image}">
         <p class="issuer-connect-title">${title}</p>
       </div>
-      <button aria-label="connect with the token issuer ${issuer}" aria-hidden="false" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="connect-btn-tn" data-issuer="${issuer}" onClick='connectOnChainTokenIssuer(event)'>Connect</button>
+      <button aria-label="connect with the token issuer ${issuer}" aria-hidden="false" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="connect-btn-tn" data-issuer="${issuer}" onClick='connectTokenIssuer(event)'>Connect</button>
       <button aria-label="tokens available from token issuer ${issuer}" aria-hidden="true" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="tokens-btn-tn" data-issuer="${issuer}" onClick='navigateToTokensView(event)'>Tokens Available</button>
-    </li>
-  `;
-};
-
-export const issuerConnectTabMarkup = (title:string, image:string, issuer:string) => {
-  return `
-    <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
-      <div style="display: flex; align-items: center;">
-        <img style="height: 32px; width: 32px; border-radius: 45px; margin-right: 9px;" src="${image}">
-        <p class="issuer-connect-title">${title}</p>
-      </div>
-      <button aria-label="connect with the token issuer ${issuer}" aria-hidden="false" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="connect-btn-tn" data-issuer="${issuer}" onClick='connectTokenIssuerWithTab(event)'>Connect</button>
-      <button aria-label="tokens available from token issuer ${issuer}" aria-hidden="true" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="tokens-btn-tn" data-issuer="${issuer}" onClick='navigateToTokensView(event)'>Tokens Available</button>
-    </li>
-  `;
-};
-
-export const issuerConnectIframeMarkup = (title:string, image:string, issuer:string) => {
-  return `
-    <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
-      <div style="display: flex; align-items: center;">
-        <img style="height: 32px; width: 32px; border-radius: 45px; margin-right: 9px;" src="${image}">
-          <p class="issuer-connect-title">${title}</p>
-      </div>
-      <button aria-label="connect with the token issuer ${issuer}" aria-hidden="false" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="connect-btn-tn" data-issuer="${issuer}" onClick='connectTokenIssuerWithIframe(event)'>Connect</button>
-      <button aria-hidden="true" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="tokens-btn-tn" data-issuer="${issuer}" onClick='navigateToTokensView(event)'>Tokens Available</button>
     </li>
   `;
 };
