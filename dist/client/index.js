@@ -555,11 +555,12 @@ var Client = (function () {
     };
     Client.prototype.authenticate = function (config) {
         return __awaiter(this, void 0, void 0, function () {
-            var issuer, unsignedToken, addressMatch, err_3;
+            var issuer, unsignedToken, tokensOrigin, addressMatch, err_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         issuer = config.issuer, unsignedToken = config.unsignedToken;
+                        tokensOrigin = this.tokenLookup[issuer].tokenOrigin;
                         requiredParams((issuer && unsignedToken), { status: false, useEthKey: null, proof: null });
                         return [4, this.checkPublicAddressMatch(issuer, unsignedToken)];
                     case 1:

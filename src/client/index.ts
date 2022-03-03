@@ -843,6 +843,7 @@ export class Client {
     async authenticate(config: AuthenticateInterface) {
  
         const { issuer, unsignedToken } = config;
+        const tokensOrigin = this.tokenLookup[issuer].tokenOrigin;
 
         requiredParams((issuer && unsignedToken), { status: false, useEthKey: null, proof: null });
 
@@ -921,6 +922,7 @@ export class Client {
 
         let tab = this.messaging.openTab(magicLink);
 
+        // TODO: use response messaging to ensure the transaction is completed
         setTimeout(() => { tab?.close(); }, 2500);
 
     }

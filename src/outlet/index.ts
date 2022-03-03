@@ -50,7 +50,7 @@ export class Outlet {
     const evtid = this.getDataFromQuery('evtid');
     const action = this.getDataFromQuery('action');
 
-    if (!evtid || !action || !document.referrer)
+    if (!document.referrer)
       return;
 
     console.log("Outlet received event ID " + evtid + " action " + action);

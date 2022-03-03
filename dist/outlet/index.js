@@ -24,7 +24,7 @@ var Outlet = (function () {
     Outlet.prototype.pageOnLoadEventHandler = function () {
         var evtid = this.getDataFromQuery('evtid');
         var action = this.getDataFromQuery('action');
-        if (!evtid || !action || !document.referrer)
+        if (!document.referrer)
             return;
         console.log("Outlet received event ID " + evtid + " action " + action);
         switch (action) {
