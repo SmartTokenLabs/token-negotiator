@@ -678,18 +678,18 @@ export class Client {
 
     embedTokensIntoView(issuer) {
 
-        const refTokenContainerSelector = document.getElementsByClassName("token-view-tn")[0];
+        const refTokenViewSelector = document.getElementsByClassName("token-view-tn")[0];
 
         if (!issuer) {
 
-            refTokenContainerSelector.style.display = 'none';
+            refTokenViewSelector.style.display = 'none';
             return;
 
-        };
+        }
 
-        refTokenContainerSelector.style.display = 'block';
+        refTokenViewSelector.style.display = 'block';
 
-        refTokenContainerSelector.scrollTo(0, 0);
+        refTokenViewSelector.scrollTo(0, 0);
 
         const refTokenContainerSelector = document.getElementsByClassName("token-list-container-tn")[0];
 
@@ -961,12 +961,14 @@ export class Client {
 
     eventReciever = (event: any) => {
 
+        let issuer, output;
+
         switch (event.data.evt) {
 
             case 'set-tab-issuer-tokens-active':
 
                 // TODO: Move origin validation to messaging
-                const issuer = event.data.issuer;
+                issuer = event.data.issuer;
 
                 let childURL = tokenLookup[issuer].tokenOrigin;
 
@@ -992,9 +994,9 @@ export class Client {
             
             case 'set-tab-issuer-tokens-passive':
 
-                const issuer = event.data.issuer;
+                issuer = event.data.issuer;
 
-                const output = {};
+                output = {};
 
                 output[issuer] = {};
 
@@ -1006,7 +1008,7 @@ export class Client {
 
             case 'set-iframe-issuer-tokens-active':
 
-                const issuer = event.data.issuer;
+                issuer = event.data.issuer;
 
                 this.offChainTokens[issuer].tokens = event.data.tokens;
 
@@ -1016,7 +1018,7 @@ export class Client {
             
             case 'set-on-chain-issuer-tokens-active':
 
-                const issuer = event.data.issuer;
+                issuer = event.data.issuer;
 
                 this.onChainTokens[issuer].tokens = event.data.tokens;
 
@@ -1026,23 +1028,11 @@ export class Client {
 
             case 'set-on-chain-issuer-tokens-passive':
 
-                const issuer = event.data.issuer;
+                issuer = event.data.issuer;
 
                 this.onChainTokens[issuer].tokens = event.data.tokens;
 
                 break;
-
-            case 'proof-tab':
-
-                /*if (this.issuerTabInstanceRefs && this.issuerTabInstanceRefs[event.data.issuer] && this.iframeStorageSupport === false) {
-
-                    this.issuerTabInstanceRefs[event.data.issuer].close();
-
-                    delete this.issuerTabInstanceRefs[event.data.issuer];
-
-                }*/
-
-                // no break intended.
 
             case 'proof-iframe':
 
