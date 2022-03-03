@@ -48,7 +48,7 @@ export declare class Client {
     navigateToTokensView(event: any): void;
     embedTokensIntoView(issuer: any): void;
     showTokenView(issuer: string): void;
-    connectTokenIssuer(event: any): Promise<void> | undefined;
+    connectTokenIssuer(event: any): Promise<void>;
     connectOnChainTokenIssuer(event: any): Promise<void>;
     tokenToggleSelection(): void;
     authenticate(config: AuthenticateInterface): Promise<void>;

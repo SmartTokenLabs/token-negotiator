@@ -45,11 +45,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-import { asyncHandle, requiredParams, attachPostMessageListener, logger } from './../utils/index';
-import { getChallengeSigned, validateUseEthKey, connectMetamaskAndGetAddress } from "../core/index";
-import { createWalletSelectionViewMarkup, createOpeningViewMarkup, createIssuerViewMarkup, createFabButtonMarkup, createTokenMarkup, issuerConnectMarkup } from './componentFactory';
+import { asyncHandle, attachPostMessageListener, logger, requiredParams } from './../utils/index';
+import { connectMetamaskAndGetAddress, getChallengeSigned, validateUseEthKey } from "../core/index";
+import { createFabButtonMarkup, createIssuerViewMarkup, createOpeningViewMarkup, createTokenMarkup, createWalletSelectionViewMarkup, issuerConnectMarkup } from './componentFactory';
 import { tokenLookup } from './../tokenLookup';
-import { Messaging, MessageAction } from "./messaging";
+import { MessageAction, Messaging } from "./messaging";
 import OnChainTokenModule from './../onChainTokenModule';
 import Web3WalletProvider from './../utils/Web3WalletProvider';
 import "./../theme/style.css";
@@ -154,22 +154,33 @@ var Client = (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4, Promise.all(offChainTokens.tokenKeys.map(function (issuer) { return __awaiter(_this, void 0, void 0, function () {
-                            var tokenOrigin;
-                            var _this = this;
+                            var tokenOrigin, data, err_1;
                             return __generator(this, function (_a) {
-                                tokenOrigin = tokenLookup[issuer].tokenOrigin;
-                                this.messaging.sendMessage({
-                                    issuer: issuer,
-                                    action: "get-iframe-issuer-tokens",
-                                    filter: this.filter,
-                                    origin: tokenOrigin,
-                                    negotiationType: 'passive'
-                                }).then(function (data) {
-                                    _this.offChainTokens[issuer].tokens = data.tokens;
-                                }).catch(function (err) {
-                                    console.log(err);
-                                });
-                                return [2];
+                                switch (_a.label) {
+                                    case 0:
+                                        tokenOrigin = tokenLookup[issuer].tokenOrigin;
+                                        _a.label = 1;
+                                    case 1:
+                                        _a.trys.push([1, 3, , 4]);
+                                        return [4, this.messaging.sendMessage({
+                                                issuer: issuer,
+                                                action: MessageAction.GET_ISSUER_TOKENS,
+                                                filter: this.filter,
+                                                origin: tokenOrigin
+                                            })];
+                                    case 2:
+                                        data = _a.sent();
+                                        return [3, 4];
+                                    case 3:
+                                        err_1 = _a.sent();
+                                        console.log(err_1);
+                                        return [2];
+                                    case 4:
+                                        console.log("tokens:");
+                                        console.log(data.tokens);
+                                        this.offChainTokens[issuer].tokens = data.tokens;
+                                        return [2];
+                                }
                             });
                         }); }))];
                     case 1:
@@ -305,6 +316,8 @@ var Client = (function () {
                         delete outputOnChain.tokenKeys;
                         outputOffChain = JSON.parse(JSON.stringify(this.offChainTokens));
                         delete outputOffChain.tokenKeys;
+                        console.log("Emitting tokens!!");
+                        console.log(outputOffChain);
                         this.eventSender.emitAllTokensToClient(__assign(__assign({}, outputOffChain), outputOnChain));
                         return [3, 6];
                     case 5:
@@ -470,26 +483,42 @@ var Client = (function () {
         }
     };
     Client.prototype.connectTokenIssuer = function (event) {
-        var _this = this;
         var _a;
-        var data = (_a = event.currentTarget.dataset) !== null && _a !== void 0 ? _a : event.target.dataset;
-        var issuer = data.issuer;
-        var filter = this.filter ? this.filter : {};
-        var tokensOrigin = this.tokenLookup[issuer].tokenOrigin;
-        if (this.tokenLookup[issuer].onChain) {
-            return this.connectOnChainTokenIssuer(event);
-        }
-        this.messaging.sendMessage({
-            issuer: issuer,
-            action: MessageAction.GET_ISSUER_TOKENS,
-            origin: tokensOrigin,
-            filter: filter,
-        }).then(function (data) {
-            var issuer = data.issuer;
-            _this.offChainTokens[issuer].tokens = data.tokens;
-            _this.issuerConnected(issuer, false);
-        }).catch(function (err) {
-            console.log(err);
+        return __awaiter(this, void 0, void 0, function () {
+            var data, issuer, filter, tokensOrigin, data, err_2, issuer;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        data = (_a = event.currentTarget.dataset) !== null && _a !== void 0 ? _a : event.target.dataset;
+                        issuer = data.issuer;
+                        filter = this.filter ? this.filter : {};
+                        tokensOrigin = this.tokenLookup[issuer].tokenOrigin;
+                        if (this.tokenLookup[issuer].onChain) {
+                            return [2, this.connectOnChainTokenIssuer(event)];
+                        }
+                        _b.label = 1;
+                    case 1:
+                        _b.trys.push([1, 3, , 4]);
+                        return [4, this.messaging.sendMessage({
+                                issuer: issuer,
+                                action: MessageAction.GET_ISSUER_TOKENS,
+                                origin: tokensOrigin,
+                                filter: filter,
+                            })];
+                    case 2:
+                        data = _b.sent();
+                        return [3, 4];
+                    case 3:
+                        err_2 = _b.sent();
+                        console.log(err_2);
+                        return [2];
+                    case 4:
+                        issuer = data.issuer;
+                        this.offChainTokens[issuer].tokens = data.tokens;
+                        this.issuerConnected(issuer, false);
+                        return [2];
+                }
+            });
         });
     };
     Client.prototype.connectOnChainTokenIssuer = function (event) {
@@ -526,8 +555,7 @@ var Client = (function () {
     };
     Client.prototype.authenticate = function (config) {
         return __awaiter(this, void 0, void 0, function () {
-            var issuer, unsignedToken, addressMatch;
-            var _this = this;
+            var issuer, unsignedToken, addressMatch, err_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -539,17 +567,25 @@ var Client = (function () {
                         if (!addressMatch) {
                             return [2];
                         }
-                        this.messaging.sendMessage({
-                            issuer: issuer,
-                            action: MessageAction.GET_PROOF,
-                            origin: tokensOrigin,
-                            token: unsignedToken,
-                            timeout: 0
-                        }).then(function (data) {
-                            _this.eventSender.emitProofToClient(data.proof, data.issuer);
-                        }).catch(function (err) {
-                            console.log(err);
-                        });
+                        _a.label = 2;
+                    case 2:
+                        _a.trys.push([2, 4, , 5]);
+                        return [4, this.messaging.sendMessage({
+                                issuer: issuer,
+                                action: MessageAction.GET_PROOF,
+                                origin: tokensOrigin,
+                                token: unsignedToken,
+                                timeout: 0
+                            })];
+                    case 3:
+                        _a.sent();
+                        return [3, 5];
+                    case 4:
+                        err_3 = _a.sent();
+                        console.log(err_3);
+                        return [2];
+                    case 5:
+                        this.eventSender.emitProofToClient(data.proof, data.issuer);
                         return [2];
                 }
             });

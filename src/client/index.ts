@@ -1,9 +1,16 @@
 // @ts-nocheck
-import { asyncHandle, requiredParams, attachPostMessageListener, logger, splitOnChainKey } from './../utils/index';
-import { getChallengeSigned, validateUseEthKey, connectMetamaskAndGetAddress } from "../core/index";
-import { createWalletSelectionViewMarkup, createOpeningViewMarkup, createIssuerViewMarkup, createFabButtonMarkup, createTokenMarkup, issuerConnectMarkup } from './componentFactory';
-import { tokenLookup } from './../tokenLookup';
-import {Messaging, MessageAction} from "./messaging";
+import {asyncHandle, attachPostMessageListener, logger, requiredParams} from './../utils/index';
+import {connectMetamaskAndGetAddress, getChallengeSigned, validateUseEthKey} from "../core/index";
+import {
+    createFabButtonMarkup,
+    createIssuerViewMarkup,
+    createOpeningViewMarkup,
+    createTokenMarkup,
+    createWalletSelectionViewMarkup,
+    issuerConnectMarkup
+} from './componentFactory';
+import {tokenLookup} from './../tokenLookup';
+import {MessageAction, Messaging} from "./messaging";
 import OnChainTokenModule from './../onChainTokenModule'
 import Web3WalletProvider from './../utils/Web3WalletProvider';
 import "./../theme/style.css";
@@ -211,20 +218,24 @@ export class Client {
         await Promise.all(offChainTokens.tokenKeys.map(async (issuer: string): Promise<any> => {
 
             const { tokenOrigin } = tokenLookup[issuer];
+            let data;
 
-            this.messaging.sendMessage({
-                issuer: issuer,
-                action: "get-iframe-issuer-tokens",
-                filter: this.filter,
-                origin: tokenOrigin,
-                negotiationType: 'passive'
-            }).then((data)=>{
-
-                this.offChainTokens[issuer].tokens = data.tokens;
-
-            }).catch((err)=>{
+            try {
+                data = await this.messaging.sendMessage({
+                    issuer: issuer,
+                    action: MessageAction.GET_ISSUER_TOKENS,
+                    filter: this.filter,
+                    origin: tokenOrigin
+                });
+            } catch (err){
                 console.log(err);
-            });
+                return;
+            }
+
+            console.log("tokens:");
+            console.log(data.tokens);
+
+            this.offChainTokens[issuer].tokens = data.tokens;
 
             return;
 
@@ -395,6 +406,9 @@ export class Client {
             let outputOffChain = JSON.parse(JSON.stringify(this.offChainTokens));
 
             delete outputOffChain.tokenKeys;
+
+            console.log("Emitting tokens!!");
+            console.log(outputOffChain);
 
             this.eventSender.emitAllTokensToClient({ ...outputOffChain, ...outputOnChain });
 
@@ -749,7 +763,7 @@ export class Client {
         }
     }
 
-    connectTokenIssuer(event){
+    async connectTokenIssuer(event){
 
         const data = event.currentTarget.dataset ?? event.target.dataset;
         const issuer = data.issuer;
@@ -760,27 +774,26 @@ export class Client {
             return this.connectOnChainTokenIssuer(event);
         }
 
-        this.messaging.sendMessage({
-            issuer: issuer,
-            action: MessageAction.GET_ISSUER_TOKENS,
-            origin: tokensOrigin,
-            filter: filter,
-        }).then((data)=>{
+        let data;
 
-            let issuer = data.issuer;
-
-            this.offChainTokens[issuer].tokens = data.tokens;
-
-            this.issuerConnected(issuer, false);
-
-            //this.eventSender.emitAllTokensToClient(output); passive only?
-
-        }).catch((err)=>{
+        try {
+            data = await this.messaging.sendMessage({
+                issuer: issuer,
+                action: MessageAction.GET_ISSUER_TOKENS,
+                origin: tokensOrigin,
+                filter: filter,
+            });
+        } catch (err){
             // TODO: error handling
             console.log(err);
-            //event.target.innerHTML = this.repeatAction ? this.repeatAction : 'retry';
-            //event.target.classList.add("retry");
-        });
+            return;
+        }
+
+        let issuer = data.issuer;
+
+        this.offChainTokens[issuer].tokens = data.tokens;
+
+        this.issuerConnected(issuer, false);
 
     }
 
@@ -842,22 +855,21 @@ export class Client {
             return;
         }
 
-        this.messaging.sendMessage({
-            issuer: issuer,
-            action: MessageAction.GET_PROOF,
-            origin: tokensOrigin,
-            token: unsignedToken,
-            timeout: 0 // Don't time out on this event as it needs active input from the user
-        }).then((data)=>{
-
-            this.eventSender.emitProofToClient(data.proof, data.issuer);
-
-        }).catch((err)=>{
+        try {
+            await this.messaging.sendMessage({
+                issuer: issuer,
+                action: MessageAction.GET_PROOF,
+                origin: tokensOrigin,
+                token: unsignedToken,
+                timeout: 0 // Don't time out on this event as it needs active input from the user
+            });
+        } catch (err){
             // TODO: error handling
             console.log(err);
-            //event.target.innerHTML = this.repeatAction ? this.repeatAction : 'retry';
-            //event.target.classList.add("retry");
-        });
+            return;
+        }
+
+        this.eventSender.emitProofToClient(data.proof, data.issuer);
 
     }
 
