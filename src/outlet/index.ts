@@ -1,8 +1,8 @@
-import { readMagicUrl, storeMagicURL, rawTokenCheck } from '../core';
-import { requiredParams } from '../utils/index';
-import { tokenLookup } from './../tokenLookup';
-import { decodeTokens, filterTokens } from './../core/index';
-import { MessageAction } from '../client/messaging';
+import {rawTokenCheck, readMagicUrl, storeMagicURL} from '../core';
+import {requiredParams} from '../utils/index';
+import {tokenLookup} from './../tokenLookup';
+import {decodeTokens, filterTokens} from './../core/index';
+import { MessageAction, MessageResponseInterface, MessageResponseAction } from '../client/messaging';
 
 interface OutletInterface {
   tokenName: string;
@@ -50,31 +50,21 @@ export class Outlet {
     const evtid = this.getDataFromQuery('evtid');
     const action = this.getDataFromQuery('action');
 
-    console.log("Outlet response for event ID " + evtid + " action " + action);
+    if (!evtid || !action || !document.referrer)
+      return;
+
+    console.log("Outlet received event ID " + evtid + " action " + action);
     // Outlet Page OnLoad Event Handler
+
+    // TODO: should issuer be validated against requested issuer?
 
     switch (action) {
 
       case MessageAction.GET_ISSUER_TOKENS:
 
-          let issuerTokens = this.prepareTokenOutput(this.tokenName, this.getFilter());
-
-          this.eventSender.emitIframeIssuerTokensActive(evtid, issuerTokens);
+        this.sendTokens(evtid);
 
         break;
-
-      /*case 'get-tab-issuer-tokens':
-
-        // @ts-ignore
-        const { storageTokens, parentOrigin } = this.getTabIssuerTokens(this.tokenName, this.getFilter());
-
-        if(window.opener && storageTokens && parentOrigin) {
-
-          this.eventSender.emitTabIssuerTokensActive(evtid, window.opener, storageTokens, parentOrigin);
-
-        }
-
-        break;*/
 
       case MessageAction.GET_PROOF:
 
@@ -90,7 +80,11 @@ export class Outlet {
 
       case MessageAction.COOKIE_CHECK:
 
-        this.eventSender.emitCookieSupport(evtid);
+        this.sendMessageResponse({
+          evtid: evtid,
+          evt: MessageResponseAction.COOKIE_CHECK,
+          thirdPartyCookies: localStorage.getItem('cookie-support-check')
+        })
 
         break;
 
@@ -106,14 +100,7 @@ export class Outlet {
 
         if(tokens && tokens.length) storeMagicURL(tokens, itemStorageKey);
 
-        // @ts-ignore
-        let { storageTokens, parentOrigin } = this.getTabIssuerTokens(this.tokenName, this.getFilter());
-
-        if(window.opener && storageTokens && parentOrigin) {
-
-          this.eventSender.emitTabIssuerTokensPassive(evtid, window.opener, storageTokens, parentOrigin);
-
-        }
+        this.sendTokens(evtid);
 
         break;
 
@@ -129,13 +116,11 @@ export class Outlet {
 
     const decodedTokens = decodeTokens(storageTokens, tokenLookup[tokenName].tokenParser, tokenLookup[tokenName].unsignedTokenDataName);
 
-    const filteredTokens = filterTokens(decodedTokens, filter);
-
-    return filteredTokens;
+    return filterTokens(decodedTokens, filter);
 
   }
 
-  sendTokenProof ( token: any, type:any) {
+  sendTokenProof (evtid:any, token: any) {
 
     if(!token) return 'error';
 
@@ -146,8 +131,12 @@ export class Outlet {
       //@ts-ignore
       window.authenticator.getAuthenticationBlob(tokenObj, (tokenProof) => {
 
-        if(type === 'iframe') this.eventSender.emitTokenProofIframe(tokenProof);
-        else this.eventSender.emitTokenProofTab(tokenProof);
+        this.sendMessageResponse({
+          evtid: evtid,
+          evt: MessageResponseAction.PROOF,
+          issuer: this.tokenName,
+          proof: JSON.stringify(tokenProof)
+        });
 
       });
 
@@ -155,166 +144,34 @@ export class Outlet {
 
   }
 
-  getTabIssuerTokens ( tokenName:string, filter:any ) {
+  private sendTokens(evtid: any){
 
-    let opener = window.opener;
+    let issuerTokens = this.prepareTokenOutput(this.tokenName, this.getFilter());
 
-    let referrer = document.referrer;
-
-    if (opener && referrer) {
-
-      let pUrl = new URL(referrer);
-
-      let parentOrigin = pUrl.origin;
-
-      var storageTokens = this.prepareTokenOutput( tokenName, filter );
-
-      return { storageTokens, parentOrigin };
-
-    } else {
-
-      return { storageTokens: null, parentOrigin: null };
-
-    }
-
+    this.sendMessageResponse({
+      evtid: evtid,
+      evt: MessageResponseAction.ISSUER_TOKENS,
+      issuer: this.tokenName,
+      tokens: issuerTokens
+    });
   }
 
-  eventSender = {
+  private sendMessageResponse(response:MessageResponseInterface){
 
-    emitCookieSupport: (evtid: any) => {
+    let target, origin;
 
-      window.parent.postMessage({
-        evtid: evtid,
-        evt: "cookie-support-check",
-        thirdPartyCookies: localStorage.getItem('cookie-support-check')
-      }, document.referrer);
-
-    },
-    emitTabIssuerTokensPassive: (evtid: any, opener: any, storageTokens: any, parentOrigin: any) => {
-
-      opener.postMessage({
-            evtid: evtid,
-            evt: "set-tab-issuer-tokens-passive",
-            issuer: this.tokenName,
-            tokens: storageTokens
-          },
-          parentOrigin);
-
-      // let referrer = document.referrer;
-
-      // if (opener && referrer) {
-
-      //   let pUrl = new URL(referrer);
-
-      //   let parentOrigin = pUrl.origin;
-
-      //   opener.postMessage({ evt: "set-tab-issuer-tokens-passive", tokens: storageTokens, issuer: this.tokenName }, parentOrigin);
-
-      // }
-
-    },
-    emitTabIssuerTokensActive: (evtid: any, opener: any, storageTokens: any, parentOrigin: any) => {
-
-      let target, origin;
-
-      if (window.parent) {
-        target = window.parent;
-        origin = document.referrer;
-      } else {
-        target = window.opener;
-        let pUrl = new URL(document.referrer);
-        origin = pUrl.origin;
-      }
-
-      target.postMessage({
-        evtid: evtid,
-        evt: "set-iframe-issuer-tokens-active",
-        issuer: this.tokenName,
-        tokens: storageTokens
-      }, origin);
-
-      // let referrer = document.referrer;
-
-      // if (opener && referrer) {
-
-      //   let pUrl = new URL(referrer);
-
-      //   let parentOrigin = pUrl.origin;
-
-      //   opener.postMessage({ evt: "set-tab-issuer-tokens-active", tokens: storageTokens, issuer: this.tokenName }, parentOrigin);
-
-      // }
-
-    },
-    emitIframeIssuerTokensPassive: (evtid: any, tokens: any) => {
-
-      let target, origin;
-
-      if (window.parent) {
-        target = window.parent;
-        origin = document.referrer;
-      } else {
-        target = window.opener;
-        let pUrl = new URL(document.referrer);
-        origin = pUrl.origin;
-      }
-
-      target.postMessage({
-        evtid: evtid,
-        evt: "set-iframe-issuer-tokens-active",
-        issuer: this.tokenName,
-        tokens: tokens
-      }, origin);
-
-    },
-    emitIframeIssuerTokensActive: (evtid: any, tokens: any) => {
-
-      let target, origin;
-
-      if (window.parent) {
-        target = window.parent;
-        origin = document.referrer;
-      } else {
-        target = window.opener;
-        let pUrl = new URL(document.referrer);
-        origin = pUrl.origin;
-      }
-
-      target.postMessage({
-        evtid: evtid,
-        evt: "set-iframe-issuer-tokens-active",
-        issuer: this.tokenName,
-        tokens: tokens
-      }, origin);
-
-    },
-    emitTokenProofIframe: (tokenProof: any) => {
-
-      window.parent.postMessage({
-        evt: 'proof-iframe',
-        proof: JSON.stringify(tokenProof),
-        issuer: this.tokenName
-      }, document.referrer);
-
-    },
-    emitTokenProofTab: (tokenProof: any) => {
-
-      let opener = window.opener;
-
-      let referrer = document.referrer;
-
-      if (opener && referrer) {
-
-        let pUrl = new URL(referrer);
-
-        let parentOrigin = pUrl.origin;
-
-        opener.postMessage({ evt: "proof-tab", proof: tokenProof, issuer: this.tokenName }, parentOrigin);
-
-      }
-
+    if (window.parent) {
+      target = window.parent;
+      let pUrl = new URL(document.referrer);
+      origin = pUrl.origin;
+    } else {
+      target = window.opener;
+      let pUrl = new URL(document.referrer);
+      origin = pUrl.origin;
     }
 
+    if (target)
+      target.postMessage(response, origin);
   }
 
 }

@@ -3,7 +3,7 @@ import { asyncHandle, requiredParams, attachPostMessageListener, logger, splitOn
 import { getChallengeSigned, validateUseEthKey, connectMetamaskAndGetAddress } from "../core/index";
 import { createWalletSelectionViewMarkup, createOpeningViewMarkup, createIssuerViewMarkup, createFabButtonMarkup, createTokenMarkup, issuerConnectMarkup } from './componentFactory';
 import { tokenLookup } from './../tokenLookup';
-import { Messaging, MessageAction } from "./messaging";
+import {Messaging, MessageAction} from "./messaging";
 import OnChainTokenModule from './../onChainTokenModule'
 import Web3WalletProvider from './../utils/Web3WalletProvider';
 import "./../theme/style.css";
@@ -224,7 +224,9 @@ export class Client {
                 origin: tokenOrigin,
                 negotiationType: 'passive'
             }).then((data)=>{
+
                 this.offChainTokens[issuer].tokens = data.tokens;
+
             }).catch((err)=>{
                 console.log(err);
             });
@@ -366,15 +368,7 @@ export class Client {
                 this.web3WalletProvider.getConnectedWalletData()[0].address
             );
 
-            const output = {
-                data: {
-                    evt: 'set-on-chain-issuer-tokens-passive',
-                    tokens: tokens,
-                    issuer: issuerKey
-                }
-            }
-
-            this.eventReciever(output);
+            this.onChainTokens[issuerKey].tokens = tokens;
 
         }));
 
@@ -776,15 +770,15 @@ export class Client {
             action: MessageAction.GET_ISSUER_TOKENS,
             origin: tokensOrigin,
             filter: filter,
-            negotiationType: 'active' // TODO: Remove
         }).then((data)=>{
 
-            // TODO: move logic out of event receiver
-            const output = {
-                data: data
-            };
+            let issuer = data.issuer;
 
-            this.eventReciever(output);
+            this.offChainTokens[issuer].tokens = data.tokens;
+
+            this.issuerConnected(issuer, false);
+
+            //this.eventSender.emitAllTokensToClient(output); passive only?
 
         }).catch((err)=>{
             // TODO: error handling
@@ -803,16 +797,10 @@ export class Client {
             issuerKey,
             this.web3WalletProvider.getConnectedWalletData()[0].address
         );
-        
-        const output = {
-            data: {
-                evt: 'set-on-chain-issuer-tokens-active',
-                tokens: tokens,
-                issuer: issuerKey
-            }
-        }
 
-        this.eventReciever(output);
+        this.onChainTokens[issuerKey].tokens = tokens;
+
+        this.issuerConnected(issuerKey, true);
 
     }
 
@@ -859,12 +847,6 @@ export class Client {
             return;
         }
 
-        // TODO: Remove once messaging object is fully implemented
-        //const iframeStorageSupport = this.tokenLookup.tokenKeys.length > 0 ? await this.messaging.getCookieSupport(this.tokenLookup[this.offChainTokens.tokenKeys[0]]?.tokenOrigin) : false;
-
-        //if(iframeStorageSupport === true) await this.getTokenProofIframe(issuer, unsignedToken);
-        //else this.getTokenProofTab(issuer, unsignedToken);
-
         this.messaging.sendMessage({
             issuer: issuer,
             action: MessageAction.GET_PROOF,
@@ -873,12 +855,7 @@ export class Client {
             timeout: 0 // Don't time out on this event as it needs active input from the user
         }).then((data)=>{
 
-            // TODO: move logic out of event receiver
-            const output = {
-                data: data
-            };
-
-            this.eventReciever(output);
+            this.eventSender.emitProofToClient(data.proof, data.issuer);
 
         }).catch((err)=>{
             // TODO: error handling
@@ -929,102 +906,6 @@ export class Client {
         emitProofToClient: (proof: any, issuer: any) => {
 
             this.on("token-proof", null, { proof: proof, issuer: issuer });
-
-        }
-    }
-
-    eventReciever = (event: any) => {
-
-        let issuer, output;
-
-        switch (event.data.evt) {
-
-            case 'set-tab-issuer-tokens-active':
-
-                // TODO: Move origin validation to messaging
-                issuer = event.data.issuer;
-
-                let childURL = tokenLookup[issuer].tokenOrigin;
-
-                let cUrl = new URL(childURL);
-
-                let childUrlOrigin = cUrl.origin;
-
-                if (event.origin != childUrlOrigin) return;
-
-                this.offChainTokens[issuer].tokens = event.data.tokens;
-
-                /*if (this.issuerTabInstanceRefs[issuer]) {
-
-                    this.issuerTabInstanceRefs[issuer].close();
-
-                    delete this.issuerTabInstanceRefs[issuer];*/
-
-                    this.issuerConnected(issuer, false);
-
-                //}
-
-                break;
-            
-            case 'set-tab-issuer-tokens-passive':
-
-                issuer = event.data.issuer;
-
-                output = {};
-
-                output[issuer] = {};
-
-                output[issuer].tokens = event.data.tokens;
-
-                this.eventSender.emitAllTokensToClient(output);
-
-                break;
-
-            case 'set-iframe-issuer-tokens-active':
-
-                issuer = event.data.issuer;
-
-                this.offChainTokens[issuer].tokens = event.data.tokens;
-
-                this.issuerConnected(issuer, false);
-
-                break;
-            
-            case 'set-on-chain-issuer-tokens-active':
-
-                issuer = event.data.issuer;
-
-                this.onChainTokens[issuer].tokens = event.data.tokens;
-
-                this.issuerConnected(issuer, true);
-
-                break;
-
-            case 'set-on-chain-issuer-tokens-passive':
-
-                issuer = event.data.issuer;
-
-                this.onChainTokens[issuer].tokens = event.data.tokens;
-
-                break;
-
-            case 'proof-tab':
-
-                /*if (this.issuerTabInstanceRefs && this.issuerTabInstanceRefs[event.data.issuer] && this.iframeStorageSupport === false) {
-
-                    this.issuerTabInstanceRefs[event.data.issuer].close();
-
-                    delete this.issuerTabInstanceRefs[event.data.issuer];
-
-                }*/
-
-                // no break intended.
-
-            case 'proof-iframe':
-
-                this.eventSender.emitProofToClient(event.data.proof, event.data.issuer);
-
-                break;
 
         }
     }
