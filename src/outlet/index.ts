@@ -160,15 +160,14 @@ export class Outlet {
 
     let target, origin;
 
-    if (window.parent) {
+    if (!window.opener) {
       target = window.parent;
-      let pUrl = new URL(document.referrer);
-      origin = pUrl.origin;
     } else {
       target = window.opener;
-      let pUrl = new URL(document.referrer);
-      origin = pUrl.origin;
     }
+
+    let pUrl = new URL(document.referrer);
+    origin = pUrl.origin;
 
     if (target)
       target.postMessage(response, origin);

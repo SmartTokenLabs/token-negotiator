@@ -20,14 +20,12 @@ interface AuthenticateInterface {
 }
 export declare class Client {
     issuers: string[];
-    issuerTabInstanceRefs: {};
     type: string;
     filter: {};
     options: any;
     offChainTokens: any;
     onChainTokens: any;
     selectedTokens: any;
-    iframeStorageSupport: any;
     web3WalletProvider: any;
     messaging: Messaging;
     constructor(config: NegotiationInterface);
@@ -64,7 +62,6 @@ export declare class Client {
         emitSelectedTokensToClient: () => void;
         emitProofToClient: (proof: any, issuer: any) => void;
     };
-    eventReciever: (event: any) => void;
     addTokenThroughTab(magicLink: any): void;
     addTokenThroughIframe(magicLink: any): void;
     on(type: string, callback?: any, data?: any): any;

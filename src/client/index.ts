@@ -39,14 +39,12 @@ interface AuthenticateInterface {
 export class Client {
 
     issuers: string[];
-    issuerTabInstanceRefs: {}; // TODO: remove once fully migrated to messaging object
     type: string;
     filter: {};
     options: any;
     offChainTokens: any;
     onChainTokens: any;
     selectedTokens: any;
-    iframeStorageSupport: any; // TODO: remove once fully migrated to messaging object
     web3WalletProvider:any;
     messaging:Messaging;
 
@@ -75,9 +73,6 @@ export class Client {
         this.selectedTokens = {};
 
         this.clientCallBackEvents = {};
-
-        // TODO: remove once fully migrated to messaging object
-        this.iframeStorageSupport = false;
 
         // apply data for view when active mode
 
@@ -423,7 +418,7 @@ export class Client {
 
         if(state === "CONNECT_WALLET") {
 
-            entryPointContentElement.innerHTML = createWalletSelectionViewMarkup(this.iframeStorageSupport);
+            entryPointContentElement.innerHTML = createWalletSelectionViewMarkup();
 
         }
 

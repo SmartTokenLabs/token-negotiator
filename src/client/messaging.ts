@@ -123,31 +123,28 @@ export class Messaging {
             let response:MessageResponseInterface = event.data;
             let requestUrl = new URL(origin);
 
-            if (response.evtid == id && requestUrl.origin == event.origin) {
+            if (response.evtid == id) {
 
-                console.log("event response received");
-                console.log(event.data);
+                if (requestUrl.origin == event.origin){
 
-                received = true;
+                    console.log("event response received");
+                    console.log(event.data);
 
-                if (response.evt == MessageResponseAction.ERROR){
-                    reject(response.errors);
+                    received = true;
+
+                    if (response.evt == MessageResponseAction.ERROR){
+                        reject(response.errors);
+                    } else {
+                        resolve(event.data);
+                    }
+
+                    if (timer)
+                        clearTimeout(timer);
+                    afterResolveOrError();
+
                 } else {
-                    resolve(event.data);
+                    console.log("Does not match origin " + event.origin);
                 }
-
-                if (timer)
-                    clearTimeout(timer);
-                afterResolveOrError();
-                return;
-            }
-
-            if (event.origin != requestUrl.origin){
-                console.log("Does not match origin " + event.origin);
-            }
-
-            if (id != response.evtid) {
-                console.log("Does not match ID " + id);
             }
         }
 
@@ -216,6 +213,7 @@ export class Messaging {
     }
 
     private constructUrl(id:any, request:MessageRequestInterface){
+
         let url = `${request.origin}?evtid=${id}&action=${request.action}`;
 
         if (request.filter)

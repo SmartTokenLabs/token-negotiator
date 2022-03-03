@@ -69,46 +69,6 @@ var Client = (function () {
                 _this.on("token-proof", null, { proof: proof, issuer: issuer });
             }
         };
-        this.eventReciever = function (event) {
-            var issuer, output;
-            switch (event.data.evt) {
-                case 'set-tab-issuer-tokens-active':
-                    issuer = event.data.issuer;
-                    var childURL = tokenLookup[issuer].tokenOrigin;
-                    var cUrl = new URL(childURL);
-                    var childUrlOrigin = cUrl.origin;
-                    if (event.origin != childUrlOrigin)
-                        return;
-                    _this.offChainTokens[issuer].tokens = event.data.tokens;
-                    _this.issuerConnected(issuer, false);
-                    break;
-                case 'set-tab-issuer-tokens-passive':
-                    issuer = event.data.issuer;
-                    output = {};
-                    output[issuer] = {};
-                    output[issuer].tokens = event.data.tokens;
-                    _this.eventSender.emitAllTokensToClient(output);
-                    break;
-                case 'set-iframe-issuer-tokens-active':
-                    issuer = event.data.issuer;
-                    _this.offChainTokens[issuer].tokens = event.data.tokens;
-                    _this.issuerConnected(issuer, false);
-                    break;
-                case 'set-on-chain-issuer-tokens-active':
-                    issuer = event.data.issuer;
-                    _this.onChainTokens[issuer].tokens = event.data.tokens;
-                    _this.issuerConnected(issuer, true);
-                    break;
-                case 'set-on-chain-issuer-tokens-passive':
-                    issuer = event.data.issuer;
-                    _this.onChainTokens[issuer].tokens = event.data.tokens;
-                    break;
-                case 'proof-tab':
-                case 'proof-iframe':
-                    _this.eventSender.emitProofToClient(event.data.proof, event.data.issuer);
-                    break;
-            }
-        };
         var type = config.type, issuers = config.issuers, options = config.options, filter = config.filter;
         requiredParams(type, 'type is required.');
         requiredParams(issuers, 'issuers are missing.');
@@ -121,7 +81,6 @@ var Client = (function () {
         this.onChainTokens = { tokenKeys: [] };
         this.selectedTokens = {};
         this.clientCallBackEvents = {};
-        this.iframeStorageSupport = false;
         if (this.type === "active") {
             this.openingHeading = (_b = (_a = this.options) === null || _a === void 0 ? void 0 : _a.overlay) === null || _b === void 0 ? void 0 : _b.openingHeading;
             this.issuerHeading = (_d = (_c = this.options) === null || _c === void 0 ? void 0 : _c.overlay) === null || _d === void 0 ? void 0 : _d.issuerHeading;
@@ -303,20 +262,13 @@ var Client = (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4, Promise.all(onChainTokens.tokenKeys.map(function (issuerKey) { return __awaiter(_this, void 0, void 0, function () {
-                            var tokens, output;
+                            var tokens;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0: return [4, this.onChainTokenModule.connectOnChainToken(issuerKey, this.web3WalletProvider.getConnectedWalletData()[0].address)];
                                     case 1:
                                         tokens = _a.sent();
-                                        output = {
-                                            data: {
-                                                evt: 'set-on-chain-issuer-tokens-passive',
-                                                tokens: tokens,
-                                                issuer: issuerKey
-                                            }
-                                        };
-                                        this.eventReciever(output);
+                                        this.onChainTokens[issuerKey].tokens = tokens;
                                         return [2];
                                 }
                             });
@@ -370,7 +322,7 @@ var Client = (function () {
             entryPointContentElement.innerHTML = createOpeningViewMarkup(this.openingHeading);
         }
         if (state === "CONNECT_WALLET") {
-            entryPointContentElement.innerHTML = createWalletSelectionViewMarkup(this.iframeStorageSupport);
+            entryPointContentElement.innerHTML = createWalletSelectionViewMarkup();
         }
         if (state === "ISSUER") {
             entryPointContentElement.innerHTML = createIssuerViewMarkup(this.issuerHeading);
@@ -532,19 +484,17 @@ var Client = (function () {
             action: MessageAction.GET_ISSUER_TOKENS,
             origin: tokensOrigin,
             filter: filter,
-            negotiationType: 'active'
         }).then(function (data) {
-            var output = {
-                data: data
-            };
-            _this.eventReciever(output);
+            var issuer = data.issuer;
+            _this.offChainTokens[issuer].tokens = data.tokens;
+            _this.issuerConnected(issuer, false);
         }).catch(function (err) {
             console.log(err);
         });
     };
     Client.prototype.connectOnChainTokenIssuer = function (event) {
         return __awaiter(this, void 0, void 0, function () {
-            var issuerKey, tokens, output;
+            var issuerKey, tokens;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -552,14 +502,8 @@ var Client = (function () {
                         return [4, this.onChainTokenModule.connectOnChainToken(issuerKey, this.web3WalletProvider.getConnectedWalletData()[0].address)];
                     case 1:
                         tokens = _a.sent();
-                        output = {
-                            data: {
-                                evt: 'set-on-chain-issuer-tokens-active',
-                                tokens: tokens,
-                                issuer: issuerKey
-                            }
-                        };
-                        this.eventReciever(output);
+                        this.onChainTokens[issuerKey].tokens = tokens;
+                        this.issuerConnected(issuerKey, true);
                         return [2];
                 }
             });
@@ -602,10 +546,7 @@ var Client = (function () {
                             token: unsignedToken,
                             timeout: 0
                         }).then(function (data) {
-                            var output = {
-                                data: data
-                            };
-                            _this.eventReciever(output);
+                            _this.eventSender.emitProofToClient(data.proof, data.issuer);
                         }).catch(function (err) {
                             console.log(err);
                         });
