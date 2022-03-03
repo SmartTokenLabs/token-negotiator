@@ -34,8 +34,7 @@ var Outlet = (function () {
             case MessageAction.GET_PROOF:
                 var token = this.getDataFromQuery('token');
                 requiredParams(token, "unsigned token is missing");
-                var isTabOrIframe = this.getDataFromQuery('type');
-                this.sendTokenProof(token, isTabOrIframe);
+                this.sendTokenProof(evtid, token);
                 break;
             case MessageAction.COOKIE_CHECK:
                 this.sendMessageResponse({
