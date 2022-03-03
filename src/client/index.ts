@@ -1,20 +1,21 @@
 // @ts-nocheck
 import { asyncHandle, requiredParams, attachPostMessageListener, logger, splitOnChainKey } from './../utils/index';
 import { getChallengeSigned, validateUseEthKey, connectMetamaskAndGetAddress } from "../core/index";
-import { createWalletSelectionViewMarkup, createOpeningViewMarkup, createIssuerViewMarkup, createFabButtonMarkup, createTokenMarkup, issuerConnectMarkup } from './componentFactory';
+import { createTokenMarkup } from './componentFactory';
 import { tokenLookup } from './../tokenLookup';
 import { Messaging, MessageAction } from "./messaging";
+import { Popup } from './popup';
 import OnChainTokenModule from './../onChainTokenModule'
 import Web3WalletProvider from './../utils/Web3WalletProvider';
 import "./../theme/style.css";
 import './../vendor/keyShape';
 
-interface GetTokenInterface {
+/*interface GetTokenInterface {
     issuer:string;
     filter: any;
     tokensOrigin: any;
     negotiationType: string;
-}
+}*/
 
 interface NegotiationInterface {
     type: string;
@@ -45,10 +46,12 @@ export class Client {
     options: any;
     offChainTokens: any;
     onChainTokens: any;
+    tokenLookup: any;
     selectedTokens: any;
     iframeStorageSupport: any; // TODO: remove once fully migrated to messaging object
     web3WalletProvider:any;
     messaging:Messaging;
+    popup:Popup;
 
     constructor(config: NegotiationInterface) {
 
@@ -80,14 +83,6 @@ export class Client {
         this.iframeStorageSupport = false;
 
         // apply data for view when active mode
-
-        if(this.type === "active") {
-         
-            this.openingHeading = this.options?.overlay?.openingHeading
-            this.issuerHeading = this.options?.overlay?.issuerHeading;
-            this.repeatAction = this.options?.overlay?.repeatAction;
-            
-        }
 
         /*
 
@@ -171,6 +166,14 @@ export class Client {
         this.onChainTokenModule = new OnChainTokenModule();
 
         this.messaging = new Messaging();
+    }
+
+    getTokenData(){
+        return {
+            offChainTokens: this.offChainTokens,
+            onChainTokens: this.onChainTokens,
+            tokenLookup: this.tokenLookup
+        };
     }
 
     // To enrich the token lookup store with data.
@@ -335,23 +338,8 @@ export class Client {
 
         setTimeout(() => {
 
-            let entryPointElement = document.querySelector(".overlay-tn");
-
-            requiredParams(entryPointElement, 'No entry point element with the class name of .overlay-tn found.');
-
-            if (entryPointElement) {
-
-                entryPointElement.innerHTML += '<div class="overlay-content-tn"></div>';
-
-                this.updateOverlayViewState("INTRO");
-
-                entryPointElement.innerHTML += createFabButtonMarkup();
-
-                this.assignFabButtonAnimation();
-
-                this.addTheme();
-
-            }
+            this.popup = new Popup(this.options?.overlay, this);
+            this.popup.initialize();
 
         }, 0);
 
@@ -419,44 +407,10 @@ export class Client {
 
     updateOverlayViewState(state:string) {
 
-        let entryPointContentElement = document.querySelector(".overlay-content-tn");
-
-        if(state === "INTRO") {
-
-            entryPointContentElement.innerHTML = createOpeningViewMarkup(this.openingHeading);
-
-        }
-
-        if(state === "CONNECT_WALLET") {
-
-            entryPointContentElement.innerHTML = createWalletSelectionViewMarkup(this.iframeStorageSupport);
-
-        }
-
-        if(state === "ISSUER") { // issuer and tokens view
-
-            entryPointContentElement.innerHTML = createIssuerViewMarkup(this.issuerHeading);
-                
-            let refIssuerContainerSelector = document.querySelector(".token-issuer-list-container-tn");
-
-            refIssuerContainerSelector.innerHTML = "";
-
-            this.offChainTokens.tokenKeys.map((issuer: string) => {
-
-                refIssuerContainerSelector.innerHTML += issuerConnectMarkup(this.tokenLookup[issuer].title, this.tokenLookup[issuer].emblem, issuer);
-
-            });
-            
-            this.onChainTokens.tokenKeys.map((issuer: string) => {
-
-                refIssuerContainerSelector.innerHTML += issuerConnectMarkup(this.tokenLookup[issuer].title, this.tokenLookup[issuer].emblem, issuer);
-
-            });
-
-        }
+        this.popup.updateOverlayViewState(state);
     }
 
-    embedTokenConnectClientOverlayIframe() {
+    /*embedTokenConnectClientOverlayIframe() {
 
         setTimeout(() => {
 
@@ -479,7 +433,7 @@ export class Client {
             }
 
         }, 0);
-    }
+    }*/
 
     // embedIframeClientOverlay() {
 
@@ -536,27 +490,6 @@ export class Client {
     //     window.tokenToggleSelection = this.tokenToggleSelection;
 
     // }
-
-    addTheme() {
-
-        let refTokenSelector = document.querySelector(".overlay-tn");
-
-        // @ts-ignore
-        refTokenSelector.classList.add(this.options?.overlay?.theme ? this.options?.overlay?.theme : 'light');
-
-    }
-
-    assignFabButtonAnimation() {
-
-        if (window.KeyshapeJS) {
-
-            window.KeyshapeJS.globalPause();
-
-            window.KeyshapeJS.animate("#svg-tn-left", [{ p: 'mpath', t: [0, 400], v: ['0%', '100%'], e: [[1, 0, 0, .6, 1], [0]], mp: "M13,28.5L27.1,28.1" }, { p: 'rotate', t: [0, 400], v: [0, 0], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'scaleX', t: [0, 400], v: [1, 1], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'scaleY', t: [0, 400], v: [1, 1], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'anchorX', t: [0, 400], v: [-13, -17.1], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'anchorY', t: [0, 400], v: [-13.5, -17.1], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'd', t: [0, 400], v: ["path('M25.5,26C25.5,26,20.5,26,20.5,26C20.5,23.1,19.9,20.4,18.8,17.9C17.8,15.6,16.4,13.6,14.6,11.8C12.7,9.9,10.3,8.4,7.8,7.4C5.5,6.5,3,6,.5,6L.5,1C.5,1,.5,1,.5,1C.5,1,7.5,1,7.5,1L25.5,1L25.5,7.2C25.5,7.2,25.5,12.8,25.5,12.8C25.5,12.8,25.5,19,25.5,19Z')", "path('M31.8,32.8C31.5,33.2,30.9,33.4,30.4,33.4C29.9,33.4,29.4,33.2,29,32.8C29,32.8,1.4,5.2,1.4,5.2C1,4.8,.8,4.3,.8,3.8C.8,3.3,1,2.8,1.4,2.4L2.4,1.4C2.7,1,3.3,.8,3.8,.8C4.3,.8,4.8,1,5.2,1.4L5.2,1.4L32.8,29C33.2,29.4,33.4,29.9,33.4,30.4C33.4,30.9,33.2,31.5,32.8,31.8Z')"], e: [[1, 0, 0, .6, 1], [0]] }], "#svg-tn-right", [{ p: 'mpath', t: [0, 400], v: ['0%', '100%'], e: [[1, 0, 0, .6, 1], [0]], mp: "M41.5,28.7L27.1,28.1" }, { p: 'rotate', t: [0, 400], v: [0, 0], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'anchorX', t: [0, 400], v: [-40.5, -17.1], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'anchorY', t: [0, 400], v: [-13.5, -17.1], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'd', t: [0, 400], v: ["path('M53,1C53,1,53,1,53,1C53,1,53,12.9,53,12.9L53,19C53,19,53,26,53,26C53,26,40.2,26,40.2,26L34.1,26C34.1,26,28,26,28,26C28,26,28,12.6,28,12.6L28,7.4C28,7.4,28,1,28,1C28,1,40.6,1,40.6,1C40.6,1,45.9,1,45.9,1Z')", "path('M29,1.4C29.4,1,29.9,.8,30.4,.8C30.9,.8,31.5,1,31.8,1.4L32.8,2.4C33.2,2.7,33.4,3.3,33.4,3.8C33.4,4.3,33.2,4.8,32.8,5.2L5.2,32.8C4.8,33.2,4.3,33.4,3.8,33.4C3.3,33.4,2.8,33.2,2.4,32.8L1.4,31.8C1,31.5,.8,30.9,.8,30.4C.8,29.9,1,29.4,1.4,29C1.4,29,29,1.4,29,1.4Z')"], e: [[1, 0, 0, .6, 1], [0]] }], { autoremove: false }).range(0, 400);
-
-        }
-
-    }
 
     openOverlay(openOverlay: boolean) {
 
