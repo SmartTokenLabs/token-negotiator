@@ -4,46 +4,43 @@ import { requiredParams, splitOnChainKey } from './../utils/index';
 
 export class OnChainTokenModule {
 
-    constructor() {
-        
-        // Not used at this time.
-        const apiLookup = [
-            {
-                name: 'openSea',
-                supports: [
-                    'mainnet', 
-                    'rinkeby'
-                ]
-            },
-            { 
-                name: 'alchemy', 
-                supports: [
-                    'mainnet', 
-                    'rinkeby', 
-                    'arbitrum', 
-                    'polygon', 
-                    'optimism'
-                ]
-            },
-            { 
-                name: 'moralis', 
-                supports: [
-                    'mainnet', 
-                    'rinkeby',
-                    'ropsten',
-                    'goerli',
-                    'kovan',
-                    'bsc',
-                    'polygon',
-                    'mumbai',
-                    'avalanche',
-                    'fantom'
-                ]
-            }
-        ]
+    constructor() {}
 
+    getOnChainAPISupportBool (apiName, chain) {
+
+        const apiBlockchainSupport = {
+            opensea: [
+                'eth',
+                'mainnet', 
+                'rinkeby'
+            ],
+            alchemy: [
+                'eth',
+                'mainnet', 
+                'rinkeby', 
+                'arbitrum', 
+                'polygon', 
+                'optimism'
+            ],
+            moralis: [
+                'eth',
+                'mainnet', 
+                'rinkeby',
+                'ropsten',
+                'goerli',
+                'kovan',
+                'bsc',
+                'polygon',
+                'mumbai',
+                'avalanche',
+                'fantom'
+            ]
+        }
+        
         // TODO add support XDAI.
         // https://www.xdaichain.com/for-developers/developer-resources/ankr-api
+
+        return apiBlockchainSupport[apiName].indexOf(chain) >= -1;
 
     }
 
@@ -93,6 +90,8 @@ export class OnChainTokenModule {
     */
     async getContractDataOpenSea(contractAddress:string, chain:string, openSeaSlug:string) {
 
+        if(this.getOnChainAPISupportBool('opensea', chain) === false) return;
+
         const options = { method: 'GET' };
 
         if(chain.toLocaleLowerCase() === "rinkeby") {
@@ -118,6 +117,8 @@ export class OnChainTokenModule {
     }
     
     async getContractDataMoralis(contractAddress:string, chain:string) {
+
+        if(this.getOnChainAPISupportBool('moralis', chain) === false) return;
 
         const options = { 
             method: 'GET',
@@ -150,6 +151,8 @@ export class OnChainTokenModule {
     }
     
     async getContractDataAlchemy(contractAddress:string, chain:string) {
+
+        if(this.getOnChainAPISupportBool('alchemy', chain) === false) return;
 
         var requestOptions = {
             method: 'GET',
@@ -202,6 +205,8 @@ export class OnChainTokenModule {
 
     async getTokensOpenSea(address:string, chain:string, owner:string, offset=0, limit=20) {
 
+        if(this.getOnChainAPISupportBool('opensea', chain) === false) return;
+
         requiredParams((chain && address && owner), 'cannot search for tokens, missing params');
 
         if(chain === 'rinkeby') {
@@ -226,6 +231,8 @@ export class OnChainTokenModule {
     }
     
     async getTokensMoralis(address:string, chain:string, owner:string, offset=0, limit=20) {
+
+        if(this.getOnChainAPISupportBool('moralis', chain) === false) return;
 
         requiredParams((chain && address && owner), 'cannot search for tokens, missing params');
 
@@ -264,6 +271,9 @@ export class OnChainTokenModule {
     }
 
     async getTokensAlchemy (address:string, chain:string, owner:string) {
+
+        if(this.getOnChainAPISupportBool('alchemy', chain) === false) return;
+        
         const promise = new Promise((resolve, reject) => {
 
             var requestOptions = {
