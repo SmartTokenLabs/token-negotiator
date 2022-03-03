@@ -72,9 +72,7 @@ export class Outlet {
 
         requiredParams(token, "unsigned token is missing");
 
-        const isTabOrIframe = this.getDataFromQuery('type');
-
-        this.sendTokenProof(token, isTabOrIframe);
+        this.sendTokenProof(evtid, token);
 
         break;
 
