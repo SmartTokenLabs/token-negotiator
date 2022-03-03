@@ -1,11 +1,6 @@
+import { Messaging } from "./messaging";
 import "./../theme/style.css";
 import './../vendor/keyShape';
-interface GetTokenInterface {
-    issuer: string;
-    filter: any;
-    tokensOrigin: any;
-    negotiationType: string;
-}
 interface NegotiationInterface {
     type: string;
     issuers: string[];
@@ -34,14 +29,16 @@ export declare class Client {
     selectedTokens: any;
     iframeStorageSupport: any;
     web3WalletProvider: any;
+    messaging: Messaging;
     constructor(config: NegotiationInterface);
-    openIframe(url: any): Promise<unknown>;
+    updateTokenLookupStore(tokenKey: any, data: any): void;
     negotiatorConnectToWallet(walletType: string): Promise<void>;
-    getTokensIframe(config: GetTokenInterface): Promise<unknown>;
     setPassiveNegotiationWebTokens(offChainTokens: any): Promise<void>;
+    enrichTokenLookupDataOnChainTokens(onChainTokens: any): Promise<void>;
     setBlockChainTokens(onChainTokens: any): Promise<void>;
     negotiate(): Promise<void>;
     activeNegotiationStrategy(): Promise<void>;
+    setPassiveNegotiationOnChainTokens(onChainTokens: any): Promise<void>;
     passiveNegotiationStrategy(iframeStorageSupport: boolean): Promise<void>;
     updateOverlayViewState(state: string): void;
     embedTokenConnectClientOverlayIframe(): void;
@@ -49,12 +46,12 @@ export declare class Client {
     assignFabButtonAnimation(): void;
     openOverlay(openOverlay: boolean): void;
     overlayClickHandler(): void;
-    issuerConnected(issuer: string): void;
+    issuerConnected(issuer: string, onChain: boolean): void;
     navigateToTokensView(event: any): void;
     embedTokensIntoView(issuer: any): void;
     showTokenView(issuer: string): void;
-    connectTokenIssuerWithIframe(event: any): void;
-    connectTokenIssuerWithTab(event: any): void;
+    connectTokenIssuer(event: any): Promise<void> | undefined;
+    connectOnChainTokenIssuer(event: any): Promise<void>;
     tokenToggleSelection(): void;
     authenticate(config: AuthenticateInterface): Promise<void>;
     checkPublicAddressMatch(issuer: string, unsignedToken: any): Promise<true | {
@@ -62,8 +59,6 @@ export declare class Client {
         useEthKey: null;
         proof: null;
     } | undefined>;
-    getTokenProofIframe(issuer: any, unsignedToken: any): Promise<unknown>;
-    getTokenProofTab(issuer: any, unsignedToken: any): Promise<void>;
     eventSender: {
         emitAllTokensToClient: (tokens: any) => void;
         emitSelectedTokensToClient: () => void;
@@ -72,7 +67,6 @@ export declare class Client {
     eventReciever: (event: any) => void;
     addTokenThroughTab(magicLink: any): void;
     addTokenThroughIframe(magicLink: any): void;
-    thirdPartyCookieSupportCheck(tokensOrigin: any): Promise<unknown>;
     on(type: string, callback?: any, data?: any): any;
 }
 export {};

@@ -106,4 +106,20 @@ export var attachPostMessageListener = function (listener) {
         window.attachEvent("onmessage", listener);
     }
 };
+export var removePostMessageListener = function (listener) {
+    if (window.removeEventListener) {
+        window.removeEventListener("message", listener);
+    }
+    else {
+        window.detachEvent("onmessage", listener);
+    }
+};
+export var splitOnChainKey = function (onChainKey) {
+    var splitData = onChainKey.split('.');
+    return {
+        address: splitData[0],
+        chain: splitData[1],
+        openSeaSlug: splitData[2]
+    };
+};
 //# sourceMappingURL=index.js.map

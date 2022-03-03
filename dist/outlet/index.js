@@ -2,43 +2,79 @@ import { readMagicUrl, storeMagicURL, rawTokenCheck } from '../core';
 import { requiredParams } from '../utils/index';
 import { tokenLookup } from './../tokenLookup';
 import { decodeTokens, filterTokens } from './../core/index';
+import { MessageAction } from '../client/messaging';
 var Outlet = (function () {
     function Outlet(config) {
         var _this = this;
         this.eventSender = {
-            emitCookieSupport: function () {
+            emitCookieSupport: function (evtid) {
                 window.parent.postMessage({
+                    evtid: evtid,
                     evt: "cookie-support-check",
                     thirdPartyCookies: localStorage.getItem('cookie-support-check')
                 }, document.referrer);
             },
-            emitTabIssuerTokensPassive: function (opener, storageTokens, parentOrigin) {
+            emitTabIssuerTokensPassive: function (evtid, opener, storageTokens, parentOrigin) {
                 opener.postMessage({
+                    evtid: evtid,
                     evt: "set-tab-issuer-tokens-passive",
                     issuer: _this.tokenName,
                     tokens: storageTokens
                 }, parentOrigin);
             },
-            emitTabIssuerTokensActive: function (opener, storageTokens, parentOrigin) {
-                opener.postMessage({
-                    evt: "set-tab-issuer-tokens-active",
+            emitTabIssuerTokensActive: function (evtid, opener, storageTokens, parentOrigin) {
+                var target, origin;
+                if (window.parent) {
+                    target = window.parent;
+                    origin = document.referrer;
+                }
+                else {
+                    target = window.opener;
+                    var pUrl = new URL(document.referrer);
+                    origin = pUrl.origin;
+                }
+                target.postMessage({
+                    evtid: evtid,
+                    evt: "set-iframe-issuer-tokens-active",
                     issuer: _this.tokenName,
                     tokens: storageTokens
-                }, parentOrigin);
+                }, origin);
             },
-            emitIframeIssuerTokensPassive: function (tokens) {
-                window.parent.postMessage({
-                    evt: "set-iframe-issuer-tokens-passive",
-                    issuer: _this.tokenName,
-                    tokens: tokens
-                }, document.referrer);
-            },
-            emitIframeIssuerTokensActive: function (tokens) {
-                window.parent.postMessage({
+            emitIframeIssuerTokensPassive: function (evtid, tokens) {
+                var target, origin;
+                if (window.parent) {
+                    target = window.parent;
+                    origin = document.referrer;
+                }
+                else {
+                    target = window.opener;
+                    var pUrl = new URL(document.referrer);
+                    origin = pUrl.origin;
+                }
+                target.postMessage({
+                    evtid: evtid,
                     evt: "set-iframe-issuer-tokens-active",
                     issuer: _this.tokenName,
                     tokens: tokens
-                }, document.referrer);
+                }, origin);
+            },
+            emitIframeIssuerTokensActive: function (evtid, tokens) {
+                var target, origin;
+                if (window.parent) {
+                    target = window.parent;
+                    origin = document.referrer;
+                }
+                else {
+                    target = window.opener;
+                    var pUrl = new URL(document.referrer);
+                    origin = pUrl.origin;
+                }
+                target.postMessage({
+                    evtid: evtid,
+                    evt: "set-iframe-issuer-tokens-active",
+                    issuer: _this.tokenName,
+                    tokens: tokens
+                }, origin);
             },
             emitTokenProofIframe: function (tokenProof) {
                 window.parent.postMessage({
@@ -74,41 +110,32 @@ var Outlet = (function () {
         return filter ? JSON.parse(filter) : {};
     };
     Outlet.prototype.pageOnLoadEventHandler = function () {
+        var evtid = this.getDataFromQuery('evtid');
         var action = this.getDataFromQuery('action');
+        console.log("Outlet response for event ID " + evtid + " action " + action);
         switch (action) {
-            case 'get-iframe-issuer-tokens':
-                var negotiationType = this.getDataFromQuery('type');
-                if (negotiationType) {
-                    this.getIframeIssuerTokens(this.tokenName, this.getFilter(), negotiationType);
-                }
-                else {
-                    requiredParams(negotiationType, "negotiation type required to handle this event");
-                }
+            case MessageAction.GET_ISSUER_TOKENS:
+                var issuerTokens = this.prepareTokenOutput(this.tokenName, this.getFilter());
+                this.eventSender.emitIframeIssuerTokensActive(evtid, issuerTokens);
                 break;
-            case 'get-tab-issuer-tokens':
-                var _a = this.getTabIssuerTokens(this.tokenName, this.getFilter()), storageTokens = _a.storageTokens, parentOrigin = _a.parentOrigin;
-                if (window.opener && storageTokens && parentOrigin) {
-                    this.eventSender.emitTabIssuerTokensActive(window.opener, storageTokens, parentOrigin);
-                }
-                break;
-            case 'get-token-proof':
+            case MessageAction.GET_PROOF:
                 var token = this.getDataFromQuery('token');
                 requiredParams(token, "unsigned token is missing");
                 var isTabOrIframe = this.getDataFromQuery('type');
                 this.sendTokenProof(token, isTabOrIframe);
                 break;
-            case 'cookie-support-check':
-                this.eventSender.emitCookieSupport();
+            case MessageAction.COOKIE_CHECK:
+                this.eventSender.emitCookieSupport(evtid);
                 break;
             default:
                 localStorage.setItem('cookie-support-check', 'test');
-                var _b = this.tokenIssuer, tokenUrlName = _b.tokenUrlName, tokenSecretName = _b.tokenSecretName, tokenIdName = _b.tokenIdName, itemStorageKey = _b.itemStorageKey;
+                var _a = this.tokenIssuer, tokenUrlName = _a.tokenUrlName, tokenSecretName = _a.tokenSecretName, tokenIdName = _a.tokenIdName, itemStorageKey = _a.itemStorageKey;
                 var tokens = readMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey);
                 if (tokens && tokens.length)
                     storeMagicURL(tokens, itemStorageKey);
-                var _c = this.getTabIssuerTokens(this.tokenName, this.getFilter()), storageTokens = _c.storageTokens, parentOrigin = _c.parentOrigin;
+                var _b = this.getTabIssuerTokens(this.tokenName, this.getFilter()), storageTokens = _b.storageTokens, parentOrigin = _b.parentOrigin;
                 if (window.opener && storageTokens && parentOrigin) {
-                    this.eventSender.emitTabIssuerTokensPassive(window.opener, storageTokens, parentOrigin);
+                    this.eventSender.emitTabIssuerTokensPassive(evtid, window.opener, storageTokens, parentOrigin);
                 }
                 break;
         }
@@ -134,13 +161,6 @@ var Outlet = (function () {
                     _this.eventSender.emitTokenProofTab(tokenProof);
             });
         });
-    };
-    Outlet.prototype.getIframeIssuerTokens = function (tokenName, filter, negotiationType) {
-        var storageTokens = this.prepareTokenOutput(tokenName, filter);
-        if (negotiationType === 'passive')
-            this.eventSender.emitIframeIssuerTokensPassive(storageTokens);
-        else
-            this.eventSender.emitIframeIssuerTokensActive(storageTokens);
     };
     Outlet.prototype.getTabIssuerTokens = function (tokenName, filter) {
         var opener = window.opener;

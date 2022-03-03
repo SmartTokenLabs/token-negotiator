@@ -185,32 +185,6 @@ export class Client {
 
     }
 
-    async openIframe(url: any) {
-
-        return new Promise((resolve, reject) => {
-
-            const iframe = document.createElement('iframe');
-
-            iframe.src = url;
-
-            iframe.style.width = '1px';
-
-            iframe.style.height = '1px';
-
-            iframe.style.opacity = '0';
-
-            document.body.appendChild(iframe);
-
-            iframe.onload = () => {
-
-                resolve(iframe);
-
-            };
-
-        });
-
-    }
-
     async negotiatorConnectToWallet (walletType:string) {
     
         // const { default: Web3WalletProvider } = await import('./../utils/Web3WalletProvider');
@@ -1034,6 +1008,18 @@ export class Client {
 
                 break;
 
+            case 'proof-tab':
+
+                /*if (this.issuerTabInstanceRefs && this.issuerTabInstanceRefs[event.data.issuer] && this.iframeStorageSupport === false) {
+
+                    this.issuerTabInstanceRefs[event.data.issuer].close();
+
+                    delete this.issuerTabInstanceRefs[event.data.issuer];
+
+                }*/
+
+                // no break intended.
+
             case 'proof-iframe':
 
                 this.eventSender.emitProofToClient(event.data.proof, event.data.issuer);
@@ -1045,11 +1031,7 @@ export class Client {
 
     addTokenThroughTab(magicLink: any) {
 
-        var tab = window.open(
-            magicLink,
-            "win1",
-            "left=0,top=0,width=320,height=320"
-        );
+        let tab = this.messaging.openTab(magicLink);
 
         setTimeout(() => { tab?.close(); }, 2500);
 
@@ -1057,7 +1039,7 @@ export class Client {
 
     addTokenThroughIframe(magicLink: any) {
 
-        this.openIframe(magicLink);
+        this.messaging.createIframe(magicLink);
 
     }
 
