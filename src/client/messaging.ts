@@ -1,6 +1,7 @@
 import {attachPostMessageListener, removePostMessageListener} from "../utils";
+import {tokenLookup} from "../tokenLookup";
 
-interface MessageRequestInterface {
+export interface MessageRequestInterface {
     issuer:string,
     action:MessageAction,
     origin:string,
@@ -13,6 +14,24 @@ export enum MessageAction {
     COOKIE_CHECK = "cookie-check",
     GET_ISSUER_TOKENS = "get-issuer-tokens",
     GET_PROOF = "get-proof"
+}
+
+export interface MessageResponseInterface {
+    evtid: any,
+    evt: string,
+    issuer?: string,
+    tokens?:[],
+    proof?:any,
+    thirdPartyCookies?:any,
+    errors?:any[]|undefined
+}
+
+export enum MessageResponseAction {
+    COOKIE_CHECK = "cookie-check",
+    ISSUER_TOKENS = "issuer-tokens",
+    PROOF = "proof",
+    ERROR = "error",
+    //USER_CANCEL = "user_cancel" Could be handled different to an error
 }
 
 export class Messaging {
@@ -56,7 +75,7 @@ export class Messaging {
                 // TODO: iframe error handling here
                 //if (iframeRef) {
 
-                    this.setResponseListener(id, request.timeout, resolve, reject, ()=>{
+                    this.setResponseListener(id, request.origin, request.timeout, resolve, reject, ()=>{
                         if (iframe?.parentNode)
                             iframe.parentNode.removeChild(iframe);
                     });
@@ -83,7 +102,7 @@ export class Messaging {
 
             var tabRef:any = null;
 
-            this.setResponseListener(id, request.timeout, resolve, reject, ()=>{
+            this.setResponseListener(id, request.origin, request.timeout, resolve, reject, ()=>{
                 if (tabRef)
                     tabRef.close();
             });
@@ -94,26 +113,39 @@ export class Messaging {
 
     }
 
-    private setResponseListener(id:any, timeout:number|undefined, resolve:any, reject:any, cleanUp:any){
+    private setResponseListener(id:any, origin:string, timeout:number|undefined, resolve:any, reject:any, cleanUp:any){
 
         let received = false;
         let timer:any = null;
 
         let listener = (event: any) => {
 
-            console.log("event response received");
-            console.log(event.data);
+            let response:MessageResponseInterface = event.data;
+            let requestUrl = new URL(origin);
 
-            if (event.data.evtid == id) {
-                received = true;
-                resolve(event.data);
-                if (timer)
-                    clearTimeout(timer);
-                afterResolveOrError();
-                return;
+            if (response.evtid == id) {
+
+                if (requestUrl.origin == event.origin){
+
+                    console.log("event response received");
+                    console.log(event.data);
+
+                    received = true;
+
+                    if (response.evt == MessageResponseAction.ERROR){
+                        reject(response.errors);
+                    } else {
+                        resolve(event.data);
+                    }
+
+                    if (timer)
+                        clearTimeout(timer);
+                    afterResolveOrError();
+
+                } else {
+                    console.log("Does not match origin " + event.origin);
+                }
             }
-
-            console.log("Does not match ID " + id);
         }
 
         let afterResolveOrError = () => {
@@ -159,6 +191,7 @@ export class Messaging {
 
                 this.setResponseListener(
                     id,
+                    origin,
                     5000,
                     (responseData:any)=>{
                         resolve(!!responseData.thirdPartyCookies);
@@ -180,6 +213,7 @@ export class Messaging {
     }
 
     private constructUrl(id:any, request:MessageRequestInterface){
+
         let url = `${request.origin}?evtid=${id}&action=${request.action}`;
 
         if (request.filter)
