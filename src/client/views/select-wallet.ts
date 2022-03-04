@@ -19,8 +19,8 @@ export class SelectWallet extends AbstractView {
             </button>` : ' ';
 
         this.viewContainer.innerHTML = `
-            <div class="wallet-selection-view-tn">
-              <div class="inner-content-tn">
+            <div class="inner-content-tn">
+              <div class="wallet-selection-view-tn">
                 <div class="issuer-view-tn">
                   <div class="brand-tn"></div>
                   <div class="headline-container-tn">
@@ -67,17 +67,26 @@ export class SelectWallet extends AbstractView {
 
         console.log("Connect wallet: " + wallet);
 
+        let timer = setTimeout(() => {
+            this.popup.showLoader(
+                "<h4>Connecting to " + wallet + "...</h4>",
+                "<small>You may need to unlock your wallet to continue.</small>"
+            );
+        }, 500); // In case already authorized
+
         try {
             await this.client.negotiatorConnectToWallet(wallet);
-
-            // TODO: populate data
 
             this.popup.updatePopup(SelectIssuers);
 
         } catch (err){
             console.log(err);
-            // TODO: handle error
+            this.popup.showError((err as string));
+            return;
         }
+
+        if (timer) clearTimeout(timer);
+        this.popup.dismissLoader();
     }
 
 }

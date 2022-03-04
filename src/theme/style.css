@@ -306,7 +306,6 @@
   transition: all .3s .1s;
   bottom: 88px;
   padding: 0;
-  overflow-x: hidden;
 }
 
 .overlay-tn .overlay-content-tn {
@@ -472,6 +471,77 @@
   border: 3px solid #005fcc !important;
 }
 
+.overlay-tn .load-container-tn {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 200;
+  background-color: rgba(52, 52, 52, 0.70);
+  text-align: center;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+/* loader */
+.lds-ellipsis {
+  display: inline-block;
+  position: relative;
+  width: 80px;
+  height: 40px;
+}
+.lds-ellipsis div {
+  position: absolute;
+  top: 16px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #fff;
+  animation-timing-function: cubic-bezier(0, 1, 1, 0);
+}
+.lds-ellipsis div:nth-child(1) {
+  left: 8px;
+  animation: lds-ellipsis1 0.6s infinite;
+}
+.lds-ellipsis div:nth-child(2) {
+  left: 8px;
+  animation: lds-ellipsis2 0.6s infinite;
+}
+.lds-ellipsis div:nth-child(3) {
+  left: 32px;
+  animation: lds-ellipsis2 0.6s infinite;
+}
+.lds-ellipsis div:nth-child(4) {
+  left: 56px;
+  animation: lds-ellipsis3 0.6s infinite;
+}
+@keyframes lds-ellipsis1 {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes lds-ellipsis3 {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(0);
+  }
+}
+@keyframes lds-ellipsis2 {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(24px, 0);
+  }
+}
+
 li.issuer-connect-banner-tn {
   list-style-type:none;
   display: flex;
@@ -481,7 +551,7 @@ li.issuer-connect-banner-tn {
   height: 2.7rem;
 }
 
-.opening-btn-tn, li.issuer-connect-banner-tn .connect-btn-tn, li.issuer-connect-banner-tn .tokens-btn-tn {
+.opening-btn-tn, li.issuer-connect-banner-tn .connect-btn-tn, li.issuer-connect-banner-tn .tokens-btn-tn, .dismiss-error-tn {
   color: white;
   background: #101010;
 }
@@ -491,7 +561,7 @@ li.token-tn {
   list-style-type: none;
 }
 
-.opening-btn-tn, li.issuer-connect-banner-tn .connect-btn-tn, li.issuer-connect-banner-tn .tokens-btn-tn {
+.opening-btn-tn, li.issuer-connect-banner-tn .connect-btn-tn, li.issuer-connect-banner-tn .tokens-btn-tn, .dismiss-error-tn {
     font-size: 0.75em;
     font-weight: 200;
     border: none;
@@ -523,7 +593,7 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
   width: 50%;
 }
 
-.overlay-content-tn.open .inner-content-tn {
+.view-content-tn.open .inner-content-tn {
   position: relative;
   left: -100%;
 }
@@ -563,8 +633,9 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
   width: 100%; 
 }
 
-.overlay-content-tn  {
-  overflow: scroll;
+.view-content-tn  {
+  overflow: hidden scroll;
+  height: 100%;
 }
 
 .wallet-button-container-tn {

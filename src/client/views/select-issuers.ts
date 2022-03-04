@@ -135,12 +135,17 @@ export class SelectIssuers extends AbstractView {
 
         let tokens:any[] = [];
 
+        this.popup.showLoader("<h4>Loading tokens...</h4>");
+
         try {
             tokens = await this.client.connectTokenIssuer(issuer);
         } catch (err){
-            console.log(err); // TODO: error handling
+            console.log(err);
+            this.popup.showError((err as string));
             return;
         }
+
+        this.popup.dismissLoader();
 
         this.issuerConnected(issuer, tokens);
     }

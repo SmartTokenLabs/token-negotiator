@@ -16,6 +16,7 @@ export class Popup {
     client:Client;
     popupContainer:any;
     viewContainer:any;
+    loadContainer:any;
     currentView:ViewInterface|undefined;
 
     constructor(options:PopupOptionsInterface, client:Client) {
@@ -31,9 +32,19 @@ export class Popup {
 
         if (this.popupContainer) {
 
-            this.popupContainer.innerHTML += '<div class="overlay-content-tn"></div>';
-
-            this.popupContainer.innerHTML += this.createFabButtonMarkup();
+            this.popupContainer.innerHTML = `
+                <div class="overlay-content-tn">
+                    <div class="load-container-tn" style="display: none;">
+                        <div class="lds-ellipsis loader-tn"><div></div><div></div><div></div><div></div></div>
+                        <div class="loader-msg-tn"></div>
+                        <div class="dismiss-error-tn"></div>
+                    </div>
+                    <div class="view-content-tn"></div>
+                </div>
+                <button aria-label="token negotiator toggle" class="overlay-fab-button-tn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="55" height="55" viewBox="0 0 55 55"><path fill="white" id="svg-tn-left" d="M25.5 26h-5c0-2.9-0.6-5.6-1.7-8.1c-1-2.3-2.4-4.3-4.2-6.1c-1.9-1.9-4.3-3.4-6.8-4.4c-2.3-0.9-4.8-1.4-7.3-1.4v-5h7h18v6.2v5.6v6.2Z" transform="translate(13,28.5) translate(0,0) translate(-13,-13.5)"/><path id="svg-tn-right" fill="white" d="M53 1v11.9v6.1v7h-12.8h-6.1h-6.1v-13.4v-5.2v-6.4h12.6h5.3Z" transform="translate(41.5,28.7) translate(0,0) translate(-40.5,-13.5)"/></svg>
+                </button>
+            `;
 
             this.popupContainer.querySelector('.overlay-fab-button-tn').addEventListener('click', this.togglePopup.bind(this));
 
@@ -41,7 +52,10 @@ export class Popup {
 
             this.addTheme();
 
-            this.viewContainer = this.popupContainer.querySelector(".overlay-content-tn");
+            this.viewContainer = this.popupContainer.querySelector(".view-content-tn");
+            this.loadContainer = this.popupContainer.querySelector(".load-container-tn");
+
+            this.loadContainer.querySelector('.dismiss-error-tn').addEventListener('click', this.dismissLoader.bind(this));
 
             this.updatePopup(Start, null);
 
@@ -52,7 +66,6 @@ export class Popup {
 
         requiredParams(this.popupContainer, 'No overlay element found.');
 
-        // @ts-ignore
         let openOverlay = this.popupContainer.classList.toggle("open");
 
         if (openOverlay) {
@@ -74,74 +87,40 @@ export class Popup {
         }
     }
 
-    updatePopup(viewClass:ViewConstructor<AbstractView>, data?:any) {
+    updatePopup(ViewClass:ViewConstructor<AbstractView>, data?:any) {
 
         if (!this.viewContainer){
             console.log("Element .overlay-content-tn not found: popup not initialized");
             return;
         }
 
-        // TODO: is this really efficient? Maybe use enums instead?
-        //if (!this.currentView || this.currentView.constructor !== viewClass.constructor){
+        this.currentView = new ViewClass(this.client, this, this.viewContainer, {options: this.options, data: data});
+        this.currentView.render();
 
-            this.currentView = new viewClass(this.client, this, this.viewContainer, {options: this.options, data: data});
-
-            this.currentView.render();
-
-        /*} else {
-            this.currentView.update(data);
-        }*/
-
-        /*if(state === "INTRO") {
-
-            entryPointContentElement.innerHTML = createOpeningViewMarkup(this.options.openingHeading);
-
-        }
-
-        if(state === "CONNECT_WALLET") {
-
-            entryPointContentElement.innerHTML = createWalletSelectionViewMarkup();
-
-        }
-
-        if(state === "ISSUER") { // issuer and tokens view
-
-            entryPointContentElement.innerHTML = createIssuerViewMarkup(this.options.issuerHeading);
-
-            let refIssuerContainerSelector = document.querySelector(".token-issuer-list-container-tn");
-
-            if (!refIssuerContainerSelector){
-                console.log("Element .token-issuer-list-container-tn not found");
-                return;
-            }
-
-            refIssuerContainerSelector.innerHTML = "";
-
-            let data = this.client.getTokenData();
-
-            data.offChainTokens.tokenKeys.map((issuer: string) => {
-
-                // @ts-ignore
-                refIssuerContainerSelector.innerHTML += issuerConnectMarkup(data.tokenLookup[issuer].title, data.tokenLookup[issuer].emblem, issuer);
-
-            });
-
-            data.onChainTokens.tokenKeys.map((issuer: string) => {
-
-                // @ts-ignore
-                refIssuerContainerSelector.innerHTML += issuerConnectMarkup(data.tokenLookup[issuer].title, data.tokenLookup[issuer].emblem, issuer);
-
-            });
-
-        }*/
     }
 
-    private createFabButtonMarkup = () => {
-        return `
-            <button aria-label="token negotiator toggle" class="overlay-fab-button-tn">
-              <svg xmlns="http://www.w3.org/2000/svg" width="55" height="55" viewBox="0 0 55 55"><path fill="white" id="svg-tn-left" d="M25.5 26h-5c0-2.9-0.6-5.6-1.7-8.1c-1-2.3-2.4-4.3-4.2-6.1c-1.9-1.9-4.3-3.4-6.8-4.4c-2.3-0.9-4.8-1.4-7.3-1.4v-5h7h18v6.2v5.6v6.2Z" transform="translate(13,28.5) translate(0,0) translate(-13,-13.5)"/><path id="svg-tn-right" fill="white" d="M53 1v11.9v6.1v7h-12.8h-6.1h-6.1v-13.4v-5.2v-6.4h12.6h5.3Z" transform="translate(41.5,28.7) translate(0,0) translate(-40.5,-13.5)"/></svg>
-            </button>
-        `;
+    showError(...message:string[]){
+
+        this.loadContainer.querySelector('.loader-tn').style.display = 'none';
+        this.loadContainer.querySelector('.dismiss-error-tn').style.display = 'block';
+
+        this.loadContainer.querySelector('.loader-msg-tn').innerHTML = message.join("\n");
+
+        this.loadContainer.style.display = 'flex';
+    }
+
+    showLoader(...message:string[]){
+
+        this.loadContainer.querySelector('.loader-tn').style.display = 'block';
+        this.loadContainer.querySelector('.dismiss-error-tn').style.display = 'none';
+
+        this.loadContainer.querySelector('.loader-msg-tn').innerHTML = message.join("\n");
+
+        this.loadContainer.style.display = 'flex';
+    }
+
+    dismissLoader(){
+        this.loadContainer.style.display = 'none';
     }
 
     private addTheme() {
