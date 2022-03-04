@@ -1,4 +1,5 @@
 import { Messaging } from "./messaging";
+import { Popup } from './popup';
 import "./../theme/style.css";
 import './../vendor/keyShape';
 interface NegotiationInterface {
@@ -25,32 +26,30 @@ export declare class Client {
     options: any;
     offChainTokens: any;
     onChainTokens: any;
+    tokenLookup: any;
     selectedTokens: any;
     web3WalletProvider: any;
     messaging: Messaging;
+    popup: Popup;
     constructor(config: NegotiationInterface);
+    getTokenData(): {
+        offChainTokens: any;
+        onChainTokens: any;
+        tokenLookup: any;
+        selectedTokens: any;
+    };
     updateTokenLookupStore(tokenKey: any, data: any): void;
-    negotiatorConnectToWallet(walletType: string): Promise<void>;
+    negotiatorConnectToWallet(walletType: string): Promise<any>;
     setPassiveNegotiationWebTokens(offChainTokens: any): Promise<void>;
     enrichTokenLookupDataOnChainTokens(onChainTokens: any): Promise<void>;
     setBlockChainTokens(onChainTokens: any): Promise<void>;
     negotiate(): Promise<void>;
     activeNegotiationStrategy(): Promise<void>;
     setPassiveNegotiationOnChainTokens(onChainTokens: any): Promise<void>;
-    passiveNegotiationStrategy(iframeStorageSupport: boolean): Promise<void>;
-    updateOverlayViewState(state: string): void;
-    embedTokenConnectClientOverlayIframe(): void;
-    addTheme(): void;
-    assignFabButtonAnimation(): void;
-    openOverlay(openOverlay: boolean): void;
-    overlayClickHandler(): void;
-    issuerConnected(issuer: string, onChain: boolean): void;
-    navigateToTokensView(event: any): void;
-    embedTokensIntoView(issuer: any): void;
-    showTokenView(issuer: string): void;
-    connectTokenIssuer(event: any): Promise<void>;
-    connectOnChainTokenIssuer(event: any): Promise<void>;
-    tokenToggleSelection(): void;
+    passiveNegotiationStrategy(): Promise<void>;
+    connectTokenIssuer(issuer: string): Promise<any[]>;
+    connectOnChainTokenIssuer(issuerKey: string): Promise<any[]>;
+    updateSelectedTokens(selectedTokens: any): void;
     authenticate(config: AuthenticateInterface): Promise<void>;
     checkPublicAddressMatch(issuer: string, unsignedToken: any): Promise<true | {
         status: boolean;

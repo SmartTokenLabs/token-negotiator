@@ -1,12 +1,8 @@
-import {
-    createIssuerViewMarkup,
-    createOpeningViewMarkup,
-    createWalletSelectionViewMarkup,
-    issuerConnectMarkup
-} from "./componentFactory";
+import {Start} from './views/start';
 
 import {requiredParams} from "../utils";
 import {Client} from "./index";
+import {ViewInterface, ViewConstructor, AbstractView} from "./views/view-interface";
 
 interface PopupOptionsInterface {
     openingHeading:string,
@@ -18,6 +14,9 @@ export class Popup {
 
     options:PopupOptionsInterface
     client:Client;
+    popupContainer:any;
+    viewContainer:any;
+    currentView:ViewInterface|undefined;
 
     constructor(options:PopupOptionsInterface, client:Client) {
         this.options = options;
@@ -26,35 +25,74 @@ export class Popup {
 
     initialize(){
 
-        let entryPointElement = document.querySelector(".overlay-tn");
+        this.popupContainer = document.querySelector(".overlay-tn");
 
-        requiredParams(entryPointElement, 'No entry point element with the class name of .overlay-tn found.');
+        requiredParams(this.popupContainer, 'No entry point element with the class name of .overlay-tn found.');
 
-        if (entryPointElement) {
+        if (this.popupContainer) {
 
-            entryPointElement.innerHTML += '<div class="overlay-content-tn"></div>';
+            this.popupContainer.innerHTML += '<div class="overlay-content-tn"></div>';
 
-            this.updateOverlayViewState("INTRO");
+            this.popupContainer.innerHTML += this.createFabButtonMarkup();
 
-            entryPointElement.innerHTML += this.createFabButtonMarkup();
+            this.popupContainer.querySelector('.overlay-fab-button-tn').addEventListener('click', this.togglePopup.bind(this));
 
             this.assignFabButtonAnimation();
 
             this.addTheme();
 
+            this.viewContainer = this.popupContainer.querySelector(".overlay-content-tn");
+
+            this.updatePopup(Start, null);
+
         }
     }
 
-    updateOverlayViewState(state:string) {
+    togglePopup() {
 
-        let entryPointContentElement = document.querySelector(".overlay-content-tn");
+        requiredParams(this.popupContainer, 'No overlay element found.');
 
-        if (!entryPointContentElement){
-            console.log("Element .overlay-content-tn not found");
+        // @ts-ignore
+        let openOverlay = this.popupContainer.classList.toggle("open");
+
+        if (openOverlay) {
+
+            this.popupContainer.classList.add("open");
+
+            window.KeyshapeJS.timelines()[0].time(0);
+
+            window.KeyshapeJS.globalPlay();
+
+        } else {
+
+            this.popupContainer.classList.remove("open");
+
+            window.KeyshapeJS.timelines()[0].time(0);
+
+            window.KeyshapeJS.globalPause();
+
+        }
+    }
+
+    updatePopup(viewClass:ViewConstructor<AbstractView>, data?:any) {
+
+        if (!this.viewContainer){
+            console.log("Element .overlay-content-tn not found: popup not initialized");
             return;
         }
 
-        if(state === "INTRO") {
+        // TODO: is this really efficient? Maybe use enums instead?
+        //if (!this.currentView || this.currentView.constructor !== viewClass.constructor){
+
+            this.currentView = new viewClass(this.client, this, this.viewContainer, {options: this.options, data: data});
+
+            this.currentView.render();
+
+        /*} else {
+            this.currentView.update(data);
+        }*/
+
+        /*if(state === "INTRO") {
 
             entryPointContentElement.innerHTML = createOpeningViewMarkup(this.options.openingHeading);
 
@@ -95,18 +133,18 @@ export class Popup {
 
             });
 
-        }
+        }*/
     }
 
     private createFabButtonMarkup = () => {
         return `
-            <button aria-label="token negotiator toggle" class="overlay-fab-button-tn" onclick="overlayClickHandler()">
+            <button aria-label="token negotiator toggle" class="overlay-fab-button-tn">
               <svg xmlns="http://www.w3.org/2000/svg" width="55" height="55" viewBox="0 0 55 55"><path fill="white" id="svg-tn-left" d="M25.5 26h-5c0-2.9-0.6-5.6-1.7-8.1c-1-2.3-2.4-4.3-4.2-6.1c-1.9-1.9-4.3-3.4-6.8-4.4c-2.3-0.9-4.8-1.4-7.3-1.4v-5h7h18v6.2v5.6v6.2Z" transform="translate(13,28.5) translate(0,0) translate(-13,-13.5)"/><path id="svg-tn-right" fill="white" d="M53 1v11.9v6.1v7h-12.8h-6.1h-6.1v-13.4v-5.2v-6.4h12.6h5.3Z" transform="translate(41.5,28.7) translate(0,0) translate(-40.5,-13.5)"/></svg>
             </button>
         `;
     }
 
-    addTheme() {
+    private addTheme() {
 
         let refTokenSelector = document.querySelector(".overlay-tn");
 
@@ -115,7 +153,7 @@ export class Popup {
 
     }
 
-    assignFabButtonAnimation() {
+    private assignFabButtonAnimation() {
 
         if (window.KeyshapeJS) {
 

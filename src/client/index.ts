@@ -1,9 +1,8 @@
 // @ts-nocheck
 import { Messaging, MessageAction } from "./messaging";
 import { Popup } from './popup';
-import {asyncHandle, attachPostMessageListener, logger, requiredParams} from './../utils/index';
+import {asyncHandle, logger, requiredParams} from './../utils/index';
 import {connectMetamaskAndGetAddress, getChallengeSigned, validateUseEthKey} from "../core/index";
-import { createFabButtonMarkup, createTokenMarkup} from './componentFactory';
 import {tokenLookup} from './../tokenLookup';
 import OnChainTokenModule from './../onChainTokenModule'
 import Web3WalletProvider from './../utils/Web3WalletProvider';
@@ -137,23 +136,6 @@ export class Client {
 
         });
 
-        // assign event receiver
-        attachPostMessageListener(this.eventReciever);
-
-        // bind functions used externally. TODO use lib references, rather than hoisting to window scope.
-        window.overlayClickHandler = this.overlayClickHandler.bind(this);
-        window.tokenToggleSelection = this.tokenToggleSelection.bind(this);
-        window.connectTokenIssuer = this.connectTokenIssuer.bind(this);
-        window.navigateToTokensView = this.navigateToTokensView.bind(this);
-        window.embedTokensIntoView = this.embedTokensIntoView.bind(this);
-        window.showTokenView = this.showTokenView.bind(this);
-        window.negotiatorConnectToWallet = this.negotiatorConnectToWallet.bind(this);
-        window.negotiatorUpdateOverlayViewState = this.updateOverlayViewState.bind(this);
-
-        // e.g.
-        // this.boundClickEvt = this.handleClick.bind(this)
-        // handleClick(e) { console.log(`target data: ${e}`) }
-
         // currently custom to Token Negotiator
         this.web3WalletProvider = new Web3WalletProvider();
 
@@ -167,7 +149,8 @@ export class Client {
         return {
             offChainTokens: this.offChainTokens,
             onChainTokens: this.onChainTokens,
-            tokenLookup: this.tokenLookup
+            tokenLookup: this.tokenLookup,
+            selectedTokens: this.selectedTokens
         };
     }
 
@@ -186,26 +169,13 @@ export class Client {
     async negotiatorConnectToWallet (walletType:string) {
     
         // const { default: Web3WalletProvider } = await import('./../utils/Web3WalletProvider');
-        
         // this.web3WalletProvider = new Web3WalletProvider();
-    
-        const walletAddress = await this.web3WalletProvider.connectWith(walletType);
 
-        logger('wallet address found: ', walletAddress);
+        let walletAddress = await this.web3WalletProvider.connectWith(walletType);
 
-        if (walletAddress) {
+        logger('wallet address found: ' + walletAddress);
 
-            setTimeout(() => {
-
-                this.updateOverlayViewState("ISSUER");
-
-            }, 200);
-
-        } else { 
-
-            // Please Try again state e.g. a View that says what went wrong that can be closed.
-
-        }
+        return walletAddress;
 
     }
 
@@ -261,7 +231,6 @@ export class Client {
     async setBlockChainTokens(onChainTokens: any) {
 
         /*
-
             -----------------------
             blockchain token module
             -----------------------
@@ -272,7 +241,6 @@ export class Client {
                 - EtherScan API
                 - ...
             )
-
         */
 
         // await Promise.all(onChainTokens.tokenKeys.map(async (issuer: string): Promise<any> => {
@@ -301,14 +269,12 @@ export class Client {
 
     async negotiate() {
 
-        /* 
-        
+        /*
             ------------------------------
             blockchain token reader module
             ------------------------------
         
             * await this.setBlockchainTokens(this.onChainTokens);
-
         */
 
         // if storage support - embed iframe for active and passive negotiation flows.
@@ -324,7 +290,6 @@ export class Client {
         } else {
 
             // const { default: Web3WalletProvider } = await import('./../utils/Web3WalletProvider');
-            
             // this.web3WalletProvider = new Web3WalletProvider();
 
             if(window.ethereum) await this.web3WalletProvider.connectWith('MetaMask');
@@ -361,7 +326,7 @@ export class Client {
 
     }
 
-    async passiveNegotiationStrategy(iframeStorageSupport: boolean) {
+    async passiveNegotiationStrategy() {
 
         // Feature not supported when an end users third party cookies are disabled
         // because the use of a tab requires a user gesture.
@@ -374,7 +339,7 @@ export class Client {
             canUsePassive = await this.messaging.getCookieSupport(this.tokenLookup[this.offChainTokens.tokenKeys[0]]?.tokenOrigin);
         }
 
-        if (canUsePassive === true) {
+        if (canUsePassive) {
 
             await asyncHandle(this.setPassiveNegotiationWebTokens(this.offChainTokens));
             await asyncHandle(this.setPassiveNegotiationOnChainTokens(this.onChainTokens));
@@ -401,331 +366,30 @@ export class Client {
 
     }
 
-    updateOverlayViewState(state:string) {
+    async connectTokenIssuer(issuer:string) : Promise<any[]> {
 
-        this.popup.updateOverlayViewState(state);
-    }
-
-    /*embedTokenConnectClientOverlayIframe() {
-
-        setTimeout(() => {
-
-            let entryPointElement = document.querySelector(".overlay-tn");
-
-            requiredParams(entryPointElement, 'No entry point element with the class name of .overlay-tn found.');
-
-            if (entryPointElement) {
-
-                entryPointElement.innerHTML += '<div class="overlay-content-tn"></div>';
-
-                this.updateOverlayViewState("INTRO");
-
-                entryPointElement.innerHTML += createFabButtonMarkup();
-
-                this.assignFabButtonAnimation();
-
-                this.addTheme();
-
-            }
-
-        }, 0);
-    }*/
-
-    // embedIframeClientOverlay() {
-
-    //     let _index = 0;
-
-    //     let element = document.querySelector(".overlay-tn");
-
-    //     requiredParams(element, 'No overlay element found.');
-
-    //     if (element) {
-
-    //         element.innerHTML += createOverlayMarkup(this.issuerHeading);
-
-    //         element.innerHTML += createFabButtonMarkup();
-
-    //         let refTokenContainerSelector = document.querySelector(".token-container-tn");
-
-    //         this.offChainTokens.tokenKeys.map((issuer: string) => {
-
-    //             const i = this.offChainTokens[issuer];
-
-    //             if (i.tokens.length) {
-
-    //                 // @ts-ignore
-    //                 refTokenContainerSelector.innerHTML = "";
-
-    //                 i.tokens.map((t: any) => {
-
-    //                     const { title, emblem } = tokenLookup[issuer];
-
-    //                     // @ts-ignore
-    //                     refTokenContainerSelector.innerHTML += createTokenMarkup({
-    //                         data: t,
-    //                         tokenIssuerKey: issuer,
-    //                         index: _index,
-    //                         title: title,
-    //                         emblem: emblem
-    //                     });
-
-    //                     _index++;
-
-    //                 });
-
-    //             }
-
-    //         });
-
-    //         this.assignFabButtonAnimation();
-
-    //         this.addTheme();
-
-    //     }
-
-    //     window.tokenToggleSelection = this.tokenToggleSelection;
-
-    // }
-
-    openOverlay(openOverlay: boolean) {
-
-        const element = document.querySelector(".overlay-tn");
-
-        requiredParams(element, 'No overlay element found.');
-
-        // @ts-ignore
-        element.classList.toggle("open");
-
-        if (openOverlay) {
-
-            // @ts-ignore
-            element.classList.add("open");
-
-            window.KeyshapeJS.timelines()[0].time(0);
-
-            window.KeyshapeJS.globalPlay();
-
-        } else {
-
-            // @ts-ignore
-            element.classList.remove("open");
-
-            window.KeyshapeJS.timelines()[0].time(0);
-
-            window.KeyshapeJS.globalPause();
-
-        }
-    }
-
-    overlayClickHandler() {
-
-        const element = document.querySelector(".overlay-tn");
-
-        requiredParams(element, 'No overlay element found.');
-
-        // @ts-ignore
-        const isOpen = element.classList.contains("open");
-
-        // @ts-ignore
-        element.classList.toggle("open");
-
-        if (!isOpen) {
-
-            this.openOverlay(true);
-
-        } else {
-
-            this.openOverlay(false);
-
-        }
-
-    }
-
-    issuerConnected(issuer: string, onChain:boolean) {
-
-        const connectBtn = document.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`);
-
-        const tokenBtn = document.querySelector(`[data-issuer*="${issuer}"] .tokens-btn-tn`);
-
-        connectBtn.style.display = "none";
-
-        connectBtn.setAttribute('tabIndex', -1);
-
-        tokenBtn.style.display = "block";
-
-        if(onChain) {
-
-            tokenBtn.innerHTML = `${this.onChainTokens[issuer].tokens.length} token/s available`;
-            tokenBtn.setAttribute('aria-label', `Navigate to select from ${this.onChainTokens[issuer].tokens.length} of your ${issuer} tokens`);
-
-        } else {
-
-            tokenBtn.innerHTML = `${this.offChainTokens[issuer].tokens.length} token/s available`;
-            tokenBtn.setAttribute('aria-label', `Navigate to select from ${this.offChainTokens[issuer].tokens.length} of your ${issuer} tokens`);
-
-        }
-        
-        tokenBtn.setAttribute('tabIndex', 1);
-
-    }
-
-    navigateToTokensView(event: any) {
-
-        const issuer = event.target.dataset.issuer;
-
-        this.embedTokensIntoView(issuer);
-
-        this.showTokenView(issuer);
-
-    }
-
-    embedTokensIntoView(issuer) {
-
-        const refTokenViewSelector = document.getElementsByClassName("token-view-tn")[0];
-
-        if (!issuer) {
-
-            refTokenViewSelector.style.display = 'none';
-            return;
-
-        }
-
-        refTokenViewSelector.style.display = 'block';
-
-        refTokenViewSelector.scrollTo(0, 0);
-
-        const refTokenContainerSelector = document.getElementsByClassName("token-list-container-tn")[0];
-
-        refTokenContainerSelector.innerHTML = "";
-
-        const config = this.tokenLookup[issuer];
-
-        const location = config.onChain === false ? 'offChainTokens' : 'onChainTokens';
-
-        document.getElementsByClassName("headline-tn token-name")[0].innerHTML = config.title;
-
-        this[location][issuer].tokens.map((t: any, i: any) => {
-
-            // TODO - Memory usage: load extra tokens when user scrolls to bottom of issuer
-            // if(i < 25) {
-
-            const { title, emblem } = tokenLookup[issuer];
-
-            let isSelected = false;
-
-            // TODO Define a constant value that can be checked regardless of which issuer token to speed up this check.
-
-            this.selectedTokens[issuer]?.tokens.map((st, si) => {
-
-                if (t.toString() === st.toString()) isSelected = true;
-
-            });
-
-            // @ts-ignore
-            refTokenContainerSelector.innerHTML += createTokenMarkup({
-                data: t,
-                tokenIssuerKey: issuer,
-                index: i,
-                title: t.title ? t.title : title,
-                emblem: t.image ? t.image : emblem,
-                toggleState: isSelected
-            });
-
-            // }
-
-        });
-    }
-
-    showTokenView(issuer: string) {
-
-        var element = document.getElementsByClassName("overlay-content-tn")[0];
-        
-        element.classList.toggle("open");
-
-        if (issuer) {
-
-            const connectBtn = document.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`);
-
-            const tokenBtn = document.querySelector(`[data-issuer*="${issuer}"] .tokens-btn-tn`);
-
-            connectBtn.setAttribute('aria-expanded', true);
-
-            tokenBtn.setAttribute('aria-expanded', false);
-
-            const issuerViewEl = document.querySelector(`.issuer-view-tn`);
-
-            const tokenViewEl = document.querySelector(`.token-view-tn`);
-            
-            issuerViewEl.setAttribute('aria-hidden', false);
-            
-            tokenViewEl.setAttribute('aria-hidden', true);
-            
-        } else {
-
-            const connectBtns = document.querySelectorAll(`.connect-btn-tn`);
-
-            const tokenBtns = document.querySelectorAll(`.tokens-btn-tn`);
-
-            connectBtns.forEach(function (userItem) {
-
-                userItem.setAttribute('aria-expanded', false);
-
-            });
-
-            tokenBtns.forEach(function (userItem) {
-
-                userItem.setAttribute('aria-expanded', false);
-
-            });
-
-            const issuerViewEl = document.querySelector(`.issuer-view-tn`);
-            
-            const tokenViewEl = document.querySelector(`.token-view-tn`);
-            
-            issuerViewEl.setAttribute('aria-hidden', true);
-            
-            tokenViewEl.setAttribute('aria-hidden', false);
-            
-        }
-    }
-
-    async connectTokenIssuer(event){
-
-        const data = event.currentTarget.dataset ?? event.target.dataset;
-        const issuer = data.issuer;
         const filter = this.filter ? this.filter : {};
         const tokensOrigin = this.tokenLookup[issuer].tokenOrigin;
 
         if (this.tokenLookup[issuer].onChain){
-            return this.connectOnChainTokenIssuer(event);
+            return this.connectOnChainTokenIssuer(issuer);
         }
 
-        let data;
+        let data = await this.messaging.sendMessage({
+            issuer: issuer,
+            action: MessageAction.GET_ISSUER_TOKENS,
+            origin: tokensOrigin,
+            filter: filter,
+        });
 
-        try {
-            data = await this.messaging.sendMessage({
-                issuer: issuer,
-                action: MessageAction.GET_ISSUER_TOKENS,
-                origin: tokensOrigin,
-                filter: filter,
-            });
-        } catch (err){
-            // TODO: error handling
-            console.log(err);
-            return;
-        }
-
-        let issuer = data.issuer;
+        issuer = data.issuer;
 
         this.offChainTokens[issuer].tokens = data.tokens;
 
-        this.issuerConnected(issuer, false);
-
+        return data.tokens;
     }
 
-    async connectOnChainTokenIssuer (event) {
-
-        const issuerKey = event.target.dataset.issuer;
+    async connectOnChainTokenIssuer (issuerKey:string) : Promise<any[]> {
 
         const tokens = await this.onChainTokenModule.connectOnChainToken(
             issuerKey,
@@ -734,36 +398,14 @@ export class Client {
 
         this.onChainTokens[issuerKey].tokens = tokens;
 
-        this.issuerConnected(issuerKey, true);
-
+        return tokens;
     }
 
-    tokenToggleSelection() {
-        
-        document.querySelectorAll('.token-tn .mobileToggle-tn').forEach((token: any, index: number) => {
+    updateSelectedTokens(selectedTokens){
 
-            if (index === 0) {
-
-                this.selectedTokens[token.dataset.key] = {};
-                
-                this.selectedTokens[token.dataset.key]['tokens'] = [];
-            
-            }
-
-            if (token.checked === true) {
-
-                let output = JSON.parse(token.dataset.token);
-
-                this.selectedTokens[token.dataset.key].tokens.push(output);
-                
-            }
-
-        });
-
-        console.log(this.selectedTokens);
+        this.selectedTokens = selectedTokens;
 
         this.eventSender.emitSelectedTokensToClient();
-
     }
 
     async authenticate(config: AuthenticateInterface) {
