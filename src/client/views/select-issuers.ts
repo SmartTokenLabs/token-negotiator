@@ -193,7 +193,7 @@ export class SelectIssuers extends AbstractView {
             // TODO Define a constant value that can be checked regardless of which issuer token to speed up this check.
             tokenData.selectedTokens[issuer]?.tokens.map((st:any, si:any) => {
 
-                if (t.toString() === st.toString()) isSelected = true;
+                if (JSON.stringify(t) === JSON.stringify(st)) isSelected = true;
 
             });
 

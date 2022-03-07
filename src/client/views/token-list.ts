@@ -74,9 +74,10 @@ export class TokenList extends AbstractView {
         if (this.interceptObs)
             this.interceptObs.unobserve(loadMoreElem);
 
-        loadMoreElem.remove()
-
-        this.viewContainer.innerHTML += this.getTokenListItems();
+        // This is required because updating innerHTML resets the DOM state for previously added elements
+        // i.e. tokens that have been selected appear as unselected
+        loadMoreElem.insertAdjacentHTML('afterend', this.getTokenListItems());
+        loadMoreElem.remove();
 
         if (this.interceptObs) {
             let loadMoreElem = this.viewContainer.querySelector('.load-more-tn');
