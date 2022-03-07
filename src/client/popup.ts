@@ -37,7 +37,7 @@ export class Popup {
                     <div class="load-container-tn" style="display: none;">
                         <div class="lds-ellipsis loader-tn"><div></div><div></div><div></div><div></div></div>
                         <div class="loader-msg-tn"></div>
-                        <div class="dismiss-error-tn"></div>
+                        <button class="dismiss-error-tn btn-tn">Dismiss</button>
                     </div>
                     <div class="view-content-tn"></div>
                 </div>
@@ -57,7 +57,7 @@ export class Popup {
 
             this.loadContainer.querySelector('.dismiss-error-tn').addEventListener('click', this.dismissLoader.bind(this));
 
-            this.updatePopup(Start, null);
+            this.updatePopup(Start);
 
         }
     }

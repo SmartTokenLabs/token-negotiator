@@ -23,19 +23,23 @@
 
 .overlay-tn.light .opening-btn-tn:hover,
 .overlay-tn.light .tokens-btn-tn:hover,
-.overlay-tn.light .connect-btn-tn:hover {
+.overlay-tn.light .connect-btn-tn:hover,
+.overlay-tn.light .btn-tn:hover {
   background: #c5c5c5 !important;
 }
 
 .overlay-tn.light .opening-btn-tn,
 .overlay-tn.light li.issuer-connect-banner-tn .connect-btn-tn, 
-.overlay-tn.light li.issuer-connect-banner-tn .tokens-btn-tn {
+.overlay-tn.light li.issuer-connect-banner-tn .tokens-btn-tn,
+.overlay-tn.light .btn-tn {
   color: black;
   background: #efefef;
+  font-weight: 400;
 }
 
 .overlay-tn.light li.issuer-connect-banner-tn .connect-btn-tn, 
-.overlay-tn.light li.issuer-connect-banner-tn .tokens-btn-tn {
+.overlay-tn.light li.issuer-connect-banner-tn .tokens-btn-tn,
+.overlay-tn.light .btn-tn {
   border: 1px solid #efefef;
 }
 
@@ -194,14 +198,17 @@
 
 .overlay-tn.dark .opening-btn-tn,
 .overlay-tn.dark li.issuer-connect-banner-tn .connect-btn-tn, 
-.overlay-tn.dark li.issuer-connect-banner-tn .tokens-btn-tn {
+.overlay-tn.dark li.issuer-connect-banner-tn .tokens-btn-tn,
+.overlay-tn.dark .btn-tn {
   color: white;
   background: #101010;
   border: 1px solid gray;
+  font-weight: 400;
 }
 
 .overlay-tn.dark li.issuer-connect-banner-tn .connect-btn-tn, 
-.overlay-tn.dark li.issuer-connect-banner-tn .tokens-btn-tn {
+.overlay-tn.dark li.issuer-connect-banner-tn .tokens-btn-tn,
+.overlay-tn.dark .btn-tn {
   border: 1px solid #101010;
 }
 
@@ -252,7 +259,9 @@
 .overlay-tn .wallet-button-tn,
 .overlay-tn .opening-btn-tn,
 .overlay-tn .tokens-btn-tn,
-.overlay-tn .connect-btn-tn {
+.overlay-tn .connect-btn-tn,
+.overlay-tn .btn-tn
+{
   transition: all 0.25s;
 }
 
@@ -551,23 +560,33 @@ li.issuer-connect-banner-tn {
   height: 2.7rem;
 }
 
-.opening-btn-tn, li.issuer-connect-banner-tn .connect-btn-tn, li.issuer-connect-banner-tn .tokens-btn-tn, .dismiss-error-tn {
+.opening-btn-tn, li.issuer-connect-banner-tn .connect-btn-tn, li.issuer-connect-banner-tn .tokens-btn-tn, .btn-tn {
   color: white;
   background: #101010;
 }
 
-li.token-tn {
+li.token-tn, .load-more-tn {
   width: 100%;
   list-style-type: none;
 }
 
-.opening-btn-tn, li.issuer-connect-banner-tn .connect-btn-tn, li.issuer-connect-banner-tn .tokens-btn-tn, .dismiss-error-tn {
+.load-more-tn {
+  text-align: center;
+  padding: 10px 0;
+}
+
+.opening-btn-tn, li.issuer-connect-banner-tn .connect-btn-tn, li.issuer-connect-banner-tn .tokens-btn-tn, .btn-tn {
     font-size: 0.75em;
     font-weight: 200;
     border: none;
     padding: 7px 15px 7px 15px;
     border-radius: 23px;
     cursor: pointer;
+}
+
+.dismiss-error-tn {
+  margin-top: 20px;
+  border: 0 !important;
 }
 
 li.issuer-connect-banner-tn .tokens-btn-tn {

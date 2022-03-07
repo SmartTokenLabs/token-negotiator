@@ -1,18 +1,12 @@
 import {AbstractView} from "./view-interface";
-
-interface CreateTokenInterface {
-    tokenIssuerKey: string;
-    title: string;
-    index: number;
-    emblem: string;
-    data: any;
-    toggleState: boolean;
-}
+import {TokenList} from "./token-list";
+import {TokenListItemInterface} from "./token-list";
 
 export class SelectIssuers extends AbstractView {
 
     issuerListContainer:any;
     tokensContainer:any;
+    tokenListView:TokenList|undefined;
 
     render(){
 
@@ -55,6 +49,10 @@ export class SelectIssuers extends AbstractView {
 
         this.populateIssuers();
 
+        let tokensListElem = this.tokensContainer.getElementsByClassName("token-list-container-tn")[0];
+
+        this.tokenListView = new TokenList(this.client, this.popup, tokensListElem, {});
+
     }
 
     // TODO: back to wallet selection?
@@ -75,11 +73,12 @@ export class SelectIssuers extends AbstractView {
 
         this.issuerListContainer.innerHTML = html;
 
-        this.issuerListContainer.querySelectorAll('.connect-btn-tn').forEach((elem:any) => {
-            elem.addEventListener('click', this.connectTokenIssuer.bind(this));
-        });
-        this.issuerListContainer.querySelectorAll('.tokens-btn-tn').forEach((elem:any) => {
-            elem.addEventListener('click', this.navigateToTokensView.bind(this));
+        this.issuerListContainer.addEventListener('click', (e:any) => {
+            if (e.target.classList.contains('connect-btn-tn')){
+                this.connectTokenIssuer(e);
+            } else if (e.target.classList.contains('tokens-btn-tn')){
+                this.navigateToTokensView(e);
+            }
         });
     }
 
@@ -103,34 +102,27 @@ export class SelectIssuers extends AbstractView {
         this.viewContainer.classList.toggle("open");
 
         const connectBtns = this.viewContainer.querySelectorAll(`.connect-btn-tn`);
-
         const tokenBtns = this.viewContainer.querySelectorAll(`.tokens-btn-tn`);
 
         connectBtns.forEach(function (userItem:any) {
-
             userItem.setAttribute('aria-expanded', false);
-
         });
 
         tokenBtns.forEach(function (userItem:any) {
-
             userItem.setAttribute('aria-expanded', false);
-
         });
 
         const issuerViewEl = this.viewContainer.querySelector(`.issuer-view-tn`);
-
         const tokenViewEl = this.viewContainer.querySelector(`.token-view-tn`);
 
         issuerViewEl.setAttribute('aria-hidden', true);
-
         tokenViewEl.setAttribute('aria-hidden', false);
 
     }
 
     async connectTokenIssuer(event:any) {
 
-        const data = event.currentTarget.dataset ?? event.target.dataset;
+        const data = event.target.dataset;
         const issuer = data.issuer;
 
         let tokens:any[] = [];
@@ -153,7 +145,6 @@ export class SelectIssuers extends AbstractView {
     issuerConnected(issuer: string, tokens:any[]) {
 
         const connectBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`);
-
         const tokenBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .tokens-btn-tn`);
 
         if (!connectBtn || !tokenBtn){
@@ -161,84 +152,52 @@ export class SelectIssuers extends AbstractView {
         }
 
         connectBtn.style.display = "none";
-
         connectBtn.setAttribute('tabIndex', -1);
 
         tokenBtn.style.display = "block";
-
-        //if(onChain) {
-
-            tokenBtn.innerHTML = `${tokens.length} token/s available`;
-            tokenBtn.setAttribute('aria-label', `Navigate to select from ${tokens.length} of your ${issuer} tokens`);
-
-        /*} else {
-
-            tokenBtn.innerHTML = `${this.offChainTokens[issuer].tokens.length} token/s available`;
-            tokenBtn.setAttribute('aria-label', `Navigate to select from ${this.offChainTokens[issuer].tokens.length} of your ${issuer} tokens`);
-
-        }*/
-
+        tokenBtn.innerHTML = `${tokens.length} token/s available`;
+        tokenBtn.setAttribute('aria-label', `Navigate to select from ${tokens.length} of your ${issuer} tokens`);
         tokenBtn.setAttribute('tabIndex', 1);
 
     }
 
     navigateToTokensView(event: any) {
 
-        const issuer = event.currentTarget.dataset.issuer;
+        const issuer = event.target.parentNode.dataset.issuer;
 
-        this.embedTokensIntoView(issuer);
+        this.updateTokensView(issuer);
 
         this.showTokenView(issuer);
-
     }
 
-    embedTokensIntoView(issuer:string) {
-
-        //const refTokenViewSelector = document.getElementsByClassName("token-view-tn")[0];
-
-        /*if (!issuer) {
-
-            refTokenViewSelector.style.display = 'none';
-            return;
-
-        }*/
+    updateTokensView(issuer:string) {
 
         this.tokensContainer.style.display = 'block';
 
         this.tokensContainer.scrollTo(0, 0);
 
-        const refTokenContainerSelector = this.tokensContainer.getElementsByClassName("token-list-container-tn")[0];
-
-        refTokenContainerSelector.innerHTML = "";
-
         const tokenData = this.client.getTokenData();
-
         const config = this.client.getTokenData().tokenLookup[issuer];
-
         const location = config.onChain === false ? 'offChainTokens' : 'onChainTokens';
 
         document.getElementsByClassName("headline-tn token-name")[0].innerHTML = config.title;
 
-        let html = "";
+        let tokens:TokenListItemInterface[] = [];
 
         tokenData[location][issuer].tokens.map((t: any, i: any) => {
-
-            // TODO - Memory usage: load extra tokens when user scrolls to bottom of issuer
-            // if(i < 25) {
 
             const { title, emblem } = config;
 
             let isSelected = false;
 
             // TODO Define a constant value that can be checked regardless of which issuer token to speed up this check.
-
             tokenData.selectedTokens[issuer]?.tokens.map((st:any, si:any) => {
 
                 if (t.toString() === st.toString()) isSelected = true;
 
             });
 
-            html += this.createTokenMarkup({
+            tokens.push({
                 data: t,
                 tokenIssuerKey: issuer,
                 index: i,
@@ -247,119 +206,26 @@ export class SelectIssuers extends AbstractView {
                 toggleState: isSelected
             });
 
-            // }
-
         });
 
-        refTokenContainerSelector.innerHTML = html;
-
-        refTokenContainerSelector.querySelectorAll('.mobileToggle-tn').forEach((elem:any) => {
-            elem.addEventListener('click', this.tokenToggleSelection.bind(this));
-        });
-    }
-
-    createTokenMarkup(config: CreateTokenInterface) {
-
-        const { tokenIssuerKey, title, data, index, emblem, toggleState } = config;
-        return `
-            <li class='token-tn'>
-              <img class='emblem-tn' src=${emblem} />
-              <div class='data-tn'>
-                  <p class='token-title-tn'>${title}</p>
-                  <p class='detail-tn'>#${index}</p>
-                </div>
-              <div class='toggle-tn'>
-                <input ${toggleState ? 'checked' : '' } data-key='${tokenIssuerKey}' data-token='${JSON.stringify(data)}' data-index='${index}' type='checkbox' name='toggle${index}' class='mobileToggle-tn toggle-tn' id='toggle${index}'>
-                <label for='toggle${index}'></label>
-              </div>
-            </li>
-        `;
+        this.tokenListView?.update({issuer: issuer, tokens: tokens})
     }
 
     showTokenView(issuer: string) {
 
-        //var element = document.getElementsByClassName("overlay-content-tn")[0];
-
         this.viewContainer.classList.toggle("open");
 
-        if (issuer) {
+        const connectBtn = this.viewContainer.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`);
+        const tokenBtn = this.viewContainer.querySelector(`[data-issuer*="${issuer}"] .tokens-btn-tn`);
 
-            const connectBtn = this.viewContainer.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`);
+        connectBtn.setAttribute('aria-expanded', true);
+        tokenBtn.setAttribute('aria-expanded', false);
 
-            const tokenBtn = this.viewContainer.querySelector(`[data-issuer*="${issuer}"] .tokens-btn-tn`);
+        const issuerViewEl = this.viewContainer.querySelector(`.issuer-view-tn`);
+        const tokenViewEl = this.viewContainer.querySelector(`.token-view-tn`);
 
-            connectBtn.setAttribute('aria-expanded', true);
-
-            tokenBtn.setAttribute('aria-expanded', false);
-
-            const issuerViewEl = this.viewContainer.querySelector(`.issuer-view-tn`);
-
-            const tokenViewEl = this.viewContainer.querySelector(`.token-view-tn`);
-
-            issuerViewEl.setAttribute('aria-hidden', false);
-
-            tokenViewEl.setAttribute('aria-hidden', true);
-
-        } /*else {
-
-            const connectBtns = this.viewContainer.querySelectorAll(`.connect-btn-tn`);
-
-            const tokenBtns = this.viewContainer.querySelectorAll(`.tokens-btn-tn`);
-
-            connectBtns.forEach(function (userItem:any) {
-
-                userItem.setAttribute('aria-expanded', false);
-
-            });
-
-            tokenBtns.forEach(function (userItem:any) {
-
-                userItem.setAttribute('aria-expanded', false);
-
-            });
-
-            const issuerViewEl = this.viewContainer.querySelector(`.issuer-view-tn`);
-
-            const tokenViewEl = this.viewContainer.querySelector(`.token-view-tn`);
-
-            issuerViewEl.setAttribute('aria-hidden', true);
-
-            tokenViewEl.setAttribute('aria-hidden', false);
-
-        }*/
-    }
-
-    // TODO: probably don't need to iterate all inputs.
-    tokenToggleSelection() {
-
-        let selectedTokens = this.client.getTokenData().selectedTokens;
-
-        this.tokensContainer.querySelectorAll('.mobileToggle-tn').forEach((token: any, index: number) => {
-
-            if (index === 0) {
-
-                selectedTokens[token.dataset.key] = {};
-
-                selectedTokens[token.dataset.key]['tokens'] = [];
-
-            }
-
-            if (token.checked === true) {
-
-                let output = JSON.parse(token.dataset.token);
-
-                selectedTokens[token.dataset.key].tokens.push(output);
-
-            }
-
-        });
-
-        console.log("Tokens selected:");
-        console.log(selectedTokens);
-        //console.trace();
-
-        this.client.updateSelectedTokens(selectedTokens);
-
+        issuerViewEl.setAttribute('aria-hidden', false);
+        tokenViewEl.setAttribute('aria-hidden', true);
     }
 
 }
