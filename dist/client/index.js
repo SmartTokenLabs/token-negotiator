@@ -62,7 +62,7 @@ var Client = (function () {
                 _this.on("tokens", null, tokens);
             },
             emitSelectedTokensToClient: function () {
-                _this.on("tokens-selected", null, { selectedTokens: _this.selectedTokens });
+                _this.on("tokens-selected", null, _this.selectedTokens);
             },
             emitProofToClient: function (proof, issuer) {
                 _this.on("token-proof", null, { proof: proof, issuer: issuer });
@@ -437,7 +437,6 @@ var Client = (function () {
                 }
             });
             this.onChainTokens.tokenKeys.map(function (issuer) {
-                console.log(issuer, _this.tokenLookup);
                 refIssuerContainerSelector_1.innerHTML += issuerConnectOnChainMarkup(_this.tokenLookup[issuer].title, _this.tokenLookup[issuer].emblem, issuer);
             });
         }
@@ -538,12 +537,20 @@ var Client = (function () {
                 if (t.toString() === st.toString())
                     isSelected = true;
             });
+            var _img = t === null || t === void 0 ? void 0 : t.image;
+            if (!_img)
+                _img = t === null || t === void 0 ? void 0 : t.image_url;
+            else
+                _img = emblem;
+            var _title = t === null || t === void 0 ? void 0 : t.title;
+            if (!_title)
+                _title = title;
             refTokenContainerSelector.innerHTML += createTokenMarkup({
                 data: t,
                 tokenIssuerKey: issuer,
                 index: i,
-                title: t.title ? t.title : title,
-                emblem: t.image ? t.image : emblem,
+                title: _title,
+                emblem: _img,
                 toggleState: isSelected
             });
         });

@@ -513,8 +513,6 @@ export class Client {
             
             this.onChainTokens.tokenKeys.map((issuer: string) => {
 
-                console.log(issuer, this.tokenLookup);
-
                 refIssuerContainerSelector.innerHTML += issuerConnectOnChainMarkup(this.tokenLookup[issuer].title, this.tokenLookup[issuer].emblem, issuer);
 
             });
@@ -758,13 +756,20 @@ export class Client {
 
             });
 
+            let _img = t?.image;
+            if(!_img) _img = t?.image_url;
+            else _img = emblem;
+            
+            let _title = t?.title;
+            if(!_title) _title = title;
+
             // @ts-ignore
             refTokenContainerSelector.innerHTML += createTokenMarkup({
                 data: t,
                 tokenIssuerKey: issuer,
                 index: i,
-                title: t.title ? t.title : title,
-                emblem: t.image ? t.image : emblem,
+                title: _title,
+                emblem: _img,
                 toggleState: isSelected
             });
 
@@ -1023,7 +1028,7 @@ export class Client {
         },
         emitSelectedTokensToClient: () => {
             
-            this.on("tokens-selected", null, { selectedTokens: this.selectedTokens });
+            this.on("tokens-selected", null, this.selectedTokens);
 
         },
         emitProofToClient: (proof: any, issuer: any) => {

@@ -199,7 +199,7 @@ var OnChainTokenModule = (function () {
                         _a = splitOnChainKey(issuerKey), address = _a.address, chain = _a.chain, openSeaSlug = _a.openSeaSlug;
                         tokens = [];
                         if (!openSeaSlug) return [3, 2];
-                        return [4, this.getTokensOpenSea(address, chain, owner)];
+                        return [4, this.getTokensOpenSea(address, chain, owner, openSeaSlug)];
                     case 1:
                         tokens = _b.sent();
                         _b.label = 2;
@@ -220,7 +220,7 @@ var OnChainTokenModule = (function () {
             });
         });
     };
-    OnChainTokenModule.prototype.getTokensOpenSea = function (address, chain, owner, offset, limit) {
+    OnChainTokenModule.prototype.getTokensOpenSea = function (address, chain, owner, openSeaSlug, offset, limit) {
         if (offset === void 0) { offset = 0; }
         if (limit === void 0) { limit = 20; }
         return __awaiter(this, void 0, void 0, function () {
@@ -233,7 +233,7 @@ var OnChainTokenModule = (function () {
                     options = {
                         method: 'GET'
                     };
-                    return [2, fetch('https://testnets-api.opensea.io/api/v1/assets?owner=0x647935c1bfa643d27afe0f32a5357975b56b771d&asset_contract_address=0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656&order_direction=desc&offset=0&limit=20', options)
+                    return [2, fetch("https://testnets-api.opensea.io/api/v1/assets?owner=" + owner + "&collection=" + openSeaSlug + "&order_direction=desc&offset=0&limit=20", options)
                             .then(function (response) { return response.json(); })
                             .then(function (response) {
                             return response.assets;

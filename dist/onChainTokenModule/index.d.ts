@@ -16,7 +16,7 @@ export declare class OnChainTokenModule {
     }>;
     getContractDataAlchemy(contractAddress: string, chain: string): Promise<unknown>;
     connectOnChainToken(issuerKey: string, owner: string): Promise<any>;
-    getTokensOpenSea(address: string, chain: string, owner: string, offset?: number, limit?: number): Promise<any>;
+    getTokensOpenSea(address: string, chain: string, owner: string, openSeaSlug: string, offset?: number, limit?: number): Promise<any>;
     getTokensMoralis(address: string, chain: string, owner: string, offset?: number, limit?: number): Promise<any>;
     getTokensAlchemy(address: string, chain: string, owner: string): Promise<unknown>;
 }
