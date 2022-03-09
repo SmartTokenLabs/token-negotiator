@@ -415,12 +415,19 @@ export class Client {
 
         requiredParams((issuer && unsignedToken), { status: false, useEthKey: null, proof: null });
 
+        // TODO: How to handle error display in passive negotiation? Use optional UI or emit errors to listener?
+        if (this.popup)
+            this.popup.showLoader(
+                "<h4>Authenticating...</h4>",
+                "<small>You may need to sign a new challenge in your wallet</small>"
+            );
+
         const addressMatch = await this.checkPublicAddressMatch(issuer, unsignedToken);
 
-        // FIXME - UX needed to inform the user match was not found.
         // e.g. create warning notification inside overlay.
         if(!addressMatch) {
-            // { status: false, useEthKey: null, proof: null };
+            if (this.popup)
+                this.popup.showError("Address does not match.");
             return;
         }
 
@@ -435,11 +442,14 @@ export class Client {
 
             this.eventSender.emitProofToClient(data.proof, data.issuer);
         } catch (err){
-            // TODO: error handling
             console.log(err);
+            if (this.popup)
+                this.popup.showError(err);
             return;
         }
 
+        if (this.popup)
+            this.popup.dismissLoader();
     }
 
     async checkPublicAddressMatch (issuer:string, unsignedToken:any) {
