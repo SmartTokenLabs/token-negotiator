@@ -857,20 +857,20 @@ export class Client {
         }
 
         try {
-            await this.messaging.sendMessage({
+            let data = await this.messaging.sendMessage({
                 issuer: issuer,
                 action: MessageAction.GET_PROOF,
                 origin: tokensOrigin,
                 token: unsignedToken,
                 timeout: 0 // Don't time out on this event as it needs active input from the user
             });
+
+            this.eventSender.emitProofToClient(data.proof, data.issuer);
         } catch (err){
             // TODO: error handling
             console.log(err);
             return;
         }
-
-        this.eventSender.emitProofToClient(data.proof, data.issuer);
 
     }
 
