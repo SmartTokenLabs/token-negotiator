@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { logger, requiredParams, compareObjects, base64ToUint8array } from './../index';
 
 // TODO: add unit tests for the following functions:
@@ -38,9 +40,8 @@ describe('util Spec base64ToUint8array', () => {
 describe('util logging and errors', () => {
   test('expect error to be thrown', () => {
     const msg = 'In order to have a decentralised database, you need to have security. In order to have security, you need to - you need to have incentives.';
-    const item = null;
     try {
-      requiredParams(item, msg);
+      requiredParams(null, msg);
       // Fail test if above expression doesn't throw anything.
       expect(true).toBe(false);
     } catch (e) {

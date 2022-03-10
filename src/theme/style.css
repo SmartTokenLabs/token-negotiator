@@ -46,10 +46,13 @@
 .overlay-tn.light .overlay-content-tn {
   box-shadow: 0 2px 4px 0 rgba(103, 103, 103, 0.5);
   background-color: #ffffff;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 4px;
+  border-top-left-radius: 3px;
 }
 
-.overlay-tn.light .overlay-content-tn .brand-tn {
-  background-color: #000;
+.overlay-tn.light .overlay-content-tn {
+  border-top: 4px solid black;
 }
 
 .overlay-tn.light .overlay-content-tn .token-tn .title-tn,
@@ -170,8 +173,8 @@
   background-color: black;
 }
 
-.overlay-tn.dark .overlay-content-tn .brand-tn {
-  background-color: white;
+.overlay-tn.dark .overlay-content-tn {
+  border-top: 4px solid white;
 }
 
 .overlay-tn.dark .overlay-content-tn .token-tn {
@@ -278,6 +281,10 @@
   position: absolute;
 }
 
+.overlay-tn .headline-container-tn p {
+  margin: 1rem;
+}
+
 .stl-tn {
   cursor: pointer;
 }
@@ -320,9 +327,9 @@
   z-index: 888;
 }
 
-.overlay-tn .overlay-content-tn .brand-tn {
-  width: 100%;
-  height: 4px;
+.overlay-tn .overlay-content-tn .issuer-connect-title {
+  margin: 0;
+  max-width: 160px;
 }
 
 .overlay-tn .overlay-content-tn .headline-tn {
@@ -347,7 +354,7 @@
   /* border-top: solid 1px #e9e9e9; */
 }
 
-.back-to-menu-tn {
+.overlay-tn .back-to-menu-tn {
   cursor: pointer;
   height: 44px;
   border-radius: 80px;
@@ -418,11 +425,9 @@
   -ms-user-select: none;
   user-select: none;
   transition: 0.2s ease;
-  height: 19px;
+  height: 25px;
   width: 50px;
-  /* border: 3px solid #c6c5c5; */
   border-radius: 60px;
-  /* background: #c6c5c5; */
   cursor: pointer;
 }
 
@@ -432,7 +437,7 @@
   display: block;
   transition: 0.2s cubic-bezier(0.24, 0, 0.5, 1);
   height: 19px;
-  width: 51px;
+  width: 100%;
   top: 0;
   left: 0;
   border-radius: 19px;
@@ -463,17 +468,22 @@
   left: 24px;
 }
 
+.overlay-tn label {
+  box-sizing: border-box;
+}
+
 .overlay-tn .overlay-content-tn .toggle-tn input:focus+label {
   border: 3px solid #005fcc !important;
 }
 
-li.issuer-connect-banner-tn {
+.overlay-tn li.issuer-connect-banner-tn {
+  box-sizing: border-box;
   list-style-type:none;
   display: flex;
   justify-content: space-between; 
   align-items: center;
   padding: 12px;
-  height: 2.7rem;
+  /* height: 2.7rem; */
 }
 
 .opening-btn-tn, li.issuer-connect-banner-tn .connect-btn-tn, li.issuer-connect-banner-tn .tokens-btn-tn {
@@ -481,30 +491,30 @@ li.issuer-connect-banner-tn {
   background: #101010;
 }
 
-li.token-tn {
+.overlay-tn li.token-tn {
   width: 100%;
   list-style-type: none;
 }
 
-.opening-btn-tn, li.issuer-connect-banner-tn .connect-btn-tn, li.issuer-connect-banner-tn .tokens-btn-tn {
-    font-size: 0.75em;
-    font-weight: 200;
-    border: none;
-    padding: 7px 15px 7px 15px;
-    border-radius: 23px;
-    cursor: pointer;
+.overlay-tn .opening-btn-tn, li.issuer-connect-banner-tn .connect-btn-tn, li.issuer-connect-banner-tn .tokens-btn-tn {
+  font-size: 0.75em;
+  font-weight: 200;
+  border: none;
+  padding: 7px 15px 7px 15px;
+  border-radius: 23px;
+  cursor: pointer;
 }
 
-li.issuer-connect-banner-tn .tokens-btn-tn {
+.overlay-tn li.issuer-connect-banner-tn .tokens-btn-tn {
   display: none;
 }
 
-.token-issuer-list-container-tn, .token-list-container-tn {
+.overlay-tn .token-issuer-list-container-tn, .token-list-container-tn {
   padding: 0;
   margin: 0;
 }
 
-.inner-content-tn {
+.overlay-tn .inner-content-tn {
   width: 200%;
   padding: 0;
   display: flex;
@@ -514,16 +524,16 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
   height: 0;
 }
 
-.issuer-view-tn, .token-view-tn {
+.overlay-tn .issuer-view-tn, .token-view-tn {
   width: 50%;
 }
 
-.overlay-content-tn.open .inner-content-tn {
+.overlay-tn .overlay-content-tn.open .inner-content-tn {
   position: relative;
   left: -100%;
 }
 
-.overlay-content-tn .wallet-selection-view-tn {
+.overlay-tn .overlay-content-tn .wallet-selection-view-tn {
   position: absolute; 
   z-index: 100; 
   height: inherit; 
@@ -531,17 +541,17 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
   background: white;
 }
 
-.overlay-content-tn .opening-content-view-tn .inner-content-tn .inner-content-block-tn  {
+.overlay-tn .overlay-content-tn .opening-content-view-tn .inner-content-tn .inner-content-block-tn  {
   text-align: center;
   padding: 20%;
 }
 
-.opening-btn-tn {
+.overlay-tn .opening-btn-tn {
   margin-bottom: 24px;
   transform: scale(1.1);
 }
 
-.overlay-content-tn .opening-content-view-tn .inner-content-tn  {
+.overlay-tn .overlay-content-tn .opening-content-view-tn .inner-content-tn  {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -551,18 +561,18 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
   width: 100%; 
 }
 
-.overlay-content-tn .opening-content-view-tn  {
+.overlay-tn .overlay-content-tn .opening-content-view-tn  {
   position: absolute; 
   z-index: 100; 
   height: 100%; 
   width: 100%; 
 }
 
-.overlay-content-tn  {
+.overlay-tn .overlay-content-tn  {
   overflow: scroll;
 }
 
-.wallet-button-container-tn {
+.overlay-tn .wallet-button-container-tn {
   width: 100%;
   display: flex;
   flex-wrap: wrap;
@@ -570,12 +580,12 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
   padding: 10px 0 20px 0;
 }
 
-.wallet-button-container-tn p {
+.overlay-tn .wallet-button-container-tn p {
   margin: 0;
   padding: 0;
 }
 
-.wallet-button-tn {
+.overlay-tn .wallet-button-tn {
   margin: 16px;
   background: none;
 	color: inherit;
@@ -587,13 +597,14 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
   width: 132px;
 }
 
-.skeleton-box {
+.overlay-tn .skeleton-box {
   display: inline-block;
   position: relative;
   overflow: hidden;
   background-color: #DDDBDD;
 }
-.skeleton-box::after {
+
+.overlay-tn .skeleton-box::after {
   position: absolute;
   top: 0;
   right: 0;
@@ -615,7 +626,6 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
     transform: translateX(100%);
   }
 }
-
 
 @keyframes a0_t {
   0% {
@@ -651,19 +661,19 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
 }
 
 @media (max-width: 375px) {
-  .overlay-content-tn {
+  .overlay-tn .overlay-content-tn {
     width: 328px !important;
   }
 }
 
 @media (max-width: 360px) {
-  .overlay-content-tn {
+  .overlay-tn .overlay-content-tn {
     width: 312px !important;
   }
 }
 
 @media (max-width: 340px) {
-  .overlay-content-tn {
+  .overlay-tn .overlay-content-tn {
     width: 274px !important;
   }
 }

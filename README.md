@@ -8,11 +8,13 @@ The token-negotiator is an NPM package designed for use with TokenScript.
 
 TokenScript is a framework which improves functionality, security and usability of blockchain token. It creates a layer between a blockchain and user devices, adding information, rules and functionalites.
 
-With a tokenScript and the Token-Negotiator, you can create and store attestations that can be utilised to create modern and custom tokenised web experiences. 
+With tokenScript's Token-Negotiator, you can build custom experiences with:
 
-For further information about TokenScript please visit: [https://tokenscript.org/](tokenscript.org).
+- TokenScript enabled tokens (cryptogaphically designed off chain attestations)
 
-(for new token issuers please visit the following WIKI page: https://github.com/TokenScript/token-negotiator/wiki/Token-Issuer-Page).
+- On chain tokens within mainnet, polygon, optimism, mainnet, rinkeby, ropsten, goerli, kovan,bsc, mumbai, avalanche, fantom, arbitrum.
+
+(for new token issuers who are interested in using our technology please visit the following WIKI page: https://github.com/TokenScript/token-negotiator/wiki/Token-Issuer-Page).
 
 ### Examples
 
@@ -57,6 +59,8 @@ listed inside the issuers array.
     type: 'active',
     issuers: [
         'devcon-remote'
+        { contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'rinkeby-punk' },
+        { contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
     ],
     options: {
         overlay: {
@@ -99,7 +103,11 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
 
   const negotiator = new Client({
     type: 'passive',
-    issuers: ['devcon-remote'],
+    issuers: [
+      'devcon-remote',
+      { contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'rinkeby-punk' },
+      { contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
+    ],
     options: {}
   });
 
@@ -257,4 +265,6 @@ To review working examples of the token negotiator please visit;
 
 [Quick Start Guide](https://github.com/TokenScript/token-negotiator-examples/wiki/quick-start)
 
+### Roadmap of this library
 
+[Our Roadmap](https://github.com/TokenScript/token-negotiator/wiki/road-map)

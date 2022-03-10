@@ -24,12 +24,8 @@ interface TokenLookupInterface {
     [issuer: string]: Item
 }
 
-// DEVELOPMENT NOTE: The configs are soon to be migrated to token issuer websites
-// where breaking changes will be introduced to fully decentralise/scale this process and library.
-
-// Token Attestations:
-// devcon - local instance
-// devcon-remote - points to test services
+// TODO - this should be a stateful service that is enriched
+// with token data from issuers / on and off chain.
 
 export const tokenLookup:TokenLookupInterface = {
     "devcon": {

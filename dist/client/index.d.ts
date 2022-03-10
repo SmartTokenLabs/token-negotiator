@@ -35,13 +35,16 @@ export declare class Client {
     iframeStorageSupport: any;
     web3WalletProvider: any;
     constructor(config: NegotiationInterface);
+    updateTokenLookupStore(tokenKey: any, data: any): void;
     openIframe(url: any): Promise<unknown>;
     negotiatorConnectToWallet(walletType: string): Promise<void>;
     getTokensIframe(config: GetTokenInterface): Promise<unknown>;
     setPassiveNegotiationWebTokens(offChainTokens: any): Promise<void>;
+    enrichTokenLookupDataOnChainTokens(onChainTokens: any): Promise<void>;
     setBlockChainTokens(onChainTokens: any): Promise<void>;
     negotiate(): Promise<void>;
     activeNegotiationStrategy(): Promise<void>;
+    setPassiveNegotiationOnChainTokens(onChainTokens: any): Promise<void>;
     passiveNegotiationStrategy(iframeStorageSupport: boolean): Promise<void>;
     updateOverlayViewState(state: string): void;
     embedTokenConnectClientOverlayIframe(): void;
@@ -49,11 +52,12 @@ export declare class Client {
     assignFabButtonAnimation(): void;
     openOverlay(openOverlay: boolean): void;
     overlayClickHandler(): void;
-    issuerConnected(issuer: string): void;
+    issuerConnected(issuer: string, onChain: boolean): void;
     navigateToTokensView(event: any): void;
     embedTokensIntoView(issuer: any): void;
     showTokenView(issuer: string): void;
     connectTokenIssuerWithIframe(event: any): void;
+    connectOnChainTokenIssuer(event: any): Promise<void>;
     connectTokenIssuerWithTab(event: any): void;
     tokenToggleSelection(): void;
     authenticate(config: AuthenticateInterface): Promise<void>;
@@ -72,7 +76,7 @@ export declare class Client {
     eventReciever: (event: any) => void;
     addTokenThroughTab(magicLink: any): void;
     addTokenThroughIframe(magicLink: any): void;
-    thirdPartyCookieSupportCheck(tokensOrigin: any): Promise<unknown>;
+    thirdPartyCookieSupportCheck(): Promise<unknown>;
     on(type: string, callback?: any, data?: any): any;
 }
 export {};
