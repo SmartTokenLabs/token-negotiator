@@ -45,9 +45,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-import { asyncHandle, requiredParams, attachPostMessageListener, logger } from './../utils/index';
-import { getChallengeSigned, validateUseEthKey, connectMetamaskAndGetAddress } from "../core/index";
-import { createWalletSelectionViewMarkup, createOpeningViewMarkup, createIssuerViewMarkup, createFabButtonMarkup, createTokenMarkup, issuerConnectTabMarkup, issuerConnectIframeMarkup, issuerConnectOnChainMarkup } from './componentFactory';
+import { Messaging, MessageAction } from "./messaging";
+import { Popup } from './popup';
+import { asyncHandle, logger, requiredParams } from './../utils/index';
+import { connectMetamaskAndGetAddress, getChallengeSigned, validateUseEthKey } from "../core/index";
 import { tokenLookup } from './../tokenLookup';
 import OnChainTokenModule from './../onChainTokenModule';
 import Web3WalletProvider from './../utils/Web3WalletProvider';
@@ -56,63 +57,15 @@ import './../vendor/keyShape';
 var Client = (function () {
     function Client(config) {
         var _this = this;
-        var _a, _b, _c, _d, _e, _f;
         this.eventSender = {
             emitAllTokensToClient: function (tokens) {
                 _this.on("tokens", null, tokens);
             },
             emitSelectedTokensToClient: function () {
-                _this.on("tokens-selected", null, _this.selectedTokens);
+                _this.on("tokens-selected", null, { selectedTokens: _this.selectedTokens });
             },
             emitProofToClient: function (proof, issuer) {
                 _this.on("token-proof", null, { proof: proof, issuer: issuer });
-            }
-        };
-        this.eventReciever = function (event) {
-            switch (event.data.evt) {
-                case 'set-tab-issuer-tokens-active':
-                    var issuer = event.data.issuer;
-                    var childURL = tokenLookup[issuer].tokenOrigin;
-                    var cUrl = new URL(childURL);
-                    var childUrlOrigin = cUrl.origin;
-                    if (event.origin != childUrlOrigin)
-                        return;
-                    _this.offChainTokens[issuer].tokens = event.data.tokens;
-                    if (_this.issuerTabInstanceRefs[issuer]) {
-                        _this.issuerTabInstanceRefs[issuer].close();
-                        delete _this.issuerTabInstanceRefs[issuer];
-                        _this.issuerConnected(issuer, false);
-                    }
-                    break;
-                case 'set-tab-issuer-tokens-passive':
-                    var issuer = event.data.issuer;
-                    var output = {};
-                    output[issuer] = {};
-                    output[issuer].tokens = event.data.tokens;
-                    _this.eventSender.emitAllTokensToClient(output);
-                    break;
-                case 'set-iframe-issuer-tokens-active':
-                    var issuer = event.data.issuer;
-                    _this.offChainTokens[issuer].tokens = event.data.tokens;
-                    _this.issuerConnected(issuer, false);
-                    break;
-                case 'set-on-chain-issuer-tokens-active':
-                    var issuer = event.data.issuer;
-                    _this.onChainTokens[issuer].tokens = event.data.tokens;
-                    _this.issuerConnected(issuer, true);
-                    break;
-                case 'set-on-chain-issuer-tokens-passive':
-                    var issuer = event.data.issuer;
-                    _this.onChainTokens[issuer].tokens = event.data.tokens;
-                    break;
-                case 'proof-tab':
-                    if (_this.issuerTabInstanceRefs && _this.issuerTabInstanceRefs[event.data.issuer] && _this.iframeStorageSupport === false) {
-                        _this.issuerTabInstanceRefs[event.data.issuer].close();
-                        delete _this.issuerTabInstanceRefs[event.data.issuer];
-                    }
-                case 'proof-iframe':
-                    _this.eventSender.emitProofToClient(event.data.proof, event.data.issuer);
-                    break;
             }
         };
         var type = config.type, issuers = config.issuers, options = config.options, filter = config.filter;
@@ -127,12 +80,6 @@ var Client = (function () {
         this.onChainTokens = { tokenKeys: [] };
         this.selectedTokens = {};
         this.clientCallBackEvents = {};
-        this.iframeStorageSupport = false;
-        if (this.type === "active") {
-            this.openingHeading = (_b = (_a = this.options) === null || _a === void 0 ? void 0 : _a.overlay) === null || _b === void 0 ? void 0 : _b.openingHeading;
-            this.issuerHeading = (_d = (_c = this.options) === null || _c === void 0 ? void 0 : _c.overlay) === null || _d === void 0 ? void 0 : _d.issuerHeading;
-            this.repeatAction = (_f = (_e = this.options) === null || _e === void 0 ? void 0 : _e.overlay) === null || _f === void 0 ? void 0 : _f.repeatAction;
-        }
         issuers.forEach(function (issuer) {
             if (tokenLookup[issuer]) {
                 if (tokenLookup[issuer].onChain === true) {
@@ -155,89 +102,34 @@ var Client = (function () {
                 _this.onChainTokens[issuerKey] = { tokens: [] };
             }
         });
-        attachPostMessageListener(this.eventReciever);
-        window.overlayClickHandler = this.overlayClickHandler.bind(this);
-        window.tokenToggleSelection = this.tokenToggleSelection.bind(this);
-        window.connectTokenIssuerWithTab = this.connectTokenIssuerWithTab.bind(this);
-        window.connectOnChainTokenIssuer = this.connectOnChainTokenIssuer.bind(this);
-        window.navigateToTokensView = this.navigateToTokensView.bind(this);
-        window.embedTokensIntoView = this.embedTokensIntoView.bind(this);
-        window.showTokenView = this.showTokenView.bind(this);
-        window.connectTokenIssuerWithIframe = this.connectTokenIssuerWithIframe.bind(this);
-        window.negotiatorConnectToWallet = this.negotiatorConnectToWallet.bind(this);
-        window.negotiatorUpdateOverlayViewState = this.updateOverlayViewState.bind(this);
         this.web3WalletProvider = new Web3WalletProvider();
         this.onChainTokenModule = new OnChainTokenModule();
+        this.messaging = new Messaging();
     }
+    Client.prototype.getTokenData = function () {
+        return {
+            offChainTokens: this.offChainTokens,
+            onChainTokens: this.onChainTokens,
+            tokenLookup: this.tokenLookup,
+            selectedTokens: this.selectedTokens
+        };
+    };
     Client.prototype.updateTokenLookupStore = function (tokenKey, data) {
         if (!this.tokenLookup[tokenKey])
             this.tokenLookup[tokenKey] = {};
         this.tokenLookup[tokenKey] = __assign(__assign({}, this.tokenLookup[tokenKey]), data);
     };
-    Client.prototype.openIframe = function (url) {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                return [2, new Promise(function (resolve, reject) {
-                        var iframe = document.createElement('iframe');
-                        iframe.src = url;
-                        iframe.style.width = '1px';
-                        iframe.style.height = '1px';
-                        iframe.style.opacity = '0';
-                        document.body.appendChild(iframe);
-                        iframe.onload = function () {
-                            resolve(iframe);
-                        };
-                    })];
-            });
-        });
-    };
     Client.prototype.negotiatorConnectToWallet = function (walletType) {
         return __awaiter(this, void 0, void 0, function () {
             var walletAddress;
-            var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4, this.web3WalletProvider.connectWith(walletType)];
                     case 1:
                         walletAddress = _a.sent();
-                        logger('wallet address found: ', walletAddress);
-                        if (walletAddress) {
-                            setTimeout(function () {
-                                _this.updateOverlayViewState("ISSUER");
-                            }, 200);
-                        }
-                        else {
-                        }
-                        return [2];
+                        logger('wallet address found: ' + walletAddress);
+                        return [2, walletAddress];
                 }
-            });
-        });
-    };
-    Client.prototype.getTokensIframe = function (config) {
-        return __awaiter(this, void 0, void 0, function () {
-            var issuer, filter, tokensOrigin, negotiationType;
-            var _this = this;
-            return __generator(this, function (_a) {
-                issuer = config.issuer, filter = config.filter, tokensOrigin = config.tokensOrigin, negotiationType = config.negotiationType;
-                return [2, new Promise(function (resolve, reject) {
-                        var listener = function (event) {
-                            if (event.data.evt === 'set-iframe-issuer-tokens-passive') {
-                                resolve(event.data.tokens);
-                            }
-                        };
-                        attachPostMessageListener(listener);
-                        _this.openIframe(tokensOrigin + "?action=get-iframe-issuer-tokens&type=" + negotiationType + "&filter=" + JSON.stringify(filter)).then(function (iframeRef) {
-                            if (iframeRef) {
-                                iframeRef.contentWindow.postMessage({
-                                    evt: 'getTokens'
-                                }, tokensOrigin);
-                                if (!_this.issuerTabInstanceRefs) {
-                                    _this.issuerTabInstanceRefs = {};
-                                }
-                                _this.issuerTabInstanceRefs[issuer] = iframeRef;
-                            }
-                        });
-                    })];
             });
         });
     };
@@ -247,15 +139,31 @@ var Client = (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4, Promise.all(offChainTokens.tokenKeys.map(function (issuer) { return __awaiter(_this, void 0, void 0, function () {
-                            var tokenOrigin, tokens;
+                            var tokenOrigin, data, err_1;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
                                         tokenOrigin = tokenLookup[issuer].tokenOrigin;
-                                        return [4, this.getTokensIframe({ issuer: issuer, filter: this.filter, tokensOrigin: tokenOrigin, negotiationType: 'passive' })];
+                                        _a.label = 1;
                                     case 1:
-                                        tokens = _a.sent();
-                                        this.offChainTokens[issuer].tokens = tokens;
+                                        _a.trys.push([1, 3, , 4]);
+                                        return [4, this.messaging.sendMessage({
+                                                issuer: issuer,
+                                                action: MessageAction.GET_ISSUER_TOKENS,
+                                                filter: this.filter,
+                                                origin: tokenOrigin
+                                            })];
+                                    case 2:
+                                        data = _a.sent();
+                                        return [3, 4];
+                                    case 3:
+                                        err_1 = _a.sent();
+                                        console.log(err_1);
+                                        return [2];
+                                    case 4:
+                                        console.log("tokens:");
+                                        console.log(data.tokens);
+                                        this.offChainTokens[issuer].tokens = data.tokens;
                                         return [2];
                                 }
                             });
@@ -303,57 +211,38 @@ var Client = (function () {
     };
     Client.prototype.negotiate = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var _a;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0: return [4, this.enrichTokenLookupDataOnChainTokens(this.onChainTokens)];
                     case 1:
-                        _b.sent();
+                        _a.sent();
                         if (!(this.type === 'active')) return [3, 2];
                         this.activeNegotiationStrategy();
-                        return [3, 6];
+                        return [3, 5];
                     case 2:
-                        _a = this;
-                        return [4, this.thirdPartyCookieSupportCheck()];
-                    case 3:
-                        _a.iframeStorageSupport = _b.sent();
-                        if (!window.ethereum) return [3, 5];
+                        if (!window.ethereum) return [3, 4];
                         return [4, this.web3WalletProvider.connectWith('MetaMask')];
+                    case 3:
+                        _a.sent();
+                        _a.label = 4;
                     case 4:
-                        _b.sent();
-                        _b.label = 5;
-                    case 5:
-                        this.passiveNegotiationStrategy(this.iframeStorageSupport);
-                        _b.label = 6;
-                    case 6: return [2];
+                        this.passiveNegotiationStrategy();
+                        _a.label = 5;
+                    case 5: return [2];
                 }
             });
         });
     };
     Client.prototype.activeNegotiationStrategy = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var _a;
             var _this = this;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        setTimeout(function () {
-                            var entryPointElement = document.querySelector(".overlay-tn");
-                            requiredParams(entryPointElement, 'No entry point element with the class name of .overlay-tn found.');
-                            if (entryPointElement) {
-                                entryPointElement.innerHTML += '<div class="overlay-content-tn"></div>';
-                                _this.updateOverlayViewState("INTRO");
-                                entryPointElement.innerHTML += createFabButtonMarkup();
-                                _this.assignFabButtonAnimation();
-                                _this.addTheme();
-                            }
-                        }, 0);
-                        _a = this;
-                        return [4, this.thirdPartyCookieSupportCheck()];
-                    case 1:
-                        _a.iframeStorageSupport = _b.sent();
-                        return [2];
-                }
+            return __generator(this, function (_a) {
+                setTimeout(function () {
+                    var _a;
+                    _this.popup = new Popup((_a = _this.options) === null || _a === void 0 ? void 0 : _a.overlay, _this);
+                    _this.popup.initialize();
+                }, 0);
+                return [2];
             });
         });
     };
@@ -363,20 +252,13 @@ var Client = (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4, Promise.all(onChainTokens.tokenKeys.map(function (issuerKey) { return __awaiter(_this, void 0, void 0, function () {
-                            var tokens, output;
+                            var tokens;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0: return [4, this.onChainTokenModule.connectOnChainToken(issuerKey, this.web3WalletProvider.getConnectedWalletData()[0].address)];
                                     case 1:
                                         tokens = _a.sent();
-                                        output = {
-                                            data: {
-                                                evt: 'set-on-chain-issuer-tokens-passive',
-                                                tokens: tokens,
-                                                issuer: issuerKey
-                                            }
-                                        };
-                                        this.eventReciever(output);
+                                        this.onChainTokens[issuerKey].tokens = tokens;
                                         return [2];
                                 }
                             });
@@ -388,285 +270,130 @@ var Client = (function () {
             });
         });
     };
-    Client.prototype.passiveNegotiationStrategy = function (iframeStorageSupport) {
+    Client.prototype.passiveNegotiationStrategy = function () {
+        var _a;
         return __awaiter(this, void 0, void 0, function () {
-            var outputOnChain, outputOffChain;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var canUsePassive, outputOnChain, outputOffChain;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
-                        if (!(iframeStorageSupport === true)) return [3, 3];
-                        return [4, asyncHandle(this.setPassiveNegotiationWebTokens(this.offChainTokens))];
+                        canUsePassive = false;
+                        if (!this.offChainTokens.tokenKeys.length) return [3, 2];
+                        return [4, this.messaging.getCookieSupport((_a = this.tokenLookup[this.offChainTokens.tokenKeys[0]]) === null || _a === void 0 ? void 0 : _a.tokenOrigin)];
                     case 1:
-                        _a.sent();
-                        return [4, asyncHandle(this.setPassiveNegotiationOnChainTokens(this.onChainTokens))];
+                        canUsePassive = _b.sent();
+                        _b.label = 2;
                     case 2:
-                        _a.sent();
+                        if (!canUsePassive) return [3, 5];
+                        return [4, asyncHandle(this.setPassiveNegotiationWebTokens(this.offChainTokens))];
+                    case 3:
+                        _b.sent();
+                        return [4, asyncHandle(this.setPassiveNegotiationOnChainTokens(this.onChainTokens))];
+                    case 4:
+                        _b.sent();
                         outputOnChain = JSON.parse(JSON.stringify(this.onChainTokens));
                         delete outputOnChain.tokenKeys;
                         outputOffChain = JSON.parse(JSON.stringify(this.offChainTokens));
                         delete outputOffChain.tokenKeys;
+                        console.log("Emitting tokens!!");
+                        console.log(outputOffChain);
                         this.eventSender.emitAllTokensToClient(__assign(__assign({}, outputOffChain), outputOnChain));
-                        return [3, 4];
-                    case 3:
+                        return [3, 6];
+                    case 5:
                         logger('Enable 3rd party cookies via your browser settings to use this negotiation type.');
-                        _a.label = 4;
-                    case 4: return [2];
+                        _b.label = 6;
+                    case 6: return [2];
                 }
             });
         });
     };
-    Client.prototype.updateOverlayViewState = function (state) {
-        var _this = this;
-        var entryPointContentElement = document.querySelector(".overlay-content-tn");
-        if (state === "INTRO") {
-            entryPointContentElement.innerHTML = createOpeningViewMarkup(this.openingHeading);
-        }
-        if (state === "CONNECT_WALLET") {
-            entryPointContentElement.innerHTML = createWalletSelectionViewMarkup(this.iframeStorageSupport);
-        }
-        if (state === "ISSUER") {
-            entryPointContentElement.innerHTML = createIssuerViewMarkup(this.issuerHeading);
-            var refIssuerContainerSelector_1 = document.querySelector(".token-issuer-list-container-tn");
-            refIssuerContainerSelector_1.innerHTML = "";
-            this.offChainTokens.tokenKeys.map(function (issuer) {
-                if (_this.iframeStorageSupport === true) {
-                    refIssuerContainerSelector_1.innerHTML += issuerConnectIframeMarkup(_this.tokenLookup[issuer].title, _this.tokenLookup[issuer].emblem, issuer);
-                }
-                else {
-                    refIssuerContainerSelector_1.innerHTML += issuerConnectTabMarkup(_this.tokenLookup[issuer].title, _this.tokenLookup[issuer].emblem, issuer);
-                }
-            });
-            this.onChainTokens.tokenKeys.map(function (issuer) {
-                refIssuerContainerSelector_1.innerHTML += issuerConnectOnChainMarkup(_this.tokenLookup[issuer].title, _this.tokenLookup[issuer].emblem, issuer);
-            });
-        }
-    };
-    Client.prototype.embedTokenConnectClientOverlayIframe = function () {
-        var _this = this;
-        setTimeout(function () {
-            var entryPointElement = document.querySelector(".overlay-tn");
-            requiredParams(entryPointElement, 'No entry point element with the class name of .overlay-tn found.');
-            if (entryPointElement) {
-                entryPointElement.innerHTML += '<div class="overlay-content-tn"></div>';
-                _this.updateOverlayViewState("INTRO");
-                entryPointElement.innerHTML += createFabButtonMarkup();
-                _this.assignFabButtonAnimation();
-                _this.addTheme();
-            }
-        }, 0);
-    };
-    Client.prototype.addTheme = function () {
-        var _a, _b, _c, _d;
-        var refTokenSelector = document.querySelector(".overlay-tn");
-        refTokenSelector.classList.add(((_b = (_a = this.options) === null || _a === void 0 ? void 0 : _a.overlay) === null || _b === void 0 ? void 0 : _b.theme) ? (_d = (_c = this.options) === null || _c === void 0 ? void 0 : _c.overlay) === null || _d === void 0 ? void 0 : _d.theme : 'light');
-    };
-    Client.prototype.assignFabButtonAnimation = function () {
-        if (window.KeyshapeJS) {
-            window.KeyshapeJS.globalPause();
-            window.KeyshapeJS.animate("#svg-tn-left", [{ p: 'mpath', t: [0, 400], v: ['0%', '100%'], e: [[1, 0, 0, .6, 1], [0]], mp: "M13,28.5L27.1,28.1" }, { p: 'rotate', t: [0, 400], v: [0, 0], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'scaleX', t: [0, 400], v: [1, 1], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'scaleY', t: [0, 400], v: [1, 1], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'anchorX', t: [0, 400], v: [-13, -17.1], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'anchorY', t: [0, 400], v: [-13.5, -17.1], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'd', t: [0, 400], v: ["path('M25.5,26C25.5,26,20.5,26,20.5,26C20.5,23.1,19.9,20.4,18.8,17.9C17.8,15.6,16.4,13.6,14.6,11.8C12.7,9.9,10.3,8.4,7.8,7.4C5.5,6.5,3,6,.5,6L.5,1C.5,1,.5,1,.5,1C.5,1,7.5,1,7.5,1L25.5,1L25.5,7.2C25.5,7.2,25.5,12.8,25.5,12.8C25.5,12.8,25.5,19,25.5,19Z')", "path('M31.8,32.8C31.5,33.2,30.9,33.4,30.4,33.4C29.9,33.4,29.4,33.2,29,32.8C29,32.8,1.4,5.2,1.4,5.2C1,4.8,.8,4.3,.8,3.8C.8,3.3,1,2.8,1.4,2.4L2.4,1.4C2.7,1,3.3,.8,3.8,.8C4.3,.8,4.8,1,5.2,1.4L5.2,1.4L32.8,29C33.2,29.4,33.4,29.9,33.4,30.4C33.4,30.9,33.2,31.5,32.8,31.8Z')"], e: [[1, 0, 0, .6, 1], [0]] }], "#svg-tn-right", [{ p: 'mpath', t: [0, 400], v: ['0%', '100%'], e: [[1, 0, 0, .6, 1], [0]], mp: "M41.5,28.7L27.1,28.1" }, { p: 'rotate', t: [0, 400], v: [0, 0], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'anchorX', t: [0, 400], v: [-40.5, -17.1], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'anchorY', t: [0, 400], v: [-13.5, -17.1], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'd', t: [0, 400], v: ["path('M53,1C53,1,53,1,53,1C53,1,53,12.9,53,12.9L53,19C53,19,53,26,53,26C53,26,40.2,26,40.2,26L34.1,26C34.1,26,28,26,28,26C28,26,28,12.6,28,12.6L28,7.4C28,7.4,28,1,28,1C28,1,40.6,1,40.6,1C40.6,1,45.9,1,45.9,1Z')", "path('M29,1.4C29.4,1,29.9,.8,30.4,.8C30.9,.8,31.5,1,31.8,1.4L32.8,2.4C33.2,2.7,33.4,3.3,33.4,3.8C33.4,4.3,33.2,4.8,32.8,5.2L5.2,32.8C4.8,33.2,4.3,33.4,3.8,33.4C3.3,33.4,2.8,33.2,2.4,32.8L1.4,31.8C1,31.5,.8,30.9,.8,30.4C.8,29.9,1,29.4,1.4,29C1.4,29,29,1.4,29,1.4Z')"], e: [[1, 0, 0, .6, 1], [0]] }], { autoremove: false }).range(0, 400);
-        }
-    };
-    Client.prototype.openOverlay = function (openOverlay) {
-        var element = document.querySelector(".overlay-tn");
-        requiredParams(element, 'No overlay element found.');
-        element.classList.toggle("open");
-        if (openOverlay) {
-            element.classList.add("open");
-            window.KeyshapeJS.timelines()[0].time(0);
-            window.KeyshapeJS.globalPlay();
-        }
-        else {
-            element.classList.remove("open");
-            window.KeyshapeJS.timelines()[0].time(0);
-            window.KeyshapeJS.globalPause();
-        }
-    };
-    Client.prototype.overlayClickHandler = function () {
-        var element = document.querySelector(".overlay-tn");
-        requiredParams(element, 'No overlay element found.');
-        var isOpen = element.classList.contains("open");
-        element.classList.toggle("open");
-        if (!isOpen) {
-            this.openOverlay(true);
-        }
-        else {
-            this.openOverlay(false);
-        }
-    };
-    Client.prototype.issuerConnected = function (issuer, onChain) {
-        var connectBtn = document.querySelector("[data-issuer*=\"" + issuer + "\"] .connect-btn-tn");
-        var tokenBtn = document.querySelector("[data-issuer*=\"" + issuer + "\"] .tokens-btn-tn");
-        connectBtn.style.display = "none";
-        connectBtn.setAttribute('tabIndex', -1);
-        tokenBtn.style.display = "block";
-        if (onChain) {
-            tokenBtn.innerHTML = this.onChainTokens[issuer].tokens.length + " token/s available";
-            tokenBtn.setAttribute('aria-label', "Navigate to select from " + this.onChainTokens[issuer].tokens.length + " of your " + issuer + " tokens");
-        }
-        else {
-            tokenBtn.innerHTML = this.offChainTokens[issuer].tokens.length + " token/s available";
-            tokenBtn.setAttribute('aria-label', "Navigate to select from " + this.offChainTokens[issuer].tokens.length + " of your " + issuer + " tokens");
-        }
-        tokenBtn.setAttribute('tabIndex', 1);
-    };
-    Client.prototype.navigateToTokensView = function (event) {
-        var issuer = event.target.dataset.issuer;
-        this.embedTokensIntoView(issuer);
-        this.showTokenView(issuer);
-    };
-    Client.prototype.embedTokensIntoView = function (issuer) {
-        var _this = this;
-        var refTokenContainerSelector = document.getElementsByClassName("token-view-tn")[0];
-        if (!issuer) {
-            refTokenContainerSelector.style.display = 'none';
-            return;
-        }
-        ;
-        refTokenContainerSelector.style.display = 'block';
-        refTokenContainerSelector.scrollTo(0, 0);
-        var refTokenContainerSelector = document.getElementsByClassName("token-list-container-tn")[0];
-        refTokenContainerSelector.innerHTML = "";
-        var config = this.tokenLookup[issuer];
-        var location = config.onChain === false ? 'offChainTokens' : 'onChainTokens';
-        document.getElementsByClassName("headline-tn token-name")[0].innerHTML = config.title;
-        this[location][issuer].tokens.map(function (t, i) {
-            var _a;
-            var _b = tokenLookup[issuer], title = _b.title, emblem = _b.emblem;
-            var isSelected = false;
-            (_a = _this.selectedTokens[issuer]) === null || _a === void 0 ? void 0 : _a.tokens.map(function (st, si) {
-                if (t.toString() === st.toString())
-                    isSelected = true;
-            });
-            var _img = t === null || t === void 0 ? void 0 : t.image;
-            if (!_img)
-                _img = t === null || t === void 0 ? void 0 : t.image_url;
-            else
-                _img = emblem;
-            var _title = t === null || t === void 0 ? void 0 : t.title;
-            if (!_title)
-                _title = title;
-            refTokenContainerSelector.innerHTML += createTokenMarkup({
-                data: t,
-                tokenIssuerKey: issuer,
-                index: i,
-                title: _title,
-                emblem: _img,
-                toggleState: isSelected
-            });
-        });
-    };
-    Client.prototype.showTokenView = function (issuer) {
-        var element = document.getElementsByClassName("overlay-content-tn")[0];
-        element.classList.toggle("open");
-        if (issuer) {
-            var connectBtn = document.querySelector("[data-issuer*=\"" + issuer + "\"] .connect-btn-tn");
-            var tokenBtn = document.querySelector("[data-issuer*=\"" + issuer + "\"] .tokens-btn-tn");
-            connectBtn.setAttribute('aria-expanded', true);
-            tokenBtn.setAttribute('aria-expanded', false);
-            var issuerViewEl = document.querySelector(".issuer-view-tn");
-            var tokenViewEl = document.querySelector(".token-view-tn");
-            issuerViewEl.setAttribute('aria-hidden', false);
-            tokenViewEl.setAttribute('aria-hidden', true);
-        }
-        else {
-            var connectBtns = document.querySelectorAll(".connect-btn-tn");
-            var tokenBtns = document.querySelectorAll(".tokens-btn-tn");
-            connectBtns.forEach(function (userItem) {
-                userItem.setAttribute('aria-expanded', false);
-            });
-            tokenBtns.forEach(function (userItem) {
-                userItem.setAttribute('aria-expanded', false);
-            });
-            var issuerViewEl = document.querySelector(".issuer-view-tn");
-            var tokenViewEl = document.querySelector(".token-view-tn");
-            issuerViewEl.setAttribute('aria-hidden', true);
-            tokenViewEl.setAttribute('aria-hidden', false);
-        }
-    };
-    Client.prototype.connectTokenIssuerWithIframe = function (event) {
-        var _this = this;
-        var issuer = event.currentTarget.dataset.issuer;
-        var filter = this.filter ? this.filter : {};
-        var tokensOrigin = this.tokenLookup[issuer].tokenOrigin;
-        this.getTokensIframe({ issuer: issuer, filter: filter, tokensOrigin: tokensOrigin, negotiationType: 'active' });
-        setTimeout(function () {
-            event.target.innerHTML = _this.repeatAction ? _this.repeatAction : 'retry';
-            event.target.classList.add("retry");
-        }, 2500);
-    };
-    Client.prototype.connectOnChainTokenIssuer = function (event) {
+    Client.prototype.connectTokenIssuer = function (issuer) {
         return __awaiter(this, void 0, void 0, function () {
-            var issuerKey, tokens, output;
+            var filter, tokensOrigin, data;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        issuerKey = event.target.dataset.issuer;
-                        return [4, this.onChainTokenModule.connectOnChainToken(issuerKey, this.web3WalletProvider.getConnectedWalletData()[0].address)];
+                        filter = this.filter ? this.filter : {};
+                        tokensOrigin = this.tokenLookup[issuer].tokenOrigin;
+                        if (this.tokenLookup[issuer].onChain) {
+                            return [2, this.connectOnChainTokenIssuer(issuer)];
+                        }
+                        return [4, this.messaging.sendMessage({
+                                issuer: issuer,
+                                action: MessageAction.GET_ISSUER_TOKENS,
+                                origin: tokensOrigin,
+                                filter: filter,
+                            })];
                     case 1:
-                        tokens = _a.sent();
-                        output = {
-                            data: {
-                                evt: 'set-on-chain-issuer-tokens-active',
-                                tokens: tokens,
-                                issuer: issuerKey
-                            }
-                        };
-                        this.eventReciever(output);
-                        return [2];
+                        data = _a.sent();
+                        issuer = data.issuer;
+                        this.offChainTokens[issuer].tokens = data.tokens;
+                        return [2, data.tokens];
                 }
             });
         });
     };
-    Client.prototype.connectTokenIssuerWithTab = function (event) {
-        var issuer = event.target.dataset.issuer;
-        var filter = this.filter ? JSON.stringify(this.filter) : '{}';
-        var tabRef = window.open(tokenLookup[issuer].tokenOrigin + "?action=get-tab-issuer-tokens&filter=" + filter, "win1", "left=0,top=0,width=320,height=320");
-        if (!this.issuerTabInstanceRefs) {
-            this.issuerTabInstanceRefs = {};
-        }
-        this.issuerTabInstanceRefs[issuer] = tabRef;
-    };
-    Client.prototype.tokenToggleSelection = function () {
-        var _this = this;
-        document.querySelectorAll('.token-tn .mobileToggle-tn').forEach(function (token, index) {
-            if (index === 0) {
-                _this.selectedTokens[token.dataset.key] = {};
-                _this.selectedTokens[token.dataset.key]['tokens'] = [];
-            }
-            if (token.checked === true) {
-                var output = JSON.parse(token.dataset.token);
-                _this.selectedTokens[token.dataset.key].tokens.push(output);
-            }
+    Client.prototype.connectOnChainTokenIssuer = function (issuerKey) {
+        return __awaiter(this, void 0, void 0, function () {
+            var tokens;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, this.onChainTokenModule.connectOnChainToken(issuerKey, this.web3WalletProvider.getConnectedWalletData()[0].address)];
+                    case 1:
+                        tokens = _a.sent();
+                        this.onChainTokens[issuerKey].tokens = tokens;
+                        return [2, tokens];
+                }
+            });
         });
-        console.log(this.selectedTokens);
+    };
+    Client.prototype.updateSelectedTokens = function (selectedTokens) {
+        this.selectedTokens = selectedTokens;
         this.eventSender.emitSelectedTokensToClient();
     };
     Client.prototype.authenticate = function (config) {
         return __awaiter(this, void 0, void 0, function () {
-            var issuer, unsignedToken, addressMatch, iframeStorageSupport;
+            var issuer, unsignedToken, tokensOrigin, addressMatch, data, err_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         issuer = config.issuer, unsignedToken = config.unsignedToken;
+                        tokensOrigin = this.tokenLookup[issuer].tokenOrigin;
                         requiredParams((issuer && unsignedToken), { status: false, useEthKey: null, proof: null });
+                        if (this.popup)
+                            this.popup.showLoader("<h4>Authenticating...</h4>", "<small>You may need to sign a new challenge in your wallet</small>");
                         return [4, this.checkPublicAddressMatch(issuer, unsignedToken)];
                     case 1:
                         addressMatch = _a.sent();
                         if (!addressMatch) {
+                            if (this.popup)
+                                this.popup.showError("Address does not match.");
                             return [2];
                         }
-                        return [4, this.thirdPartyCookieSupportCheck()];
+                        _a.label = 2;
                     case 2:
-                        iframeStorageSupport = _a.sent();
-                        if (!(iframeStorageSupport === true)) return [3, 4];
-                        return [4, this.getTokenProofIframe(issuer, unsignedToken)];
+                        _a.trys.push([2, 4, , 5]);
+                        return [4, this.messaging.sendMessage({
+                                issuer: issuer,
+                                action: MessageAction.GET_PROOF,
+                                origin: tokensOrigin,
+                                token: unsignedToken,
+                                timeout: 0
+                            })];
                     case 3:
-                        _a.sent();
+                        data = _a.sent();
+                        this.eventSender.emitProofToClient(data.proof, data.issuer);
                         return [3, 5];
                     case 4:
-                        this.getTokenProofTab(issuer, unsignedToken);
-                        _a.label = 5;
-                    case 5: return [2];
+                        err_2 = _a.sent();
+                        console.log(err_2);
+                        if (this.popup)
+                            this.popup.showError(err_2);
+                        return [2];
+                    case 5:
+                        if (this.popup)
+                            this.popup.dismissLoader();
+                        return [2];
                 }
             });
         });
@@ -704,71 +431,12 @@ var Client = (function () {
             });
         });
     };
-    Client.prototype.getTokenProofIframe = function (issuer, unsignedToken) {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                return [2, new Promise(function (resolve, reject) {
-                        var iframe = document.createElement('iframe');
-                        iframe.src = tokenLookup[issuer].tokenOrigin + "?action=get-token-proof&token=" + JSON.stringify(unsignedToken) + "&issuer=" + issuer + "&type=iframe";
-                        iframe.style.width = '1px';
-                        iframe.style.height = '1px';
-                        iframe.style.opacity = '0';
-                        document.body.appendChild(iframe);
-                        iframe.onload = function () {
-                            resolve(true);
-                        };
-                    })];
-            });
-        });
-    };
-    Client.prototype.getTokenProofTab = function (issuer, unsignedToken) {
-        return __awaiter(this, void 0, void 0, function () {
-            var tabRef;
-            return __generator(this, function (_a) {
-                tabRef = window.open(tokenLookup[issuer].tokenOrigin + "?action=get-token-proof&token=" + JSON.stringify(unsignedToken) + "&issuer=" + issuer + "&type=tab", "win1", "left=0,top=0,width=" + window.innerWidth + ",height=" + window.innerHeight);
-                if (!this.issuerTabInstanceRefs) {
-                    this.issuerTabInstanceRefs = {};
-                }
-                this.issuerTabInstanceRefs[issuer] = tabRef;
-                return [2];
-            });
-        });
-    };
     Client.prototype.addTokenThroughTab = function (magicLink) {
-        var tab = window.open(magicLink, "win1", "left=0,top=0,width=320,height=320");
+        var tab = this.messaging.openTab(magicLink);
         setTimeout(function () { tab === null || tab === void 0 ? void 0 : tab.close(); }, 2500);
     };
     Client.prototype.addTokenThroughIframe = function (magicLink) {
-        this.openIframe(magicLink);
-    };
-    Client.prototype.thirdPartyCookieSupportCheck = function () {
-        var _a;
-        return __awaiter(this, void 0, void 0, function () {
-            var iframe, tokensOrigin;
-            return __generator(this, function (_b) {
-                if (this.offChainTokens.tokenKeys.length) {
-                    iframe = document.createElement('iframe');
-                    tokensOrigin = (_a = tokenLookup[this.offChainTokens.tokenKeys[0]]) === null || _a === void 0 ? void 0 : _a.tokenOrigin;
-                    iframe.src = tokensOrigin + '?action=cookie-support-check';
-                    iframe.style.width = '1px';
-                    iframe.style.height = '1px';
-                    iframe.style.opacity = '0';
-                    document.body.appendChild(iframe);
-                    return [2, new Promise(function (resolve) {
-                            var listener = function (event) {
-                                if (event.data.evt === 'cookie-support-check') {
-                                    resolve(event.data.thirdPartyCookies ? true : false);
-                                }
-                                setTimeout(function () {
-                                    resolve(false);
-                                }, 10000);
-                            };
-                            attachPostMessageListener(listener);
-                        })];
-                }
-                return [2];
-            });
-        });
+        this.messaging.createIframe(magicLink);
     };
     Client.prototype.on = function (type, callback, data) {
         requiredParams(type, "Event type is not defined");

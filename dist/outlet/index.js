@@ -1,62 +1,10 @@
-import { readMagicUrl, storeMagicURL, rawTokenCheck } from '../core';
+import { rawTokenCheck, readMagicUrl, storeMagicURL } from '../core';
 import { requiredParams } from '../utils/index';
 import { tokenLookup } from './../tokenLookup';
 import { decodeTokens, filterTokens } from './../core/index';
+import { MessageAction, MessageResponseAction } from '../client/messaging';
 var Outlet = (function () {
     function Outlet(config) {
-        var _this = this;
-        this.eventSender = {
-            emitCookieSupport: function () {
-                window.parent.postMessage({
-                    evt: "cookie-support-check",
-                    thirdPartyCookies: localStorage.getItem('cookie-support-check')
-                }, document.referrer);
-            },
-            emitTabIssuerTokensPassive: function (opener, storageTokens, parentOrigin) {
-                opener.postMessage({
-                    evt: "set-tab-issuer-tokens-passive",
-                    issuer: _this.tokenName,
-                    tokens: storageTokens
-                }, parentOrigin);
-            },
-            emitTabIssuerTokensActive: function (opener, storageTokens, parentOrigin) {
-                opener.postMessage({
-                    evt: "set-tab-issuer-tokens-active",
-                    issuer: _this.tokenName,
-                    tokens: storageTokens
-                }, parentOrigin);
-            },
-            emitIframeIssuerTokensPassive: function (tokens) {
-                window.parent.postMessage({
-                    evt: "set-iframe-issuer-tokens-passive",
-                    issuer: _this.tokenName,
-                    tokens: tokens
-                }, document.referrer);
-            },
-            emitIframeIssuerTokensActive: function (tokens) {
-                window.parent.postMessage({
-                    evt: "set-iframe-issuer-tokens-active",
-                    issuer: _this.tokenName,
-                    tokens: tokens
-                }, document.referrer);
-            },
-            emitTokenProofIframe: function (tokenProof) {
-                window.parent.postMessage({
-                    evt: 'proof-iframe',
-                    proof: JSON.stringify(tokenProof),
-                    issuer: _this.tokenName
-                }, document.referrer);
-            },
-            emitTokenProofTab: function (tokenProof) {
-                var opener = window.opener;
-                var referrer = document.referrer;
-                if (opener && referrer) {
-                    var pUrl = new URL(referrer);
-                    var parentOrigin = pUrl.origin;
-                    opener.postMessage({ evt: "proof-tab", proof: tokenProof, issuer: _this.tokenName }, parentOrigin);
-                }
-            }
-        };
         var tokenName = config.tokenName;
         this.tokenName = tokenName;
         this.tokenIssuer = tokenLookup[tokenName];
@@ -74,42 +22,34 @@ var Outlet = (function () {
         return filter ? JSON.parse(filter) : {};
     };
     Outlet.prototype.pageOnLoadEventHandler = function () {
+        var evtid = this.getDataFromQuery('evtid');
         var action = this.getDataFromQuery('action');
+        if (!document.referrer)
+            return;
+        console.log("Outlet received event ID " + evtid + " action " + action);
         switch (action) {
-            case 'get-iframe-issuer-tokens':
-                var negotiationType = this.getDataFromQuery('type');
-                if (negotiationType) {
-                    this.getIframeIssuerTokens(this.tokenName, this.getFilter(), negotiationType);
-                }
-                else {
-                    requiredParams(negotiationType, "negotiation type required to handle this event");
-                }
+            case MessageAction.GET_ISSUER_TOKENS:
+                this.sendTokens(evtid);
                 break;
-            case 'get-tab-issuer-tokens':
-                var _a = this.getTabIssuerTokens(this.tokenName, this.getFilter()), storageTokens = _a.storageTokens, parentOrigin = _a.parentOrigin;
-                if (window.opener && storageTokens && parentOrigin) {
-                    this.eventSender.emitTabIssuerTokensActive(window.opener, storageTokens, parentOrigin);
-                }
-                break;
-            case 'get-token-proof':
+            case MessageAction.GET_PROOF:
                 var token = this.getDataFromQuery('token');
                 requiredParams(token, "unsigned token is missing");
-                var isTabOrIframe = this.getDataFromQuery('type');
-                this.sendTokenProof(token, isTabOrIframe);
+                this.sendTokenProof(evtid, token);
                 break;
-            case 'cookie-support-check':
-                this.eventSender.emitCookieSupport();
+            case MessageAction.COOKIE_CHECK:
+                this.sendMessageResponse({
+                    evtid: evtid,
+                    evt: MessageResponseAction.COOKIE_CHECK,
+                    thirdPartyCookies: localStorage.getItem('cookie-support-check')
+                });
                 break;
             default:
                 localStorage.setItem('cookie-support-check', 'test');
-                var _b = this.tokenIssuer, tokenUrlName = _b.tokenUrlName, tokenSecretName = _b.tokenSecretName, tokenIdName = _b.tokenIdName, itemStorageKey = _b.itemStorageKey;
+                var _a = this.tokenIssuer, tokenUrlName = _a.tokenUrlName, tokenSecretName = _a.tokenSecretName, tokenIdName = _a.tokenIdName, itemStorageKey = _a.itemStorageKey;
                 var tokens = readMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey);
                 if (tokens && tokens.length)
                     storeMagicURL(tokens, itemStorageKey);
-                var _c = this.getTabIssuerTokens(this.tokenName, this.getFilter()), storageTokens = _c.storageTokens, parentOrigin = _c.parentOrigin;
-                if (window.opener && storageTokens && parentOrigin) {
-                    this.eventSender.emitTabIssuerTokensPassive(window.opener, storageTokens, parentOrigin);
-                }
+                this.sendTokens(evtid);
                 break;
         }
     };
@@ -118,42 +58,45 @@ var Outlet = (function () {
         if (!storageTokens)
             return [];
         var decodedTokens = decodeTokens(storageTokens, tokenLookup[tokenName].tokenParser, tokenLookup[tokenName].unsignedTokenDataName);
-        var filteredTokens = filterTokens(decodedTokens, filter);
-        return filteredTokens;
+        return filterTokens(decodedTokens, filter);
     };
-    Outlet.prototype.sendTokenProof = function (token, type) {
+    Outlet.prototype.sendTokenProof = function (evtid, token) {
         var _this = this;
         if (!token)
             return 'error';
         var unsignedToken = JSON.parse(token);
         rawTokenCheck(unsignedToken, this.tokenIssuer).then(function (tokenObj) {
             window.authenticator.getAuthenticationBlob(tokenObj, function (tokenProof) {
-                if (type === 'iframe')
-                    _this.eventSender.emitTokenProofIframe(tokenProof);
-                else
-                    _this.eventSender.emitTokenProofTab(tokenProof);
+                _this.sendMessageResponse({
+                    evtid: evtid,
+                    evt: MessageResponseAction.PROOF,
+                    issuer: _this.tokenName,
+                    proof: JSON.stringify(tokenProof)
+                });
             });
         });
     };
-    Outlet.prototype.getIframeIssuerTokens = function (tokenName, filter, negotiationType) {
-        var storageTokens = this.prepareTokenOutput(tokenName, filter);
-        if (negotiationType === 'passive')
-            this.eventSender.emitIframeIssuerTokensPassive(storageTokens);
-        else
-            this.eventSender.emitIframeIssuerTokensActive(storageTokens);
+    Outlet.prototype.sendTokens = function (evtid) {
+        var issuerTokens = this.prepareTokenOutput(this.tokenName, this.getFilter());
+        this.sendMessageResponse({
+            evtid: evtid,
+            evt: MessageResponseAction.ISSUER_TOKENS,
+            issuer: this.tokenName,
+            tokens: issuerTokens
+        });
     };
-    Outlet.prototype.getTabIssuerTokens = function (tokenName, filter) {
-        var opener = window.opener;
-        var referrer = document.referrer;
-        if (opener && referrer) {
-            var pUrl = new URL(referrer);
-            var parentOrigin = pUrl.origin;
-            var storageTokens = this.prepareTokenOutput(tokenName, filter);
-            return { storageTokens: storageTokens, parentOrigin: parentOrigin };
+    Outlet.prototype.sendMessageResponse = function (response) {
+        var target, origin;
+        if (!window.opener) {
+            target = window.parent;
         }
         else {
-            return { storageTokens: null, parentOrigin: null };
+            target = window.opener;
         }
+        var pUrl = new URL(document.referrer);
+        origin = pUrl.origin;
+        if (target)
+            target.postMessage(response, origin);
     };
     return Outlet;
 }());
