@@ -1,4 +1,5 @@
 import { base64ToUint8array, requiredParams, compareObjects } from '../utils/index';
+// @ts-ignore
 import { ethers } from "ethers";
 
 interface FilterInterface {

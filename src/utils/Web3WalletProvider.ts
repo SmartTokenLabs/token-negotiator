@@ -1,6 +1,7 @@
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import Torus from "@toruslabs/torus-embed";
 import Web3 from "web3";
+// @ts-ignore
 import { ethers } from "ethers";
 
 // walletAddressProvider is designed to collect a stateful list of user 

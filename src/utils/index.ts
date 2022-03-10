@@ -60,10 +60,21 @@ export const attachPostMessageListener = (listener:any) => {
   } else {
   
       // IE8
-  
       // @ts-ignore
       window.attachEvent("onmessage", listener);
   
+  }
+}
+
+export const removePostMessageListener = (listener:any) => {
+
+  // @ts-ignore
+  if (window.removeEventListener){
+    window.removeEventListener("message", listener);
+  } else {
+    // IE8
+    // @ts-ignore
+    window.detachEvent("onmessage", listener);
   }
 }
 
