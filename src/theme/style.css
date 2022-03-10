@@ -51,8 +51,8 @@
   border-top-left-radius: 3px;
 }
 
-.overlay-tn.light .overlay-content-tn .brand-tn {
-  background-color: #000;
+.overlay-tn.light .overlay-content-tn {
+  border-top: 4px solid black;
 }
 
 .overlay-tn.light .overlay-content-tn .token-tn .title-tn,
@@ -173,8 +173,8 @@
   background-color: black;
 }
 
-.overlay-tn.dark .overlay-content-tn .brand-tn {
-  background-color: white;
+.overlay-tn.dark .overlay-content-tn {
+  border-top: 4px solid white;
 }
 
 .overlay-tn.dark .overlay-content-tn .token-tn {
@@ -327,13 +327,9 @@
   z-index: 888;
 }
 
-.overlay-tn .overlay-content-tn .brand-tn {
-  width: 100%;
-  height: 4px;
-}
-
 .overlay-tn .overlay-content-tn .issuer-connect-title {
   margin: 0;
+  max-width: 160px;
 }
 
 .overlay-tn .overlay-content-tn .headline-tn {

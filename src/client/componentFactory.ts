@@ -17,7 +17,6 @@ const torusSVG = '<svg width="62px" height="62px" viewBox="0 0 319 319" version=
 export const createOpeningViewMarkup = (openingHeading="Open a new world of discounts, available with your NFT's and Tokens.") => {
   return `
       <div class="opening-content-view-tn">
-          <div class="brand-tn"></div>
           <div class="inner-content-tn">
             <div class="inner-content-block-tn">
               <button class="opening-btn-tn" 
@@ -42,7 +41,6 @@ export const createWalletSelectionViewMarkup = () => {
     <div class="wallet-selection-view-tn">
       <div class="inner-content-tn">
         <div class="issuer-view-tn">
-          <div class="brand-tn"></div>
           <div class="headline-container-tn">
             <p style="text-align: center;">Select Wallet</p>
           </div>
@@ -82,14 +80,12 @@ export const createIssuerViewMarkup = (heading="Available Tokens") => {
   return `
     <div class="inner-content-tn">
       <div class="issuer-view-tn">
-        <div class="brand-tn"></div>
         <div class="headline-container-tn">
           <p class="headline-tn">${heading}</p>
         </div>
         <ul class="token-issuer-list-container-tn" role="menubar"></ul>
       </div>
       <div class="token-view-tn" style="display: none;">
-        <div class="brand-tn"></div>
         <div style="display: flex">
           <button aria-label="back to token issuer menu" class="back-to-menu-tn" onClick='navigateToTokensView(event)'>
             <svg style="position: relative; top: 1px;" width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
@@ -112,7 +108,9 @@ export const issuerConnectOnChainMarkup = (title:string, image:string, issuer:st
   return `
     <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
       <div style="display: flex; align-items: center;">
-        <img style="height: 32px; width: 32px; border-radius: 45px; margin-right: 9px;" src="${image}">
+        <object style="height: 32px; width: 32px; border-radius: 45px; margin-right: 9px;" data="${image}" type="image/png">
+          <div style="height: 32px; width: 32px; border-radius: 45px; margin-right: 9px; background: #e3e3e3"></div>
+        </object>
         <p class="issuer-connect-title">${title}</p>
       </div>
       <button aria-label="connect with the token issuer ${issuer}" aria-hidden="false" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="connect-btn-tn" data-issuer="${issuer}" onClick='connectOnChainTokenIssuer(event)'>Connect</button>
@@ -125,7 +123,9 @@ export const issuerConnectTabMarkup = (title:string, image:string, issuer:string
   return `
     <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
       <div style="display: flex; align-items: center;">
-        <img style="height: 32px; width: 32px; border-radius: 45px; margin-right: 9px;" src="${image}">
+        <object style="height: 32px; width: 32px; border-radius: 45px; margin-right: 9px;" data="${image}" type="image/png">
+        <div style="height: 32px; width: 32px; border-radius: 45px; margin-right: 9px; background: #e3e3e3"></div>
+        </object>
         <p class="issuer-connect-title">${title}</p>
       </div>
       <button aria-label="connect with the token issuer ${issuer}" aria-hidden="false" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="connect-btn-tn" data-issuer="${issuer}" onClick='connectTokenIssuerWithTab(event)'>Connect</button>
@@ -138,8 +138,10 @@ export const issuerConnectIframeMarkup = (title:string, image:string, issuer:str
   return `
     <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
       <div style="display: flex; align-items: center;">
-        <img style="height: 32px; width: 32px; border-radius: 45px; margin-right: 9px;" src="${image}">
-          <p class="issuer-connect-title">${title}</p>
+        <object style="height: 32px; width: 32px; border-radius: 45px; margin-right: 9px;" data="${image}" type="image/png">
+          <div style="height: 32px; width: 32px; border-radius: 45px; margin-right: 9px; background: #e3e3e3"></div>
+        </object>
+        <p class="issuer-connect-title">${title}</p>
       </div>
       <button aria-label="connect with the token issuer ${issuer}" aria-hidden="false" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="connect-btn-tn" data-issuer="${issuer}" onClick='connectTokenIssuerWithIframe(event)'>Connect</button>
       <button aria-hidden="true" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="tokens-btn-tn" data-issuer="${issuer}" onClick='navigateToTokensView(event)'>Tokens Available</button>
@@ -151,7 +153,9 @@ export const createTokenMarkup = (config: CreateTokenInterface) => {
   const { tokenIssuerKey, title, data, index, emblem, toggleState } = config;
   return `
     <li class='token-tn'>
-      <img class='emblem-tn' src=${emblem} />
+      <object class='emblem-tn' data="${emblem}" type="image/png">
+        <div class='emblem-tn'></div>
+      </object>
       <div class='data-tn'>
           <p class='token-title-tn'>${title}</p>
           <p class='detail-tn'>#${index}</p>
