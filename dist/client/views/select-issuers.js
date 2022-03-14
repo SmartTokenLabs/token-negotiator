@@ -173,12 +173,20 @@ var SelectIssuers = (function (_super) {
                 if (JSON.stringify(t) === JSON.stringify(st))
                     isSelected = true;
             });
+            var nftImage = t.image;
+            if (!nftImage)
+                nftImage = t.image_url;
+            if (!nftImage)
+                nftImage = emblem;
+            var nftTitle = t.name;
+            if (!nftTitle)
+                nftTitle = title;
             tokens.push({
                 data: t,
                 tokenIssuerKey: issuer,
                 index: i,
-                title: t.title ? t.title : title,
-                emblem: t.image ? t.image : emblem,
+                title: nftTitle,
+                emblem: nftImage,
                 toggleState: isSelected
             });
         });
