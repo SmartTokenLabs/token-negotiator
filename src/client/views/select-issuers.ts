@@ -197,12 +197,23 @@ export class SelectIssuers extends AbstractView {
 
             });
 
+            // TODO define this data/manage fall backs at the point of NFT discovery.
+
+            let nftImage = t.image;
+            if(!nftImage) nftImage = t.image_url;
+            if(!nftImage) nftImage = emblem;
+            
+            let nftTitle = t.name;
+            if(!nftTitle) nftTitle = title;
+
+            // end of TODO
+
             tokens.push({
                 data: t,
                 tokenIssuerKey: issuer,
                 index: i,
-                title: t.title ? t.title : title,
-                emblem: t.image ? t.image : emblem,
+                title: nftTitle,
+                emblem: nftImage,
                 toggleState: isSelected
             });
 
