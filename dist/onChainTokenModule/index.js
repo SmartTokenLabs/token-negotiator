@@ -101,13 +101,27 @@ var OnChainTokenModule = (function () {
     };
     OnChainTokenModule.prototype.getContractDataOpenSea = function (contractAddress, chain, openSeaSlug) {
         return __awaiter(this, void 0, void 0, function () {
-            var options;
+            var options, options;
             return __generator(this, function (_a) {
                 if (this.getOnChainAPISupportBool('opensea', chain) === false)
                     return [2];
-                options = { method: 'GET' };
                 if (chain.toLocaleLowerCase() === "rinkeby") {
+                    options = { method: 'GET', headers: { Accept: 'application/json', 'X-API-KEY': '99687116fafa4daebc766eeedccce201' } };
                     return [2, fetch("https://rinkeby-api.opensea.io/api/v1/assets?asset_contract_address=" + contractAddress + "&collection=" + openSeaSlug + "&order_direction=desc&offset=0&limit=20", options)
+                            .then(function (response) { return response.json(); })
+                            .then(function (response) {
+                            return {
+                                chain: chain,
+                                contractAddress: contractAddress,
+                                emblem: response.assets[0].collection.image_url,
+                                title: response.assets[0].collection.name
+                            };
+                        })
+                            .catch(function (err) { return console.error(err); })];
+                }
+                if (chain.toLocaleLowerCase() === "mainnet" || chain.toLocaleLowerCase() === "eth") {
+                    options = { method: 'GET', headers: { Accept: 'application/json', 'X-API-KEY': '3940c5b8cf4a4647bc22ff9b0a84f75a' } };
+                    return [2, fetch("https://api.opensea.io/api/v1/assets?asset_contract_address=" + contractAddress + "&collection=" + openSeaSlug + "&order_direction=desc&offset=0&limit=20", options)
                             .then(function (response) { return response.json(); })
                             .then(function (response) {
                             return {
@@ -224,16 +238,23 @@ var OnChainTokenModule = (function () {
         if (offset === void 0) { offset = 0; }
         if (limit === void 0) { limit = 20; }
         return __awaiter(this, void 0, void 0, function () {
-            var options;
+            var options, options;
             return __generator(this, function (_a) {
                 if (this.getOnChainAPISupportBool('opensea', chain) === false)
                     return [2];
                 requiredParams((chain && address && owner), 'cannot search for tokens, missing params');
                 if (chain === 'rinkeby') {
-                    options = {
-                        method: 'GET'
-                    };
+                    options = { method: 'GET', headers: { Accept: 'application/json', 'X-API-KEY': '99687116fafa4daebc766eeedccce201' } };
                     return [2, fetch("https://testnets-api.opensea.io/api/v1/assets?owner=" + owner + "&collection=" + openSeaSlug + "&order_direction=desc&offset=0&limit=20", options)
+                            .then(function (response) { return response.json(); })
+                            .then(function (response) {
+                            return response.assets;
+                        })
+                            .catch(function (err) { return console.error(err); })];
+                }
+                if (chain === 'mainnet' || chain === 'eth') {
+                    options = { method: 'GET', headers: { Accept: 'application/json', 'X-API-KEY': '3940c5b8cf4a4647bc22ff9b0a84f75a' } };
+                    return [2, fetch("https://api.opensea.io/api/v1/assets?owner=" + owner + "&collection=" + openSeaSlug + "&order_direction=desc&offset=0&limit=20", options)
                             .then(function (response) { return response.json(); })
                             .then(function (response) {
                             return response.assets;
