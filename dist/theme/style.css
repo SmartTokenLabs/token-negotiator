@@ -253,6 +253,7 @@
 .overlay-tn {
   font-family: 'Source Sans Pro', sans-serif;
   position: fixed;
+  z-index: 9999;
   bottom: 24px;
   right: 24px;
 }
