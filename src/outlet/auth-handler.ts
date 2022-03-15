@@ -58,6 +58,19 @@ export class AuthHandler {
                 return reject("Attestation origin is null");
 
             window.addEventListener("message", (e) => {
+
+                if (!this.attestationOrigin)
+                    return;
+
+                let attestURL = new URL(this.attestationOrigin);
+
+                if (e.origin !== attestURL.origin) {
+                    return;
+                }
+
+                if (!this.iframe || !this.iframeWrap || !this.iframe.contentWindow)
+                    return;
+
                 this.postMessageAttestationListener(e, resolve, reject);
             });
 
@@ -87,18 +100,6 @@ export class AuthHandler {
     }
 
     postMessageAttestationListener(event: MessageEvent, resolve:Function, reject:Function){
-
-        if (!this.iframe || !this.iframeWrap || !this.iframe.contentWindow)
-            return;
-
-        if (!this.attestationOrigin)
-            return;
-
-        let attestURL = new URL(this.attestationOrigin);
-
-        if (event.origin !== attestURL.origin) {
-            return;
-        }
 
         console.log('postMessageAttestationListener event (Authenticator)',event);
 
