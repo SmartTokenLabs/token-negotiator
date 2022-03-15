@@ -15,7 +15,7 @@ export class SelectIssuers extends AbstractView {
               <div class="issuer-view-tn">
                 <div class="brand-tn"></div>
                 <div class="headline-container-tn">
-                  <p class="headline-tn">${this.params.options.IssuerHeading}</p>
+                  <p class="headline-tn">${this.params.options.issuerHeading}</p>
                 </div>
                 <ul class="token-issuer-list-container-tn" role="menubar"></ul>
               </div>
