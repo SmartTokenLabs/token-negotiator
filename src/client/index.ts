@@ -415,16 +415,16 @@ export class Client {
                 "<small>You may need to sign a new challenge in your wallet</small>"
             );
 
-        const addressMatch = await this.checkPublicAddressMatch(issuer, unsignedToken);
-
-        // e.g. create warning notification inside overlay.
-        if(!addressMatch) {
-            if (this.popup)
-                this.popup.showError("Address does not match.");
-            return;
-        }
-
         try {
+            const addressMatch = await this.checkPublicAddressMatch(issuer, unsignedToken);
+
+            // e.g. create warning notification inside overlay.
+            if(!addressMatch) {
+                if (this.popup)
+                    this.popup.showError("Address does not match.");
+                return;
+            }
+
             let data = await this.messaging.sendMessage({
                 issuer: issuer,
                 action: MessageAction.GET_PROOF,
