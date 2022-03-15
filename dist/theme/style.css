@@ -486,12 +486,6 @@
   border: 3px solid #005fcc !important;
 }
 
-.overlay-content-tn input[type=checkbox] {
-  position: relative;
-  cursor: pointer;
-  z-index: 1;
-}
-
 .overlay-tn li.issuer-connect-banner-tn {
   box-sizing: border-box;
 }
