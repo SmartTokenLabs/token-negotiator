@@ -1,6 +1,6 @@
 //@ts-nocheck
 
-import { requiredParams, splitOnChainKey } from './../utils/index';
+import {requiredParams, splitOnChainKey} from './../utils/index';
 
 export class OnChainTokenModule {
 
@@ -34,6 +34,9 @@ export class OnChainTokenModule {
                 'mumbai',
                 'avalanche',
                 'fantom'
+            ],
+            poap: [
+                'xdai'
             ]
         }
         
@@ -62,6 +65,16 @@ export class OnChainTokenModule {
         const { address, chain, openSeaSlug } = splitOnChainKey(issuerKey);
 
         let collectionData = null;
+
+        // POAP
+        if (address.toLowerCase() == "0x22c1f6050e56d2876009903609a2cc3fef83b415"){
+            return {
+                chain,
+                address,
+                emblem: "https://storage.googleapis.com/subgraph-images/1647414847706poap.jpeg",
+                title: "POAP Proof of attendance protocol"
+            }
+        }
 
         // try open sea first when there is a slug provided
         if (openSeaSlug) collectionData = await this.getContractDataOpenSea(address, chain, openSeaSlug);
@@ -193,6 +206,10 @@ export class OnChainTokenModule {
 
         let tokens = [];
 
+        if (address.toLowerCase() == "0x22c1f6050e56d2876009903609a2cc3fef83b415" && chain == "xdai"){
+            return await this.getTokensPOAP();
+        }
+
         if(openSeaSlug) tokens = await this.getTokensOpenSea(address, chain, owner, openSeaSlug);
 
         if(!openSeaSlug || !tokens.length) tokens = await this.getTokensMoralis(address, chain, owner);
@@ -302,6 +319,52 @@ export class OnChainTokenModule {
         });
 
         return promise;
+    }
+
+    async getTokensPOAP(owner:string){
+
+        let query = `
+            {
+              account(id: "0x7ff8b020c2ecd40613063ae1d2ee6a2a383793fa"){
+                id,
+                tokens{
+                    id,
+                    uri
+                },
+                tokensOwned
+              }
+            }
+        `;
+
+        let res = await fetch("https://api.thegraph.com/subgraphs/name/micwallace/poap-xdai", {
+            method: 'POST',
+            body: JSON.stringify({query: query})
+        });
+
+        let graphData = await res.json();
+
+        let tokens = [];
+
+        for (let token of graphData.data.account.tokens){
+
+            let data;
+
+            try {
+                data = await fetch(token.uri);
+                data = await data.json();
+            } catch (e){
+                console.log(e);
+                continue;
+            }
+
+            tokens.push({
+                title: data.name,
+                image: data.image_url,
+                data: data
+            });
+        }
+
+        return tokens;
     }
 
 }
