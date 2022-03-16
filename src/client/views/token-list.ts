@@ -1,4 +1,5 @@
 import {AbstractView} from "./view-interface";
+import {IconView} from "./icon-view";
 
 export interface TokenListItemInterface {
     tokenIssuerKey: string;
@@ -31,6 +32,8 @@ export class TokenList extends AbstractView {
         this.loadedCount = 0;
 
         this.viewContainer.innerHTML = this.getTokenListItems();
+
+        this.renderIcons();
 
         if (this.autoLoadMore){
             let loadMoreElem = this.viewContainer.querySelector('.load-more-tn');
@@ -79,10 +82,32 @@ export class TokenList extends AbstractView {
         loadMoreElem.insertAdjacentHTML('afterend', this.getTokenListItems());
         loadMoreElem.remove();
 
+        this.renderIcons();
+
         if (this.interceptObs) {
             let loadMoreElem = this.viewContainer.querySelector('.load-more-tn');
             if (loadMoreElem)
                 this.interceptObs.observe(loadMoreElem);
+        }
+    }
+
+    private renderIcons(){
+
+        for(let elem of this.viewContainer.getElementsByClassName('img-container-tn')){
+
+            console.log(elem.childNodes);
+            console.log(elem.querySelector('img'));
+
+            // ignore already initiated icons
+            if (elem.querySelector('img'))
+                return;
+
+            let params = {
+                src: elem.getAttribute('data-image-src'),
+                title: elem.getAttribute('data-token-title'),
+            };
+
+            new IconView(elem, params).render();
         }
     }
 
@@ -129,7 +154,7 @@ export class TokenList extends AbstractView {
         const { tokenIssuerKey, title, data, index, emblem, toggleState } = config;
         return `
             <li class='token-tn'>
-              <img class='emblem-tn' src=${emblem} />
+              <div class="img-container-tn emblem-tn shimmer-tn" data-image-src="${emblem}" data-token-title="${title}"></div>
               <div class='data-tn'>
                   <p class='token-title-tn'>${title}</p>
                   <p class='detail-tn'>#${index}</p>
