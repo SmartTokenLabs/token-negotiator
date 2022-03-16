@@ -95,10 +95,7 @@ export class TokenList extends AbstractView {
 
         for(let elem of this.viewContainer.getElementsByClassName('img-container-tn')){
 
-            console.log(elem.childNodes);
-            console.log(elem.querySelector('img'));
-
-            // ignore already initiated icons
+            // ignore already rendered icons
             if (elem.querySelector('img'))
                 return;
 

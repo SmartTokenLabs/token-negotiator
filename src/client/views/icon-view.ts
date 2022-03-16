@@ -16,7 +16,7 @@ export class IconView {
         let src = this.params.src;
         let image;
 
-        if (src){
+        if (src && src != "undefined"){
 
             // Create image elements and add onload/onerror events
             image = document.createElement('img');
