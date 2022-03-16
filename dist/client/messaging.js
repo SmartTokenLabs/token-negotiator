@@ -47,6 +47,7 @@ export var MessageResponseAction;
     MessageResponseAction["ISSUER_TOKENS"] = "issuer-tokens";
     MessageResponseAction["PROOF"] = "proof";
     MessageResponseAction["ERROR"] = "error";
+    MessageResponseAction["SHOW_FRAME"] = "show-frame";
 })(MessageResponseAction || (MessageResponseAction = {}));
 var Messaging = (function () {
     function Messaging() {
@@ -88,7 +89,10 @@ var Messaging = (function () {
             _this.setResponseListener(id, request.origin, request.timeout, resolve, reject, function () {
                 if (iframe === null || iframe === void 0 ? void 0 : iframe.parentNode)
                     iframe.parentNode.removeChild(iframe);
-            });
+                var modal = _this.getModal();
+                if (modal)
+                    modal.style.display = "none";
+            }, iframe);
             iframe.src = url;
         });
     };
@@ -104,7 +108,9 @@ var Messaging = (function () {
             tabRef = _this.openTab(_this.constructUrl(id, request));
         });
     };
-    Messaging.prototype.setResponseListener = function (id, origin, timeout, resolve, reject, cleanUp) {
+    Messaging.prototype.setResponseListener = function (id, origin, timeout, resolve, reject, cleanUpCallback, iframe) {
+        var _this = this;
+        if (iframe === void 0) { iframe = null; }
         var received = false;
         var timer = null;
         var listener = function (event) {
@@ -117,6 +123,13 @@ var Messaging = (function () {
                     received = true;
                     if (response.evt == MessageResponseAction.ERROR) {
                         reject(response.errors);
+                    }
+                    else if (response.evt == MessageResponseAction.SHOW_FRAME) {
+                        if (iframe) {
+                            var modal = _this.getModal();
+                            modal.style.display = "block";
+                        }
+                        return;
                     }
                     else {
                         resolve(event.data);
@@ -132,7 +145,7 @@ var Messaging = (function () {
         };
         var afterResolveOrError = function () {
             removePostMessageListener(listener);
-            cleanUp();
+            cleanUpCallback();
         };
         attachPostMessageListener(listener);
         if (timeout == undefined)
@@ -143,6 +156,22 @@ var Messaging = (function () {
                     reject("Failed to receive response from window/iframe");
                 afterResolveOrError();
             }, timeout);
+    };
+    Messaging.prototype.getModal = function () {
+        var modal = document.getElementById("modal-tn");
+        if (modal)
+            return modal;
+        modal = document.createElement('div');
+        modal.id = "modal-tn";
+        modal.className = "modal-tn";
+        modal.style.display = "none";
+        modal.innerHTML = "\n            <div class=\"modal-content-tn\">\n                <div class=\"modal-header-tn\">\n                    <span class=\"modal-close-tn\">&times;</span>\n                </div>\n                <div class=\"modal-body-tn\"></div>\n            </div>\n        ";
+        document.body.appendChild(modal);
+        modal.getElementsByClassName('modal-close-tn')[0].addEventListener('click', function () {
+            if (modal)
+                modal.style.display = "none";
+        });
+        return modal;
     };
     Messaging.prototype.getCookieSupport = function (testOrigin) {
         return __awaiter(this, void 0, void 0, function () {
@@ -190,10 +219,8 @@ var Messaging = (function () {
     };
     Messaging.prototype.createIframe = function (url) {
         var iframe = document.createElement('iframe');
-        iframe.style.width = '1px';
-        iframe.style.height = '1px';
-        iframe.style.opacity = '0';
-        document.body.appendChild(iframe);
+        var modal = this.getModal();
+        modal.getElementsByClassName('modal-body-tn')[0].appendChild(iframe);
         if (url)
             iframe.src = url;
         return iframe;

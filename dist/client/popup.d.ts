@@ -12,8 +12,12 @@ export declare class Popup {
     viewContainer: any;
     loadContainer: any;
     currentView: ViewInterface | undefined;
+    overlayShouldClose: boolean;
     constructor(options: PopupOptionsInterface, client: Client);
     initialize(): void;
+    windowClickEvt(event: any): void;
+    overlayClickEvt(): void;
+    closeOverlay(): void;
     togglePopup(): void;
     updatePopup(ViewClass: ViewConstructor<AbstractView>, data?: any): void;
     showError(...message: string[]): void;

@@ -1,13 +1,8 @@
+import { MessageResponseInterface } from '../client/messaging';
 interface OutletInterface {
     tokenName: string;
 }
-declare global {
-    interface Window {
-        Authenticator: any;
-    }
-}
 export declare class Outlet {
-    authenticator: any;
     config: any;
     tokenName: any;
     tokenIssuer: any;
@@ -16,8 +11,8 @@ export declare class Outlet {
     getFilter(): any;
     pageOnLoadEventHandler(): void;
     prepareTokenOutput(tokenName: string, filter: any): any;
-    sendTokenProof(evtid: any, token: any): "error" | undefined;
+    sendTokenProof(evtid: any, token: any): Promise<"error" | undefined>;
     private sendTokens;
-    private sendMessageResponse;
+    sendMessageResponse(response: MessageResponseInterface): void;
 }
 export {};

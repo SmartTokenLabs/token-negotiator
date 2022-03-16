@@ -32,7 +32,7 @@ export class SelectWallet extends AbstractView {
                       ${walletConnectSVG}
                       <p>Wallet Connect</p>
                     </button>
-                    <button class="wallet-button-tn" data-wallet="Torus">Event
+                    <button class="wallet-button-tn" data-wallet="Torus">
                       ${torusSVG}
                       <p>Torus</p>
                     </button>

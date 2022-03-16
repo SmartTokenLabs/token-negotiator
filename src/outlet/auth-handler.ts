@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import {Item} from '../tokenLookup'
 import {MessageResponseAction} from '../client/messaging'
 import {Outlet} from "./index";
