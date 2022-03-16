@@ -321,9 +321,11 @@
   transition: all .3s .1s;
   bottom: 88px;
   padding: 0;
+  pointer-events: inherit;
 }
 
 .overlay-tn .overlay-content-tn {
+  pointer-events: none;
   opacity: 0;
   visibility: hidden;
   position: absolute;

@@ -24,7 +24,8 @@ export declare enum MessageResponseAction {
     COOKIE_CHECK = "cookie-check",
     ISSUER_TOKENS = "issuer-tokens",
     PROOF = "proof",
-    ERROR = "error"
+    ERROR = "error",
+    SHOW_FRAME = "show-frame"
 }
 export declare class Messaging {
     iframeStorageSupport: null | boolean;
@@ -34,6 +35,7 @@ export declare class Messaging {
     private sendIframe;
     private sendPopup;
     private setResponseListener;
+    private getModal;
     getCookieSupport(testOrigin: string): Promise<boolean>;
     private thirdPartyCookieSupportCheck;
     private constructUrl;

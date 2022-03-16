@@ -105,6 +105,8 @@ var Client = (function () {
         this.web3WalletProvider = new Web3WalletProvider();
         this.onChainTokenModule = new OnChainTokenModule();
         this.messaging = new Messaging();
+        document.onclick = function (e) {
+        };
     }
     Client.prototype.getTokenData = function () {
         return {
@@ -362,17 +364,17 @@ var Client = (function () {
                         requiredParams((issuer && unsignedToken), { status: false, useEthKey: null, proof: null });
                         if (this.popup)
                             this.popup.showLoader("<h4>Authenticating...</h4>", "<small>You may need to sign a new challenge in your wallet</small>");
-                        return [4, this.checkPublicAddressMatch(issuer, unsignedToken)];
+                        _a.label = 1;
                     case 1:
+                        _a.trys.push([1, 4, , 5]);
+                        return [4, this.checkPublicAddressMatch(issuer, unsignedToken)];
+                    case 2:
                         addressMatch = _a.sent();
                         if (!addressMatch) {
                             if (this.popup)
                                 this.popup.showError("Address does not match.");
                             return [2];
                         }
-                        _a.label = 2;
-                    case 2:
-                        _a.trys.push([2, 4, , 5]);
                         return [4, this.messaging.sendMessage({
                                 issuer: issuer,
                                 action: MessageAction.GET_PROOF,

@@ -136,8 +136,13 @@ export class Client {
         this.onChainTokenModule = new OnChainTokenModule();
 
         this.messaging = new Messaging();
-    }
 
+        document.onclick = function (e) {
+
+        }
+
+    }
+    
     getTokenData(){
         return {
             offChainTokens: this.offChainTokens,

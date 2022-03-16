@@ -1,4 +1,4 @@
-interface Item {
+export interface Item {
     onChain: any;
     tokenIssuerPublicKey?: any;
     title?: any;
@@ -16,6 +16,8 @@ interface Item {
     tokenParser?: any;
     smartContractAddress?: any;
     symbol?: any;
+    base64senderPublicKey?: string;
+    base64attestorPubKey?: string;
 }
 interface TokenLookupInterface {
     [issuer: string]: Item;
