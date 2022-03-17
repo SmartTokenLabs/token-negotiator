@@ -207,7 +207,7 @@ export class OnChainTokenModule {
         let tokens = [];
 
         if (address.toLowerCase() == "0x22c1f6050e56d2876009903609a2cc3fef83b415" && chain == "xdai"){
-            return await this.getTokensPOAP();
+            return await this.getTokensPOAP(owner);
         }
 
         if(openSeaSlug) tokens = await this.getTokensOpenSea(address, chain, owner, openSeaSlug);
@@ -321,7 +321,24 @@ export class OnChainTokenModule {
         return promise;
     }
 
-    async getTokensPOAP(owner:string){
+    async getTokensPOAP(address:string){
+
+        address = "0x7ff8b020c2ecd40613063ae1d2ee6a2a383793fa";
+
+        let res = await fetch("http://localhost:3099", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({address: address})
+        });
+
+        let graphData = await res.json();
+
+        if (graphData.tokens)
+            return graphData.tokens;
+
+        return [];
 
         let query = `
             {
