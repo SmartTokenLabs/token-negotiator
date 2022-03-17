@@ -16,6 +16,7 @@ export declare class TokenList extends AbstractView {
     render(): void;
     getTokenListItems(): string;
     loadMoreTokens(): void;
+    private renderIcons;
     tokenToggleSelection(): void;
     createLoadMoreMarkup(): string;
     createTokenMarkup(config: TokenListItemInterface): string;

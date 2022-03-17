@@ -49,8 +49,20 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === "number") return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+};
 import { AbstractView } from "./view-interface";
 import { TokenList } from "./token-list";
+import { IconView } from "./icon-view";
 var SelectIssuers = (function (_super) {
     __extends(SelectIssuers, _super);
     function SelectIssuers() {
@@ -70,6 +82,7 @@ var SelectIssuers = (function (_super) {
         this.tokenListView = new TokenList(this.client, this.popup, tokensListElem, {});
     };
     SelectIssuers.prototype.populateIssuers = function () {
+        var e_1, _a;
         var _this = this;
         var data = this.client.getTokenData();
         var html = "";
@@ -80,6 +93,23 @@ var SelectIssuers = (function (_super) {
             html += _this.issuerConnectMarkup(data.tokenLookup[issuer].title, data.tokenLookup[issuer].emblem, issuer);
         });
         this.issuerListContainer.innerHTML = html;
+        try {
+            for (var _b = __values(this.issuerListContainer.getElementsByClassName('img-container-tn')), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var elem = _c.value;
+                var params = {
+                    src: elem.getAttribute('data-image-src'),
+                    title: elem.getAttribute('data-token-title'),
+                };
+                new IconView(elem, params).render();
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
         this.issuerListContainer.addEventListener('click', function (e) {
             if (e.target.classList.contains('connect-btn-tn')) {
                 _this.connectTokenIssuer(e);
@@ -90,7 +120,7 @@ var SelectIssuers = (function (_super) {
         });
     };
     SelectIssuers.prototype.issuerConnectMarkup = function (title, image, issuer) {
-        return "\n            <li class=\"issuer-connect-banner-tn\" data-issuer=\"" + issuer + "\" role=\"menuitem\">\n              <div style=\"display: flex; align-items: center;\">\n                <img style=\"height: 32px; width: 32px; border-radius: 45px; margin-right: 9px;\" src=\"" + image + "\">\n                <p class=\"issuer-connect-title\">" + title + "</p>\n              </div>\n              <button aria-label=\"connect with the token issuer " + issuer + "\" aria-hidden=\"false\" aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"token-list-container-tn\" class=\"connect-btn-tn\" data-issuer=\"" + issuer + "\">Connect</button>\n              <button aria-label=\"tokens available from token issuer " + issuer + "\" aria-hidden=\"true\" aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"token-list-container-tn\" class=\"tokens-btn-tn\" data-issuer=\"" + issuer + "\">Tokens Available</button>\n            </li>\n        ";
+        return "\n            <li class=\"issuer-connect-banner-tn\" data-issuer=\"" + issuer + "\" role=\"menuitem\">\n              <div style=\"display: flex; align-items: center;\">\n                <div class=\"img-container-tn issuer-icon-tn shimmer-tn\" data-image-src=\"" + image + "\" data-token-title=\"" + title + "\"></div>\n                <p class=\"issuer-connect-title\">" + title + "</p>\n              </div>\n              <button aria-label=\"connect with the token issuer " + issuer + "\" aria-hidden=\"false\" aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"token-list-container-tn\" class=\"connect-btn-tn\" data-issuer=\"" + issuer + "\">Connect</button>\n              <button aria-label=\"tokens available from token issuer " + issuer + "\" aria-hidden=\"true\" aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"token-list-container-tn\" class=\"tokens-btn-tn\" data-issuer=\"" + issuer + "\">Tokens Available</button>\n            </li>\n        ";
     };
     SelectIssuers.prototype.backToIssuers = function () {
         this.tokensContainer.style.display = 'none';
