@@ -4,3 +4,4 @@ reports/coverage
 junit.xml
 dist-common-js
 _bundles
+.idea

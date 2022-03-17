@@ -620,16 +620,19 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
 }
 
 .overlay-tn .inner-content-tn {
-  width: 200%;
   padding: 0;
   display: flex;
   position: relative;
   left: 0;
   transition: all 0.2s ease-out;
-  height: 0;
+  height: 100%;
 }
 
-.overlay-tn .issuer-view-tn, .token-view-tn {
+.issuer-slider-tn {
+  width: 200%;
+}
+
+.issuer-slider-tn > div {
   width: 50%;
 }
 
@@ -680,8 +683,16 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
 }
 
 .view-content-tn  {
+  height: 100%;
+}
+
+.scroll-tn  {
   overflow: hidden scroll;
   height: 100%;
+}
+
+.issuer-view-tn, .token-view-tn {
+  width: 100%;
 }
 
 .overlay-tn .wallet-button-container-tn {
