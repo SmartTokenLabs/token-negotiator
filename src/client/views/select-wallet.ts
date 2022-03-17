@@ -19,7 +19,7 @@ export class SelectWallet extends AbstractView {
             </button>` : ' ';
 
         this.viewContainer.innerHTML = `
-            <div class="inner-content-tn">
+            <div class="inner-content-tn scroll-tn">
               <div class="wallet-selection-view-tn">
                 <div class="issuer-view-tn">
                   <div class="brand-tn"></div>

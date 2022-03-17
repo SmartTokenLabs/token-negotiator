@@ -12,15 +12,15 @@ export class SelectIssuers extends AbstractView {
     render(){
 
         this.viewContainer.innerHTML = `
-            <div class="inner-content-tn">
-              <div class="issuer-view-tn">
+            <div class="inner-content-tn issuer-slider-tn">
+              <div class="issuer-view-tn scroll-tn">
                 <div class="brand-tn"></div>
                 <div class="headline-container-tn">
                   <p class="headline-tn">${this.params.options.issuerHeading}</p>
                 </div>
                 <ul class="token-issuer-list-container-tn" role="menubar"></ul>
               </div>
-              <div class="token-view-tn" style="display: none;">
+              <div class="token-view-tn scroll-tn" style="display: none;">
                 <div class="brand-tn"></div>
                 <div style="display: flex">
                   <button aria-label="back to token issuer menu" class="back-to-menu-tn">
