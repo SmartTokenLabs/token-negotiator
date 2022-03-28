@@ -57,20 +57,21 @@ export class OnChainTokenModule {
                 title: "OpenSea Creature Sale"
         }
     */
-    async getInitialContractAddressMetaData (issuerKey:string) {
+    async getInitialContractAddressMetaData (issuer:any) {
 
-        const { address, chain, openSeaSlug } = splitOnChainKey(issuerKey);
+        // const { address, chain, openSeaSlug } = splitOnChainKey(issuerKey);
+        const { contract, chain, openSeaSlug } = issuer;
 
         let collectionData = null;
 
         // try open sea first when there is a slug provided
-        if (openSeaSlug) collectionData = await this.getContractDataOpenSea(address, chain, openSeaSlug);
+        if (openSeaSlug) collectionData = await this.getContractDataOpenSea(contract, chain, openSeaSlug);
 
         // if there is no slug or no data try moralis
-        if(!openSeaSlug || !collectionData) collectionData = await this.getContractDataMoralis(address, chain);
+        if(!openSeaSlug && !collectionData) collectionData = await this.getContractDataMoralis(contract, chain);
 
         // if there is still no data try Alchemy
-        if(!openSeaSlug || !collectionData) collectionData = await this.getContractDataAlchemy(address, chain);
+        if(!openSeaSlug && !collectionData) collectionData = await this.getContractDataAlchemy(contract, chain);
 
         return collectionData;
     }
@@ -205,17 +206,19 @@ export class OnChainTokenModule {
         return promise;
     }
 
-    async connectOnChainToken (issuerKey:string, owner:string) {
+    async connectOnChainToken (issuer:string, owner:string) {
 
-        const { address, chain, openSeaSlug } = splitOnChainKey(issuerKey);
+        // const { address, chain, openSeaSlug } = splitOnChainKey(issuerKey);
+
+        const { contract, chain, openSeaSlug } = issuer;
 
         let tokens = [];
 
-        if(openSeaSlug) tokens = await this.getTokensOpenSea(address, chain, owner, openSeaSlug);
+        if(openSeaSlug) tokens = await this.getTokensOpenSea(contract, chain, owner, openSeaSlug);
 
-        if(!openSeaSlug || !tokens.length) tokens = await this.getTokensMoralis(address, chain, owner);
+        if(!openSeaSlug && !tokens.length) tokens = await this.getTokensMoralis(contract, chain, owner);
 
-        if(!tokens.length) tokens = await this.getTokensAlchemy(address, chain, owner);
+        if(!openSeaSlug && !tokens.length) tokens = await this.getTokensAlchemy(contract, chain, owner);
 
         return tokens;
 

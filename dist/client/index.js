@@ -81,20 +81,19 @@ var Client = (function () {
         this.selectedTokens = {};
         this.clientCallBackEvents = {};
         issuers.forEach(function (issuer) {
-            if (tokenLookup[issuer]) {
-                if (tokenLookup[issuer].onChain === true) {
-                    _this.onChainTokens.tokenKeys.push(issuer);
-                    _this.onChainTokens[issuer] = { tokens: [] };
+            var tokenLookupData = tokenLookup[issuer.collectionKey];
+            if (tokenLookupData && !issuer.contract) {
+                if (tokenLookupData.onChain === true) {
+                    _this.onChainTokens.tokenKeys.push(issuer.collectionKey);
+                    _this.onChainTokens[issuer.collectionKey] = { tokens: [] };
                 }
                 else {
-                    _this.offChainTokens.tokenKeys.push(issuer);
-                    _this.offChainTokens[issuer] = { tokens: [] };
+                    _this.offChainTokens.tokenKeys.push(issuer.collectionKey);
+                    _this.offChainTokens[issuer.collectionKey] = { tokens: [] };
                 }
             }
             if ((issuer.contract) && (issuer.chain)) {
-                var issuerKey = issuer.contract + "." + issuer.chain;
-                if (issuer.openSeaSlug)
-                    issuerKey += "." + issuer.openSeaSlug;
+                var issuerKey = issuer.collectionKey;
                 _this.updateTokenLookupStore(issuerKey, issuer);
                 if (_this.onChainTokens[issuerKey])
                     return;
@@ -186,7 +185,7 @@ var Client = (function () {
                             var lookupData;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
-                                    case 0: return [4, this.onChainTokenModule.getInitialContractAddressMetaData(issuerKey)];
+                                    case 0: return [4, this.onChainTokenModule.getInitialContractAddressMetaData(this.tokenLookup[issuerKey])];
                                     case 1:
                                         lookupData = _a.sent();
                                         if (lookupData) {
@@ -201,13 +200,6 @@ var Client = (function () {
                         _a.sent();
                         return [2];
                 }
-            });
-        });
-    };
-    Client.prototype.setBlockChainTokens = function (onChainTokens) {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                return [2];
             });
         });
     };
@@ -254,10 +246,12 @@ var Client = (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4, Promise.all(onChainTokens.tokenKeys.map(function (issuerKey) { return __awaiter(_this, void 0, void 0, function () {
-                            var tokens;
+                            var issuer, tokens;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
-                                    case 0: return [4, this.onChainTokenModule.connectOnChainToken(issuerKey, this.web3WalletProvider.getConnectedWalletData()[0].address)];
+                                    case 0:
+                                        issuer = this.tokenLookup[issuerKey];
+                                        return [4, this.onChainTokenModule.connectOnChainToken(issuer, this.web3WalletProvider.getConnectedWalletData()[0].address)];
                                     case 1:
                                         tokens = _a.sent();
                                         this.onChainTokens[issuerKey].tokens = tokens;
@@ -297,7 +291,7 @@ var Client = (function () {
                         delete outputOnChain.tokenKeys;
                         outputOffChain = JSON.parse(JSON.stringify(this.offChainTokens));
                         delete outputOffChain.tokenKeys;
-                        console.log("Emitting tokens!!");
+                        console.log("Emit tokens");
                         console.log(outputOffChain);
                         this.eventSender.emitAllTokensToClient(__assign(__assign({}, outputOffChain), outputOnChain));
                         return [3, 6];
@@ -318,7 +312,7 @@ var Client = (function () {
                         filter = this.filter ? this.filter : {};
                         tokensOrigin = this.tokenLookup[issuer].tokenOrigin;
                         if (this.tokenLookup[issuer].onChain) {
-                            return [2, this.connectOnChainTokenIssuer(issuer)];
+                            return [2, this.connectOnChainTokenIssuer(this.tokenLookup[issuer])];
                         }
                         return [4, this.messaging.sendMessage({
                                 issuer: issuer,
@@ -335,15 +329,15 @@ var Client = (function () {
             });
         });
     };
-    Client.prototype.connectOnChainTokenIssuer = function (issuerKey) {
+    Client.prototype.connectOnChainTokenIssuer = function (issuer) {
         return __awaiter(this, void 0, void 0, function () {
             var tokens;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, this.onChainTokenModule.connectOnChainToken(issuerKey, this.web3WalletProvider.getConnectedWalletData()[0].address)];
+                    case 0: return [4, this.onChainTokenModule.connectOnChainToken(issuer, this.web3WalletProvider.getConnectedWalletData()[0].address)];
                     case 1:
                         tokens = _a.sent();
-                        this.onChainTokens[issuerKey].tokens = tokens;
+                        this.onChainTokens[issuer.collectionKey].tokens = tokens;
                         return [2, tokens];
                 }
             });

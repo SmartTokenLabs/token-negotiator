@@ -135,6 +135,7 @@ export class SelectIssuers extends AbstractView {
     async connectTokenIssuer(event:any) {
 
         const data = event.target.dataset;
+
         const issuer = data.issuer;
 
         let tokens:any[] = [];

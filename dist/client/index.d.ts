@@ -20,7 +20,7 @@ interface AuthenticateInterface {
     unsignedToken: any;
 }
 export declare class Client {
-    issuers: string[];
+    issuers: any[];
     type: string;
     filter: {};
     options: any;
@@ -42,13 +42,12 @@ export declare class Client {
     negotiatorConnectToWallet(walletType: string): Promise<any>;
     setPassiveNegotiationWebTokens(offChainTokens: any): Promise<void>;
     enrichTokenLookupDataOnChainTokens(onChainTokens: any): Promise<void>;
-    setBlockChainTokens(onChainTokens: any): Promise<void>;
     negotiate(): Promise<void>;
     activeNegotiationStrategy(): Promise<void>;
     setPassiveNegotiationOnChainTokens(onChainTokens: any): Promise<void>;
     passiveNegotiationStrategy(): Promise<void>;
     connectTokenIssuer(issuer: string): Promise<any[]>;
-    connectOnChainTokenIssuer(issuerKey: string): Promise<any[]>;
+    connectOnChainTokenIssuer(issuer: any): Promise<any[]>;
     updateSelectedTokens(selectedTokens: any): void;
     authenticate(config: AuthenticateInterface): Promise<void>;
     checkPublicAddressMatch(issuer: string, unsignedToken: any): Promise<true | {

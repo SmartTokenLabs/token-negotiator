@@ -34,7 +34,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-import { requiredParams, splitOnChainKey } from './../utils/index';
+import { requiredParams } from './../utils/index';
 var OnChainTokenModule = (function () {
     function OnChainTokenModule() {
     }
@@ -69,31 +69,31 @@ var OnChainTokenModule = (function () {
         };
         return apiBlockchainSupport[apiName].indexOf(chain) >= -1;
     };
-    OnChainTokenModule.prototype.getInitialContractAddressMetaData = function (issuerKey) {
+    OnChainTokenModule.prototype.getInitialContractAddressMetaData = function (issuer) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, address, chain, openSeaSlug, collectionData;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            var contract, chain, openSeaSlug, collectionData;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
-                        _a = splitOnChainKey(issuerKey), address = _a.address, chain = _a.chain, openSeaSlug = _a.openSeaSlug;
+                        contract = issuer.contract, chain = issuer.chain, openSeaSlug = issuer.openSeaSlug;
                         collectionData = null;
                         if (!openSeaSlug) return [3, 2];
-                        return [4, this.getContractDataOpenSea(address, chain, openSeaSlug)];
+                        return [4, this.getContractDataOpenSea(contract, chain, openSeaSlug)];
                     case 1:
-                        collectionData = _b.sent();
-                        _b.label = 2;
+                        collectionData = _a.sent();
+                        _a.label = 2;
                     case 2:
-                        if (!(!openSeaSlug || !collectionData)) return [3, 4];
-                        return [4, this.getContractDataMoralis(address, chain)];
+                        if (!(!openSeaSlug && !collectionData)) return [3, 4];
+                        return [4, this.getContractDataMoralis(contract, chain)];
                     case 3:
-                        collectionData = _b.sent();
-                        _b.label = 4;
+                        collectionData = _a.sent();
+                        _a.label = 4;
                     case 4:
-                        if (!(!openSeaSlug || !collectionData)) return [3, 6];
-                        return [4, this.getContractDataAlchemy(address, chain)];
+                        if (!(!openSeaSlug && !collectionData)) return [3, 6];
+                        return [4, this.getContractDataAlchemy(contract, chain)];
                     case 5:
-                        collectionData = _b.sent();
-                        _b.label = 6;
+                        collectionData = _a.sent();
+                        _a.label = 6;
                     case 6: return [2, collectionData];
                 }
             });
@@ -204,31 +204,31 @@ var OnChainTokenModule = (function () {
             });
         });
     };
-    OnChainTokenModule.prototype.connectOnChainToken = function (issuerKey, owner) {
+    OnChainTokenModule.prototype.connectOnChainToken = function (issuer, owner) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, address, chain, openSeaSlug, tokens;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            var contract, chain, openSeaSlug, tokens;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
-                        _a = splitOnChainKey(issuerKey), address = _a.address, chain = _a.chain, openSeaSlug = _a.openSeaSlug;
+                        contract = issuer.contract, chain = issuer.chain, openSeaSlug = issuer.openSeaSlug;
                         tokens = [];
                         if (!openSeaSlug) return [3, 2];
-                        return [4, this.getTokensOpenSea(address, chain, owner, openSeaSlug)];
+                        return [4, this.getTokensOpenSea(contract, chain, owner, openSeaSlug)];
                     case 1:
-                        tokens = _b.sent();
-                        _b.label = 2;
+                        tokens = _a.sent();
+                        _a.label = 2;
                     case 2:
-                        if (!(!openSeaSlug || !tokens.length)) return [3, 4];
-                        return [4, this.getTokensMoralis(address, chain, owner)];
+                        if (!(!openSeaSlug && !tokens.length)) return [3, 4];
+                        return [4, this.getTokensMoralis(contract, chain, owner)];
                     case 3:
-                        tokens = _b.sent();
-                        _b.label = 4;
+                        tokens = _a.sent();
+                        _a.label = 4;
                     case 4:
-                        if (!!tokens.length) return [3, 6];
-                        return [4, this.getTokensAlchemy(address, chain, owner)];
+                        if (!(!openSeaSlug && !tokens.length)) return [3, 6];
+                        return [4, this.getTokensAlchemy(contract, chain, owner)];
                     case 5:
-                        tokens = _b.sent();
-                        _b.label = 6;
+                        tokens = _a.sent();
+                        _a.label = 6;
                     case 6: return [2, tokens];
                 }
             });

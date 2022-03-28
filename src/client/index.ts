@@ -31,7 +31,7 @@ interface AuthenticateInterface {
 
 export class Client {
 
-    issuers: string[];
+    issuers: any[];
     type: string;
     filter: {};
     options: any;
@@ -84,21 +84,23 @@ export class Client {
 
         issuers.forEach((issuer: any) => {
 
-            if(tokenLookup[issuer]){
+            const tokenLookupData = tokenLookup[issuer.collectionKey];
+
+            if(tokenLookupData && !issuer.contract){
 
                 // For TokenScript Enabled Tokens
 
-                if (tokenLookup[issuer].onChain === true) {
+                if (tokenLookupData.onChain === true) {
 
-                    this.onChainTokens.tokenKeys.push(issuer);
+                    this.onChainTokens.tokenKeys.push(issuer.collectionKey);
 
-                    this.onChainTokens[issuer] = { tokens: [] };
+                    this.onChainTokens[issuer.collectionKey] = { tokens: [] };
 
                 } else {
 
-                    this.offChainTokens.tokenKeys.push(issuer);
+                    this.offChainTokens.tokenKeys.push(issuer.collectionKey);
 
-                    this.offChainTokens[issuer] = { tokens: [] };
+                    this.offChainTokens[issuer.collectionKey] = { tokens: [] };
 
                 }
 
@@ -109,9 +111,7 @@ export class Client {
             if((issuer.contract) && (issuer.chain)) {
 
                 // create key with address and chain for easy reference
-                let issuerKey = `${issuer.contract}.${issuer.chain}`;
-
-                if(issuer.openSeaSlug) issuerKey += `.${issuer.openSeaSlug}`;
+                let issuerKey = issuer.collectionKey; 
 
                 // Populate the token lookup store with initial data.
                 this.updateTokenLookupStore(issuerKey, issuer);
@@ -166,9 +166,6 @@ export class Client {
 
     async negotiatorConnectToWallet (walletType:string) {
     
-        // const { default: Web3WalletProvider } = await import('./../utils/Web3WalletProvider');
-        // this.web3WalletProvider = new Web3WalletProvider();
-
         let walletAddress = await this.web3WalletProvider.connectWith(walletType);
 
         logger('wallet address found: ' + walletAddress);
@@ -207,12 +204,11 @@ export class Client {
 
     }
 
-    // add collection data
     async enrichTokenLookupDataOnChainTokens(onChainTokens: any) {
 
         await Promise.all(onChainTokens.tokenKeys.map(async (issuerKey: string): Promise<any> => {
 
-            let lookupData = await this.onChainTokenModule.getInitialContractAddressMetaData(issuerKey);
+            let lookupData = await this.onChainTokenModule.getInitialContractAddressMetaData(this.tokenLookup[issuerKey]);
 
             if (lookupData) {
 
@@ -224,45 +220,6 @@ export class Client {
 
         }));
     
-    }
-
-    async setBlockChainTokens(onChainTokens: any) {
-
-        /*
-            -----------------------
-            blockchain token module
-            -----------------------
-
-            Gather blockchain tokens from a chosen source (
-                - The Graph
-                - Custom API
-                - EtherScan API
-                - ...
-            )
-        */
-
-        // await Promise.all(onChainTokens.tokenKeys.map(async (issuer: string): Promise<any> => {
-
-        //     // const { tokenOrigin } = tokenLookup[issuer];
-        //     // const tokens = await this.onChainTokenModule.connectOnChainToken();
-
-        //     // const tokens = await this.getTokensIframe({ issuer: issuer, filter: this.filter, tokensOrigin: tokenOrigin, negotiationType: 'passive' });
-
-        //     const tokens = await this.onChainTokenModule.connectOnChainToken();
-
-        //     this.onChainTokens[issuer].tokens = tokens;
-
-        //     return;
-
-        // }));
-
-        // // this will be a map 
-        // // const tokens = await this.onChainTokenModule.connectOnChainToken();
-
-        // console.log('tokens', tokens);
-
-        return;
-
     }
 
     async negotiate() {
@@ -287,9 +244,6 @@ export class Client {
 
         } else {
 
-            // const { default: Web3WalletProvider } = await import('./../utils/Web3WalletProvider');
-            // this.web3WalletProvider = new Web3WalletProvider();
-
             if(window.ethereum) await this.web3WalletProvider.connectWith('MetaMask');
 
             this.passiveNegotiationStrategy();
@@ -313,8 +267,10 @@ export class Client {
 
         await Promise.all(onChainTokens.tokenKeys.map(async (issuerKey: string): Promise<any> => {
 
+            const issuer = this.tokenLookup[issuerKey];
+
             const tokens = await this.onChainTokenModule.connectOnChainToken(
-                issuerKey,
+                issuer,
                 this.web3WalletProvider.getConnectedWalletData()[0].address
             );
 
@@ -346,12 +302,11 @@ export class Client {
 
             delete outputOnChain.tokenKeys;
 
-            // TODO - Create clone without token keys and return.
             let outputOffChain = JSON.parse(JSON.stringify(this.offChainTokens));
 
             delete outputOffChain.tokenKeys;
 
-            console.log("Emitting tokens!!");
+            console.log("Emit tokens");
             console.log(outputOffChain);
 
             this.eventSender.emitAllTokensToClient({ ...outputOffChain, ...outputOnChain });
@@ -370,7 +325,7 @@ export class Client {
         const tokensOrigin = this.tokenLookup[issuer].tokenOrigin;
 
         if (this.tokenLookup[issuer].onChain){
-            return this.connectOnChainTokenIssuer(issuer);
+            return this.connectOnChainTokenIssuer(this.tokenLookup[issuer]);
         }
 
         let data = await this.messaging.sendMessage({
@@ -387,14 +342,14 @@ export class Client {
         return data.tokens;
     }
 
-    async connectOnChainTokenIssuer (issuerKey:string) : Promise<any[]> {
+    async connectOnChainTokenIssuer (issuer:any) : Promise<any[]> {
 
         const tokens = await this.onChainTokenModule.connectOnChainToken(
-            issuerKey,
+            issuer,
             this.web3WalletProvider.getConnectedWalletData()[0].address
         );
 
-        this.onChainTokens[issuerKey].tokens = tokens;
+        this.onChainTokens[issuer.collectionKey].tokens = tokens;
 
         return tokens;
     }

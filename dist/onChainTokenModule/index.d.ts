@@ -1,7 +1,7 @@
 export declare class OnChainTokenModule {
     constructor();
     getOnChainAPISupportBool(apiName: any, chain: any): boolean;
-    getInitialContractAddressMetaData(issuerKey: string): Promise<unknown>;
+    getInitialContractAddressMetaData(issuer: any): Promise<unknown>;
     getContractDataOpenSea(contractAddress: string, chain: string, openSeaSlug: string): Promise<void | {
         chain: string;
         contractAddress: string;
@@ -15,7 +15,7 @@ export declare class OnChainTokenModule {
         title: any;
     }>;
     getContractDataAlchemy(contractAddress: string, chain: string): Promise<unknown>;
-    connectOnChainToken(issuerKey: string, owner: string): Promise<any>;
+    connectOnChainToken(issuer: string, owner: string): Promise<any>;
     getTokensOpenSea(address: string, chain: string, owner: string, openSeaSlug: string, offset?: number, limit?: number): Promise<any>;
     getTokensMoralis(address: string, chain: string, owner: string, offset?: number, limit?: number): Promise<any>;
     getTokensAlchemy(address: string, chain: string, owner: string): Promise<unknown>;
