@@ -65,11 +65,11 @@ export class SelectIssuers extends AbstractView {
         let html = "";
 
         data.offChainTokens.tokenKeys.map((issuer: string) => {
-            html += this.issuerConnectMarkup(data.tokenLookup[issuer].title, data.tokenLookup[issuer].emblem, issuer);
+            html += this.issuerConnectMarkup(data.tokenLookup[issuer].title, data.tokenLookup[issuer].image, issuer);
         });
 
         data.onChainTokens.tokenKeys.map((issuer: string) => {
-            html += this.issuerConnectMarkup(data.tokenLookup[issuer].title, data.tokenLookup[issuer].emblem, issuer);
+            html += this.issuerConnectMarkup(data.tokenLookup[issuer].title, data.tokenLookup[issuer].image, issuer);
         });
 
         this.issuerListContainer.innerHTML = html;
@@ -199,8 +199,6 @@ export class SelectIssuers extends AbstractView {
 
         tokenData[location][issuer].tokens.map((t: any, i: any) => {
 
-            const { title, emblem } = config;
-
             let isSelected = false;
 
             // TODO Define a constant value that can be checked regardless of which issuer token to speed up this check.
@@ -210,25 +208,31 @@ export class SelectIssuers extends AbstractView {
 
             });
 
-            // TODO define this data/manage fall backs at the point of NFT discovery.
+            if(location === "offChainTokens") {
 
-            let nftImage = t.image;
-            if(!nftImage) nftImage = t.image_url;
-            if(!nftImage) nftImage = emblem;
-            
-            let nftTitle = t.name;
-            if(!nftTitle) nftTitle = title;
+                const { title, image } = config;
 
-            // end of TODO
+                tokens.push({
+                    data: t,
+                    tokenIssuerKey: issuer,
+                    index: i,
+                    title: title,
+                    image: image,
+                    toggleState: isSelected
+                });
 
-            tokens.push({
-                data: t,
-                tokenIssuerKey: issuer,
-                index: i,
-                title: nftTitle,
-                emblem: nftImage,
-                toggleState: isSelected
-            });
+            } else {
+
+                tokens.push({
+                    data: t,
+                    tokenIssuerKey: issuer,
+                    index: i,
+                    title: t.title,
+                    image: t.image,
+                    toggleState: isSelected
+                });
+
+            }
 
         });
 

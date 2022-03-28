@@ -13,7 +13,7 @@ export interface Item {
     unsignedTokenDataName?: any;
     itemStorageKey?: any;
     ethKeyitemStorageKey?: any;
-    emblem?: any;
+    image?: any;
     unEndPoint?: any;
     tokenParser?: any;
     smartContractAddress?: any;
@@ -44,7 +44,7 @@ export const tokenLookup:TokenLookupInterface = {
         unsignedTokenDataName: 'ticket',
         itemStorageKey: 'dcTokens',
         ethKeyitemStorageKey: 'dcEthKeys',
-        emblem: 'https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg',
+        image: 'https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg',
         tokenParser: SignedDevconTicket,
         base64senderPublicKey: '-----BEGIN PUBLIC KEY-----\n' +
             'MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA////////////////\n' +
@@ -73,7 +73,7 @@ export const tokenLookup:TokenLookupInterface = {
         unsignedTokenDataName: 'ticket',
         itemStorageKey: 'dcTokens',
         ethKeyitemStorageKey: 'dcEthKeys',
-        emblem: 'https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg',
+        image: 'https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg',
         tokenParser: SignedDevconTicket,
         base64senderPublicKey: '-----BEGIN PUBLIC KEY-----\n' +
             'MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA////////////////\n' +

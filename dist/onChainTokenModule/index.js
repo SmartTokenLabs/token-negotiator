@@ -113,7 +113,7 @@ var OnChainTokenModule = (function () {
                             return {
                                 chain: chain,
                                 contractAddress: contractAddress,
-                                emblem: response.assets[0].collection.image_url,
+                                image: response.assets[0].collection.image_url,
                                 title: response.assets[0].collection.name
                             };
                         })
@@ -127,7 +127,7 @@ var OnChainTokenModule = (function () {
                             return {
                                 chain: chain,
                                 contractAddress: contractAddress,
-                                emblem: response.assets[0].collection.image_url,
+                                image: response.assets[0].collection.image_url,
                                 title: response.assets[0].collection.name
                             };
                         })
@@ -154,11 +154,12 @@ var OnChainTokenModule = (function () {
                     return [2, fetch("https://deep-index.moralis.io/api/v2/nft/" + contractAddress + "?chain=" + _chain + "&format=decimal&limit=1", options)
                             .then(function (response) { return response.json(); })
                             .then(function (response) {
-                            var emblem = JSON.parse(response.result[0].metadata).image;
+                            var image = JSON.parse(response.result[0].metadata).image;
                             return {
+                                api: 'moralis',
                                 chain: chain,
                                 contractAddress: contractAddress,
-                                emblem: emblem,
+                                image: image,
                                 title: response.result[0].name
                             };
                         })
@@ -192,9 +193,10 @@ var OnChainTokenModule = (function () {
                         if (!result.nfts.length)
                             resolve([]);
                         resolve({
+                            api: 'alchemy',
                             chain: chain,
                             contractAddress: contractAddress,
-                            emblem: result.nfts[0].metadata.image,
+                            image: result.nfts[0].metadata.image,
                             title: result.nfts[0].title
                         });
                     })
@@ -248,18 +250,40 @@ var OnChainTokenModule = (function () {
                     return [2, fetch("https://testnets-api.opensea.io/api/v1/assets?owner=" + owner + "&collection=" + openSeaSlug + "&order_direction=desc&offset=0&limit=20", options)
                             .then(function (response) { return response.json(); })
                             .then(function (response) {
-                            return response.assets;
+                            return response.assets.map(function (item) {
+                                var image = item.image_url ? item.image_url : '';
+                                var title = item.name ? item.name : '';
+                                return {
+                                    api: 'opensea',
+                                    title: title,
+                                    image: image,
+                                    data: item
+                                };
+                            });
                         })
-                            .catch(function (err) { return console.error(err); })];
+                            .catch(function (err) {
+                            console.error(err);
+                        })];
                 }
                 if (chain === 'mainnet' || chain === 'eth') {
                     options = { method: 'GET', headers: { Accept: 'application/json', 'X-API-KEY': '3940c5b8cf4a4647bc22ff9b0a84f75a' } };
                     return [2, fetch("https://api.opensea.io/api/v1/assets?owner=" + owner + "&collection=" + openSeaSlug + "&order_direction=desc&offset=0&limit=20", options)
                             .then(function (response) { return response.json(); })
                             .then(function (response) {
-                            return response.assets;
+                            return response.assets.map(function (item) {
+                                var image = item.image_url ? item.image_url : '';
+                                var title = item.name ? item.name : '';
+                                return {
+                                    api: 'opensea',
+                                    title: title,
+                                    image: image,
+                                    data: item
+                                };
+                            });
                         })
-                            .catch(function (err) { return console.error(err); })];
+                            .catch(function (err) {
+                            console.error(err);
+                        })];
                 }
                 return [2];
             });
@@ -291,6 +315,7 @@ var OnChainTokenModule = (function () {
                             var image = parsedMetaObj.image ? parsedMetaObj.image : '';
                             var title = parsedMetaObj.name ? parsedMetaObj.name : '';
                             return {
+                                api: 'moralis',
                                 title: title,
                                 image: image,
                                 data: parsedMetaObj
@@ -321,6 +346,7 @@ var OnChainTokenModule = (function () {
                         .then(function (result) {
                         var tokens = result.ownedNfts.map(function (item) {
                             return {
+                                api: 'alchemy',
                                 title: item.title,
                                 image: item.metadata.image,
                                 data: item

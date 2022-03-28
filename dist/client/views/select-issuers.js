@@ -87,10 +87,10 @@ var SelectIssuers = (function (_super) {
         var data = this.client.getTokenData();
         var html = "";
         data.offChainTokens.tokenKeys.map(function (issuer) {
-            html += _this.issuerConnectMarkup(data.tokenLookup[issuer].title, data.tokenLookup[issuer].emblem, issuer);
+            html += _this.issuerConnectMarkup(data.tokenLookup[issuer].title, data.tokenLookup[issuer].image, issuer);
         });
         data.onChainTokens.tokenKeys.map(function (issuer) {
-            html += _this.issuerConnectMarkup(data.tokenLookup[issuer].title, data.tokenLookup[issuer].emblem, issuer);
+            html += _this.issuerConnectMarkup(data.tokenLookup[issuer].title, data.tokenLookup[issuer].image, issuer);
         });
         this.issuerListContainer.innerHTML = html;
         try {
@@ -197,28 +197,32 @@ var SelectIssuers = (function (_super) {
         var tokens = [];
         tokenData[location][issuer].tokens.map(function (t, i) {
             var _a;
-            var title = config.title, emblem = config.emblem;
             var isSelected = false;
             (_a = tokenData.selectedTokens[issuer]) === null || _a === void 0 ? void 0 : _a.tokens.map(function (st, si) {
                 if (JSON.stringify(t) === JSON.stringify(st))
                     isSelected = true;
             });
-            var nftImage = t.image;
-            if (!nftImage)
-                nftImage = t.image_url;
-            if (!nftImage)
-                nftImage = emblem;
-            var nftTitle = t.name;
-            if (!nftTitle)
-                nftTitle = title;
-            tokens.push({
-                data: t,
-                tokenIssuerKey: issuer,
-                index: i,
-                title: nftTitle,
-                emblem: nftImage,
-                toggleState: isSelected
-            });
+            if (location === "offChainTokens") {
+                var title = config.title, image = config.image;
+                tokens.push({
+                    data: t,
+                    tokenIssuerKey: issuer,
+                    index: i,
+                    title: title,
+                    image: image,
+                    toggleState: isSelected
+                });
+            }
+            else {
+                tokens.push({
+                    data: t,
+                    tokenIssuerKey: issuer,
+                    index: i,
+                    title: t.title,
+                    image: t.image,
+                    toggleState: isSelected
+                });
+            }
         });
         (_a = this.tokenListView) === null || _a === void 0 ? void 0 : _a.update({ issuer: issuer, tokens: tokens });
     };

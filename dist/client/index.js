@@ -81,19 +81,19 @@ var Client = (function () {
         this.selectedTokens = {};
         this.clientCallBackEvents = {};
         issuers.forEach(function (issuer) {
-            var tokenLookupData = tokenLookup[issuer.collectionKey];
+            var tokenLookupData = tokenLookup[issuer.collectionID];
             if (tokenLookupData && !issuer.contract) {
                 if (tokenLookupData.onChain === true) {
-                    _this.onChainTokens.tokenKeys.push(issuer.collectionKey);
-                    _this.onChainTokens[issuer.collectionKey] = { tokens: [] };
+                    _this.onChainTokens.tokenKeys.push(issuer.collectionID);
+                    _this.onChainTokens[issuer.collectionID] = { tokens: [] };
                 }
                 else {
-                    _this.offChainTokens.tokenKeys.push(issuer.collectionKey);
-                    _this.offChainTokens[issuer.collectionKey] = { tokens: [] };
+                    _this.offChainTokens.tokenKeys.push(issuer.collectionID);
+                    _this.offChainTokens[issuer.collectionID] = { tokens: [] };
                 }
             }
             if ((issuer.contract) && (issuer.chain)) {
-                var issuerKey = issuer.collectionKey;
+                var issuerKey = issuer.collectionID;
                 _this.updateTokenLookupStore(issuerKey, issuer);
                 if (_this.onChainTokens[issuerKey])
                     return;
@@ -337,7 +337,7 @@ var Client = (function () {
                     case 0: return [4, this.onChainTokenModule.connectOnChainToken(issuer, this.web3WalletProvider.getConnectedWalletData()[0].address)];
                     case 1:
                         tokens = _a.sent();
-                        this.onChainTokens[issuer.collectionKey].tokens = tokens;
+                        this.onChainTokens[issuer.collectionID].tokens = tokens;
                         return [2, tokens];
                 }
             });

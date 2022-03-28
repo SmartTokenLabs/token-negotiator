@@ -3,7 +3,7 @@ export interface TokenListItemInterface {
     tokenIssuerKey: string;
     title: string;
     index: number;
-    emblem: string;
+    image: string;
     data: any;
     toggleState: boolean;
 }

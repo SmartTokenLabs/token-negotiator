@@ -84,7 +84,7 @@ export class Client {
 
         issuers.forEach((issuer: any) => {
 
-            const tokenLookupData = tokenLookup[issuer.collectionKey];
+            const tokenLookupData = tokenLookup[issuer.collectionID];
 
             if(tokenLookupData && !issuer.contract){
 
@@ -92,15 +92,15 @@ export class Client {
 
                 if (tokenLookupData.onChain === true) {
 
-                    this.onChainTokens.tokenKeys.push(issuer.collectionKey);
+                    this.onChainTokens.tokenKeys.push(issuer.collectionID);
 
-                    this.onChainTokens[issuer.collectionKey] = { tokens: [] };
+                    this.onChainTokens[issuer.collectionID] = { tokens: [] };
 
                 } else {
 
-                    this.offChainTokens.tokenKeys.push(issuer.collectionKey);
+                    this.offChainTokens.tokenKeys.push(issuer.collectionID);
 
-                    this.offChainTokens[issuer.collectionKey] = { tokens: [] };
+                    this.offChainTokens[issuer.collectionID] = { tokens: [] };
 
                 }
 
@@ -111,7 +111,7 @@ export class Client {
             if((issuer.contract) && (issuer.chain)) {
 
                 // create key with address and chain for easy reference
-                let issuerKey = issuer.collectionKey; 
+                let issuerKey = issuer.collectionID; 
 
                 // Populate the token lookup store with initial data.
                 this.updateTokenLookupStore(issuerKey, issuer);
@@ -155,7 +155,7 @@ export class Client {
     // To enrich the token lookup store with data.
     // for on chain tokens that are not using token script this is 
     // required, for off chain this is most likely not required because the configurations
-    // are already pre-defined e.g. title, issuer emblem image etc.
+    // are already pre-defined e.g. title, issuer image image etc.
     updateTokenLookupStore(tokenKey, data) {
 
         if(!this.tokenLookup[tokenKey]) this.tokenLookup[tokenKey] = {};
@@ -349,7 +349,7 @@ export class Client {
             this.web3WalletProvider.getConnectedWalletData()[0].address
         );
 
-        this.onChainTokens[issuer.collectionKey].tokens = tokens;
+        this.onChainTokens[issuer.collectionID].tokens = tokens;
 
         return tokens;
     }

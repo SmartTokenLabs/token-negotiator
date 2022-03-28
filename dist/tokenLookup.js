@@ -14,7 +14,7 @@ export var tokenLookup = {
         unsignedTokenDataName: 'ticket',
         itemStorageKey: 'dcTokens',
         ethKeyitemStorageKey: 'dcEthKeys',
-        emblem: 'https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg',
+        image: 'https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg',
         tokenParser: SignedDevconTicket,
         base64senderPublicKey: '-----BEGIN PUBLIC KEY-----\n' +
             'MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA////////////////\n' +
@@ -41,7 +41,7 @@ export var tokenLookup = {
         unsignedTokenDataName: 'ticket',
         itemStorageKey: 'dcTokens',
         ethKeyitemStorageKey: 'dcEthKeys',
-        emblem: 'https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg',
+        image: 'https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg',
         tokenParser: SignedDevconTicket,
         base64senderPublicKey: '-----BEGIN PUBLIC KEY-----\n' +
             'MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA////////////////\n' +

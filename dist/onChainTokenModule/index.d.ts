@@ -5,13 +5,14 @@ export declare class OnChainTokenModule {
     getContractDataOpenSea(contractAddress: string, chain: string, openSeaSlug: string): Promise<void | {
         chain: string;
         contractAddress: string;
-        emblem: any;
+        image: any;
         title: any;
     }>;
     getContractDataMoralis(contractAddress: string, chain: string): Promise<void | {
+        api: string;
         chain: string;
         contractAddress: string;
-        emblem: any;
+        image: any;
         title: any;
     }>;
     getContractDataAlchemy(contractAddress: string, chain: string): Promise<unknown>;

@@ -11,7 +11,7 @@ export interface Item {
     unsignedTokenDataName?: any;
     itemStorageKey?: any;
     ethKeyitemStorageKey?: any;
-    emblem?: any;
+    image?: any;
     unEndPoint?: any;
     tokenParser?: any;
     smartContractAddress?: any;
