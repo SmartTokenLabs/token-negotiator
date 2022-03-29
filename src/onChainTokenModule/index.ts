@@ -67,6 +67,7 @@ export class OnChainTokenModule {
         let collectionData = null;
 
         // POAP
+        // TODO: move this into a registry like tokenLookup
         if (address.toLowerCase() == "0x22c1f6050e56d2876009903609a2cc3fef83b415"){
             return {
                 chain,
@@ -206,7 +207,7 @@ export class OnChainTokenModule {
 
         let tokens = [];
 
-        if (address.toLowerCase() == "0x22c1f6050e56d2876009903609a2cc3fef83b415" && chain == "xdai"){
+        if (address.toLowerCase() == "0x22c1f6050e56d2876009903609a2cc3fef83b415"){
             return await this.getTokensPOAP();
         }
 
@@ -323,44 +324,24 @@ export class OnChainTokenModule {
 
     async getTokensPOAP(owner:string){
 
-        let query = `
-            {
-              account(id: "0x7ff8b020c2ecd40613063ae1d2ee6a2a383793fa"){
-                id,
-                tokens{
-                    id,
-                    uri
-                },
-                tokensOwned
-              }
-            }
-        `;
+        // Uncomment to test a really large POAP collection - this guy gets around
+        //let url = `https://api.poap.xyz/actions/scan/0x4d2803f468b736b62fe9eec992c8f4c41be4cb15`;
+        let url = `https://api.poap.xyz/actions/scan/${owner}`;
 
-        let res = await fetch("https://api.thegraph.com/subgraphs/name/micwallace/poap-xdai", {
-            method: 'POST',
-            body: JSON.stringify({query: query})
+        let res = await fetch(url, {
+            method: 'GET'
         });
 
-        let graphData = await res.json();
+        let data = await res.json();
 
         let tokens = [];
 
-        for (let token of graphData.data.account.tokens){
-
-            let data;
-
-            try {
-                data = await fetch(token.uri);
-                data = await data.json();
-            } catch (e){
-                console.log(e);
-                continue;
-            }
+        for (let token of data){
 
             tokens.push({
-                title: data.name,
-                image: data.image_url,
-                data: data
+                title: token.event.name,
+                image: token.event.image_url,
+                data: token
             });
         }
 
