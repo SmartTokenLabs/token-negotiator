@@ -1,6 +1,5 @@
 examples
-src
-tests
+test
 dist-common-js
 _bundles
 docs

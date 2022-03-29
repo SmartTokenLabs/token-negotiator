@@ -3,12 +3,15 @@
   "version": "1.0.6-alpha",
   "description": "Token-negotiator enables token attestations providing bridge between web 2.0 and 3.0.",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "module": "src/index.ts",
   "scripts": {
     "test": "jest",
     "build": "npm run clean && tsc -m es6 --outDir dist && npm run copy-assets",
     "build-umd": "npm run clean && webpack && npm run copy-assets",
     "copy-assets": "copyfiles ./src/theme/*.css dist/theme -V --flat && copyfiles ./src/vendor/*.js dist/vendor -V --flat",
-    "clean": "shx rm -rf _bundles dist"
+    "clean": "shx rm -rf _bundles dist",
+    "prepublishOnly": "npm run build"
   },
   "repository": {
     "type": "git",
