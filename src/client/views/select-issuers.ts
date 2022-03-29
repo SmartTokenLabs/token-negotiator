@@ -1,6 +1,7 @@
 import {AbstractView} from "./view-interface";
 import {TokenList} from "./token-list";
 import {TokenListItemInterface} from "./token-list";
+import {IconView} from "./icon-view";
 
 export class SelectIssuers extends AbstractView {
 
@@ -11,15 +12,15 @@ export class SelectIssuers extends AbstractView {
     render(){
 
         this.viewContainer.innerHTML = `
-            <div class="inner-content-tn">
-              <div class="issuer-view-tn">
+            <div class="inner-content-tn issuer-slider-tn">
+              <div class="issuer-view-tn scroll-tn">
                 <div class="brand-tn"></div>
                 <div class="headline-container-tn">
                   <p class="headline-tn">${this.params.options.issuerHeading}</p>
                 </div>
                 <ul class="token-issuer-list-container-tn" role="menubar"></ul>
               </div>
-              <div class="token-view-tn" style="display: none;">
+              <div class="token-view-tn scroll-tn" style="display: none;">
                 <div class="brand-tn"></div>
                 <div style="display: flex">
                   <button aria-label="back to token issuer menu" class="back-to-menu-tn">
@@ -73,6 +74,17 @@ export class SelectIssuers extends AbstractView {
 
         this.issuerListContainer.innerHTML = html;
 
+        // Init images
+        for(let elem of this.issuerListContainer.getElementsByClassName('img-container-tn')){
+
+            let params = {
+                src: elem.getAttribute('data-image-src'),
+                title: elem.getAttribute('data-token-title'),
+            };
+
+            new IconView(elem, params).render();
+        }
+
         this.issuerListContainer.addEventListener('click', (e:any) => {
             if (e.target.classList.contains('connect-btn-tn')){
                 this.connectTokenIssuer(e);
@@ -86,7 +98,7 @@ export class SelectIssuers extends AbstractView {
         return `
             <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
               <div style="display: flex; align-items: center;">
-                <img style="height: 32px; width: 32px; border-radius: 45px; margin-right: 9px;" src="${image}">
+                <div class="img-container-tn issuer-icon-tn shimmer-tn" data-image-src="${image}" data-token-title="${title}"></div>
                 <p class="issuer-connect-title">${title}</p>
               </div>
               <button aria-label="connect with the token issuer ${issuer}" aria-hidden="false" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="connect-btn-tn" data-issuer="${issuer}">Connect</button>
@@ -197,12 +209,23 @@ export class SelectIssuers extends AbstractView {
 
             });
 
+            // TODO define this data/manage fall backs at the point of NFT discovery.
+
+            let nftImage = t.image;
+            if(!nftImage) nftImage = t.image_url;
+            if(!nftImage) nftImage = emblem;
+            
+            let nftTitle = t.name;
+            if(!nftTitle) nftTitle = title;
+
+            // end of TODO
+
             tokens.push({
                 data: t,
                 tokenIssuerKey: issuer,
                 index: i,
-                title: t.title ? t.title : title,
-                emblem: t.image ? t.image : emblem,
+                title: nftTitle,
+                emblem: nftImage,
                 toggleState: isSelected
             });
 

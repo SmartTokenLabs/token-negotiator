@@ -3,20 +3,14 @@ import {requiredParams} from '../utils/index';
 import {tokenLookup} from './../tokenLookup';
 import {decodeTokens, filterTokens} from './../core/index';
 import { MessageAction, MessageResponseInterface, MessageResponseAction } from '../client/messaging';
+import {AuthHandler} from "./auth-handler";
 
 interface OutletInterface {
   tokenName: string;
 }
 
-declare global {
-  interface Window {
-    Authenticator: any;
-  }
-}
-
 export class Outlet {
 
-  authenticator: any;
   config: any;
   tokenName: any;
   tokenIssuer: any;
@@ -118,27 +112,33 @@ export class Outlet {
 
   }
 
-  sendTokenProof (evtid:any, token: any) {
+  async sendTokenProof (evtid:any, token: any) {
 
     if(!token) return 'error';
 
     const unsignedToken = JSON.parse(token);
 
-    rawTokenCheck(unsignedToken, this.tokenIssuer).then((tokenObj) => {
+    try {
+          let tokenObj = await rawTokenCheck(unsignedToken, this.tokenIssuer);
 
-      //@ts-ignore
-      window.authenticator.getAuthenticationBlob(tokenObj, (tokenProof) => {
+          let authHandler = new AuthHandler(this, evtid, this.tokenIssuer, tokenObj);
 
+          let tokenProof = await authHandler.authenticate();
+
+          this.sendMessageResponse({
+            evtid: evtid,
+            evt: MessageResponseAction.PROOF,
+            issuer: this.tokenName,
+            proof: JSON.stringify(tokenProof)
+          });
+
+    } catch (e){
         this.sendMessageResponse({
           evtid: evtid,
-          evt: MessageResponseAction.PROOF,
-          issuer: this.tokenName,
-          proof: JSON.stringify(tokenProof)
+          evt: MessageResponseAction.ERROR,
+          errors: [e]
         });
-
-      });
-
-    });
+    }
 
   }
 
@@ -154,7 +154,7 @@ export class Outlet {
     });
   }
 
-  private sendMessageResponse(response:MessageResponseInterface){
+  public sendMessageResponse(response:MessageResponseInterface){
 
     let target, origin;
 

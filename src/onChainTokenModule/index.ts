@@ -105,12 +105,30 @@ export class OnChainTokenModule {
     async getContractDataOpenSea(contractAddress:string, chain:string, openSeaSlug:string) {
 
         if(this.getOnChainAPISupportBool('opensea', chain) === false) return;
-
-        const options = { method: 'GET' };
-
+        
         if(chain.toLocaleLowerCase() === "rinkeby") {
 
+            let options = {method: 'GET', headers: {Accept: 'application/json', 'X-API-KEY': '99687116fafa4daebc766eeedccce201'}};
+
             return fetch(`https://rinkeby-api.opensea.io/api/v1/assets?asset_contract_address=${contractAddress}&collection=${openSeaSlug}&order_direction=desc&offset=0&limit=20`, options)
+            .then(response => response.json())
+            .then(response => {
+                return  {
+                    chain,
+                    contractAddress,
+                    emblem: response.assets[0].collection.image_url,
+                    title: response.assets[0].collection.name
+                };
+            })
+            .catch(err => console.error(err));
+        
+        } 
+        
+        if(chain.toLocaleLowerCase() === "mainnet" || chain.toLocaleLowerCase() === "eth") {
+
+            let options = {method: 'GET', headers: {Accept: 'application/json', 'X-API-KEY': '3940c5b8cf4a4647bc22ff9b0a84f75a'}};
+
+            return fetch(`https://api.opensea.io/api/v1/assets?asset_contract_address=${contractAddress}&collection=${openSeaSlug}&order_direction=desc&offset=0&limit=20`, options)
             .then(response => response.json())
             .then(response => {
                 return  {
@@ -229,9 +247,7 @@ export class OnChainTokenModule {
 
         if(chain === 'rinkeby') {
 
-            const options = {
-                method: 'GET'
-            };
+            let options = {method: 'GET', headers: {Accept: 'application/json', 'X-API-KEY': '99687116fafa4daebc766eeedccce201'}};
             
             return fetch(`https://testnets-api.opensea.io/api/v1/assets?owner=${owner}&collection=${openSeaSlug}&order_direction=desc&offset=0&limit=20`, options)
             .then(response => response.json())
@@ -241,8 +257,19 @@ export class OnChainTokenModule {
             .catch(err => console.error(err));
 
         }
+        
+        if(chain === 'mainnet' || chain === 'eth') {
 
-        // TODO get OpenSea API key to enable the use of Mainnet.
+            let options = {method: 'GET', headers: {Accept: 'application/json', 'X-API-KEY': '3940c5b8cf4a4647bc22ff9b0a84f75a'}};
+            
+            return fetch(`https://api.opensea.io/api/v1/assets?owner=${owner}&collection=${openSeaSlug}&order_direction=desc&offset=0&limit=20`, options)
+            .then(response => response.json())
+            .then(response => {
+                return response.assets;
+            })
+            .catch(err => console.error(err));
+
+        }
         
         return;
         

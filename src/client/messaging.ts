@@ -31,6 +31,7 @@ export enum MessageResponseAction {
     ISSUER_TOKENS = "issuer-tokens",
     PROOF = "proof",
     ERROR = "error",
+    SHOW_FRAME = "show-frame" // User input required in the iframe - don't resolve promise yet, setup iframe view if required.
     //USER_CANCEL = "user_cancel" Could be handled different to an error
 }
 
@@ -75,10 +76,17 @@ export class Messaging {
                 // TODO: iframe error handling here
                 //if (iframeRef) {
 
-                    this.setResponseListener(id, request.origin, request.timeout, resolve, reject, ()=>{
-                        if (iframe?.parentNode)
-                            iframe.parentNode.removeChild(iframe);
-                    });
+                    this.setResponseListener(id, request.origin, request.timeout, resolve, reject,
+                        ()=>{
+                            if (iframe?.parentNode)
+                                iframe.parentNode.removeChild(iframe);
+
+                            let modal = this.getModal();
+                            if (modal)
+                                modal.style.display = "none";
+                        },
+                        iframe
+                    );
 
                     // TODO: Is this required? won't the URL trigger it?
                     /*iframeRef.contentWindow.postMessage({
@@ -113,7 +121,7 @@ export class Messaging {
 
     }
 
-    private setResponseListener(id:any, origin:string, timeout:number|undefined, resolve:any, reject:any, cleanUp:any){
+    private setResponseListener(id:any, origin:string, timeout:number|undefined, resolve:any, reject:any, cleanUpCallback:any, iframe:any = null){
 
         let received = false;
         let timer:any = null;
@@ -132,8 +140,16 @@ export class Messaging {
 
                     received = true;
 
-                    if (response.evt == MessageResponseAction.ERROR){
+                    if (response.evt == MessageResponseAction.ERROR) {
                         reject(response.errors);
+                    } else if (response.evt == MessageResponseAction.SHOW_FRAME){
+
+                        if (iframe) {
+                            let modal = this.getModal();
+                            modal.style.display = "block";
+                        }
+
+                        return;
                     } else {
                         resolve(event.data);
                     }
@@ -150,7 +166,7 @@ export class Messaging {
 
         let afterResolveOrError = () => {
             removePostMessageListener(listener);
-            cleanUp();
+            cleanUpCallback();
         };
 
         attachPostMessageListener(listener);
@@ -164,6 +180,37 @@ export class Messaging {
                     reject("Failed to receive response from window/iframe");
                 afterResolveOrError();
             }, timeout);
+    }
+
+    private getModal(){
+
+        let modal = document.getElementById("modal-tn");
+
+        if (modal)
+            return modal;
+
+        modal = document.createElement('div');
+        modal.id = "modal-tn";
+        modal.className = "modal-tn";
+        modal.style.display = "none";
+
+        modal.innerHTML = `
+            <div class="modal-content-tn">
+                <div class="modal-header-tn">
+                    <span class="modal-close-tn">&times;</span>
+                </div>
+                <div class="modal-body-tn"></div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        modal.getElementsByClassName('modal-close-tn')[0].addEventListener('click', () => {
+            if (modal)
+                modal.style.display = "none";
+        });
+
+        return modal;
     }
 
     async getCookieSupport(testOrigin:string){
@@ -239,13 +286,9 @@ export class Messaging {
 
             const iframe = document.createElement('iframe');
 
-            iframe.style.width = '1px';
+            let modal = this.getModal();
 
-            iframe.style.height = '1px';
-
-            iframe.style.opacity = '0';
-
-            document.body.appendChild(iframe);
+            modal.getElementsByClassName('modal-body-tn')[0].appendChild(iframe);
 
             // TODO: Do we need a callback to close tab in Client::addTokenThroughIframe
             /*iframe.onload = () => {

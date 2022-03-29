@@ -65,7 +65,7 @@ listed inside the issuers array.
     options: {
         overlay: {
             openingHeading: "Open a new world of discounts available with your tokens.",
-            IssuerHeading: "Get discount with Ticket",
+            issuerHeading: "Get discount with Ticket",
             repeatAction: "try again",
             theme: "light",
             position: "bottom-right"
@@ -187,7 +187,7 @@ Configure the library using the following example.
             options: {
                 overlay: {
                     openingHeading: "Open a new world of discounts available with your tokens.",
-                    IssuerHeading: "Get discount with Ticket",
+                    issuerHeading: "Get discount with Ticket",
                     repeatAction: "try again",
                     theme: "light",
                     position: "bottom-right"

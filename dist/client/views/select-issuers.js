@@ -49,15 +49,27 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === "number") return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+};
 import { AbstractView } from "./view-interface";
 import { TokenList } from "./token-list";
+import { IconView } from "./icon-view";
 var SelectIssuers = (function (_super) {
     __extends(SelectIssuers, _super);
     function SelectIssuers() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     SelectIssuers.prototype.render = function () {
-        this.viewContainer.innerHTML = "\n            <div class=\"inner-content-tn\">\n              <div class=\"issuer-view-tn\">\n                <div class=\"brand-tn\"></div>\n                <div class=\"headline-container-tn\">\n                  <p class=\"headline-tn\">" + this.params.options.issuerHeading + "</p>\n                </div>\n                <ul class=\"token-issuer-list-container-tn\" role=\"menubar\"></ul>\n              </div>\n              <div class=\"token-view-tn\" style=\"display: none;\">\n                <div class=\"brand-tn\"></div>\n                <div style=\"display: flex\">\n                  <button aria-label=\"back to token issuer menu\" class=\"back-to-menu-tn\">\n                    <svg style=\"position: relative; top: 1px;\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\" xmlns=\"http://www.w3.org/2000/svg\">\n                        <g fill=\"none\" fill-rule=\"evenodd\">\n                            <circle fill=\"#EFEFEF\" cx=\"16\" cy=\"16\" r=\"16\"/>\n                            <path d=\"m10.2 15.8 7.173 7.56c.55.587 1.453.587 2.01 0a1.554 1.554 0 0 0 0-2.12l-5.158-5.44 5.157-5.44a1.554 1.554 0 0 0 0-2.12 1.367 1.367 0 0 0-2.009 0L10.2 15.8z\" fill=\"#000\" fill-rule=\"nonzero\"/>\n                        </g>\n                    </svg>\n                  </button>\n                  <p class=\"headline-tn token-name\">Token Name Here</p>\n                </div>\n                <ul class=\"token-list-container-tn\" role=\"menubar\"></ul>\n              </div>\n            </div>\n        ";
+        this.viewContainer.innerHTML = "\n            <div class=\"inner-content-tn issuer-slider-tn\">\n              <div class=\"issuer-view-tn scroll-tn\">\n                <div class=\"brand-tn\"></div>\n                <div class=\"headline-container-tn\">\n                  <p class=\"headline-tn\">" + this.params.options.issuerHeading + "</p>\n                </div>\n                <ul class=\"token-issuer-list-container-tn\" role=\"menubar\"></ul>\n              </div>\n              <div class=\"token-view-tn scroll-tn\" style=\"display: none;\">\n                <div class=\"brand-tn\"></div>\n                <div style=\"display: flex\">\n                  <button aria-label=\"back to token issuer menu\" class=\"back-to-menu-tn\">\n                    <svg style=\"position: relative; top: 1px;\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\" xmlns=\"http://www.w3.org/2000/svg\">\n                        <g fill=\"none\" fill-rule=\"evenodd\">\n                            <circle fill=\"#EFEFEF\" cx=\"16\" cy=\"16\" r=\"16\"/>\n                            <path d=\"m10.2 15.8 7.173 7.56c.55.587 1.453.587 2.01 0a1.554 1.554 0 0 0 0-2.12l-5.158-5.44 5.157-5.44a1.554 1.554 0 0 0 0-2.12 1.367 1.367 0 0 0-2.009 0L10.2 15.8z\" fill=\"#000\" fill-rule=\"nonzero\"/>\n                        </g>\n                    </svg>\n                  </button>\n                  <p class=\"headline-tn token-name\">Token Name Here</p>\n                </div>\n                <ul class=\"token-list-container-tn\" role=\"menubar\"></ul>\n              </div>\n            </div>\n        ";
         this.viewContainer.querySelector('.back-to-menu-tn').addEventListener('click', this.backToIssuers.bind(this));
         this.issuerListContainer = document.querySelector(".token-issuer-list-container-tn");
         this.tokensContainer = document.getElementsByClassName("token-view-tn")[0];
@@ -70,6 +82,7 @@ var SelectIssuers = (function (_super) {
         this.tokenListView = new TokenList(this.client, this.popup, tokensListElem, {});
     };
     SelectIssuers.prototype.populateIssuers = function () {
+        var e_1, _a;
         var _this = this;
         var data = this.client.getTokenData();
         var html = "";
@@ -80,6 +93,23 @@ var SelectIssuers = (function (_super) {
             html += _this.issuerConnectMarkup(data.tokenLookup[issuer].title, data.tokenLookup[issuer].emblem, issuer);
         });
         this.issuerListContainer.innerHTML = html;
+        try {
+            for (var _b = __values(this.issuerListContainer.getElementsByClassName('img-container-tn')), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var elem = _c.value;
+                var params = {
+                    src: elem.getAttribute('data-image-src'),
+                    title: elem.getAttribute('data-token-title'),
+                };
+                new IconView(elem, params).render();
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
         this.issuerListContainer.addEventListener('click', function (e) {
             if (e.target.classList.contains('connect-btn-tn')) {
                 _this.connectTokenIssuer(e);
@@ -90,7 +120,7 @@ var SelectIssuers = (function (_super) {
         });
     };
     SelectIssuers.prototype.issuerConnectMarkup = function (title, image, issuer) {
-        return "\n            <li class=\"issuer-connect-banner-tn\" data-issuer=\"" + issuer + "\" role=\"menuitem\">\n              <div style=\"display: flex; align-items: center;\">\n                <img style=\"height: 32px; width: 32px; border-radius: 45px; margin-right: 9px;\" src=\"" + image + "\">\n                <p class=\"issuer-connect-title\">" + title + "</p>\n              </div>\n              <button aria-label=\"connect with the token issuer " + issuer + "\" aria-hidden=\"false\" aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"token-list-container-tn\" class=\"connect-btn-tn\" data-issuer=\"" + issuer + "\">Connect</button>\n              <button aria-label=\"tokens available from token issuer " + issuer + "\" aria-hidden=\"true\" aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"token-list-container-tn\" class=\"tokens-btn-tn\" data-issuer=\"" + issuer + "\">Tokens Available</button>\n            </li>\n        ";
+        return "\n            <li class=\"issuer-connect-banner-tn\" data-issuer=\"" + issuer + "\" role=\"menuitem\">\n              <div style=\"display: flex; align-items: center;\">\n                <div class=\"img-container-tn issuer-icon-tn shimmer-tn\" data-image-src=\"" + image + "\" data-token-title=\"" + title + "\"></div>\n                <p class=\"issuer-connect-title\">" + title + "</p>\n              </div>\n              <button aria-label=\"connect with the token issuer " + issuer + "\" aria-hidden=\"false\" aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"token-list-container-tn\" class=\"connect-btn-tn\" data-issuer=\"" + issuer + "\">Connect</button>\n              <button aria-label=\"tokens available from token issuer " + issuer + "\" aria-hidden=\"true\" aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"token-list-container-tn\" class=\"tokens-btn-tn\" data-issuer=\"" + issuer + "\">Tokens Available</button>\n            </li>\n        ";
     };
     SelectIssuers.prototype.backToIssuers = function () {
         this.tokensContainer.style.display = 'none';
@@ -173,12 +203,20 @@ var SelectIssuers = (function (_super) {
                 if (JSON.stringify(t) === JSON.stringify(st))
                     isSelected = true;
             });
+            var nftImage = t.image;
+            if (!nftImage)
+                nftImage = t.image_url;
+            if (!nftImage)
+                nftImage = emblem;
+            var nftTitle = t.name;
+            if (!nftTitle)
+                nftTitle = title;
             tokens.push({
                 data: t,
                 tokenIssuerKey: issuer,
                 index: i,
-                title: t.title ? t.title : title,
-                emblem: t.image ? t.image : emblem,
+                title: nftTitle,
+                emblem: nftImage,
                 toggleState: isSelected
             });
         });

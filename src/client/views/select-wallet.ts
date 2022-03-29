@@ -19,7 +19,7 @@ export class SelectWallet extends AbstractView {
             </button>` : ' ';
 
         this.viewContainer.innerHTML = `
-            <div class="inner-content-tn">
+            <div class="inner-content-tn scroll-tn">
               <div class="wallet-selection-view-tn">
                 <div class="issuer-view-tn">
                   <div class="brand-tn"></div>
@@ -32,7 +32,7 @@ export class SelectWallet extends AbstractView {
                       ${walletConnectSVG}
                       <p>Wallet Connect</p>
                     </button>
-                    <button class="wallet-button-tn" data-wallet="Torus">Event
+                    <button class="wallet-button-tn" data-wallet="Torus">
                       ${torusSVG}
                       <p>Torus</p>
                     </button>
