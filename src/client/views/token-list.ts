@@ -97,7 +97,7 @@ export class TokenList extends AbstractView {
 
             // ignore already rendered icons
             if (elem.querySelector('img'))
-                return;
+                continue;
 
             let params = {
                 src: elem.getAttribute('data-image-src'),
