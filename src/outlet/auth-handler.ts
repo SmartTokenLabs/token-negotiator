@@ -172,6 +172,7 @@ export class AuthHandler {
                 this.attestationBlob ,
                 this.base64attestorPubKey,
                 this.base64senderPublicKey,
+                true
             ).then((useToken:any) => {
                 if (useToken){
                     console.log('this.authResultCallback( useToken ): ');
