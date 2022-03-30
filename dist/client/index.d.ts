@@ -32,6 +32,7 @@ export declare class Client {
     messaging: Messaging;
     popup: Popup;
     constructor(config: NegotiationInterface);
+    prePopulateTokenLookupStore: (issuers: any) => void;
     getTokenData(): {
         offChainTokens: any;
         onChainTokens: any;
@@ -41,6 +42,7 @@ export declare class Client {
     updateTokenLookupStore(tokenKey: any, data: any): void;
     negotiatorConnectToWallet(walletType: string): Promise<any>;
     setPassiveNegotiationWebTokens(offChainTokens: any): Promise<void>;
+    enrichTokenLookupDataOffChainTokens(offChainTokens: any): Promise<void>;
     enrichTokenLookupDataOnChainTokens(onChainTokens: any): Promise<void>;
     negotiate(): Promise<void>;
     activeNegotiationStrategy(): Promise<void>;

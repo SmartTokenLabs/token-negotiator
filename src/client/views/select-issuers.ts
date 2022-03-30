@@ -65,6 +65,7 @@ export class SelectIssuers extends AbstractView {
         let html = "";
 
         data.offChainTokens.tokenKeys.map((issuer: string) => {
+            console.log('....', issuer);
             html += this.issuerConnectMarkup(data.tokenLookup[issuer].title, data.tokenLookup[issuer].image, issuer);
         });
 

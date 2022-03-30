@@ -151,7 +151,9 @@ export class AuthHandler {
         ) {
             return;
         }
+        
         this.iframeWrap.remove();
+        
         this.attestationBlob = event.data.attestation;
         this.attestationSecret = event.data.requestSecret;
 

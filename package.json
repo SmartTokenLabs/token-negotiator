@@ -3,6 +3,7 @@
   "version": "1.0.6-alpha",
   "description": "Token-negotiator enables token attestations providing bridge between web 2.0 and 3.0.",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "test": "jest",
     "build": "npm run clean && tsc -m es6 --outDir dist && npm run copy-assets",

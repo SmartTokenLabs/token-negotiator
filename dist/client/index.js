@@ -57,6 +57,22 @@ import './../vendor/keyShape';
 var Client = (function () {
     function Client(config) {
         var _this = this;
+        this.prePopulateTokenLookupStore = function (issuers) {
+            issuers.forEach(function (issuer) {
+                var issuerKey = issuer.collectionID;
+                _this.updateTokenLookupStore(issuerKey, issuer);
+                if ((issuer.contract) && (issuer.chain)) {
+                    if (_this.onChainTokens[issuerKey])
+                        return;
+                    _this.onChainTokens.tokenKeys.push(issuerKey);
+                    _this.onChainTokens[issuerKey] = { tokens: [] };
+                }
+                else {
+                    _this.offChainTokens.tokenKeys.push(issuer.collectionID);
+                    _this.offChainTokens[issuer.collectionID] = { tokens: [] };
+                }
+            });
+        };
         this.eventSender = {
             emitAllTokensToClient: function (tokens) {
                 _this.on("tokens", null, tokens);
@@ -80,27 +96,7 @@ var Client = (function () {
         this.onChainTokens = { tokenKeys: [] };
         this.selectedTokens = {};
         this.clientCallBackEvents = {};
-        issuers.forEach(function (issuer) {
-            var tokenLookupData = tokenLookup[issuer.collectionID];
-            if (tokenLookupData && !issuer.contract) {
-                if (tokenLookupData.onChain === true) {
-                    _this.onChainTokens.tokenKeys.push(issuer.collectionID);
-                    _this.onChainTokens[issuer.collectionID] = { tokens: [] };
-                }
-                else {
-                    _this.offChainTokens.tokenKeys.push(issuer.collectionID);
-                    _this.offChainTokens[issuer.collectionID] = { tokens: [] };
-                }
-            }
-            if ((issuer.contract) && (issuer.chain)) {
-                var issuerKey = issuer.collectionID;
-                _this.updateTokenLookupStore(issuerKey, issuer);
-                if (_this.onChainTokens[issuerKey])
-                    return;
-                _this.onChainTokens.tokenKeys.push(issuerKey);
-                _this.onChainTokens[issuerKey] = { tokens: [] };
-            }
-        });
+        this.prePopulateTokenLookupStore(issuers);
         this.web3WalletProvider = new Web3WalletProvider();
         this.onChainTokenModule = new OnChainTokenModule();
         this.messaging = new Messaging();
@@ -140,33 +136,53 @@ var Client = (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4, Promise.all(offChainTokens.tokenKeys.map(function (issuer) { return __awaiter(_this, void 0, void 0, function () {
-                            var tokenOrigin, data, err_1;
+                            var data, err_1;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
-                                        tokenOrigin = tokenLookup[issuer].tokenOrigin;
-                                        _a.label = 1;
-                                    case 1:
-                                        _a.trys.push([1, 3, , 4]);
+                                        _a.trys.push([0, 2, , 3]);
                                         return [4, this.messaging.sendMessage({
                                                 issuer: issuer,
                                                 action: MessageAction.GET_ISSUER_TOKENS,
                                                 filter: this.filter,
-                                                origin: tokenOrigin
+                                                origin: issuer.host
                                             })];
-                                    case 2:
+                                    case 1:
                                         data = _a.sent();
-                                        return [3, 4];
-                                    case 3:
+                                        return [3, 3];
+                                    case 2:
                                         err_1 = _a.sent();
                                         console.log(err_1);
                                         return [2];
-                                    case 4:
+                                    case 3:
                                         console.log("tokens:");
                                         console.log(data.tokens);
                                         this.offChainTokens[issuer].tokens = data.tokens;
                                         return [2];
                                 }
+                            });
+                        }); }))];
+                    case 1:
+                        _a.sent();
+                        return [2];
+                }
+            });
+        });
+    };
+    Client.prototype.enrichTokenLookupDataOffChainTokens = function (offChainTokens) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, Promise.all(offChainTokens.tokenKeys.map(function (issuerKey) { return __awaiter(_this, void 0, void 0, function () {
+                            var _this = this;
+                            return __generator(this, function (_a) {
+                                return [2, fetch("" + this.tokenLookup[issuerKey].tokenEndPoint, {})
+                                        .then(function (response) { return response.json(); })
+                                        .then(function (response) {
+                                        _this.updateTokenLookupStore(issuerKey, response);
+                                    })
+                                        .catch(function (err) { return console.error(err); })];
                             });
                         }); }))];
                     case 1:
@@ -210,19 +226,22 @@ var Client = (function () {
                     case 0: return [4, this.enrichTokenLookupDataOnChainTokens(this.onChainTokens)];
                     case 1:
                         _a.sent();
-                        if (!(this.type === 'active')) return [3, 2];
-                        this.activeNegotiationStrategy();
-                        return [3, 5];
+                        return [4, this.enrichTokenLookupDataOffChainTokens(this.offChainTokens)];
                     case 2:
-                        if (!window.ethereum) return [3, 4];
-                        return [4, this.web3WalletProvider.connectWith('MetaMask')];
-                    case 3:
                         _a.sent();
-                        _a.label = 4;
+                        if (!(this.type === 'active')) return [3, 3];
+                        this.activeNegotiationStrategy();
+                        return [3, 6];
+                    case 3:
+                        if (!window.ethereum) return [3, 5];
+                        return [4, this.web3WalletProvider.connectWith('MetaMask')];
                     case 4:
-                        this.passiveNegotiationStrategy();
+                        _a.sent();
                         _a.label = 5;
-                    case 5: return [2];
+                    case 5:
+                        this.passiveNegotiationStrategy();
+                        _a.label = 6;
+                    case 6: return [2];
                 }
             });
         });
@@ -322,7 +341,6 @@ var Client = (function () {
                             })];
                     case 1:
                         data = _a.sent();
-                        issuer = data.issuer;
                         this.offChainTokens[issuer].tokens = data.tokens;
                         return [2, data.tokens];
                 }

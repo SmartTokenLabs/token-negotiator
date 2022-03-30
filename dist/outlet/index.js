@@ -36,16 +36,12 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 import { rawTokenCheck, readMagicUrl, storeMagicURL } from '../core';
 import { requiredParams } from '../utils/index';
-import { tokenLookup } from './../tokenLookup';
 import { decodeTokens, filterTokens } from './../core/index';
 import { MessageAction, MessageResponseAction } from '../client/messaging';
 import { AuthHandler } from "./auth-handler";
 var Outlet = (function () {
     function Outlet(config) {
-        var tokenName = config.tokenName;
-        this.tokenName = tokenName;
-        this.tokenIssuer = tokenLookup[tokenName];
-        requiredParams(tokenLookup[tokenName], "Please provide the token name when installing token outlet");
+        this.tokenConfig = config;
         this.pageOnLoadEventHandler();
     }
     ;
@@ -82,7 +78,7 @@ var Outlet = (function () {
                 break;
             default:
                 localStorage.setItem('cookie-support-check', 'test');
-                var _a = this.tokenIssuer, tokenUrlName = _a.tokenUrlName, tokenSecretName = _a.tokenSecretName, tokenIdName = _a.tokenIdName, itemStorageKey = _a.itemStorageKey;
+                var _a = this.tokenConfig, tokenUrlName = _a.tokenUrlName, tokenSecretName = _a.tokenSecretName, tokenIdName = _a.tokenIdName, itemStorageKey = _a.itemStorageKey;
                 var tokens = readMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey);
                 if (tokens && tokens.length)
                     storeMagicURL(tokens, itemStorageKey);
@@ -90,11 +86,11 @@ var Outlet = (function () {
                 break;
         }
     };
-    Outlet.prototype.prepareTokenOutput = function (tokenName, filter) {
-        var storageTokens = localStorage.getItem(tokenLookup[tokenName].itemStorageKey);
+    Outlet.prototype.prepareTokenOutput = function (filter) {
+        var storageTokens = localStorage.getItem(this.tokenConfig.itemStorageKey);
         if (!storageTokens)
             return [];
-        var decodedTokens = decodeTokens(storageTokens, tokenLookup[tokenName].tokenParser, tokenLookup[tokenName].unsignedTokenDataName);
+        var decodedTokens = decodeTokens(storageTokens, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName);
         return filterTokens(decodedTokens, filter);
     };
     Outlet.prototype.sendTokenProof = function (evtid, token) {
@@ -109,17 +105,17 @@ var Outlet = (function () {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 4, , 5]);
-                        return [4, rawTokenCheck(unsignedToken, this.tokenIssuer)];
+                        return [4, rawTokenCheck(unsignedToken, this.tokenConfig.tokenIdName)];
                     case 2:
                         tokenObj = _a.sent();
-                        authHandler = new AuthHandler(this, evtid, this.tokenIssuer, tokenObj);
+                        authHandler = new AuthHandler(this, evtid, this.tokenConfig.tokenIdName, tokenObj);
                         return [4, authHandler.authenticate()];
                     case 3:
                         tokenProof = _a.sent();
                         this.sendMessageResponse({
                             evtid: evtid,
                             evt: MessageResponseAction.PROOF,
-                            issuer: this.tokenName,
+                            issuer: this.tokenConfig.tokenName,
                             proof: JSON.stringify(tokenProof)
                         });
                         return [3, 5];
@@ -137,11 +133,11 @@ var Outlet = (function () {
         });
     };
     Outlet.prototype.sendTokens = function (evtid) {
-        var issuerTokens = this.prepareTokenOutput(this.tokenName, this.getFilter());
+        var issuerTokens = this.prepareTokenOutput(this.getFilter());
         this.sendMessageResponse({
             evtid: evtid,
             evt: MessageResponseAction.ISSUER_TOKENS,
-            issuer: this.tokenName,
+            issuer: this.tokenConfig.tokenName,
             tokens: issuerTokens
         });
     };

@@ -82,52 +82,7 @@ export class Client {
 
         */
 
-        issuers.forEach((issuer: any) => {
-
-            const tokenLookupData = tokenLookup[issuer.collectionID];
-
-            if(tokenLookupData && !issuer.contract){
-
-                // For TokenScript Enabled Tokens
-
-                if (tokenLookupData.onChain === true) {
-
-                    this.onChainTokens.tokenKeys.push(issuer.collectionID);
-
-                    this.onChainTokens[issuer.collectionID] = { tokens: [] };
-
-                } else {
-
-                    this.offChainTokens.tokenKeys.push(issuer.collectionID);
-
-                    this.offChainTokens[issuer.collectionID] = { tokens: [] };
-
-                }
-
-            } 
-
-            // For direct on chain tokens
-
-            if((issuer.contract) && (issuer.chain)) {
-
-                // create key with address and chain for easy reference
-                let issuerKey = issuer.collectionID; 
-
-                // Populate the token lookup store with initial data.
-                this.updateTokenLookupStore(issuerKey, issuer);
-
-                // stop duplicate entries
-                if(this.onChainTokens[issuerKey]) return;
-
-                // add onchain token (non-tokenscipt)
-                this.onChainTokens.tokenKeys.push(issuerKey);
-
-                // add empty tokens list (non-tokenscript)
-                this.onChainTokens[issuerKey] = { tokens: [] };
-
-            }
-
-        });
+        this.prePopulateTokenLookupStore(issuers);
 
         // currently custom to Token Negotiator
         this.web3WalletProvider = new Web3WalletProvider();
@@ -141,6 +96,40 @@ export class Client {
 
         }
 
+    }
+
+    prePopulateTokenLookupStore = (issuers:any) => {
+
+        issuers.forEach((issuer: any) => {
+
+            // create key with address and chain for easy reference
+            let issuerKey = issuer.collectionID; 
+
+            // Populate the token lookup store with initial data.
+            this.updateTokenLookupStore(issuerKey, issuer);
+
+            if((issuer.contract) && (issuer.chain)) {
+
+                // stop duplicate entries
+                if(this.onChainTokens[issuerKey]) return;
+
+                // add onchain token (non-tokenscipt)
+                this.onChainTokens.tokenKeys.push(issuerKey);
+
+                // add empty tokens list (non-tokenscript)
+                this.onChainTokens[issuerKey] = { tokens: [] };
+
+            } else {
+                
+                // off chain token attestations 
+
+                this.offChainTokens.tokenKeys.push(issuer.collectionID);
+
+                this.offChainTokens[issuer.collectionID] = { tokens: [] };
+
+            }
+
+        });
     }
     
     getTokenData(){
@@ -178,7 +167,6 @@ export class Client {
 
         await Promise.all(offChainTokens.tokenKeys.map(async (issuer: string): Promise<any> => {
 
-            const { tokenOrigin } = tokenLookup[issuer];
             let data;
 
             try {
@@ -186,7 +174,7 @@ export class Client {
                     issuer: issuer,
                     action: MessageAction.GET_ISSUER_TOKENS,
                     filter: this.filter,
-                    origin: tokenOrigin
+                    origin: issuer.host
                 });
             } catch (err){
                 console.log(err);
@@ -199,6 +187,21 @@ export class Client {
             this.offChainTokens[issuer].tokens = data.tokens;
 
             return;
+
+        }));
+
+    }
+
+    async enrichTokenLookupDataOffChainTokens(offChainTokens: any) {
+
+        await Promise.all(offChainTokens.tokenKeys.map(async (issuerKey: string): Promise<any> => {
+
+            return fetch(`${this.tokenLookup[issuerKey].tokenEndPoint}`, {})
+            .then(response => response.json())
+            .then(response => {
+                this.updateTokenLookupStore(issuerKey, response);
+            })
+            .catch(err => console.error(err));
 
         }));
 
@@ -237,6 +240,7 @@ export class Client {
 
         // Enrich the look up data with the accepted on chain tokens
         await this.enrichTokenLookupDataOnChainTokens(this.onChainTokens);
+        await this.enrichTokenLookupDataOffChainTokens(this.offChainTokens);
 
         if (this.type === 'active') {
 
@@ -334,8 +338,6 @@ export class Client {
             origin: tokensOrigin,
             filter: filter,
         });
-
-        issuer = data.issuer;
 
         this.offChainTokens[issuer].tokens = data.tokens;
 
