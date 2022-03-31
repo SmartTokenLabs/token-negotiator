@@ -1,7 +1,7 @@
 export interface Item {
     onChain: any;
     tokenIssuerPublicKey?: any;
-    title?: any;    
+    title?: any;
     tokenName?: any;
     attestationOrigin?: any;
     tokenOrigin?: any;
@@ -19,17 +19,8 @@ export interface Item {
     base64senderPublicKey?: string;
     base64attestorPubKey?: string;
 }
-
-interface TokenLookupInterface { [issuer: string]: Item };
-
-/* 
-    Example when tokenLookup is populated:
-    
-    tokenLookup {
-        { collectionID: "Devcon" ... },
-        { collectionID: "CryptoPunks" ... },
-        { collectionID: "ZedRun" ... },
-        { ... }
-    }
-*/
-export const tokenLookup:TokenLookupInterface = {};
+interface TokenLookupInterface {
+    [issuer: string]: Item;
+}
+export declare const tokenLookup: TokenLookupInterface;
+export {};

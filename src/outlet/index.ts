@@ -1,28 +1,20 @@
 import {rawTokenCheck, readMagicUrl, storeMagicURL} from '../core';
 import {requiredParams} from '../utils/index';
-import {tokenLookup} from './../tokenLookup';
 import {decodeTokens, filterTokens} from './../core/index';
 import { MessageAction, MessageResponseInterface, MessageResponseAction } from '../client/messaging';
 import {AuthHandler} from "./auth-handler";
 
 interface OutletInterface {
-  tokenName: string;
+  config: any;
 }
 
 export class Outlet {
 
-  config: any;
-  tokenName: any;
-  tokenIssuer: any;
+  tokenConfig: any;
 
   constructor(config: OutletInterface) {
 
-    const { tokenName } = config;
-
-    this.tokenName = tokenName;
-    this.tokenIssuer = tokenLookup[tokenName];
-
-    requiredParams(tokenLookup[tokenName], "Please provide the token name when installing token outlet");
+    this.tokenConfig = config;
 
     this.pageOnLoadEventHandler();
 
@@ -86,7 +78,7 @@ export class Outlet {
         // Note: This test can only be performed when the localstorage / cookie is assigned, then later requested.
         localStorage.setItem('cookie-support-check', 'test');
 
-        const { tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey } = this.tokenIssuer;
+        const { tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey } = this.tokenConfig;
 
         const tokens = readMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey);
 
@@ -100,13 +92,13 @@ export class Outlet {
 
   }
 
-  prepareTokenOutput ( tokenName:string, filter: any ) {
+  prepareTokenOutput ( filter: any ) {
 
-    const storageTokens = localStorage.getItem(tokenLookup[tokenName].itemStorageKey);
+    const storageTokens = localStorage.getItem(this.tokenConfig.itemStorageKey);
 
     if(!storageTokens) return [];
 
-    const decodedTokens = decodeTokens(storageTokens, tokenLookup[tokenName].tokenParser, tokenLookup[tokenName].unsignedTokenDataName);
+    const decodedTokens = decodeTokens(storageTokens, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName);
 
     return filterTokens(decodedTokens, filter);
 
@@ -119,16 +111,17 @@ export class Outlet {
     const unsignedToken = JSON.parse(token);
 
     try {
-          let tokenObj = await rawTokenCheck(unsignedToken, this.tokenIssuer);
+          // check if token issuer
+          let tokenObj = await rawTokenCheck(unsignedToken, this.tokenConfig.tokenIdName);
 
-          let authHandler = new AuthHandler(this, evtid, this.tokenIssuer, tokenObj);
+          let authHandler = new AuthHandler(this, evtid, this.tokenConfig.tokenIdName, tokenObj);
 
           let tokenProof = await authHandler.authenticate();
 
           this.sendMessageResponse({
             evtid: evtid,
             evt: MessageResponseAction.PROOF,
-            issuer: this.tokenName,
+            issuer: this.tokenConfig.tokenName,
             proof: JSON.stringify(tokenProof)
           });
 
@@ -144,12 +137,12 @@ export class Outlet {
 
   private sendTokens(evtid: any){
 
-    let issuerTokens = this.prepareTokenOutput(this.tokenName, this.getFilter());
+    let issuerTokens = this.prepareTokenOutput(this.getFilter());
 
     this.sendMessageResponse({
       evtid: evtid,
       evt: MessageResponseAction.ISSUER_TOKENS,
-      issuer: this.tokenName,
+      issuer: this.tokenConfig.tokenName,
       tokens: issuerTokens
     });
   }

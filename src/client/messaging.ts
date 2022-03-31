@@ -1,5 +1,6 @@
 import {attachPostMessageListener, removePostMessageListener} from "../utils";
-import {tokenLookup} from "../tokenLookup";
+
+// TODO move Message related interfaces/enum in to shared location /core 
 
 export interface MessageRequestInterface {
     issuer:string,

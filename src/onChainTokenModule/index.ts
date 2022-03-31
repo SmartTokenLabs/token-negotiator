@@ -56,13 +56,14 @@ export class OnChainTokenModule {
      * {
                 chain: "rinkeby",
                 contractAddress: "0x381748c76f2b8871afbbe4578781cd24df34ae0d",
-                emblem: "https://storage.googleapis.com/opensea-rinkeby/0x381748c76f2b8871afbbe4578781cd24df34ae0d.png",
+                image: "https://storage.googleapis.com/opensea-rinkeby/0x381748c76f2b8871afbbe4578781cd24df34ae0d.png",
                 title: "OpenSea Creature Sale"
         }
     */
-    async getInitialContractAddressMetaData (issuerKey:string) {
+    async getInitialContractAddressMetaData (issuer:any) {
 
-        const { address, chain, openSeaSlug } = splitOnChainKey(issuerKey);
+        // const { address, chain, openSeaSlug } = splitOnChainKey(issuerKey);
+        const { contract, chain, openSeaSlug } = issuer;
 
         let collectionData = null;
 
@@ -78,13 +79,13 @@ export class OnChainTokenModule {
         }
 
         // try open sea first when there is a slug provided
-        if (openSeaSlug) collectionData = await this.getContractDataOpenSea(address, chain, openSeaSlug);
+        if (openSeaSlug) collectionData = await this.getContractDataOpenSea(contract, chain, openSeaSlug);
 
         // if there is no slug or no data try moralis
-        if(!openSeaSlug || !collectionData) collectionData = await this.getContractDataMoralis(address, chain);
+        if(!openSeaSlug && !collectionData) collectionData = await this.getContractDataMoralis(contract, chain);
 
         // if there is still no data try Alchemy
-        if(!openSeaSlug || !collectionData) collectionData = await this.getContractDataAlchemy(address, chain);
+        if(!openSeaSlug && !collectionData) collectionData = await this.getContractDataAlchemy(contract, chain);
 
         return collectionData;
     }
@@ -98,7 +99,7 @@ export class OnChainTokenModule {
      * {
                 chain: "rinkeby",
                 contractAddress: "0x381748c76f2b8871afbbe4578781cd24df34ae0d",
-                emblem: "https://storage.googleapis.com/opensea-rinkeby/0x381748c76f2b8871afbbe4578781cd24df34ae0d.png",
+                image: "https://storage.googleapis.com/opensea-rinkeby/0x381748c76f2b8871afbbe4578781cd24df34ae0d.png",
                 title: "OpenSea Creature Sale"
         }
     */
@@ -116,7 +117,7 @@ export class OnChainTokenModule {
                 return  {
                     chain,
                     contractAddress,
-                    emblem: response.assets[0].collection.image_url,
+                    image: response.assets[0].collection.image_url,
                     title: response.assets[0].collection.name
                 };
             })
@@ -134,15 +135,13 @@ export class OnChainTokenModule {
                 return  {
                     chain,
                     contractAddress,
-                    emblem: response.assets[0].collection.image_url,
+                    image: response.assets[0].collection.image_url,
                     title: response.assets[0].collection.name
                 };
             })
             .catch(err => console.error(err));
         
         } 
-
-        // TODO get OpenSea API key to enable the use of Mainnet.
 
         return;
 
@@ -167,12 +166,13 @@ export class OnChainTokenModule {
             .then(response => response.json())
             .then(response => {
 
-                const emblem = JSON.parse(response.result[0].metadata).image;
+                const image = JSON.parse(response.result[0].metadata).image;
 
                 return {
+                    api: 'moralis',
                     chain,
                     contractAddress,
-                    emblem,
+                    image,
                     title: response.result[0].name
                 };
             })
@@ -207,9 +207,10 @@ export class OnChainTokenModule {
                 if(!result.nfts.length) resolve([]);
 
                 resolve({
+                    api: 'alchemy',
                     chain,
                     contractAddress,
-                    emblem: result.nfts[0].metadata.image,
+                    image: result.nfts[0].metadata.image,
                     title: result.nfts[0].title
                 });
             })
@@ -219,9 +220,11 @@ export class OnChainTokenModule {
         return promise;
     }
 
-    async connectOnChainToken (issuerKey:string, owner:string) {
+    async connectOnChainToken (issuer:string, owner:string) {
 
-        const { address, chain, openSeaSlug } = splitOnChainKey(issuerKey);
+        // const { address, chain, openSeaSlug } = splitOnChainKey(issuerKey);
+
+        const { contract, chain, openSeaSlug } = issuer;
 
         let tokens = [];
 
@@ -231,9 +234,9 @@ export class OnChainTokenModule {
 
         if(openSeaSlug) tokens = await this.getTokensOpenSea(address, chain, owner, openSeaSlug);
 
-        if(!openSeaSlug || !tokens.length) tokens = await this.getTokensMoralis(address, chain, owner);
+        if(!openSeaSlug && !tokens.length) tokens = await this.getTokensMoralis(contract, chain, owner);
 
-        if(!tokens.length) tokens = await this.getTokensAlchemy(address, chain, owner);
+        if(!openSeaSlug && !tokens.length) tokens = await this.getTokensAlchemy(contract, chain, owner);
 
         return tokens;
 
@@ -252,27 +255,49 @@ export class OnChainTokenModule {
             return fetch(`https://testnets-api.opensea.io/api/v1/assets?owner=${owner}&collection=${openSeaSlug}&order_direction=desc&offset=0&limit=20`, options)
             .then(response => response.json())
             .then(response => {
-                return response.assets;
+
+                return response.assets.map((item:any) => {
+                    const image = item.image_url ? item.image_url : '';
+                    const title = item.name ? item.name : '';
+                    return {
+                        api: 'opensea',
+                        title: title,
+                        image: image,
+                        data: item
+                    }
+                });
             })
-            .catch(err => console.error(err));
+            .catch(err => {
+                console.error(err);
+            });
 
         }
         
         if(chain === 'mainnet' || chain === 'eth') {
 
-            let options = {method: 'GET', headers: {Accept: 'application/json', 'X-API-KEY': '3940c5b8cf4a4647bc22ff9b0a84f75a'}};
+            let options = { method: 'GET', headers: { Accept: 'application/json', 'X-API-KEY': '3940c5b8cf4a4647bc22ff9b0a84f75a'} };
             
             return fetch(`https://api.opensea.io/api/v1/assets?owner=${owner}&collection=${openSeaSlug}&order_direction=desc&offset=0&limit=20`, options)
             .then(response => response.json())
             .then(response => {
-                return response.assets;
-            })
-            .catch(err => console.error(err));
 
+                return response.assets.map((item:any) => {
+                    const image = item.image_url ? item.image_url : '';
+                    const title = item.name ? item.name : '';
+                    return {
+                        api: 'opensea',
+                        title: title,
+                        image: image,
+                        data: item
+                    }
+                });
+            })
+            .catch(err => {
+                console.error(err);
+            });
         }
-        
+
         return;
-        
     }
     
     async getTokensMoralis(address:string, chain:string, owner:string, offset=0, limit=20) {
@@ -303,6 +328,7 @@ export class OnChainTokenModule {
                 const title = parsedMetaObj.name ? parsedMetaObj.name : '';
 
                 return {
+                    api: 'moralis',
                     title: title,
                     image: image,
                     data: parsedMetaObj
@@ -336,6 +362,7 @@ export class OnChainTokenModule {
             .then(result => {
                 const tokens = result.ownedNfts.map((item) => {
                     return {
+                        api: 'alchemy',
                         title: item.title,
                         image: item.metadata.image,
                         data: item
