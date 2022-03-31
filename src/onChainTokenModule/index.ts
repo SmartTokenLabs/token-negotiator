@@ -1,6 +1,6 @@
 //@ts-nocheck
 
-import { requiredParams, splitOnChainKey } from './../utils/index';
+import {requiredParams, splitOnChainKey} from './../utils/index';
 
 export class OnChainTokenModule {
 
@@ -34,6 +34,9 @@ export class OnChainTokenModule {
                 'mumbai',
                 'avalanche',
                 'fantom'
+            ],
+            poap: [
+                'xdai'
             ]
         }
         
@@ -63,6 +66,17 @@ export class OnChainTokenModule {
         const { contract, chain, openSeaSlug } = issuer;
 
         let collectionData = null;
+
+        // POAP
+        // TODO: move this into a registry like tokenLookup
+        if (address.toLowerCase() == "0x22c1f6050e56d2876009903609a2cc3fef83b415"){
+            return {
+                chain,
+                address,
+                emblem: "https://storage.googleapis.com/subgraph-images/1647414847706poap.jpeg",
+                title: "POAP Proof of attendance protocol"
+            }
+        }
 
         // try open sea first when there is a slug provided
         if (openSeaSlug) collectionData = await this.getContractDataOpenSea(contract, chain, openSeaSlug);
@@ -214,7 +228,11 @@ export class OnChainTokenModule {
 
         let tokens = [];
 
-        if(openSeaSlug) tokens = await this.getTokensOpenSea(contract, chain, owner, openSeaSlug);
+        if (address.toLowerCase() == "0x22c1f6050e56d2876009903609a2cc3fef83b415"){
+            return this.getTokensPOAP(owner);
+        }
+
+        if(openSeaSlug) tokens = await this.getTokensOpenSea(address, chain, owner, openSeaSlug);
 
         if(!openSeaSlug && !tokens.length) tokens = await this.getTokensMoralis(contract, chain, owner);
 
@@ -356,6 +374,32 @@ export class OnChainTokenModule {
         });
 
         return promise;
+    }
+
+    async getTokensPOAP(owner:string){
+
+        // Uncomment to test a really large POAP collection - this guy gets around
+        //let url = `https://api.poap.xyz/actions/scan/0x4d2803f468b736b62fe9eec992c8f4c41be4cb15`;
+        let url = `https://api.poap.xyz/actions/scan/${owner}`;
+
+        let res = await fetch(url, {
+            method: 'GET'
+        });
+
+        let data = await res.json();
+
+        let tokens = [];
+
+        for (let token of data){
+
+            tokens.push({
+                title: token.event.name,
+                image: token.event.image_url,
+                data: token
+            });
+        }
+
+        return tokens;
     }
 
 }

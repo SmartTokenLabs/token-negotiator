@@ -34,6 +34,17 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === "number") return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+};
 import { requiredParams } from './../utils/index';
 var OnChainTokenModule = (function () {
     function OnChainTokenModule() {
@@ -65,6 +76,9 @@ var OnChainTokenModule = (function () {
                 'mumbai',
                 'avalanche',
                 'fantom'
+            ],
+            poap: [
+                'xdai'
             ]
         };
         return apiBlockchainSupport[apiName].indexOf(chain) >= -1;
@@ -77,6 +91,14 @@ var OnChainTokenModule = (function () {
                     case 0:
                         contract = issuer.contract, chain = issuer.chain, openSeaSlug = issuer.openSeaSlug;
                         collectionData = null;
+                        if (address.toLowerCase() == "0x22c1f6050e56d2876009903609a2cc3fef83b415") {
+                            return [2, {
+                                    chain: chain,
+                                    address: address,
+                                    emblem: "https://storage.googleapis.com/subgraph-images/1647414847706poap.jpeg",
+                                    title: "POAP Proof of attendance protocol"
+                                }];
+                        }
                         if (!openSeaSlug) return [3, 2];
                         return [4, this.getContractDataOpenSea(contract, chain, openSeaSlug)];
                     case 1:
@@ -214,8 +236,11 @@ var OnChainTokenModule = (function () {
                     case 0:
                         contract = issuer.contract, chain = issuer.chain, openSeaSlug = issuer.openSeaSlug;
                         tokens = [];
+                        if (address.toLowerCase() == "0x22c1f6050e56d2876009903609a2cc3fef83b415") {
+                            return [2, this.getTokensPOAP(owner)];
+                        }
                         if (!openSeaSlug) return [3, 2];
-                        return [4, this.getTokensOpenSea(contract, chain, owner, openSeaSlug)];
+                        return [4, this.getTokensOpenSea(address, chain, owner, openSeaSlug)];
                     case 1:
                         tokens = _a.sent();
                         _a.label = 2;
@@ -357,6 +382,45 @@ var OnChainTokenModule = (function () {
                         .catch(function (error) { return console.log('error', error); });
                 });
                 return [2, promise];
+            });
+        });
+    };
+    OnChainTokenModule.prototype.getTokensPOAP = function (owner) {
+        return __awaiter(this, void 0, void 0, function () {
+            var url, res, data, tokens, data_1, data_1_1, token;
+            var e_1, _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        url = "https://api.poap.xyz/actions/scan/" + owner;
+                        return [4, fetch(url, {
+                                method: 'GET'
+                            })];
+                    case 1:
+                        res = _b.sent();
+                        return [4, res.json()];
+                    case 2:
+                        data = _b.sent();
+                        tokens = [];
+                        try {
+                            for (data_1 = __values(data), data_1_1 = data_1.next(); !data_1_1.done; data_1_1 = data_1.next()) {
+                                token = data_1_1.value;
+                                tokens.push({
+                                    title: token.event.name,
+                                    image: token.event.image_url,
+                                    data: token
+                                });
+                            }
+                        }
+                        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                        finally {
+                            try {
+                                if (data_1_1 && !data_1_1.done && (_a = data_1.return)) _a.call(data_1);
+                            }
+                            finally { if (e_1) throw e_1.error; }
+                        }
+                        return [2, tokens];
+                }
             });
         });
     };

@@ -20,5 +20,10 @@ export declare class OnChainTokenModule {
     getTokensOpenSea(address: string, chain: string, owner: string, openSeaSlug: string, offset?: number, limit?: number): Promise<any>;
     getTokensMoralis(address: string, chain: string, owner: string, offset?: number, limit?: number): Promise<any>;
     getTokensAlchemy(address: string, chain: string, owner: string): Promise<unknown>;
+    getTokensPOAP(owner: string): Promise<{
+        title: any;
+        image: any;
+        data: any;
+    }[]>;
 }
 export default OnChainTokenModule;

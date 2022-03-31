@@ -94,7 +94,7 @@ var TokenList = (function (_super) {
             for (var _b = __values(this.viewContainer.getElementsByClassName('img-container-tn')), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var elem = _c.value;
                 if (elem.querySelector('img'))
-                    return;
+                    continue;
                 var params = {
                     src: elem.getAttribute('data-image-src'),
                     title: elem.getAttribute('data-token-title'),
