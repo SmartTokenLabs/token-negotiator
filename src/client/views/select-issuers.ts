@@ -216,6 +216,7 @@ export class SelectIssuers extends AbstractView {
             if(!nftImage) nftImage = emblem;
             
             let nftTitle = t.name;
+            if(!nftTitle) nftTitle = t.title;
             if(!nftTitle) nftTitle = title;
 
             // end of TODO
