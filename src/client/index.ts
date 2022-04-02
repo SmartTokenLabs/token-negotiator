@@ -169,12 +169,14 @@ export class Client {
 
             let data;
 
+            const tokensOrigin = this.tokenLookup[issuer].tokenOrigin;
+
             try {
                 data = await this.messaging.sendMessage({
                     issuer: issuer,
                     action: MessageAction.GET_ISSUER_TOKENS,
                     filter: this.filter,
-                    origin: issuer.host
+                    origin: tokensOrigin
                 });
             } catch (err){
                 console.log(err);

@@ -136,25 +136,28 @@ var Client = (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4, Promise.all(offChainTokens.tokenKeys.map(function (issuer) { return __awaiter(_this, void 0, void 0, function () {
-                            var data, err_1;
+                            var data, tokensOrigin, err_1;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
-                                        _a.trys.push([0, 2, , 3]);
+                                        tokensOrigin = this.tokenLookup[issuer].tokenOrigin;
+                                        _a.label = 1;
+                                    case 1:
+                                        _a.trys.push([1, 3, , 4]);
                                         return [4, this.messaging.sendMessage({
                                                 issuer: issuer,
                                                 action: MessageAction.GET_ISSUER_TOKENS,
                                                 filter: this.filter,
-                                                origin: issuer.host
+                                                origin: tokensOrigin
                                             })];
-                                    case 1:
-                                        data = _a.sent();
-                                        return [3, 3];
                                     case 2:
+                                        data = _a.sent();
+                                        return [3, 4];
+                                    case 3:
                                         err_1 = _a.sent();
                                         console.log(err_1);
                                         return [2];
-                                    case 3:
+                                    case 4:
                                         console.log("tokens:");
                                         console.log(data.tokens);
                                         this.offChainTokens[issuer].tokens = data.tokens;

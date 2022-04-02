@@ -72,31 +72,18 @@ export class Messaging {
 
             let iframe = this.createIframe();
 
-            //this.openIframe(url).then((iframeRef:any) => {
+            this.setResponseListener(id, request.origin, request.timeout, resolve, reject,
+                ()=>{
 
-                // TODO: iframe error handling here
-                //if (iframeRef) {
+                    if (iframe?.parentNode)
+                        iframe.parentNode.removeChild(iframe);
 
-                    this.setResponseListener(id, request.origin, request.timeout, resolve, reject,
-                        ()=>{
-                            if (iframe?.parentNode)
-                                iframe.parentNode.removeChild(iframe);
-
-                            let modal = this.getModal();
-                            if (modal)
-                                modal.style.display = "none";
-                        },
-                        iframe
-                    );
-
-                    // TODO: Is this required? won't the URL trigger it?
-                    /*iframeRef.contentWindow.postMessage({
-                        evt: 'getTokens'
-                    }, request.origin);*/
-
-                //}
-
-            //});
+                    let modal = this.getModal();
+                    if (modal)
+                        modal.style.display = "none";
+                },
+                iframe
+            );
 
             iframe.src = url;
 
@@ -234,9 +221,6 @@ export class Messaging {
 
             let iframe = this.createIframe();
 
-
-            //this.openIframe(url).then((iframeRef:any) => {
-
                 this.setResponseListener(
                     id,
                     origin,
@@ -252,7 +236,6 @@ export class Messaging {
                 );
 
                 console.log("listener set");
-            //});
 
             iframe.src = url;
 
