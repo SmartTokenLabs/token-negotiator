@@ -6,14 +6,10 @@ import { ethers } from "ethers";
 class Web3WalletProvider {
 
     state: any;
-    registeredWalletProviders:any;
-    networks: any;
 
     constructor() {
 
         this.state = { addresses: [ /* { address, chainId, provider } */ ] };
-
-        this.registeredWalletProviders = {};
         
     }
 
