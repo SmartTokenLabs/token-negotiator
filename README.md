@@ -54,11 +54,10 @@ listed inside the issuers array.
   let tokens = [];
 
   // configure
-
   const negotiator = new Client({
     type: 'active',
     issuers: [
-        'devcon-remote'
+        { collectionID: 'devcon', tokenConfigURI: "https://raw.githubusercontent.com/TokenScript/token-negotiator-examples/main/token-outlet-website/public/tokenConfig.json" },
         { contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'rinkeby-punk' },
         { contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
     ],
@@ -127,6 +126,45 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
 
   negotiator.negotiate();
   
+````
+
+### Managing Issuers on and off chain
+
+Tokens can be provided from both on and off chain sources.
+
+On Chain:
+
+````javascript
+
+  /**
+  * @param {String} collectionID your own reference key to identify the collection by.
+  * @param {String} contract the smart contract address by which you wish to locate the tokens
+  * @param {String} chain the chain that the tokens can be found
+  */
+  var onChainIssuer = { collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
+
+````
+
+Off Chain:
+
+````javascript
+  
+  /**
+  * @param {String} collectionID your own reference key to identify the collection by.
+  * @param {String} tokenConfigURI the token collection config uri
+  */
+  var offChainIssuer = { collectionID: 'devcon', tokenConfigURI: "https://raw.githubusercontent.com/TokenScript/token-negotiator-examples/main/token-outlet-website/public/tokenConfig.json" },
+  
+  // example of adding 1 off chain issuer and 1 on chain issuer to the Token Negotiator.
+  const negotiator = new Client({
+    type: 'passive',
+    issuers: [
+      onChainIssuer,
+      offChainIssuer
+    ],
+    options: {}
+  });
+
 ````
 
 ### Authenticate ownership of Token
