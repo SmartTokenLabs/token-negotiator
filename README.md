@@ -58,8 +58,7 @@ listed inside the issuers array.
     type: 'active',
     issuers: [
         { collectionID: 'devcon', tokenConfigURI: "https://raw.githubusercontent.com/TokenScript/token-negotiator-examples/main/token-outlet-website/public/tokenConfig.json" },
-        { contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'rinkeby-punk' },
-        { contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
+        { collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
     ],
     options: {
         overlay: {
@@ -103,9 +102,8 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
   const negotiator = new Client({
     type: 'passive',
     issuers: [
-      'devcon-remote',
-      { contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'rinkeby-punk' },
-      { contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
+      { collectionID: 'devcon', tokenConfigURI: "https://raw.githubusercontent.com/TokenScript/token-negotiator-examples/main/token-outlet-website/public/tokenConfig.json" },
+      { collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
     ],
     options: {}
   });
@@ -210,7 +208,7 @@ Configure the library using the following example.
         var negotiator = new negotiator.Client({
             type: 'active',
             issuers: [
-                'devcon-remote'
+                { collectionID: 'devcon', tokenConfigURI: "https://raw.githubusercontent.com/TokenScript/token-negotiator-examples/main/token-outlet-website/public/tokenConfig.json" },
             ],
             options: {
                 overlay: {
