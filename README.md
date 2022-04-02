@@ -157,22 +157,6 @@ Off Chain:
   
 ````
 
-Implementation:
-
-````javascript
-
-  // example of adding 1 off chain issuer and 1 on chain issuer to the Token Negotiator.
-  const negotiator = new Client({
-    type: 'passive',
-    issuers: [
-      onChainIssuer,
-      offChainIssuer
-    ],
-    options: {}
-  });
-
-````
-
 ### Authenticate ownership of Token
 
 Authenicating ownership of the token will provide a proof with a limited expiry.
