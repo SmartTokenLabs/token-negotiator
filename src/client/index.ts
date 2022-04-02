@@ -169,12 +169,14 @@ export class Client {
 
             let data;
 
+            const tokensOrigin = this.tokenLookup[issuer].tokenOrigin;
+
             try {
                 data = await this.messaging.sendMessage({
                     issuer: issuer,
                     action: MessageAction.GET_ISSUER_TOKENS,
                     filter: this.filter,
-                    origin: issuer.host
+                    origin: tokensOrigin
                 });
             } catch (err){
                 console.log(err);
@@ -196,7 +198,7 @@ export class Client {
 
         await Promise.all(offChainTokens.tokenKeys.map(async (issuerKey: string): Promise<any> => {
 
-            return fetch(`${this.tokenLookup[issuerKey].tokenEndPoint}`, {})
+            return fetch(`${this.tokenLookup[issuerKey].tokenConfigURI}`, {})
             .then(response => response.json())
             .then(response => {
                 this.updateTokenLookupStore(issuerKey, response);
