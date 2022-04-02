@@ -157,6 +157,8 @@ Off Chain:
   
 ````
 
+Implementation:
+
 ````javascript
 
   // example of adding 1 off chain issuer and 1 on chain issuer to the Token Negotiator.
