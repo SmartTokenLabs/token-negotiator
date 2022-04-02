@@ -178,7 +178,7 @@ Authenicating ownership of the token will provide a proof with a limited expiry.
 
 ````
 
-Creating a UMD build, which will export the library as a single file.
+### Creating a UMD build, which will export the library as a single file.
 
 ````sh
   
