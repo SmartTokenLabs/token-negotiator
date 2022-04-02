@@ -39,7 +39,6 @@ class Web3WalletProvider {
 
     async signWith ( message: string, walletData: any ) {
 
-        // @ts-ignore
         let provider = new ethers.providers.Web3Provider(walletData.provider);
   
         let signer = provider.getSigner();
@@ -64,14 +63,12 @@ class Web3WalletProvider {
 
     async getWeb3ChainId ( web3: any) {
 
-        // @ts-ignore
         return web3.eth.getChainId();
 
     };
 
     async getWeb3Accounts( web3: any ) {
 
-        // @ts-ignore
         return web3.eth.getAccounts();
 
     };
@@ -90,17 +87,14 @@ class Web3WalletProvider {
 
         console.log('connect MetaMask');
       
-        // @ts-ignore
         if (typeof window.ethereum !== 'undefined') {
 
             //@ts-ignore
             // await ethereum.enable(); // fall back may be needed for FF to open Extension Prompt.
             
-            // @ts-ignore
-            const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             
-            // @ts-ignore
-            const hexChainId = await ethereum.request({ method: 'eth_chainId' });
+            const hexChainId = await window.ethereum.request({ method: 'eth_chainId' });
 
             const accountAddress = accounts[0];
 
@@ -123,12 +117,10 @@ class Web3WalletProvider {
 
         return new Promise((resolve, reject) => {
                 
-            //  Create WalletConnect Provider
             const walletConnectProvider = new WalletConnectProvider({
                 infuraId: "7753fa7b79d2469f97c156780fce37ac",
             });
         
-            // Subscribe to accounts change
             walletConnectProvider.on("accountsChanged", (accounts: string[]) => {
 
                 console.log(accounts);
@@ -139,21 +131,18 @@ class Web3WalletProvider {
                     
             });
                 
-            // Subscribe to chainId change
             walletConnectProvider.on("chainChanged", (chainId: number) => {
 
                 console.log(chainId);
 
             });
             
-            // Subscribe to session disconnection
             walletConnectProvider.on("disconnect", (code: number, reason: string) => {
 
                 console.log(code, reason);
 
             });
         
-            //  Enable session (triggers QR Code modal)
             walletConnectProvider.enable();
 
         });
@@ -247,11 +236,3 @@ class Web3WalletProvider {
 }
 
 export default Web3WalletProvider;
-
-// Usage:
-// connect to this module:
-// const web3WalletProvider = new Web3WalletProvider();
-// connect to a wallet (e.g. click event from user)
-// web3WalletProvider.connectWith('WalletConnect');
-// Sign a message (e.g. when user wished to prove owership of wallet as part of action);
-// web3WalletProvider.signWith("msg", window.web3WalletProvider.getConnectedWalletData()[0]);
