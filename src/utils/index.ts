@@ -77,12 +77,3 @@ export const removePostMessageListener = (listener:any) => {
     window.detachEvent("onmessage", listener);
   }
 }
-
-export const splitOnChainKey = (onChainKey: string) => {
-  const splitData = onChainKey.split('.');
-  return { 
-    address: splitData[0],
-    chain: splitData[1],
-    openSeaSlug: splitData[2]
-  } 
-}

@@ -1,11 +1,7 @@
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import Torus from "@toruslabs/torus-embed";
 import Web3 from "web3";
-// @ts-ignore
 import { ethers } from "ethers";
-
-// walletAddressProvider is designed to collect a stateful list of user 
-// owned addressess from multiple networks.
 
 class Web3WalletProvider {
 
@@ -15,10 +11,8 @@ class Web3WalletProvider {
 
     constructor() {
 
-        // @ts-ignore
         this.state = { addresses: [ /* { address, chainId, provider } */ ] };
 
-        // @ts-ignore
         this.registeredWalletProviders = {};
         
     }
@@ -27,11 +21,9 @@ class Web3WalletProvider {
 
         if(!walletType) throw new Error('Please provide a Wallet type to connect with.');
 
-        // @ts-ignore
-        if(this[walletType]) {
+        if(this[walletType as keyof Web3WalletProvider]) {
             
-            // @ts-ignore
-            const address = await this[walletType]();
+            const address = await this[walletType as keyof Web3WalletProvider]();
 
             console.log('address', address);
 

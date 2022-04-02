@@ -91,7 +91,7 @@ var OnChainTokenModule = (function () {
                     case 0:
                         contract = issuer.contract, chain = issuer.chain, openSeaSlug = issuer.openSeaSlug;
                         collectionData = null;
-                        if (address.toLowerCase() == "0x22c1f6050e56d2876009903609a2cc3fef83b415") {
+                        if (contract.toLowerCase() == "0x22c1f6050e56d2876009903609a2cc3fef83b415") {
                             return [2, {
                                     chain: chain,
                                     address: address,
@@ -236,11 +236,11 @@ var OnChainTokenModule = (function () {
                     case 0:
                         contract = issuer.contract, chain = issuer.chain, openSeaSlug = issuer.openSeaSlug;
                         tokens = [];
-                        if (address.toLowerCase() == "0x22c1f6050e56d2876009903609a2cc3fef83b415") {
+                        if (contract.toLowerCase() == "0x22c1f6050e56d2876009903609a2cc3fef83b415") {
                             return [2, this.getTokensPOAP(owner)];
                         }
                         if (!openSeaSlug) return [3, 2];
-                        return [4, this.getTokensOpenSea(address, chain, owner, openSeaSlug)];
+                        return [4, this.getTokensOpenSea(contract, chain, owner, openSeaSlug)];
                     case 1:
                         tokens = _a.sent();
                         _a.label = 2;

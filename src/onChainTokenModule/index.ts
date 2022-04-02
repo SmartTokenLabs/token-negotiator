@@ -1,6 +1,6 @@
 //@ts-nocheck
 
-import {requiredParams, splitOnChainKey} from './../utils/index';
+import {requiredParams} from './../utils/index';
 
 export class OnChainTokenModule {
 
@@ -62,14 +62,13 @@ export class OnChainTokenModule {
     */
     async getInitialContractAddressMetaData (issuer:any) {
 
-        // const { address, chain, openSeaSlug } = splitOnChainKey(issuerKey);
         const { contract, chain, openSeaSlug } = issuer;
 
         let collectionData = null;
 
         // POAP
         // TODO: move this into a registry like tokenLookup
-        if (address.toLowerCase() == "0x22c1f6050e56d2876009903609a2cc3fef83b415"){
+        if (contract.toLowerCase() == "0x22c1f6050e56d2876009903609a2cc3fef83b415"){
             return {
                 chain,
                 address,
@@ -222,17 +221,15 @@ export class OnChainTokenModule {
 
     async connectOnChainToken (issuer:string, owner:string) {
 
-        // const { address, chain, openSeaSlug } = splitOnChainKey(issuerKey);
-
         const { contract, chain, openSeaSlug } = issuer;
 
         let tokens = [];
 
-        if (address.toLowerCase() == "0x22c1f6050e56d2876009903609a2cc3fef83b415"){
+        if (contract.toLowerCase() == "0x22c1f6050e56d2876009903609a2cc3fef83b415"){
             return this.getTokensPOAP(owner);
         }
 
-        if(openSeaSlug) tokens = await this.getTokensOpenSea(address, chain, owner, openSeaSlug);
+        if(openSeaSlug) tokens = await this.getTokensOpenSea(contract, chain, owner, openSeaSlug);
 
         if(!openSeaSlug && !tokens.length) tokens = await this.getTokensMoralis(contract, chain, owner);
 

@@ -87,7 +87,6 @@ var SelectIssuers = (function (_super) {
         var data = this.client.getTokenData();
         var html = "";
         data.offChainTokens.tokenKeys.map(function (issuer) {
-            console.log('....', issuer);
             html += _this.issuerConnectMarkup(data.tokenLookup[issuer].title, data.tokenLookup[issuer].image, issuer);
         });
         data.onChainTokens.tokenKeys.map(function (issuer) {

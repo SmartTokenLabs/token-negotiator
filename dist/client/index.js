@@ -177,7 +177,7 @@ var Client = (function () {
                     case 0: return [4, Promise.all(offChainTokens.tokenKeys.map(function (issuerKey) { return __awaiter(_this, void 0, void 0, function () {
                             var _this = this;
                             return __generator(this, function (_a) {
-                                return [2, fetch("" + this.tokenLookup[issuerKey].tokenEndPoint, {})
+                                return [2, fetch("" + this.tokenLookup[issuerKey].tokenConfigURI, {})
                                         .then(function (response) { return response.json(); })
                                         .then(function (response) {
                                         _this.updateTokenLookupStore(issuerKey, response);
