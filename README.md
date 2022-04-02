@@ -155,6 +155,10 @@ Off Chain:
   */
   var offChainIssuer = { collectionID: 'devcon', tokenConfigURI: "https://raw.githubusercontent.com/TokenScript/token-negotiator-examples/main/token-outlet-website/public/tokenConfig.json" },
   
+````
+
+````javascript
+
   // example of adding 1 off chain issuer and 1 on chain issuer to the Token Negotiator.
   const negotiator = new Client({
     type: 'passive',
