@@ -8,11 +8,13 @@ export interface MessageRequestInterface {
     origin:string,
     timeout?:number,
     filter?:string[],
-    token?:string
+    token?:string,
+    urlParams?:string
 }
 
 export enum MessageAction {
     COOKIE_CHECK = "cookie-check",
+    MAGIC_URL = "magic-url",
     GET_ISSUER_TOKENS = "get-issuer-tokens",
     GET_PROOF = "get-proof"
 }
@@ -36,6 +38,12 @@ export enum MessageResponseAction {
     //USER_CANCEL = "user_cancel" Could be handled different to an error
 }
 
+declare global {
+    interface Window {
+        NEGOTIATOR_DEBUG: boolean;
+    }
+}
+
 export class Messaging {
 
     iframeStorageSupport:null|boolean = null;
@@ -45,9 +53,9 @@ export class Messaging {
         // Should we just check cookie support on initialisation or when requested?
     }
 
-    async sendMessage(request:MessageRequestInterface){
+    async sendMessage(request:MessageRequestInterface, forceTab:boolean = false){
 
-        if (this.iframeStorageSupport === null)
+        if (!forceTab && this.iframeStorageSupport === null)
             this.iframeStorageSupport = await this.thirdPartyCookieSupportCheck(request.origin);
 
         // Uncomment to test popup mode
@@ -56,7 +64,7 @@ export class Messaging {
         console.log("Send request: ");
         console.log(request);
 
-        if (this.iframeStorageSupport){
+        if (!forceTab && this.iframeStorageSupport){
             return this.sendIframe(request);
         } else {
             return this.sendPopup(request);
@@ -154,13 +162,14 @@ export class Messaging {
 
         let afterResolveOrError = () => {
             removePostMessageListener(listener);
-            cleanUpCallback();
+            if (!window.NEGOTIATOR_DEBUG)
+                cleanUpCallback();
         };
 
         attachPostMessageListener(listener);
 
         if (timeout == undefined)
-            timeout = 5000;
+            timeout = 25000;
 
         if (timeout > 0)
             timer = setTimeout(()=>{
@@ -210,32 +219,28 @@ export class Messaging {
 
     private thirdPartyCookieSupportCheck(origin:string):Promise<boolean> {
 
-        // TODO SML's host a webpage with cache that we use to test cookies
-        // This so we don't need to check if the TN is using On/Off chain tokens etc.
-
-        //if(this.offChainTokens.tokenKeys.length) {
         return new Promise((resolve, reject) => {
 
             let id = Messaging.getUniqueEventId();
-            let url = origin + '?action=' + MessageAction.COOKIE_CHECK +'&evtid=' + id;
+            let url = origin + '#action=' + MessageAction.COOKIE_CHECK +'&evtid=' + id;
 
             let iframe = this.createIframe();
 
                 this.setResponseListener(
                     id,
                     origin,
-                    5000,
+                    25000,
                     (responseData:any)=>{
                         resolve(!!responseData.thirdPartyCookies);
                     },
-                    reject,
+                    (err:any)=>{
+                        resolve(false);
+                    },
                     () => {
                         if (iframe?.parentNode)
                             iframe.parentNode.removeChild(iframe);
                     }
                 );
-
-                console.log("listener set");
 
             iframe.src = url;
 
@@ -245,13 +250,16 @@ export class Messaging {
 
     private constructUrl(id:any, request:MessageRequestInterface){
 
-        let url = `${request.origin}?evtid=${id}&action=${request.action}`;
+        let url = `${request.origin}#evtid=${id}&action=${request.action}`;
 
         if (request.filter)
             url += `&filter=${JSON.stringify(request.filter)}`;
 
         if (request.token)
             url += `&token=${JSON.stringify(request.token)}`;
+
+        if (request.urlParams)
+            url += `&${request.urlParams}`;
 
         return url;
     }
@@ -266,25 +274,16 @@ export class Messaging {
 
     public createIframe(url?: string) {
 
-        //return new Promise((resolve, reject) => {
+        const iframe = document.createElement('iframe');
 
-            const iframe = document.createElement('iframe');
+        let modal = this.getModal();
 
-            let modal = this.getModal();
+        modal.getElementsByClassName('modal-body-tn')[0].appendChild(iframe);
 
-            modal.getElementsByClassName('modal-body-tn')[0].appendChild(iframe);
+        if (url)
+            iframe.src = url;
 
-            // TODO: Do we need a callback to close tab in Client::addTokenThroughIframe
-            /*iframe.onload = () => {
-                console.log("Frame loaded");
-                resolve(iframe);
-            };*/
-
-            if (url)
-                iframe.src = url;
-
-            return iframe;
-        //});
+        return iframe;
     }
 
     private static getUniqueEventId(){

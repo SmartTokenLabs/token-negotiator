@@ -6,9 +6,7 @@ interface FilterInterface {
   [key: string]: any
 }
 
-export const filterTokens = (decodedTokens: any, filter: FilterInterface) => {
-
-  if (Object.keys(filter).length === 0) filter = filter;
+export const filterTokens = (decodedTokens: any, filter: FilterInterface = []) => {
 
   let res: any = [];
 
@@ -121,9 +119,10 @@ export const storeMagicURL = (tokens: any, itemStorageKey: string) => {
 
 }
 
-export const readMagicUrl = (tokenUrlName: string, tokenSecretName: string, tokenIdName: string, itemStorageKey: string) => {
+export const readMagicUrl = (tokenUrlName: string, tokenSecretName: string, tokenIdName: string, itemStorageKey: string, urlParams: URLSearchParams|null = null) => {
 
-  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams == null)
+    urlParams = new URLSearchParams(window.location.search);
 
   const tokenFromQuery = urlParams.get(tokenUrlName);
 
@@ -131,12 +130,14 @@ export const readMagicUrl = (tokenUrlName: string, tokenSecretName: string, toke
 
   const idFromQuery = urlParams.get(tokenIdName);
 
-  if (!(tokenFromQuery && secretFromQuery)) return;
+  if (!(tokenFromQuery && secretFromQuery))
+    throw new Error("Incomplete token params in URL.");
 
   let tokensOutput = readTokens(itemStorageKey);
 
   let isNewQueryTicket = true;
 
+  // TODO: use loop here instead
   let tokens = tokensOutput.tokens.map((tokenData: any) => {
 
     if (tokenData.token === tokenFromQuery) {
@@ -154,7 +155,7 @@ export const readMagicUrl = (tokenUrlName: string, tokenSecretName: string, toke
     return tokens;
   }
 
-  return [];
+  throw new Error("Token already added.");
 
 }
 

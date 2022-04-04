@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { Messaging, MessageAction } from "./messaging";
+import {Messaging, MessageAction, MessageResponseAction} from "./messaging";
 import { Popup } from './popup';
 import {asyncHandle, logger, requiredParams} from './../utils/index';
 import {connectMetamaskAndGetAddress, getChallengeSigned, validateUseEthKey} from "../core/index";
@@ -455,19 +455,21 @@ export class Client {
         }
     }
 
-    addTokenThroughTab(magicLink: any) {
+    async addTokenViaMagicLink(magicLink: any) {
 
-        let tab = this.messaging.openTab(magicLink);
+        let url = new URL(magicLink);
+        let params = url.hash.length > 1 ? url.hash.substring(1) : url.search.substring(1);
 
-        // TODO: use response messaging to ensure the transaction is completed
-        setTimeout(() => { tab?.close(); }, 2500);
+        let data = await this.messaging.sendMessage({
+            action: MessageAction.MAGIC_URL,
+            urlParams: params,
+            origin: url.origin + url.pathname
+        });
 
-    }
+        if (data.evt == MessageResponseAction.ISSUER_TOKENS)
+            return data.tokens;
 
-    addTokenThroughIframe(magicLink: any) {
-
-        this.messaging.createIframe(magicLink);
-
+        throw new Error(data.errors.join("\n"));
     }
 
     on (type:string, callback?:any, data?:any) {

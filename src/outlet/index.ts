@@ -11,6 +11,7 @@ interface OutletInterface {
 export class Outlet {
 
   tokenConfig: any;
+  urlParams?: URLSearchParams;
 
   constructor(config: OutletInterface) {
 
@@ -21,9 +22,7 @@ export class Outlet {
   };
 
   getDataFromQuery ( itemKey:any ) {
-    const urlParams = new URLSearchParams(window.location.search);
-    const item = urlParams.get(itemKey);
-    return item ? item : undefined;
+    return this.urlParams ? this.urlParams.get(itemKey) : undefined;
   }
 
   getFilter(){
@@ -33,14 +32,21 @@ export class Outlet {
 
   pageOnLoadEventHandler () {
 
+    let params = window.location.hash.length > 1 ? "?"+window.location.hash.substring(1) : window.location.search;
+    this.urlParams = new URLSearchParams(params);
+
     const evtid = this.getDataFromQuery('evtid');
     const action = this.getDataFromQuery('action');
 
-    if (!document.referrer)
+    if (!document.referrer && !this.getDataFromQuery('DEBUG'))
       return;
 
     console.log("Outlet received event ID " + evtid + " action " + action);
     // Outlet Page OnLoad Event Handler
+
+    // store local storage item that can be later used to check if third party cookies are allowed.
+    // Note: This test can only be performed when the localstorage / cookie is assigned, then later requested.
+    localStorage.setItem('cookie-support-check', 'test');
 
     // TODO: should issuer be validated against requested issuer?
 
@@ -74,17 +80,18 @@ export class Outlet {
 
       default:
 
-        // store local storage item that can be later used to check if third party cookies are allowed.
-        // Note: This test can only be performed when the localstorage / cookie is assigned, then later requested.
-        localStorage.setItem('cookie-support-check', 'test');
-
         const { tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey } = this.tokenConfig;
 
-        const tokens = readMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey);
+        try {
+            const tokens = readMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey, this.urlParams);
 
-        if(tokens && tokens.length) storeMagicURL(tokens, itemStorageKey);
+            storeMagicURL(tokens, itemStorageKey);
 
-        this.sendTokens(evtid);
+            this.sendTokens(evtid);
+
+        } catch (e:any) {
+            this.sendErrorResponse(evtid, e.message);
+        }
 
         break;
 
@@ -130,11 +137,7 @@ export class Outlet {
         console.log(e);
 
         // TODO: We shouldn't be sending the full exception here, instead return error messages only.
-        this.sendMessageResponse({
-          evtid: evtid,
-          evt: MessageResponseAction.ERROR,
-          errors: [e]
-        });
+        this.sendErrorResponse(evtid, e);
     }
 
   }
@@ -148,6 +151,14 @@ export class Outlet {
       evt: MessageResponseAction.ISSUER_TOKENS,
       issuer: this.tokenConfig.tokenName,
       tokens: issuerTokens
+    });
+  }
+
+  public sendErrorResponse(evtid: any, error:string){
+    this.sendMessageResponse({
+      evtid: evtid,
+      evt: MessageResponseAction.ERROR,
+      errors: [error]
     });
   }
 
