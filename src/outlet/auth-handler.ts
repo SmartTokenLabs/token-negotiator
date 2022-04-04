@@ -3,6 +3,7 @@
 import {Item} from '../tokenLookup'
 import {MessageResponseAction} from '../client/messaging'
 import {Outlet} from "./index";
+import {Authenticator} from '@tokenscript/attestation'
 
 export interface DevconToken {
     ticketBlob: string,
@@ -37,6 +38,8 @@ export class AuthHandler {
 
     private base64attestorPubKey:string|undefined;
     private base64senderPublicKey:string|undefined;
+
+    private authenticator:Authenticator = new Authenticator();
 
     constructor(outlet:Outlet, evtid:any, tokenDef:Item, tokenObj:DevconToken|any) {
         this.outlet = outlet;
@@ -164,14 +167,14 @@ export class AuthHandler {
 
         try {
 
-            // @ts-ignore
-            window.authenticator.getUseTicket(
+            this.authenticator.getUseTicket(
                 this.signedTokenSecret,
                 this.attestationSecret,
                 this.signedTokenBlob ,
                 this.attestationBlob ,
                 this.base64attestorPubKey,
                 this.base64senderPublicKey,
+                true
             ).then((useToken:any) => {
                 if (useToken){
                     console.log('this.authResultCallback( useToken ): ');
