@@ -1,5 +1,4 @@
-export interface Item {
-    onChain: any;
+export interface OffChainTokenConfig extends TokenConfig {
     tokenIssuerPublicKey?: any;
     title?: any;    
     tokenName?: any;
@@ -20,7 +19,18 @@ export interface Item {
     base64attestorPubKey?: string;
 }
 
-interface TokenLookupInterface { [issuer: string]: Item };
+export interface OnChainTokenConfig extends TokenConfig {
+    contract: string,
+    chain: string,
+    openSeaSlug: string
+}
+
+export interface TokenConfig {
+    collectionID: string,
+    onChain: boolean
+}
+
+interface TokenLookupInterface { [issuer: string]: OffChainTokenConfig|OnChainTokenConfig }
 
 /* 
     Example when tokenLookup is populated:

@@ -3,7 +3,7 @@ import { Messaging, MessageAction } from "./messaging";
 import { Popup } from './popup';
 import {asyncHandle, logger, requiredParams} from './../utils/index';
 import {connectMetamaskAndGetAddress, getChallengeSigned, validateUseEthKey} from "../core/index";
-import {tokenLookup} from './../tokenLookup';
+import {OffChainTokenConfig, OnChainTokenConfig, tokenLookup} from './../tokenLookup';
 import OnChainTokenModule from './../onChainTokenModule'
 import Web3WalletProvider from './../utils/Web3WalletProvider';
 import "./../theme/style.css";
@@ -11,7 +11,7 @@ import './../vendor/keyShape';
 
 interface NegotiationInterface {
     type: string;
-    issuers: string[];
+    issuers: OnChainTokenConfig|OffChainTokenConfig[];
     options: any;
 }
 
@@ -51,6 +51,7 @@ export class Client {
 
         requiredParams(issuers, 'issuers are missing.');
 
+        // TODO: Remove token lookup and use issuers instead - pretty much the same data
         this.tokenLookup = tokenLookup;
 
         this.type = type;
@@ -196,7 +197,8 @@ export class Client {
 
     async enrichTokenLookupDataOffChainTokens(offChainTokens: any) {
 
-        await Promise.all(offChainTokens.tokenKeys.map(async (issuerKey: string): Promise<any> => {
+        // TODO: Fetch offline token config from ticket issuer url
+        /*await Promise.all(offChainTokens.tokenKeys.map(async (issuerKey: string): Promise<any> => {
 
             return fetch(`${this.tokenLookup[issuerKey].tokenConfigURI}`, {})
             .then(response => response.json())
@@ -205,7 +207,7 @@ export class Client {
             })
             .catch(err => console.error(err));
 
-        }));
+        }));*/
 
     }
 

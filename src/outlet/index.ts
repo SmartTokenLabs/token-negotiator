@@ -112,9 +112,9 @@ export class Outlet {
 
     try {
           // check if token issuer
-          let tokenObj = await rawTokenCheck(unsignedToken, this.tokenConfig.tokenIdName);
+          let tokenObj = await rawTokenCheck(unsignedToken, this.tokenConfig);
 
-          let authHandler = new AuthHandler(this, evtid, this.tokenConfig.tokenIdName, tokenObj);
+          let authHandler = new AuthHandler(this, evtid, this.tokenConfig, tokenObj);
 
           let tokenProof = await authHandler.authenticate();
 
@@ -122,10 +122,14 @@ export class Outlet {
             evtid: evtid,
             evt: MessageResponseAction.PROOF,
             issuer: this.tokenConfig.tokenName,
-            proof: JSON.stringify(tokenProof)
+            proof: tokenProof
           });
 
-    } catch (e){
+    } catch (e:any){
+        console.log("Error getting proof:");
+        console.log(e);
+
+        // TODO: We shouldn't be sending the full exception here, instead return error messages only.
         this.sendMessageResponse({
           evtid: evtid,
           evt: MessageResponseAction.ERROR,
