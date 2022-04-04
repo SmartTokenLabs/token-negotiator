@@ -1,6 +1,5 @@
-export interface OffChainTokenConfig extends TokenConfig {
+export interface OffChainTokenConfig extends TokenConfigInterface {
     tokenIssuerPublicKey?: any;
-    title?: any;    
     tokenName?: any;
     attestationOrigin?: any;
     tokenOrigin?: any;
@@ -10,7 +9,6 @@ export interface OffChainTokenConfig extends TokenConfig {
     unsignedTokenDataName?: any;
     itemStorageKey?: any;
     ethKeyitemStorageKey?: any;
-    image?: any;
     unEndPoint?: any;
     tokenParser?: any;
     smartContractAddress?: any;
@@ -19,15 +17,17 @@ export interface OffChainTokenConfig extends TokenConfig {
     base64attestorPubKey?: string;
 }
 
-export interface OnChainTokenConfig extends TokenConfig {
+export interface OnChainTokenConfig extends TokenConfigInterface {
     contract: string,
     chain: string,
     openSeaSlug: string
 }
 
-export interface TokenConfig {
+export interface TokenConfigInterface {
     collectionID: string,
     onChain: boolean
+    title?: string;
+    image?: string;
 }
 
 interface TokenLookupInterface { [issuer: string]: OffChainTokenConfig|OnChainTokenConfig }
