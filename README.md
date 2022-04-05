@@ -127,7 +127,17 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
   const negotiator = new Client({
     type: 'passive',
     issuers: [
-      { collectionID: 'devcon', tokenConfigURI: "https://raw.githubusercontent.com/TokenScript/token-negotiator-examples/main/token-outlet-website/public/tokenConfig.json" },
+      { 
+        collectionID: 'devcon', 
+        title: "Devcon",
+        onChain: false,
+        tokenOrigin: "http://localhost:3002/",
+        attestationOrigin: "https://stage.attestation.id/",
+        unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
+        image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
+        base64senderPublicKey: "",
+        base64attestorPubKey: ""
+      },
       { collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
     ],
     options: {}
@@ -196,6 +206,8 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
   
 ````
 
+(for new token issuers who are interested in using our technology please visit the following WIKI page: https://github.com/TokenScript/token-negotiator/wiki/Token-Issuer-Page).
+
 ### Authenticate ownership of off chain Token
 
 Authenicating ownership of the token will provide a proof with a limited expiry.
@@ -251,7 +263,17 @@ Configure the library using the following example.
         var negotiator = new negotiator.Client({
             type: 'active',
             issuers: [
-                { collectionID: 'devcon', tokenConfigURI: "https://raw.githubusercontent.com/TokenScript/token-negotiator-examples/main/token-outlet-website/public/tokenConfig.json" },
+                { 
+                  collectionID: 'devcon', 
+                  title: "Devcon",
+                  onChain: false,
+                  tokenOrigin: "http://localhost:3002/",
+                  attestationOrigin: "https://stage.attestation.id/",
+                  unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
+                  image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
+                  base64senderPublicKey: "",
+                  base64attestorPubKey: ""  
+                },
             ],
             options: {
                 overlay: {
