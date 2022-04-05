@@ -147,8 +147,8 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
 
   /**
   * @param {String} collectionID your own reference key to identify the collection by.
-  * @param {String} contract the smart contract address by which you wish to locate the tokens
-  * @param {String} chain the chain that the tokens can be found
+  * @param {String} contract smart contract address
+  * @param {String} chain smart contract address chain 
   */
   var onChainIssuer = { collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
 
