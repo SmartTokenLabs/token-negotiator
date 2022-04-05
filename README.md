@@ -4,7 +4,7 @@
 [![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Ftokenscript%2Ftoken-negotiator%2Fbadge%3Fref%3Dmain&style=flat)](https://actions-badge.atrox.dev/tokenscript/token-negotiator/goto?ref=main)
 -->
 
-The Token Negotiator is an NPM package designed to load tokens into any website experience. 
+The Token Negotiator is an NPM package designed to load tokens into any website experience. Enabling custom user experiences for token holders.  
 
 The following types of tokens are supported:
 
@@ -17,7 +17,8 @@ The following types of tokens are supported:
 ### Token Negotiator supports Tokens across the following Chains
 
 - mainnet
-- polygon 
+- polygon
+- arbitrum 
 - optimism
 - rinkeby
 - ropsten
@@ -27,7 +28,6 @@ The following types of tokens are supported:
 - mumbai
 - avalanche
 - fantom
-- arbitrum
 - POAP via XDai
 
 ### Examples
@@ -48,7 +48,7 @@ This library provides two ways to load tokens into your application, active or p
 
 ### Active Negotiation of tokens
 
-This approach embeds a html element UI widget into the web page. The end user can then select which collections they wish for the end website to learn. When tokens are provided they can be used to extend utilities during the web experience (e.g. provide offers, open doors that other users cannot see, allow extra characters into a game based on the ownership of an NFT).
+This approach embeds a html element UI widget into the web page. The end user can then select which collections they wish for the website to learn. 
 
 To start, first include the following html element into your page, this is where the token negotiator overlay widget will be embeded into the page.
 
@@ -56,11 +56,9 @@ To start, first include the following html element into your page, this is where
     <div className="overlay-tn"></div>
 ````
 
-Include the following Javascript to configure the Token Negotiator. Add issuers with tokens that you wish for your website to support. 
+Include the following Javascript to configure the Token Negotiator. 
 
-When this application loads with these settings, an end user can then connect with their wallet and to their off chain token attestations and provide them into your website. 
-
-Once provided the "tokens-hook" will update containing a list of all the user selected tokens and their meta data (including: NFT image URI's, Traits available from the token source).
+Add issuers with tokens that you wish for your website to recognise. 
 
 ```javascript
   
