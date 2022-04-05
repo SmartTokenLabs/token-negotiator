@@ -4,27 +4,41 @@
 [![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Ftokenscript%2Ftoken-negotiator%2Fbadge%3Fref%3Dmain&style=flat)](https://actions-badge.atrox.dev/tokenscript/token-negotiator/goto?ref=main)
 -->
 
-The token-negotiator is an NPM package designed for use with TokenScript. 
+The Token Negotiator is an NPM package designed to load tokens into any website experience. 
 
-TokenScript is a framework which improves functionality, security and usability of blockchain token. It creates a layer between a blockchain and user devices, adding information, rules and functionalites.
+The following types of tokens are supported:
 
-With tokenScript's Token-Negotiator, you can build custom experiences with:
+- Cryptogaphically created Tokens (Off Chain)
 
-- TokenScript enabled tokens (cryptogaphically designed off chain attestations)
-
-- On chain tokens within mainnet, polygon, optimism, mainnet, rinkeby, ropsten, goerli, kovan,bsc, mumbai, avalanche, fantom, arbitrum.
+- Web3 NFT Tokens (On Chain)
 
 (for new token issuers who are interested in using our technology please visit the following WIKI page: https://github.com/TokenScript/token-negotiator/wiki/Token-Issuer-Page).
 
+### Token Negotiator supports Tokens across the following Chains
+
+- mainnet
+- polygon 
+- optimism
+- rinkeby
+- ropsten
+- goerli
+- kovan
+- bsc
+- mumbai
+- avalanche
+- fantom
+- arbitrum
+- POAP via XDai
+
 ### Examples
 
-A live demonsration of the Token Negotiator and development examples can be found here.
+A live demonsration of the Token Negotiator and development examples can be found here:
 
 https://github.com/TokenScript/token-negotiator-examples 
 
 ## Installation
 
-Within your web application / dapp install the token negotiator.
+Within your application install the token negotiator:
 
 ```sh
   npm i @tokenscript/token-negotiator
@@ -34,16 +48,19 @@ This library provides two ways to load tokens into your application, active or p
 
 ### Active Negotiation of tokens
 
-This approach embededs a html element which connects users to their tokens. 
+This approach embeds a html element UI widget into the web page. The end user can then select which collections they wish for the end website to learn. When tokens are provided they can be used to extend utilities during the web experience (e.g. provide offers, open doors that other users cannot see, allow extra characters into a game based on the ownership of an NFT).
 
-To start, first include the following html element into your page, this is where the token negotiator overlay will be embeded to connect with tokens. 
+To start, first include the following html element into your page, this is where the token negotiator overlay widget will be embeded into the page.
 
 ````html
     <div className="overlay-tn"></div>
 ````
 
-The following Javascript configuration will connect to the Token Negotiator, embed the overlay html component and enable an end user to connect with the tokens
-listed inside the issuers array.
+Include the following Javascript to configure the Token Negotiator. Add issuers with tokens that you wish for your website to support. 
+
+When this application loads with these settings, an end user can then connect with their wallet and to their off chain token attestations and provide them into your website. 
+
+Once provided the "tokens-hook" will update containing a list of all the user selected tokens and their meta data (including: NFT image URI's, Traits available from the token source).
 
 ```javascript
   
@@ -93,7 +110,7 @@ listed inside the issuers array.
 ```
 ### Passive Negotiation of tokens
 
-This approach is designed for a fully custom ui/ux experience, where a list of all tokens are learnt by the client on negotation. 
+This approach is designed for a fully custom ui/ux experience, where a list of all tokens are learnt by the client on negotation.
 
 ````javascript
 
@@ -126,11 +143,7 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
   
 ````
 
-### Managing Issuers on and off chain
-
-Tokens can be provided from both on and off chain sources.
-
-On Chain:
+### Managing Issuers on chain
 
 ````javascript
 
@@ -142,8 +155,7 @@ On Chain:
   var onChainIssuer = { collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
 
 ````
-
-Off Chain:
+### Managing Issuers off chain
 
 ````javascript
   
@@ -155,7 +167,7 @@ Off Chain:
   
 ````
 
-### Authenticate ownership of Token
+### Authenticate ownership of off chain Token
 
 Authenicating ownership of the token will provide a proof with a limited expiry.
 
@@ -180,6 +192,8 @@ Authenicating ownership of the token will provide a proof with a limited expiry.
 
 ### Creating a UMD build, which will export the library as a single file.
 
+For projects where you are not using a Node.js work flow.
+
 ````sh
   
   // install dependancies
@@ -190,7 +204,7 @@ Authenicating ownership of the token will provide a proof with a limited expiry.
 
 ````
 
-Locate and copy the '/dist' folder to your website generated from the UMD build.
+Locate and copy the '/dist' folder to your website generated from the UMD build. 
 
 Configure the library using the following example.
 
@@ -250,15 +264,6 @@ Key values applied to all tokens.
   }
 
 ````
-
-## Full attestations 
-
-To attest full ownership of token attestations, another step is required which utilises another technology
-from SmartTokenLabs team, attestation.id. To complete this step, save the authenticator.js file into your project. This must be installed before using the Token Negotiator authenticate function.
-
-https://github.com/TokenScript/token-negotiator/blob/main/authenticator.js
-
-For working examples see https://github.com/TokenScript/token-negotiator-examples 
 
 ## Connecting to issuers
 
