@@ -113,7 +113,12 @@ export class AuthHandler {
             && event.data.ready === true
         ) {
             let sendData:PostMessageData = {force: false};
-            if (this.magicLink) sendData.magicLink = this.magicLink;
+            if (this.magicLink){
+                sendData.magicLink = this.magicLink;
+
+                if (sendData.magicLink.indexOf("#") > -1)
+                    sendData.magicLink = sendData.magicLink.replace("#", "?");
+            }
             if (this.email) sendData.email = this.email;
 
             this.iframe.contentWindow.postMessage(sendData, this.attestationOrigin);
