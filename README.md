@@ -72,7 +72,17 @@ Add issuers with tokens that you wish for your website to recognise.
   const negotiator = new Client({
     type: 'active',
     issuers: [
-        { collectionID: 'devcon', tokenConfigURI: "https://raw.githubusercontent.com/TokenScript/token-negotiator-examples/main/token-outlet-website/public/tokenConfig.json" },
+        {
+          collectionID: 'devcon', 
+          title: "Devcon",
+          onChain: false,
+          tokenOrigin: "http://localhost:3002/",
+          attestationOrigin: "https://stage.attestation.id/",
+          unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
+          image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
+          base64senderPublicKey: "",
+          base64attestorPubKey: ""
+        },
         { collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
     ],
     options: {
@@ -153,15 +163,36 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
   var onChainIssuer = { collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
 
 ````
+
+
+
 ### Managing Issuers off chain
 
 ````javascript
   
   /**
   * @param {String} collectionID your own reference key to identify the collection by.
-  * @param {String} tokenConfigURI the token collection config uri
+  * @param {String} title the token collection config uri
+  * @param {Boolean} onChain boolean if this token is on / off chain 
+  * @param {String} tokenOrigin URL to token attestatations
+  * @param {String} attestationOrigin attestation server
+  * @param {String} unEndPoint unpredictable number generator
+  * @param {String} image image for collection
+  * @param {String} base64senderPublicKey attestation public key
+  * @param {String} base64attestorPubKey attestation public key
+  * 
   */
-  var offChainIssuer = { collectionID: 'devcon', tokenConfigURI: "https://raw.githubusercontent.com/TokenScript/token-negotiator-examples/main/token-outlet-website/public/tokenConfig.json" },
+  var offChainIssuer = { 
+    collectionID: 'devcon', 
+    title: "Devcon",
+    onChain: false,
+    tokenOrigin: "http://localhost:3002/",
+    attestationOrigin: "https://stage.attestation.id/",
+    unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
+    image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
+    base64senderPublicKey: "",
+    base64attestorPubKey: ""
+  }
   
 ````
 
