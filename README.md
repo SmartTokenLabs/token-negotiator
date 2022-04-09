@@ -4,7 +4,7 @@
 [![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Ftokenscript%2Ftoken-negotiator%2Fbadge%3Fref%3Dmain&style=flat)](https://actions-badge.atrox.dev/tokenscript/token-negotiator/goto?ref=main)
 -->
 
-The Token Negotiator is an NPM package designed to load tokens into any website experience. Enabling custom user experiences for token holders.  
+The Token Negotiator is an open source tool designed towards building the tokenised web. Where new types of experience can be created based around the ownership and use of tokens.
 
 The following types of tokens are supported:
 
@@ -29,12 +29,6 @@ The following types of tokens are supported:
 - avalanche
 - fantom
 - POAP via XDai
-
-### Examples
-
-A live demonsration of the Token Negotiator and development examples can be found here:
-
-https://github.com/TokenScript/token-negotiator-examples 
 
 ## Installation
 
@@ -163,6 +157,7 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
 
 ### Managing Issuers on chain
 
+
 ````javascript
 
   /**
@@ -174,9 +169,8 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
 
 ````
 
-
-
 ### Managing Issuers off chain
+
 
 ````javascript
   
@@ -206,8 +200,6 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
   
 ````
 
-(for new token issuers who are interested in using our technology please visit the following WIKI page: https://github.com/TokenScript/token-negotiator/wiki/Token-Issuer-Page).
-
 ### Authenticate ownership of off chain Token
 
 Authenicating ownership of the token will provide a proof with a limited expiry.
@@ -231,28 +223,18 @@ Authenicating ownership of the token will provide a proof with a limited expiry.
 
 ````
 
-### Creating a UMD build, which will export the library as a single file.
+### For projects where you are not using a Node.js work flow.
 
-For projects where you are not using a Node.js work flow.
+1. Go to the following URL: https://github.com/TokenScript/token-negotiator
 
-````sh
-  
-  // install dependancies
-  run `npm i` 
-
-  // create the build
-  run `npm run build-umd`
-
-````
-
-Locate and copy the '/dist' folder to your website generated from the UMD build. 
+2. Download and then install this folder into your project `/token-negotiator-1.0.11-alpha-dist`
 
 Configure the library using the following example.
 
 ````html
 
   <!-- add the JS library -->
-  <script type="text/javascript" src="./dist/negotiator.js"></script>
+  <script type="text/javascript" src="./token-negotiator-1.0.11-alpha-dist/negotiator.js"></script>
 
   <!-- add the HTML entry point for the Token Negotiator -->
   <div class="overlay-tn"></div>
@@ -316,12 +298,6 @@ Key values applied to all tokens.
 
 ````
 
-## Connecting to issuers
-
-Please see the token negotiator examples repository.
-
-[Token Negotiator Examples](https://github.com/TokenScript/token-negotiator-examples/tree/main/token-outlet-website)
-
 ## New Token Issuers
 
 Please reach out to us at <sayhi@smarttokenlabs.com>
@@ -339,13 +315,11 @@ run `npm run test`
 Please contact us or open an issue via github:
 sayhi@smarttokenlabs.com
 
-### Quick Start
+### Examples
 
-To review working examples of the token negotiator please visit;
+To review demo examples of the token negotiator please visit:
 
-[Our Wiki](https://github.com/TokenScript/token-negotiator/wiki)
-
-[Quick Start Guide](https://github.com/TokenScript/token-negotiator-examples/wiki/quick-start)
+[Token Negotiator Examples](https://github.com/TokenScript/token-negotiator-examples/tree/main/token-outlet-website)
 
 ### Roadmap of this library
 
