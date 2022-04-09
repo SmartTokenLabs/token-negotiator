@@ -16,7 +16,7 @@ The following types of tokens are supported:
 
 ### Token Negotiator supports Tokens across the following Chains
 
-- mainnet
+- mainnet / eth
 - polygon
 - arbitrum 
 - optimism
