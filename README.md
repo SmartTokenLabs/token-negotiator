@@ -165,7 +165,7 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
   * @param {String} contract smart contract address
   * @param {String} chain smart contract address chain 
   */
-  var onChainIssuer = { collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
+  const onChainIssuer = { collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
 
 ````
 
@@ -186,7 +186,7 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
   * @param {String} base64attestorPubKey attestation public key
   * 
   */
-  var offChainIssuer = { 
+  const offChainIssuer = { 
     collectionID: 'devcon', 
     title: "Devcon",
     onChain: false,
@@ -242,7 +242,7 @@ Configure the library using the following example.
   <!-- instantiate the library and include event hooks as required -->
   <script>
 
-        var negotiator = new negotiator.Client({
+        const negotiator = new negotiator.Client({
             type: 'active',
             issuers: [
                 { 
@@ -314,6 +314,14 @@ run `npm run test`
 
 Please contact us or open an issue via github:
 sayhi@smarttokenlabs.com
+
+### Quick Start Guides
+
+https://github.com/TokenScript/token-negotiator/wiki/quick-start-Vue
+
+https://github.com/TokenScript/token-negotiator/wiki/quick-start-React
+
+https://github.com/TokenScript/token-negotiator/wiki/quick-start-Svelte
 
 ### Examples
 
