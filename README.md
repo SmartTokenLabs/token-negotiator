@@ -44,6 +44,8 @@ This library provides two ways to load tokens into your application, active or p
 
 This approach embeds a html element UI widget into the web page. The end user can then select which collections they wish for the website to learn. 
 
+![image info](https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/tn-example.png)
+
 To start, first include the following html element into your page, this is where the token negotiator overlay widget will be embeded into the page.
 
 ````html
