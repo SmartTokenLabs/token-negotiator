@@ -319,7 +319,7 @@ sayhi@smarttokenlabs.com
 
 To review demo examples of the token negotiator please visit:
 
-[Token Negotiator Examples](https://github.com/TokenScript/token-negotiator-examples/tree/main/token-outlet-website)
+[Token Negotiator Examples](https://github.com/TokenScript/token-negotiator-examples)
 
 ### Roadmap of this library
 
