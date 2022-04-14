@@ -4,7 +4,7 @@ Thank you for investing your time in contributing to our project token-negotiato
 
 ## New contributor guide
 
-To get an overview of the project, read the README. 
+To get an overview of the project, read the [README](README.md). 
 
 ## Getting started
 
@@ -12,7 +12,7 @@ To get an overview of the project, read the README.
 
 #### Create a new issue
 
-If you spot a problem with the docs, and a related issue doesn't exist, please create an new issue pointing out the require changes.
+If you spot a problem with the docs, and a related issue doesn't exist, please create a new issue pointing out the required changes.
 
 #### Solve an issue
 
@@ -32,7 +32,7 @@ If you find an issue to work on, you are welcome to open a PR with a fix.
 
 Commit the changes once you are happy with them.
 
-For code changes, please include unit tests that ensure the change is performing the require task. This will help speed up the process.
+For code changes, please include unit tests that ensure the change is performing the required task. This will help speed up the process.
 
 ### Pull Request
 

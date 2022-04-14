@@ -8,7 +8,7 @@ The Token Negotiator is an open source tool designed towards building the tokeni
 
 The following types of tokens are supported:
 
-- Cryptogaphically created Tokens (Off Chain)
+- Cryptographically created Tokens (Off Chain)
 
 - Web3 NFT Tokens (On Chain)
 
@@ -46,7 +46,7 @@ This approach embeds a html element UI widget into the web page. The end user ca
 
 <img src="https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/tn-example.png" alt="token negotiator component" style="width:280px;"/>
 
-To start, first include the following html element into your page, this is where the token negotiator overlay widget will be embeded into the page.
+To start, first include the following html element into your page, this is where the token negotiator overlay widget will be embedded into the page.
 
 ````html
     <div className="overlay-tn"></div>
@@ -114,7 +114,7 @@ Add issuers with tokens that you wish for your website to recognise.
 ```
 ### Passive Negotiation of tokens
 
-This approach is designed for a fully custom ui/ux experience, where a list of all tokens are learnt by the client on negotation.
+This approach is designed for a fully custom ui/ux experience, where a list of all tokens are learnt by the client on negotiation.
 
 ````javascript
 
@@ -180,7 +180,7 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
   * @param {String} collectionID your own reference key to identify the collection by.
   * @param {String} title the token collection config uri
   * @param {Boolean} onChain boolean if this token is on / off chain 
-  * @param {String} tokenOrigin URL to token attestatations
+  * @param {String} tokenOrigin URL to token attestations
   * @param {String} attestationOrigin attestation server
   * @param {String} unEndPoint unpredictable number generator
   * @param {String} image image for collection
@@ -204,7 +204,7 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
 
 ### Authenticate ownership of off chain Token
 
-Authenicating ownership of the token will provide a proof with a limited expiry.
+Authenticating ownership of the token will provide a proof with a limited expiry.
 
 ````javascript
 
@@ -219,7 +219,7 @@ Authenicating ownership of the token will provide a proof with a limited expiry.
 
   negotiator.on('proof', () => {
 
-    // the proof will be recieved here (valid or failed)
+    // the proof will be received here (valid or failed)
 
   });
 
