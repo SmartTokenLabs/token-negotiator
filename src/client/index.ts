@@ -8,6 +8,7 @@ import OnChainTokenModule from './../onChainTokenModule'
 import Web3WalletProvider from './../utils/Web3WalletProvider';
 import "./../theme/style.css";
 import './../vendor/keyShape';
+import { Authenticator } from "@tokenscript/attestation";
 
 interface NegotiationInterface {
     type: string;
@@ -382,14 +383,11 @@ export class Client {
             );
 
         try {
-            const addressMatch = await this.checkPublicAddressMatch(issuer, unsignedToken);
+            const walletAddress = await this.checkPublicAddressMatch(issuer, unsignedToken);
 
             // e.g. create warning notification inside overlay.
-            if(!addressMatch) {
-                if (this.popup)
-                    this.popup.showError("Address does not match.");
-                return;
-            }
+            if(!walletAddress)
+                return this.handleProofError("Address does not match.");
 
             let data = await this.messaging.sendMessage({
                 issuer: issuer,
@@ -399,16 +397,29 @@ export class Client {
                 timeout: 0 // Don't time out on this event as it needs active input from the user
             });
 
+            if (!data.proof)
+                return this.handleProofError("Failed to get proof from the outlet.")
+
+            Authenticator.validateUseTicket(data.proof, this.tokenLookup[issuer].base64attestorPubKey, this.tokenLookup[issuer].base64senderPublicKey, walletAddress);
+
+            console.log("Ticket proof successfully validated.");
+
             this.eventSender.emitProofToClient(data.proof, data.issuer);
+
         } catch (err){
             console.log(err);
-            if (this.popup)
-                this.popup.showError(err);
+            this.handleProofError(err, issuer);
             return;
         }
 
         if (this.popup)
             this.popup.dismissLoader();
+    }
+
+    private handleProofError(err, issuer){
+        if (this.popup)
+            this.popup.showError(err);
+        this.eventSender.emitProofToClient(null, issuer);
     }
 
     async checkPublicAddressMatch (issuer:string, unsignedToken:any) {
@@ -427,7 +438,7 @@ export class Client {
 
             if (walletAddress.toLowerCase() !== attestedAddress.toLowerCase()) throw new Error('useEthKey validation failed.');
 
-            return true;
+            return walletAddress;
 
         } catch (e) {
 

@@ -39,8 +39,6 @@ export class AuthHandler {
     private base64attestorPubKey:string|undefined;
     private base64senderPublicKey:string|undefined;
 
-    private authenticator:Authenticator = new Authenticator();
-
     constructor(outlet:Outlet, evtid:any, tokenDef:Item, tokenObj:DevconToken|any) {
         this.outlet = outlet;
         this.evtid = evtid;
@@ -172,7 +170,7 @@ export class AuthHandler {
 
         try {
 
-            this.authenticator.getUseTicket(
+            Authenticator.getUseTicket(
                 this.signedTokenSecret,
                 this.attestationSecret,
                 this.signedTokenBlob ,
