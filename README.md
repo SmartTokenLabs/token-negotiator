@@ -49,7 +49,7 @@ This approach embeds a html element UI widget into the web page. The end user ca
 To start, first include the following html element into your page, this is where the token negotiator overlay widget will be embeded into the page.
 
 ````html
-    <div className="overlay-tn"></div>
+    <div class="overlay-tn"></div>
 ````
 
 Include the following Javascript to configure the Token Negotiator. 
@@ -227,6 +227,7 @@ Authenicating ownership of the token will provide a proof with a limited expiry.
 
 ### For projects where you are not using a Node.js work flow.
 
+
 1. Go to the following URL: https://github.com/TokenScript/token-negotiator
 
 2. Download and then install this folder into your project `/token-negotiator-1.0.11-alpha-dist`
@@ -238,48 +239,46 @@ Configure the library using the following example.
   <!-- add the JS library -->
   <script type="text/javascript" src="./token-negotiator-1.0.11-alpha-dist/negotiator.js"></script>
 
-  <!-- add the HTML entry point for the Token Negotiator -->
-  <div class="overlay-tn"></div>
+  <body onload="init()">
 
-  <!-- instantiate the library and include event hooks as required -->
-  <script>
+    <div class="overlay-tn"></div>
+    
+    <script>
 
-        const negotiator = new negotiator.Client({
-            type: 'active',
-            issuers: [
-                { 
-                  collectionID: 'devcon', 
-                  title: "Devcon",
-                  onChain: false,
-                  tokenOrigin: "http://localhost:3002/",
-                  attestationOrigin: "https://stage.attestation.id/",
-                  unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
-                  image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
-                  base64senderPublicKey: "",
-                  base64attestorPubKey: ""  
-                },
-            ],
-            options: {
-                overlay: {
+        function init() {
+
+            window.negotiator = new negotiator.Client({
+                type: 'active',
+                issuers: [
+                    { collectionID: "a", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', ref: "rinkeyby punks", openSeaSlug: 'rinkeby-punk' },
+                    { collectionID: "b", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', ref: "stl rnd women tribe", openSeaSlug: 'stl-rnd-women-tribe-nfts' },
+                    { collectionID: "c", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', ref: "stl rnd zed run", openSeaSlug: 'stl-rnd-zed' },
+                    { collectionID: "d", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', ref: "stl rnd bayc derivatives", openSeaSlug: 'stl-rnd-bayc-derivatives' },
+                    { collectionID: "e", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', ref: "stl riot racers", openSeaSlug: 'stl-rnd-riot-racers' }
+                ],
+                options: {
+                    overlay: {
                     openingHeading: "Open a new world of discounts available with your tokens.",
                     issuerHeading: "Get discount with Ticket",
                     repeatAction: "try again",
                     theme: "light",
                     position: "bottom-right"
-                },
-                filters: {},
-            }
-        });
+                    },
+                    filters: {},
+                }
+            });
 
-        negotiator.on("tokens-selected", (tokens) => {
-            console.log(tokens);
-        });
+            window.negotiator.on("tokens-selected", (tokens) => {
+                console.log(tokens);
+            });
 
-        negotiator.on("token-proof", (proof) => {
-            console.log(proof);
-        });
+            window.negotiator.on("token-proof", (proof) => {
+                console.log(proof);
+            });
 
-        negotiator.negotiate();
+            window.negotiator.negotiate();
+
+        }
 
     </script>
 
@@ -318,6 +317,7 @@ Please contact us or open an issue via github:
 sayhi@smarttokenlabs.com
 
 ### Quick Start with Vue, React or Svelte
+
 
 https://github.com/TokenScript/token-negotiator/wiki/quick-start-Vue
 
