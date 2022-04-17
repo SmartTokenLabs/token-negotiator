@@ -2,7 +2,7 @@
 import { Messaging, MessageAction, MessageResponseAction } from "./messaging";
 import { Popup } from './popup';
 import { asyncHandle, logger, requiredParams } from './../utils/index';
-import { connectMetamaskAndGetAddress, getChallengeSigned, validateUseEthKey, signNewNFTChallenge } from "../core/index";
+import { connectMetamaskAndGetAddress, getChallengeSigned, validateUseEthKey } from "../core/index";
 import { OffChainTokenConfig, OnChainTokenConfig, tokenLookup } from './../tokenLookup';
 import OnChainTokenModule from './../onChainTokenModule'
 import Web3WalletProvider from './../utils/Web3WalletProvider';
@@ -390,7 +390,7 @@ export class Client {
 
         // const { selectedNFTs, message } = config;
         // e.g. message = window.location.host
-        // const signature = await signNewNFTChallenge(message, this.web3WalletProvider);
+        // const signature = await signMessageWithBrowserWallet(message, this.web3WalletProvider);
         // send message to backend server
         // const response = await fetch(endPoint, {
         //     method: 'POST',
