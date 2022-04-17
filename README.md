@@ -230,14 +230,14 @@ Authenicating ownership of the token will provide a proof with a limited expiry.
 
 1. Go to the following URL: https://github.com/TokenScript/token-negotiator
 
-2. Download and then install this folder into your project `/token-negotiator-1.0.12-alpha-dist`
+2. Download and then install this folder into your project `/token-negotiator-1.0.13-alpha-dist`
 
 Configure the library using the following example.
 
 ````html
 
   <!-- add the JS library -->
-  <script type="text/javascript" src="./token-negotiator-1.0.12-alpha-dist/negotiator.js"></script>
+  <script type="text/javascript" src="./token-negotiator-1.0.13-alpha-dist/negotiator.js"></script>
 
   <body onload="init()">
 
