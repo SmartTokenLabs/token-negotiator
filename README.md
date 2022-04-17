@@ -166,8 +166,9 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
   * @param {String} collectionID your own reference key to identify the collection by.
   * @param {String} contract smart contract address
   * @param {String} chain smart contract address chain 
+  * @param {String} openSeaSlug (optional) add collection uri name if the collection features on Opensea
   */
-  const onChainIssuer = { collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
+  const onChainIssuer = { collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth', openSeaSlug: 'expansion-punks' }
 
 ````
 
@@ -226,7 +227,6 @@ Authenicating ownership of the token will provide a proof with a limited expiry.
 ````
 
 ### For projects where you are not using a Node.js work flow.
-
 
 1. Go to the following URL: https://github.com/TokenScript/token-negotiator
 
