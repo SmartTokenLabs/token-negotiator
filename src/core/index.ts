@@ -313,6 +313,14 @@ export const signNewChallenge = async (unEndPoint: string, web3WalletProvider:an
   };
 }
 
+export const signNewNFTChallenge = async (messageToSign:any, web3WalletProvider:any) => {
+
+  console.log('sign new nft challenge');
+
+  return signMessageWithBrowserWallet(messageToSign, web3WalletProvider);
+
+}
+
 export const signMessageWithBrowserWallet = async (message: any, web3WalletProvider: any) => {
 
   // For testing paste this into the console.

@@ -43,7 +43,7 @@ export class OnChainTokenModule {
         // TODO add support XDAI.
         // https://www.xdaichain.com/for-developers/developer-resources/ankr-api
 
-        return apiBlockchainSupport[apiName].indexOf(chain) >= -1;
+        return apiBlockchainSupport[apiName].indexOf(chain.toLowerCase()) >= -1;
 
     }
 
@@ -78,13 +78,21 @@ export class OnChainTokenModule {
         }
 
         // try open sea first when there is a slug provided
-        if (openSeaSlug) collectionData = await this.getContractDataOpenSea(contract, chain, openSeaSlug);
+        if (openSeaSlug !== undefined) {
+            collectionData = await this.getContractDataOpenSea(contract, chain, openSeaSlug);
+        }
 
         // if there is no slug or no data try moralis
-        if(!openSeaSlug && !collectionData) collectionData = await this.getContractDataMoralis(contract, chain);
+        if(!collectionData){
+            collectionData = await this.getContractDataMoralis(contract, chain);
+        }
 
-        // if there is still no data try Alchemy
-        if(!openSeaSlug && !collectionData) collectionData = await this.getContractDataAlchemy(contract, chain);
+        // // if there is still no data try Alchemy
+        if(openSeaSlug === undefined && !collectionData) {
+            collectionData = await this.getContractDataAlchemy(contract, chain);
+        }
+
+        console.log('collectionData: ', collectionData);
 
         return collectionData;
     }
@@ -157,28 +165,22 @@ export class OnChainTokenModule {
             }
         };
 
-        if(chain.toLocaleLowerCase() === "mainnet" || chain.toLocaleLowerCase() === "eth") {
+        return fetch(`https://deep-index.moralis.io/api/v2/nft/${contractAddress}?chain=${chain}&format=decimal&limit=1`, options)
+        .then(response => response.json())
+        .then(response => {
 
-            const _chain = 'eth';
+            const image = JSON.parse(response.result[0].metadata).image;
 
-            return fetch(`https://deep-index.moralis.io/api/v2/nft/${contractAddress}?chain=${_chain}&format=decimal&limit=1`, options)
-            .then(response => response.json())
-            .then(response => {
-
-                const image = JSON.parse(response.result[0].metadata).image;
-
-                return {
-                    api: 'moralis',
-                    chain,
-                    contractAddress,
-                    image,
-                    title: response.result[0].name
-                };
-            })
-            .catch(err => console.error(err));
+            return {
+                api: 'moralis',
+                chain,
+                contractAddress,
+                image,
+                title: response.result[0].name
+            };
+        })
+        .catch(err => console.error(err));
         
-        } 
-
     }
     
     async getContractDataAlchemy(contractAddress:string, chain:string) {
@@ -229,11 +231,11 @@ export class OnChainTokenModule {
             return this.getTokensPOAP(owner);
         }
 
-        if(openSeaSlug) tokens = await this.getTokensOpenSea(contract, chain, owner, openSeaSlug);
+        if(openSeaSlug !== undefined) tokens = await this.getTokensOpenSea(contract, chain, owner, openSeaSlug);
 
-        if(!openSeaSlug && !tokens.length) tokens = await this.getTokensMoralis(contract, chain, owner);
+        if(!tokens.length) tokens = await this.getTokensMoralis(contract, chain, owner);
 
-        if(!openSeaSlug && !tokens.length) tokens = await this.getTokensAlchemy(contract, chain, owner);
+        if(openSeaSlug === undefined && !tokens.length) tokens = await this.getTokensAlchemy(contract, chain, owner);
 
         return tokens;
 
@@ -245,7 +247,7 @@ export class OnChainTokenModule {
 
         requiredParams((chain && address && owner), 'cannot search for tokens, missing params');
 
-        if(chain === 'rinkeby') {
+        if(chain.toLowerCase() === 'rinkeby') {
 
             let options = {method: 'GET', headers: {Accept: 'application/json', 'X-API-KEY': '99687116fafa4daebc766eeedccce201'}};
             
@@ -270,7 +272,7 @@ export class OnChainTokenModule {
 
         }
         
-        if(chain === 'mainnet' || chain === 'eth') {
+        if(chain.toLowerCase() === 'mainnet' || chain.toLowerCase() === 'eth') {
 
             let options = { method: 'GET', headers: { Accept: 'application/json', 'X-API-KEY': '3940c5b8cf4a4647bc22ff9b0a84f75a'} };
             
@@ -305,7 +307,7 @@ export class OnChainTokenModule {
 
         let _chain:string = chain;
 
-        if (chain === 'mainnet') _chain = 'eth';
+        if (chain.toLowerCase() === 'mainnet') _chain = 'eth';
 
         const options = {
             method: 'GET',
@@ -398,6 +400,81 @@ export class OnChainTokenModule {
 
         return tokens;
     }
+
+    // look up tokens server:
+
+    // OPENSEA
+
+    // const options = {method: 'GET'};
+
+    // fetch('https://testnets-api.opensea.io/api/v1/asset_contract/0x586707c50670c322697e00275e3dc72543d1018f', options)
+    // .then(response => response.json())
+    // .then(response => console.log(response))
+    // .catch(err => console.error(err));
+
+    // {
+    //     "collection": {
+    //       "banner_image_url": null,
+    //       "chat_url": null,
+    //       "created_date": "2022-04-08T06:42:52.351995",
+    //       "default_to_fiat": false,
+    //       "description": "Smart Token Labs Test NFTs for use in our various projects",
+    //       "dev_buyer_fee_basis_points": "0",
+    //       "dev_seller_fee_basis_points": "0",
+    //       "discord_url": null,
+    //       "display_data": {
+    //         "card_display_style": "contain",
+    //         "images": []
+    //       },
+    //       "external_url": "https://smarttokenlabs.com/",
+    //       "featured": false,
+    //       "featured_image_url": null,
+    //       "hidden": false,
+    //       "safelist_request_status": "not_requested",
+    //       "image_url": "https://lh3.googleusercontent.com/aBVhl3os0yGuKyU1vmPtISPej1eXadNQA_FDY0VUfmjDxpz9EGqxK9hoPM9uwrlVlsqJLJZBmOh63tfaCwM_EQaQJvcWnJE6TG5GUCM=s120",
+    //       "is_subject_to_whitelist": false,
+    //       "large_image_url": "https://lh3.googleusercontent.com/aBVhl3os0yGuKyU1vmPtISPej1eXadNQA_FDY0VUfmjDxpz9EGqxK9hoPM9uwrlVlsqJLJZBmOh63tfaCwM_EQaQJvcWnJE6TG5GUCM",
+    //       "medium_username": null,
+    //       "name": "STL Riot Racers NFTs V2",
+    //       "only_proxied_transfers": false,
+    //       "opensea_buyer_fee_basis_points": "0",
+    //       "opensea_seller_fee_basis_points": "250",
+    //       "payout_address": "",
+    //       "require_email": false,
+    //       "short_description": null,
+    //       "slug": "stl-riot-racers-nfts-v2",
+    //       "telegram_url": null,
+    //       "twitter_username": null,
+    //       "instagram_username": null,
+    //       "wiki_url": null,
+    //       "is_nsfw": false
+    //     },
+    //     "address": "0x586707c50670c322697e00275e3dc72543d1018f",
+    //     "asset_contract_type": "non-fungible",
+    //     "created_date": "2022-04-08T01:14:43.653056",
+    //     "name": "STLTestRiotRacersNFTs",
+    //     "nft_version": "3.0",
+    //     "opensea_version": null,
+    //     "owner": null,
+    //     "schema_name": "ERC721",
+    //     "symbol": "STLRR",
+    //     "total_supply": "0",
+    //     "description": "Smart Token Labs Test NFTs for use in our various projects",
+    //     "external_link": "https://smarttokenlabs.com/",
+    //     "image_url": "https://lh3.googleusercontent.com/aBVhl3os0yGuKyU1vmPtISPej1eXadNQA_FDY0VUfmjDxpz9EGqxK9hoPM9uwrlVlsqJLJZBmOh63tfaCwM_EQaQJvcWnJE6TG5GUCM=s120",
+    //     "default_to_fiat": false,
+    //     "dev_buyer_fee_basis_points": 0,
+    //     "dev_seller_fee_basis_points": 0,
+    //     "only_proxied_transfers": false,
+    //     "opensea_buyer_fee_basis_points": 0,
+    //     "opensea_seller_fee_basis_points": 250,
+    //     "buyer_fee_basis_points": 0,
+    //     "seller_fee_basis_points": 250,
+    //     "payout_address": ""
+    //   }
+
+    // MORALIS
+
 
 }
 
