@@ -381,19 +381,17 @@ export class Client {
     }
 
     createSignature() {
-        // window.location.host + address
+        // TODO msg to include window.location.host
     }
 
     async authenticateOnChain(config: AuthenticateOnChainInterface) {
 
+        // TODO implement onchain authentication & update api accordingly for end user.
+
         // const { selectedNFTs, message } = config;
-
         // e.g. message = window.location.host
-
         // const signature = await signNewNFTChallenge(message, this.web3WalletProvider);
-
         // send message to backend server
-
         // const response = await fetch(endPoint, {
         //     method: 'POST',
         //     cache: 'no-cache',
@@ -409,9 +407,7 @@ export class Client {
 
         // mock backend server here / go direct to sever module
         // const server = new Server();
-
         // const result = await server.resolveNFTTokenOwnership();
-
         // console.log(result);
 
     }
