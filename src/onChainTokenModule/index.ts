@@ -43,7 +43,7 @@ export class OnChainTokenModule {
         // TODO add support XDAI.
         // https://www.xdaichain.com/for-developers/developer-resources/ankr-api
 
-        return apiBlockchainSupport[apiName].indexOf(chain.toLowerCase()) >= -1;
+        return apiBlockchainSupport[apiName].indexOf(chain) >= -1;
 
     }
 
@@ -247,7 +247,7 @@ export class OnChainTokenModule {
 
         requiredParams((chain && address && owner), 'cannot search for tokens, missing params');
 
-        if(chain.toLowerCase() === 'rinkeby') {
+        if(chain === 'rinkeby') {
 
             let options = {method: 'GET', headers: {Accept: 'application/json', 'X-API-KEY': '99687116fafa4daebc766eeedccce201'}};
             
@@ -272,7 +272,7 @@ export class OnChainTokenModule {
 
         }
         
-        if(chain.toLowerCase() === 'mainnet' || chain.toLowerCase() === 'eth') {
+        if(chain === 'mainnet' || chain === 'eth') {
 
             let options = { method: 'GET', headers: { Accept: 'application/json', 'X-API-KEY': '3940c5b8cf4a4647bc22ff9b0a84f75a'} };
             
@@ -307,7 +307,7 @@ export class OnChainTokenModule {
 
         let _chain:string = chain;
 
-        if (chain.toLowerCase() === 'mainnet') _chain = 'eth';
+        if (chain === 'mainnet') _chain = 'eth';
 
         const options = {
             method: 'GET',
