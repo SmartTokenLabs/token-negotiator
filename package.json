@@ -5,12 +5,13 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "jest",
     "build": "npm run clean && tsc -m es6 --outDir dist && npm run copy-assets",
     "build-umd": "npm run clean && webpack && npm run copy-assets",
-    "copy-assets": "copyfiles ./src/theme/*.css dist/theme -V --flat && copyfiles ./src/vendor/*.js dist/vendor -V --flat",
     "clean": "shx rm -rf _bundles dist",
-    "prepublishOnly": "npm run build"
+    "copy-assets": "copyfiles ./src/theme/*.css dist/theme -V --flat && copyfiles ./src/vendor/*.js dist/vendor -V --flat",
+    "prepublishOnly": "npm run build",
+    "lint": "eslint . --quiet",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -45,6 +46,8 @@
     "@types/prop-types": "^15.7.4",
     "@types/react": "^17.0.38",
     "@types/readable-stream": "^2.3.13",
+    "@typescript-eslint/eslint-plugin": "^5.20.0",
+    "@typescript-eslint/parser": "^5.20.0",
     "assert": "^2.0.0",
     "axios": "^0.24.0",
     "babel-core": "^6.26.3",
@@ -61,6 +64,7 @@
     "crypto-browserify": "^3.12.0",
     "css-loader": "^6.5.1",
     "envify": "^4.1.0",
+    "eslint": "^8.13.0",
     "file-loader": "^6.2.0",
     "https-browserify": "^1.0.0",
     "install": "^0.13.0",

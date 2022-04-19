@@ -84,8 +84,8 @@ export class Client {
 
             this.onChainTokens / this.offChainTokens: {
                 tokenKeys: ['devcon', '0x...'],
-                devcon: { 
-                    tokens: [] 
+                devcon: {
+                    tokens: []
                 }
             }
 
@@ -120,7 +120,7 @@ export class Client {
             if ((issuer.contract) && (issuer.chain)) {
 
                 // stop duplicate entries
-                if (this.onChainTokens[issuerKey]) { 
+                if (this.onChainTokens[issuerKey]) {
                     console.warn(`duplicate collectionID key ${issuerKey}, use unique keys per collection.`);
                     return;
                 }
@@ -135,7 +135,7 @@ export class Client {
 
             } else {
 
-                // off chain token attestations 
+                // off chain token attestations
 
                 this.offChainTokens.tokenKeys.push(issuer.collectionID);
 
@@ -156,7 +156,7 @@ export class Client {
     }
 
     // To enrich the token lookup store with data.
-    // for on chain tokens that are not using token script this is 
+    // for on chain tokens that are not using token script this is
     // required, for off chain this is most likely not required because the configurations
     // are already pre-defined e.g. title, issuer image image etc.
     updateTokenLookupStore(tokenKey, data) {
@@ -211,7 +211,7 @@ export class Client {
     async enrichTokenLookupDataOffChainTokens(offChainTokens: any) {
 
         // TODO: Fetch offline token config from ticket issuer url
-        /*await Promise.all(offChainTokens.tokenKeys.map(async (issuerKey: string): Promise<any> => {
+        /* await Promise.all(offChainTokens.tokenKeys.map(async (issuerKey: string): Promise<any> => {
 
             return fetch(`${this.tokenLookup[issuerKey].tokenConfigURI}`, {})
             .then(response => response.json())
@@ -248,7 +248,7 @@ export class Client {
             ------------------------------
             blockchain token reader module
             ------------------------------
-        
+
             * await this.setBlockchainTokens(this.onChainTokens);
         */
 
@@ -398,7 +398,7 @@ export class Client {
         //     headers: { 'Content-Type': 'application/json' },
         //     redirect: 'follow',
         //     referrerPolicy: 'no-referrer',
-        //     body: JSON.stringify({ 
+        //     body: JSON.stringify({
         //         signature: signature,
         //         nfts: selectedNFTs,
         //         message: message
@@ -511,7 +511,7 @@ export class Client {
             origin: url.origin + url.pathname
         });
 
-        if (data.evt == MessageResponseAction.ISSUER_TOKENS)
+        if (data.evt === MessageResponseAction.ISSUER_TOKENS)
             return data.tokens;
 
         throw new Error(data.errors.join("\n"));
