@@ -85,7 +85,7 @@ export class OnChainTokenModule {
                 title: "OpenSea Creature Sale"
         }
      */
-    async getInitialContractAddressMetaData (issuer:any) {
+    async getInitialContractAddressMetaData (issuer:OnChainTokenConfig) {
 
         const { contract, chain, openSeaSlug } = issuer;
 
