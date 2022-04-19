@@ -1,10 +1,9 @@
-//@ts-nocheck
-
 import {requiredParams} from '../utils';
+import {OnChainTokenConfig} from "../tokenLookup";
 
 export class OnChainTokenModule {
 
-    private apiConfigs = {
+    private apiConfigs:any = {
         opensea: {
             mainnet: {
                 url: "https://api.opensea.io/api/v1/",
@@ -35,9 +34,9 @@ export class OnChainTokenModule {
 
     constructor() {}
 
-    getOnChainAPISupportBool (apiName, chain) {
+    getOnChainAPISupportBool (apiName: string, chain: string) {
 
-        const apiBlockchainSupport = {
+        const apiBlockchainSupport:any = {
             opensea: [
                 'eth',
                 'mainnet', 
@@ -204,13 +203,13 @@ export class OnChainTokenModule {
 
             if(!result?.nfts?.length) return null;
 
-            resolve({
+            return {
                 api: 'alchemy',
                 chain: chain,
                 contract: contractAddress,
                 image: result.nfts[0].metadata.image,
                 title: result.nfts[0].title
-            });
+            };
 
         }).catch(err => {
             console.warn(err.message);
@@ -219,11 +218,11 @@ export class OnChainTokenModule {
 
     }
 
-    async connectOnChainToken (issuer:string, owner:string) {
+    async connectOnChainToken (issuer:OnChainTokenConfig, owner:string) {
 
         const { contract, chain, openSeaSlug } = issuer;
 
-        let tokens = [];
+        let tokens: any[]|undefined = [];
 
         if (contract.toLowerCase() == "0x22c1f6050e56d2876009903609a2cc3fef83b415"){
             return this.getTokensPOAP(owner);
@@ -231,9 +230,9 @@ export class OnChainTokenModule {
 
         if(openSeaSlug !== undefined) tokens = await this.getTokensOpenSea(contract, chain, owner, openSeaSlug);
 
-        if(!tokens.length) tokens = await this.getTokensMoralis(contract, chain, owner);
+        if(!tokens || !tokens.length) tokens = await this.getTokensMoralis(contract, chain, owner);
 
-        if(openSeaSlug === undefined && !tokens.length) tokens = await this.getTokensAlchemy(contract, chain, owner);
+        if(openSeaSlug === undefined && (!tokens || !tokens.length)) tokens = await this.getTokensAlchemy(contract, chain, owner);
 
         return tokens;
 
@@ -241,7 +240,7 @@ export class OnChainTokenModule {
 
     async getTokensOpenSea(address:string, chain:string, owner:string, openSeaSlug:string, offset=0, limit=20) {
 
-        if(!this.getOnChainAPISupportBool('opensea', chain)) return null;
+        if(!this.getOnChainAPISupportBool('opensea', chain)) return [];
 
         requiredParams((chain && address && owner), 'cannot search for tokens, missing params');
 
@@ -269,7 +268,7 @@ export class OnChainTokenModule {
     
     async getTokensMoralis(address:string, chain:string, owner:string, offset=0, limit=20) {
 
-        if(!this.getOnChainAPISupportBool('moralis', chain)) return null;
+        if(!this.getOnChainAPISupportBool('moralis', chain)) return [];
 
         requiredParams((chain && address && owner), 'cannot search for tokens, missing params');
 
@@ -305,13 +304,13 @@ export class OnChainTokenModule {
 
     async getTokensAlchemy (address:string, chain:string, owner:string) {
 
-        if(!this.getOnChainAPISupportBool('alchemy', chain)) return null;
+        if(!this.getOnChainAPISupportBool('alchemy', chain)) return [];
 
         const path = `/getNFTs/?owner=${owner}&contractAddresses[]=${address}`;
 
         this.getDataAlchemy(path, chain).then(result => {
 
-            return result.ownedNfts.map((item) => {
+            return result.ownedNfts.map((item:any) => {
                 return {
                     api: 'alchemy',
                     title: item.title,
@@ -326,7 +325,7 @@ export class OnChainTokenModule {
         });
     }
 
-    async getDataOpensea(path, chain){
+    async getDataOpensea(path:string, chain:string) {
 
         const config = this.getConfigForServiceAndChain("opensea", chain);
 
@@ -343,19 +342,14 @@ export class OnChainTokenModule {
         return this.httpJsonRequest(url, options)
     }
 
-    async getDataAlchemy(path:string, chain:string, requestBody:any = null){
+    async getDataAlchemy(path:string, chain:string){
 
         var options = {
-            method: requestBody != null ? 'POST' : 'GET',
+            method: 'GET',
             headers: {
                 redirect: 'follow'
             }
         };
-
-        if (requestBody){
-            options.headers["Content-Type"] = "application/json";
-            options.body = JSON.stringify(requestBody);
-        }
 
         const config = this.getConfigForServiceAndChain("alchemy", chain);
 
@@ -364,7 +358,7 @@ export class OnChainTokenModule {
         return this.httpJsonRequest(url, options)
     }
 
-    async getDataMoralis(path, chain){
+    async getDataMoralis(path:string, chain:string){
 
         const config = this.getConfigForServiceAndChain("moralis", chain);
 
@@ -380,7 +374,7 @@ export class OnChainTokenModule {
         return this.httpJsonRequest(url, options)
     }
 
-    private joinUrl(baseUrl, path){
+    private joinUrl(baseUrl:string, path:string){
 
         let baseEnd = baseUrl.charAt(baseUrl.length - 1);
         let pathStart = path.charAt(0);
@@ -413,7 +407,7 @@ export class OnChainTokenModule {
         throw new Error("API config not available for " + service + " chain: " + chain);
     }
 
-    private async httpJsonRequest(req:string|Request, requestOptions){
+    private async httpJsonRequest(req:string, requestOptions:RequestInit){
 
         return fetch(req, requestOptions).then(response => {
 
@@ -431,14 +425,14 @@ export class OnChainTokenModule {
         //let url = `https://api.poap.xyz/actions/scan/0x4d2803f468b736b62fe9eec992c8f4c41be4cb15`;
         let url = `https://api.poap.xyz/actions/scan/${owner}`;
 
-        let tokens = [];
+        let tokens: any[] = [];
         let res;
 
         try {
             res = await this.httpJsonRequest(url, {
                 method: 'GET'
             });
-        } catch (e){
+        } catch (e:any){
             console.log(e.message);
             return tokens;
         }
