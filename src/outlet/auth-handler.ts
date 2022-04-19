@@ -3,6 +3,7 @@
 import {Item} from '../tokenLookup'
 import {MessageResponseAction} from '../client/messaging'
 import {Outlet} from "./index";
+import {Authenticator} from '@tokenscript/attestation'
 
 export interface DevconToken {
     ticketBlob: string,
@@ -37,6 +38,8 @@ export class AuthHandler {
 
     private base64attestorPubKey:string|undefined;
     private base64senderPublicKey:string|undefined;
+
+    private authenticator:Authenticator = new Authenticator();
 
     constructor(outlet:Outlet, evtid:any, tokenDef:Item, tokenObj:DevconToken|any) {
         this.outlet = outlet;
@@ -110,7 +113,12 @@ export class AuthHandler {
             && event.data.ready === true
         ) {
             let sendData:PostMessageData = {force: false};
-            if (this.magicLink) sendData.magicLink = this.magicLink;
+            if (this.magicLink){
+                sendData.magicLink = this.magicLink;
+
+                if (sendData.magicLink.indexOf("#") > -1)
+                    sendData.magicLink = sendData.magicLink.replace("#", "?");
+            }
             if (this.email) sendData.email = this.email;
 
             this.iframe.contentWindow.postMessage(sendData, this.attestationOrigin);
@@ -151,7 +159,9 @@ export class AuthHandler {
         ) {
             return;
         }
+        
         this.iframeWrap.remove();
+        
         this.attestationBlob = event.data.attestation;
         this.attestationSecret = event.data.requestSecret;
 
@@ -162,14 +172,14 @@ export class AuthHandler {
 
         try {
 
-            // @ts-ignore
-            window.authenticator.getUseTicket(
+            this.authenticator.getUseTicket(
                 this.signedTokenSecret,
                 this.attestationSecret,
                 this.signedTokenBlob ,
                 this.attestationBlob ,
                 this.base64attestorPubKey,
                 this.base64senderPublicKey,
+                true
             ).then((useToken:any) => {
                 if (useToken){
                     console.log('this.authResultCallback( useToken ): ');

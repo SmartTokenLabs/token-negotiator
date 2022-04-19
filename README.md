@@ -4,27 +4,35 @@
 [![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Ftokenscript%2Ftoken-negotiator%2Fbadge%3Fref%3Dmain&style=flat)](https://actions-badge.atrox.dev/tokenscript/token-negotiator/goto?ref=main)
 -->
 
-The token-negotiator is an NPM package designed for use with TokenScript. 
+The Token Negotiator is an open source tool designed towards building the tokenised web. Where new types of experience can be created based around the ownership and use of tokens.
 
-TokenScript is a framework which improves functionality, security and usability of blockchain token. It creates a layer between a blockchain and user devices, adding information, rules and functionalites.
+The following types of tokens are supported:
 
-With tokenScript's Token-Negotiator, you can build custom experiences with:
+- Cryptographically created Tokens (Off Chain)
 
-- TokenScript enabled tokens (cryptogaphically designed off chain attestations)
-
-- On chain tokens within mainnet, polygon, optimism, mainnet, rinkeby, ropsten, goerli, kovan,bsc, mumbai, avalanche, fantom, arbitrum.
+- Web3 NFT Tokens (On Chain)
 
 (for new token issuers who are interested in using our technology please visit the following WIKI page: https://github.com/TokenScript/token-negotiator/wiki/Token-Issuer-Page).
 
-### Examples
+### Token Negotiator supports Tokens across the following Chains
 
-A live demonsration of the Token Negotiator and development examples can be found here.
-
-https://github.com/TokenScript/token-negotiator-examples 
+- mainnet / eth
+- polygon
+- arbitrum 
+- optimism
+- rinkeby
+- ropsten
+- goerli
+- kovan
+- bsc
+- mumbai
+- avalanche
+- fantom
+- POAP via XDai
 
 ## Installation
 
-Within your web application / dapp install the token negotiator.
+Within your application install the token negotiator:
 
 ```sh
   npm i @tokenscript/token-negotiator
@@ -34,16 +42,19 @@ This library provides two ways to load tokens into your application, active or p
 
 ### Active Negotiation of tokens
 
-This approach embededs a html element which connects users to their tokens. 
+This approach embeds a html element UI widget into the web page. The end user can then select which collections they wish for the website to learn. 
 
-To start, first include the following html element into your page, this is where the token negotiator overlay will be embeded to connect with tokens. 
+<img src="https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/tn-example.png" alt="token negotiator component" style="width:280px;"/>
+
+To start, first include the following html element into your page, this is where the token negotiator overlay widget will be embedded into the page.
 
 ````html
-    <div className="overlay-tn"></div>
+    <div class="overlay-tn"></div>
 ````
 
-The following Javascript configuration will connect to the Token Negotiator, embed the overlay html component and enable an end user to connect with the tokens
-listed inside the issuers array.
+Include the following Javascript to configure the Token Negotiator. 
+
+Add issuers with tokens that you wish for your website to recognise. 
 
 ```javascript
   
@@ -54,13 +65,21 @@ listed inside the issuers array.
   let tokens = [];
 
   // configure
-
   const negotiator = new Client({
     type: 'active',
     issuers: [
-        'devcon-remote'
-        { contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'rinkeby-punk' },
-        { contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
+        {
+          collectionID: 'devcon', 
+          title: "Devcon",
+          onChain: false,
+          tokenOrigin: "http://localhost:3002/",
+          attestationOrigin: "https://stage.attestation.id/",
+          unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
+          image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
+          base64senderPublicKey: "",
+          base64attestorPubKey: ""
+        },
+        { collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
     ],
     options: {
         overlay: {
@@ -95,7 +114,7 @@ listed inside the issuers array.
 ```
 ### Passive Negotiation of tokens
 
-This approach is designed for a fully custom ui/ux experience, where a list of all tokens are learnt by the client on negotation. 
+This approach is designed for a fully custom ui/ux experience, where a list of all tokens are learnt by the client on negotiation.
 
 ````javascript
 
@@ -104,9 +123,18 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
   const negotiator = new Client({
     type: 'passive',
     issuers: [
-      'devcon-remote',
-      { contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'rinkeby-punk' },
-      { contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
+      { 
+        collectionID: 'devcon', 
+        title: "Devcon",
+        onChain: false,
+        tokenOrigin: "http://localhost:3002/",
+        attestationOrigin: "https://stage.attestation.id/",
+        unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
+        image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
+        base64senderPublicKey: "",
+        base64attestorPubKey: ""
+      },
+      { collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
     ],
     options: {}
   });
@@ -129,9 +157,55 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
   
 ````
 
-### Authenticate ownership of Token
+### Managing Issuers on chain
 
-Authenicating ownership of the token will provide a proof with a limited expiry.
+
+````javascript
+
+  /**
+  * @param {String} collectionID your own reference key to identify the collection by.
+  * @param {String} contract smart contract address
+  * @param {String} chain smart contract address chain 
+  * @param {String} openSeaSlug (optional) add collection uri name if the collection features on Opensea
+  */
+  const onChainIssuer = { collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth', openSeaSlug: 'expansion-punks' }
+
+````
+
+### Managing Issuers off chain
+
+
+````javascript
+  
+  /**
+  * @param {String} collectionID your own reference key to identify the collection by.
+  * @param {String} title the token collection config uri
+  * @param {Boolean} onChain boolean if this token is on / off chain 
+  * @param {String} tokenOrigin URL to token attestations
+  * @param {String} attestationOrigin attestation server
+  * @param {String} unEndPoint unpredictable number generator
+  * @param {String} image image for collection
+  * @param {String} base64senderPublicKey attestation public key
+  * @param {String} base64attestorPubKey attestation public key
+  * 
+  */
+  const offChainIssuer = { 
+    collectionID: 'devcon', 
+    title: "Devcon",
+    onChain: false,
+    tokenOrigin: "http://localhost:3002/",
+    attestationOrigin: "https://stage.attestation.id/",
+    unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
+    image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
+    base64senderPublicKey: "",
+    base64attestorPubKey: ""
+  }
+  
+````
+
+### Authenticate ownership of off chain Token
+
+Authenticating ownership of the token will provide a proof with a limited expiry.
 
 ````javascript
 
@@ -146,65 +220,65 @@ Authenicating ownership of the token will provide a proof with a limited expiry.
 
   negotiator.on('proof', () => {
 
-    // the proof will be recieved here (valid or failed)
+    // the proof will be received here (valid or failed)
 
   });
 
 ````
 
-Creating a UMD build, which will export the library as a single file.
+### For projects where you are not using a Node.js work flow.
 
-````sh
-  
-  // install dependancies
-  run `npm i` 
+1. Go to the following URL: https://github.com/TokenScript/token-negotiator
 
-  // create the build
-  run `npm run build-umd`
-
-````
-
-Locate and copy the '/dist' folder to your website generated from the UMD build.
+2. Download and then install this folder into your project `/token-negotiator-1.0.13-alpha-dist`
 
 Configure the library using the following example.
 
 ````html
 
   <!-- add the JS library -->
-  <script type="text/javascript" src="./dist/negotiator.js"></script>
+  <script type="text/javascript" src="./token-negotiator-1.0.13-alpha-dist/negotiator.js"></script>
 
-  <!-- add the HTML entry point for the Token Negotiator -->
-  <div class="overlay-tn"></div>
+  <body onload="init()">
 
-  <!-- instantiate the library and include event hooks as required -->
-  <script>
+    <div class="overlay-tn"></div>
+    
+    <script>
 
-        var negotiator = new negotiator.Client({
-            type: 'active',
-            issuers: [
-                'devcon-remote'
-            ],
-            options: {
-                overlay: {
+        function init() {
+
+            window.negotiator = new negotiator.Client({
+                type: 'active',
+                issuers: [
+                    { collectionID: "rinkeby-punks", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'rinkeby-punk' },
+                    { collectionID: "stl-rnd-women-tribe", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'stl-rnd-women-tribe-nfts' },
+                    { collectionID: "stl-rnd-zed-run", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'stl-rnd-zed' },
+                    { collectionID: "stl-rnd-bayc-derivatives", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'stl-rnd-bayc-derivatives' },
+                    { collectionID: "stl-riot-racers", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'stl-rnd-riot-racers' }
+                ],
+                options: {
+                    overlay: {
                     openingHeading: "Open a new world of discounts available with your tokens.",
                     issuerHeading: "Get discount with Ticket",
                     repeatAction: "try again",
                     theme: "light",
                     position: "bottom-right"
-                },
-                filters: {},
-            }
-        });
+                    },
+                    filters: {},
+                }
+            });
 
-        negotiator.on("tokens-selected", (tokens) => {
-            console.log(tokens);
-        });
+            window.negotiator.on("tokens-selected", (tokens) => {
+                console.log(tokens);
+            });
 
-        negotiator.on("token-proof", (proof) => {
-            console.log(proof);
-        });
+            window.negotiator.on("token-proof", (proof) => {
+                console.log(proof);
+            });
 
-        negotiator.negotiate();
+            window.negotiator.negotiate();
+
+        }
 
     </script>
 
@@ -225,21 +299,6 @@ Key values applied to all tokens.
 
 ````
 
-## Full attestations 
-
-To attest full ownership of token attestations, another step is required which utilises another technology
-from SmartTokenLabs team, attestation.id. To complete this step, save the authenticator.js file into your project. This must be installed before using the Token Negotiator authenticate function.
-
-https://github.com/TokenScript/token-negotiator/blob/main/authenticator.js
-
-For working examples see https://github.com/TokenScript/token-negotiator-examples 
-
-## Connecting to issuers
-
-Please see the token negotiator examples repository.
-
-[Token Negotiator Examples](https://github.com/TokenScript/token-negotiator-examples/tree/main/token-outlet-website)
-
 ## New Token Issuers
 
 Please reach out to us at <sayhi@smarttokenlabs.com>
@@ -257,13 +316,20 @@ run `npm run test`
 Please contact us or open an issue via github:
 sayhi@smarttokenlabs.com
 
-### Quick Start
+### Quick Start with Vue, React or Svelte
 
-To review working examples of the token negotiator please visit;
 
-[Our Wiki](https://github.com/TokenScript/token-negotiator/wiki)
+https://github.com/TokenScript/token-negotiator/wiki/quick-start-Vue
 
-[Quick Start Guide](https://github.com/TokenScript/token-negotiator-examples/wiki/quick-start)
+https://github.com/TokenScript/token-negotiator/wiki/quick-start-React
+
+https://github.com/TokenScript/token-negotiator/wiki/quick-start-Svelte
+
+### Examples
+
+To review demo examples of the token negotiator please visit:
+
+[Token Negotiator Examples](https://github.com/TokenScript/token-negotiator-examples)
 
 ### Roadmap of this library
 

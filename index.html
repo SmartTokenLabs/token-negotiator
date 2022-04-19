@@ -20,16 +20,15 @@
             window.negotiator = new negotiator.Client({
                 type: 'active',
                 issuers: [
-                    'devcon',
-                    'devcon2'
+                    { collectionID: "bayc", contract: '0x26472AA24D795AbcB687bddb44d733ef55Ebdf09', chain: 'Rinkeby' }
                 ],
                 options: {
                     overlay: {
-                        openingHeading: "Open a new world of discounts available with your tokens.",
-                        issuerHeading: "Get discount with Ticket",
-                        repeatAction: "try again",
-                        theme: "light",
-                        position: "bottom-right"
+                    openingHeading: "Open a new world of discounts available with your tokens.",
+                    issuerHeading: "Get discount with Ticket",
+                    repeatAction: "try again",
+                    theme: "light",
+                    position: "bottom-right"
                     },
                     filters: {},
                 }

@@ -5,7 +5,7 @@ export interface TokenListItemInterface {
     tokenIssuerKey: string;
     title: string;
     index: number;
-    emblem: string;
+    image: string;
     data: any;
     toggleState: boolean;
 }
@@ -97,7 +97,7 @@ export class TokenList extends AbstractView {
 
             // ignore already rendered icons
             if (elem.querySelector('img'))
-                return;
+                continue;
 
             let params = {
                 src: elem.getAttribute('data-image-src'),
@@ -132,7 +132,6 @@ export class TokenList extends AbstractView {
 
         console.log("Tokens selected:");
         console.log(selectedTokens);
-        //console.trace();
 
         this.client.updateSelectedTokens(selectedTokens);
 
@@ -148,10 +147,10 @@ export class TokenList extends AbstractView {
 
     createTokenMarkup(config: TokenListItemInterface) {
 
-        const { tokenIssuerKey, title, data, index, emblem, toggleState } = config;
+        const { tokenIssuerKey, title, data, index, image, toggleState } = config;
         return `
             <li class='token-tn'>
-              <div class="img-container-tn emblem-tn shimmer-tn" data-image-src="${emblem}" data-token-title="${title}"></div>
+              <div class="img-container-tn image-tn shimmer-tn" data-image-src="${image}" data-token-title="${title}"></div>
               <div class='data-tn'>
                   <p class='token-title-tn'>${title}</p>
                   <p class='detail-tn'>#${index}</p>

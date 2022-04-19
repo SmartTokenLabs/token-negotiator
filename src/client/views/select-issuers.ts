@@ -26,7 +26,6 @@ export class SelectIssuers extends AbstractView {
                   <button aria-label="back to token issuer menu" class="back-to-menu-tn">
                     <svg style="position: relative; top: 1px;" width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
                         <g fill="none" fill-rule="evenodd">
-                            <circle fill="#EFEFEF" cx="16" cy="16" r="16"/>
                             <path d="m10.2 15.8 7.173 7.56c.55.587 1.453.587 2.01 0a1.554 1.554 0 0 0 0-2.12l-5.158-5.44 5.157-5.44a1.554 1.554 0 0 0 0-2.12 1.367 1.367 0 0 0-2.009 0L10.2 15.8z" fill="#000" fill-rule="nonzero"/>
                         </g>
                     </svg>
@@ -65,11 +64,11 @@ export class SelectIssuers extends AbstractView {
         let html = "";
 
         data.offChainTokens.tokenKeys.map((issuer: string) => {
-            html += this.issuerConnectMarkup(data.tokenLookup[issuer].title, data.tokenLookup[issuer].emblem, issuer);
+            html += this.issuerConnectMarkup(data.tokenLookup[issuer].title, data.tokenLookup[issuer].image, issuer);
         });
 
         data.onChainTokens.tokenKeys.map((issuer: string) => {
-            html += this.issuerConnectMarkup(data.tokenLookup[issuer].title, data.tokenLookup[issuer].emblem, issuer);
+            html += this.issuerConnectMarkup(data.tokenLookup[issuer].title, data.tokenLookup[issuer].image, issuer);
         });
 
         this.issuerListContainer.innerHTML = html;
@@ -101,7 +100,7 @@ export class SelectIssuers extends AbstractView {
                 <div class="img-container-tn issuer-icon-tn shimmer-tn" data-image-src="${image}" data-token-title="${title}"></div>
                 <p class="issuer-connect-title">${title}</p>
               </div>
-              <button aria-label="connect with the token issuer ${issuer}" aria-hidden="false" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="connect-btn-tn" data-issuer="${issuer}">Connect</button>
+              <button aria-label="connect with the token issuer ${issuer}" aria-hidden="false" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="connect-btn-tn" data-issuer="${issuer}">Load</button>
               <button aria-label="tokens available from token issuer ${issuer}" aria-hidden="true" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="tokens-btn-tn" data-issuer="${issuer}">Tokens Available</button>
             </li>
         `;
@@ -135,6 +134,7 @@ export class SelectIssuers extends AbstractView {
     async connectTokenIssuer(event:any) {
 
         const data = event.target.dataset;
+
         const issuer = data.issuer;
 
         let tokens:any[] = [];
@@ -198,8 +198,6 @@ export class SelectIssuers extends AbstractView {
 
         tokenData[location][issuer].tokens.map((t: any, i: any) => {
 
-            const { title, emblem } = config;
-
             let isSelected = false;
 
             // TODO Define a constant value that can be checked regardless of which issuer token to speed up this check.
@@ -209,25 +207,31 @@ export class SelectIssuers extends AbstractView {
 
             });
 
-            // TODO define this data/manage fall backs at the point of NFT discovery.
+            if(location === "offChainTokens") {
 
-            let nftImage = t.image;
-            if(!nftImage) nftImage = t.image_url;
-            if(!nftImage) nftImage = emblem;
-            
-            let nftTitle = t.name;
-            if(!nftTitle) nftTitle = title;
+                const { title, image } = config;
 
-            // end of TODO
+                tokens.push({
+                    data: t,
+                    tokenIssuerKey: issuer,
+                    index: i,
+                    title: title,
+                    image: image,
+                    toggleState: isSelected
+                });
 
-            tokens.push({
-                data: t,
-                tokenIssuerKey: issuer,
-                index: i,
-                title: nftTitle,
-                emblem: nftImage,
-                toggleState: isSelected
-            });
+            } else {
+
+                tokens.push({
+                    data: t,
+                    tokenIssuerKey: issuer,
+                    index: i,
+                    title: t.title,
+                    image: t.image,
+                    toggleState: isSelected
+                });
+
+            }
 
         });
 

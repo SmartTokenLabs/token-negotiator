@@ -1,37 +1,28 @@
 import {rawTokenCheck, readMagicUrl, storeMagicURL} from '../core';
 import {requiredParams} from '../utils/index';
-import {tokenLookup} from './../tokenLookup';
 import {decodeTokens, filterTokens} from './../core/index';
 import { MessageAction, MessageResponseInterface, MessageResponseAction } from '../client/messaging';
 import {AuthHandler} from "./auth-handler";
 
 interface OutletInterface {
-  tokenName: string;
+  config: any;
 }
 
 export class Outlet {
 
-  config: any;
-  tokenName: any;
-  tokenIssuer: any;
+  tokenConfig: any;
+  urlParams?: URLSearchParams;
 
   constructor(config: OutletInterface) {
 
-    const { tokenName } = config;
-
-    this.tokenName = tokenName;
-    this.tokenIssuer = tokenLookup[tokenName];
-
-    requiredParams(tokenLookup[tokenName], "Please provide the token name when installing token outlet");
+    this.tokenConfig = config;
 
     this.pageOnLoadEventHandler();
 
   };
 
   getDataFromQuery ( itemKey:any ) {
-    const urlParams = new URLSearchParams(window.location.search);
-    const item = urlParams.get(itemKey);
-    return item ? item : undefined;
+    return this.urlParams ? this.urlParams.get(itemKey) : undefined;
   }
 
   getFilter(){
@@ -41,14 +32,21 @@ export class Outlet {
 
   pageOnLoadEventHandler () {
 
+    let params = window.location.hash.length > 1 ? "?"+window.location.hash.substring(1) : window.location.search;
+    this.urlParams = new URLSearchParams(params);
+
     const evtid = this.getDataFromQuery('evtid');
     const action = this.getDataFromQuery('action');
 
-    if (!document.referrer)
+    if (!document.referrer && !this.getDataFromQuery('DEBUG'))
       return;
 
     console.log("Outlet received event ID " + evtid + " action " + action);
     // Outlet Page OnLoad Event Handler
+
+    // store local storage item that can be later used to check if third party cookies are allowed.
+    // Note: This test can only be performed when the localstorage / cookie is assigned, then later requested.
+    localStorage.setItem('cookie-support-check', 'test');
 
     // TODO: should issuer be validated against requested issuer?
 
@@ -82,17 +80,18 @@ export class Outlet {
 
       default:
 
-        // store local storage item that can be later used to check if third party cookies are allowed.
-        // Note: This test can only be performed when the localstorage / cookie is assigned, then later requested.
-        localStorage.setItem('cookie-support-check', 'test');
+        const { tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey } = this.tokenConfig;
 
-        const { tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey } = this.tokenIssuer;
+        try {
+            const tokens = readMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey, this.urlParams);
 
-        const tokens = readMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey);
+            storeMagicURL(tokens, itemStorageKey);
 
-        if(tokens && tokens.length) storeMagicURL(tokens, itemStorageKey);
+            this.sendTokens(evtid);
 
-        this.sendTokens(evtid);
+        } catch (e:any) {
+            this.sendErrorResponse(evtid, e.message);
+        }
 
         break;
 
@@ -100,13 +99,13 @@ export class Outlet {
 
   }
 
-  prepareTokenOutput ( tokenName:string, filter: any ) {
+  prepareTokenOutput ( filter: any ) {
 
-    const storageTokens = localStorage.getItem(tokenLookup[tokenName].itemStorageKey);
+    const storageTokens = localStorage.getItem(this.tokenConfig.itemStorageKey);
 
     if(!storageTokens) return [];
 
-    const decodedTokens = decodeTokens(storageTokens, tokenLookup[tokenName].tokenParser, tokenLookup[tokenName].unsignedTokenDataName);
+    const decodedTokens = decodeTokens(storageTokens, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName);
 
     return filterTokens(decodedTokens, filter);
 
@@ -119,38 +118,47 @@ export class Outlet {
     const unsignedToken = JSON.parse(token);
 
     try {
-          let tokenObj = await rawTokenCheck(unsignedToken, this.tokenIssuer);
+          // check if token issuer
+          let tokenObj = await rawTokenCheck(unsignedToken, this.tokenConfig);
 
-          let authHandler = new AuthHandler(this, evtid, this.tokenIssuer, tokenObj);
+          let authHandler = new AuthHandler(this, evtid, this.tokenConfig, tokenObj);
 
           let tokenProof = await authHandler.authenticate();
 
           this.sendMessageResponse({
             evtid: evtid,
             evt: MessageResponseAction.PROOF,
-            issuer: this.tokenName,
-            proof: JSON.stringify(tokenProof)
+            issuer: this.tokenConfig.tokenName,
+            proof: tokenProof
           });
 
-    } catch (e){
-        this.sendMessageResponse({
-          evtid: evtid,
-          evt: MessageResponseAction.ERROR,
-          errors: [e]
-        });
+    } catch (e:any){
+        console.log("Error getting proof:");
+        console.log(e);
+
+        // TODO: We shouldn't be sending the full exception here, instead return error messages only.
+        this.sendErrorResponse(evtid, e);
     }
 
   }
 
   private sendTokens(evtid: any){
 
-    let issuerTokens = this.prepareTokenOutput(this.tokenName, this.getFilter());
+    let issuerTokens = this.prepareTokenOutput(this.getFilter());
 
     this.sendMessageResponse({
       evtid: evtid,
       evt: MessageResponseAction.ISSUER_TOKENS,
-      issuer: this.tokenName,
+      issuer: this.tokenConfig.tokenName,
       tokens: issuerTokens
+    });
+  }
+
+  public sendErrorResponse(evtid: any, error:string){
+    this.sendMessageResponse({
+      evtid: evtid,
+      evt: MessageResponseAction.ERROR,
+      errors: [error]
     });
   }
 

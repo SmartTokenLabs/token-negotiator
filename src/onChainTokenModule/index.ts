@@ -1,6 +1,6 @@
 //@ts-nocheck
 
-import { requiredParams, splitOnChainKey } from './../utils/index';
+import {requiredParams} from './../utils/index';
 
 export class OnChainTokenModule {
 
@@ -63,6 +63,9 @@ export class OnChainTokenModule {
                 'mumbai',
                 'avalanche',
                 'fantom'
+            ],
+            poap: [
+                'xdai'
             ]
         }
         
@@ -82,24 +85,43 @@ export class OnChainTokenModule {
      * {
                 chain: "rinkeby",
                 contractAddress: "0x381748c76f2b8871afbbe4578781cd24df34ae0d",
-                emblem: "https://storage.googleapis.com/opensea-rinkeby/0x381748c76f2b8871afbbe4578781cd24df34ae0d.png",
+                image: "https://storage.googleapis.com/opensea-rinkeby/0x381748c76f2b8871afbbe4578781cd24df34ae0d.png",
                 title: "OpenSea Creature Sale"
         }
     */
-    async getInitialContractAddressMetaData (issuerKey:string) {
+    async getInitialContractAddressMetaData (issuer:any) {
 
-        const { address, chain, openSeaSlug } = splitOnChainKey(issuerKey);
+        const { contract, chain, openSeaSlug } = issuer;
 
         let collectionData = null;
 
+        // POAP
+        // TODO: move this into a registry like tokenLookup
+        if (contract.toLowerCase() == "0x22c1f6050e56d2876009903609a2cc3fef83b415"){
+            return {
+                chain,
+                contract,
+                emblem: "https://storage.googleapis.com/subgraph-images/1647414847706poap.jpeg",
+                title: "POAP Proof of attendance protocol"
+            }
+        }
+
         // try open sea first when there is a slug provided
-        if (openSeaSlug) collectionData = await this.getContractDataOpenSea(address, chain, openSeaSlug);
+        if (openSeaSlug !== undefined) {
+            collectionData = await this.getContractDataOpenSea(contract, chain, openSeaSlug);
+        }
 
         // if there is no slug or no data try moralis
-        if(!openSeaSlug || !collectionData) collectionData = await this.getContractDataMoralis(address, chain);
+        if(!collectionData){
+            collectionData = await this.getContractDataMoralis(contract, chain);
+        }
 
-        // if there is still no data try Alchemy
-        if(!openSeaSlug || !collectionData) collectionData = await this.getContractDataAlchemy(address, chain);
+        // // if there is still no data try Alchemy
+        if(openSeaSlug === undefined && !collectionData) {
+            collectionData = await this.getContractDataAlchemy(contract, chain);
+        }
+
+        console.log('collectionData: ', collectionData);
 
         return collectionData;
     }
@@ -113,7 +135,7 @@ export class OnChainTokenModule {
      * {
                 chain: "rinkeby",
                 contractAddress: "0x381748c76f2b8871afbbe4578781cd24df34ae0d",
-                emblem: "https://storage.googleapis.com/opensea-rinkeby/0x381748c76f2b8871afbbe4578781cd24df34ae0d.png",
+                image: "https://storage.googleapis.com/opensea-rinkeby/0x381748c76f2b8871afbbe4578781cd24df34ae0d.png",
                 title: "OpenSea Creature Sale"
         }
     */
@@ -123,16 +145,15 @@ export class OnChainTokenModule {
 
         const path = `/assets?asset_contract_address=${contractAddress}&collection=${openSeaSlug}&order_direction=desc&offset=0&limit=20`;
 
-        return this.getDataOpensea(path, chain)
-                    .then(response => {
-                        return  {
-                            chain,
-                            contractAddress,
-                            emblem: response.assets[0].collection.image_url,
-                            title: response.assets[0].collection.name
-                        };
-                    })
-                    .catch(err => console.error(err));
+        return this.getDataOpensea(path, chain).then(response => {
+            return  {
+                chain,
+                contractAddress,
+                image: response.assets[0].collection.image_url,
+                title: response.assets[0].collection.name
+            };
+        })
+        .catch(err => console.error(err));
 
     }
     
@@ -140,26 +161,24 @@ export class OnChainTokenModule {
 
         if(this.getOnChainAPISupportBool('moralis', chain) === false) return;
 
-        if(chain.toLocaleLowerCase() === "mainnet" || chain.toLocaleLowerCase() === "eth") {
+        const _chain = 'eth';
 
-            const _chain = 'eth';
+        const path = `/nft/${contractAddress}?chain=${_chain}&format=decimal&limit=1`;
 
-            const path = `/nft/${contractAddress}?chain=${_chain}&format=decimal&limit=1`;
+        return this.getDataMoralis(path, chain)
+            .then(response => {
 
-            return this.getDataMoralis(path, chain)
-                .then(response => {
+            const image = JSON.parse(response.result[0].metadata).image;
 
-                    const emblem = JSON.parse(response.result[0].metadata).image;
-
-                    return {
-                        chain,
-                        contractAddress,
-                        emblem,
-                        title: response.result[0].name
-                    };
-                })
-                .catch(err => console.error(err));
-        } 
+            return {
+                api: 'moralis',
+                chain,
+                contractAddress,
+                image,
+                title: response.result[0].name
+            };
+        })
+        .catch(err => console.error(err));
 
     }
     
@@ -175,28 +194,32 @@ export class OnChainTokenModule {
 
             if(!result.nfts.length) resolve([]);
 
-            resolve({
-                chain,
-                contractAddress,
-                emblem: result.nfts[0].metadata.image,
-                title: result.nfts[0].title
-            });
-        })
-        .catch(error => console.log('error', error)); // reject
+                resolve({
+                    api: 'alchemy',
+                    chain,
+                    contractAddress,
+                    image: result.nfts[0].metadata.image,
+                    title: result.nfts[0].title
+                });
+        }).catch(error => console.log('error', error)); // reject
 
     }
 
-    async connectOnChainToken (issuerKey:string, owner:string) {
+    async connectOnChainToken (issuer:string, owner:string) {
 
-        const { address, chain, openSeaSlug } = splitOnChainKey(issuerKey);
+        const { contract, chain, openSeaSlug } = issuer;
 
         let tokens = [];
 
-        if(openSeaSlug) tokens = await this.getTokensOpenSea(address, chain, owner, openSeaSlug);
+        if (contract.toLowerCase() == "0x22c1f6050e56d2876009903609a2cc3fef83b415"){
+            return this.getTokensPOAP(owner);
+        }
 
-        if((!openSeaSlug || !tokens || !tokens.length) && address.toLowerCase() != "0xafd1a2f17ce2a694d2ef649fe5ba51cc0282448a") tokens = await this.getTokensMoralis(address, chain, owner);
+        if(openSeaSlug !== undefined) tokens = await this.getTokensOpenSea(contract, chain, owner, openSeaSlug);
 
-        if(!tokens.length) tokens = await this.getTokensAlchemy(address, chain, owner);
+        if(!tokens.length) tokens = await this.getTokensMoralis(contract, chain, owner);
+
+        if(openSeaSlug === undefined && !tokens.length) tokens = await this.getTokensAlchemy(contract, chain, owner);
 
         return tokens;
 
@@ -212,7 +235,17 @@ export class OnChainTokenModule {
 
         return this.getDataOpensea(path, chain)
                 .then(response => {
-                    return response.assets;
+
+                    return response.assets.map((item:any) => {
+                        const image = item.image_url ? item.image_url : '';
+                        const title = item.name ? item.name : '';
+                        return {
+                            api: 'opensea',
+                            title: title,
+                            image: image,
+                            data: item
+                        }
+                    });
                 })
                 .catch(err => console.error(err));
         
@@ -239,6 +272,7 @@ export class OnChainTokenModule {
                 const title = parsedMetaObj.name ? parsedMetaObj.name : '';
 
                 return {
+                    api: 'moralis',
                     title: title,
                     image: image,
                     data: parsedMetaObj
@@ -262,6 +296,7 @@ export class OnChainTokenModule {
             this.getDataAlchemy(path, chain).then(result => {
                 const tokens = result.ownedNfts.map((item) => {
                     return {
+                        api: 'alchemy',
                         title: item.title,
                         image: item.metadata.image,
                         data: item
@@ -355,6 +390,32 @@ export class OnChainTokenModule {
             .then(result => {
                 resolve(result);
             });
+    }
+
+    async getTokensPOAP(owner:string){
+
+        // Uncomment to test a really large POAP collection - this guy gets around
+        //let url = `https://api.poap.xyz/actions/scan/0x4d2803f468b736b62fe9eec992c8f4c41be4cb15`;
+        let url = `https://api.poap.xyz/actions/scan/${owner}`;
+
+        let res = await fetch(url, {
+            method: 'GET'
+        });
+
+        let data = await res.json();
+
+        let tokens = [];
+
+        for (let token of data){
+
+            tokens.push({
+                title: token.event.name,
+                image: token.event.image_url,
+                data: token
+            });
+        }
+
+        return tokens;
     }
 
 }
