@@ -36,7 +36,7 @@ class Web3WalletProvider {
     async signWith ( message: string, walletData: any ) {
 
         let provider = new ethers.providers.Web3Provider(walletData.provider);
-  
+
         let signer = provider.getSigner();
   
         return await signer.signMessage(message);
@@ -112,34 +112,42 @@ class Web3WalletProvider {
         console.log('connect Wallet Connect');
 
         return new Promise((resolve, reject) => {
-                
-            const walletConnectProvider = new WalletConnectProvider({
-                infuraId: "7753fa7b79d2469f97c156780fce37ac",
-            });
-        
-            walletConnectProvider.on("accountsChanged", (accounts: string[]) => {
 
-                console.log(accounts);
+            try {
 
-                const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], '1', walletConnectProvider);
+                const walletConnectProvider = new WalletConnectProvider({
+                    infuraId: "7753fa7b79d2469f97c156780fce37ac",
+                });
 
-                resolve(registeredWalletAddress);
-                    
-            });
-                
-            walletConnectProvider.on("chainChanged", (chainId: number) => {
+                walletConnectProvider.on("accountsChanged", (accounts: string[]) => {
 
-                console.log(chainId);
+                    console.log(accounts);
 
-            });
-            
-            walletConnectProvider.on("disconnect", (code: number, reason: string) => {
+                    const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], '1', walletConnectProvider);
 
-                console.log(code, reason);
+                    resolve(registeredWalletAddress);
 
-            });
-        
-            walletConnectProvider.enable();
+                });
+
+                walletConnectProvider.on("chainChanged", (chainId: number) => {
+
+                    console.log(chainId);
+
+                });
+
+                walletConnectProvider.on("disconnect", (code: number, reason: string) => {
+
+                    console.log(code, reason);
+
+                });
+
+                walletConnectProvider.enable().catch(e => {
+                    reject(e);
+                });
+
+            } catch (e){
+                reject(e);
+            }
 
         });
 
