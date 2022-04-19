@@ -6,8 +6,6 @@ import { connectMetamaskAndGetAddress, getChallengeSigned, validateUseEthKey } f
 import { OffChainTokenConfig, OnChainTokenConfig, tokenLookup } from './../tokenLookup';
 import OnChainTokenModule from './../onChainTokenModule'
 import Web3WalletProvider from './../utils/Web3WalletProvider';
-// import Server from './../server/index';
-import "./../theme/style.css";
 import './../vendor/keyShape';
 
 interface NegotiationInterface {

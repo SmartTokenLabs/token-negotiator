@@ -501,11 +501,20 @@
   z-index: 200;
   background-color: rgba(52, 52, 52, 0.70);
   text-align: center;
-  color: #fff;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
+}
+
+.loader-msg-tn h4 {
+  color: #fff;
+  font-size: 16px;
+}
+
+.loader-msg-tn small {
+  color: #fff;
+  font-size: 13px;
 }
 
 /* loader */
