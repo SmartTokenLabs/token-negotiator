@@ -147,7 +147,7 @@ export class OnChainTokenModule {
 
             if (!response?.assets?.length) return null;
 
-            return  {
+            return {
                 api: 'opensea',
                 chain: chain,
                 contract: contractAddress,
@@ -329,7 +329,7 @@ export class OnChainTokenModule {
 
         const config = this.getConfigForServiceAndChain("opensea", chain);
 
-        let options = {
+        const options = {
             method: 'GET',
             headers: {
                 Accept: 'application/json',
@@ -344,7 +344,7 @@ export class OnChainTokenModule {
 
     async getDataAlchemy(path:string, chain:string){
 
-        var options = {
+        const options = {
             method: 'GET',
             headers: {
                 redirect: 'follow'
