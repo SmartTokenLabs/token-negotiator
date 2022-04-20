@@ -17,6 +17,11 @@ module.exports = {
     '!src/vendor/**'
   ],
   coverageDirectory: '<rootDir>/reports/coverage/',
+  coverageThreshold: {
+    global: {
+      lines: 26
+    }
+  },
   testPathIgnorePatterns: [
     "dist"
   ],
