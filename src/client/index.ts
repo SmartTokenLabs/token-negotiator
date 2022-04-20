@@ -23,21 +23,17 @@ declare global {
     }
 }
 
-interface AuthenticateOffChainInterface {
+// TODO: Implement tokenId - each issuer token should have a unique ID (tokenId for instance).
+//  webster should not be required to pass the whole object as it can lead to hard to solve errors for webster.
+interface AuthenticateInterface {
     issuer: any;
-    unsignedToken: any;
-}
-
-interface AuthenticateOnChainInterface {
-    address: string;
-    selectedNFTs: any[];
-    message: string;
-    endpoint: string;
+    tokenId?: number|string
+    token: any;
 }
 
 export class Client {
 
-    issuers: any[];
+    issuers: OnChainTokenConfig | OffChainTokenConfig[];
     type: string;
     filter: {};
     options: any;
@@ -48,6 +44,9 @@ export class Client {
     web3WalletProvider: any;
     messaging: Messaging;
     popup: Popup;
+
+    clientCallBackEvents: object;
+    onChainTokenModule: OnChainTokenModule;
 
     constructor(config: NegotiationInterface) {
 
@@ -98,10 +97,6 @@ export class Client {
         this.onChainTokenModule = new OnChainTokenModule();
 
         this.messaging = new Messaging();
-
-        document.onclick = function (e) {
-
-        }
 
     }
 
@@ -382,11 +377,11 @@ export class Client {
         // TODO msg to include window.location.host
     }
 
-    async authenticateOnChain(config: AuthenticateOnChainInterface) {
+    async authenticateOnChain(authRequest: AuthenticateInterface) {
 
         // TODO implement onchain authentication & update api accordingly for end user.
 
-        // const { selectedNFTs, message } = config;
+        // const { selectedNFTs, message } = authRequest;
         // e.g. message = window.location.host
         // const signature = await signMessageWithBrowserWallet(message, this.web3WalletProvider);
         // send message to backend server
@@ -408,75 +403,113 @@ export class Client {
         // const result = await server.resolveNFTTokenOwnership();
         // console.log(result);
 
+        const { issuer, unsignedToken } = authRequest;
+
+        let signedChallenge =  await this.checkPublicAddressMatch(issuer, unsignedToken);
+
+        if (!signedChallenge) {
+            throw new Error("Address does not match")
+        }
+
+        return {issuer: issuer, proof: signedChallenge};
     }
 
-    async authenticate(config: AuthenticateOffChainInterface) {
+    async authenticateOffChain(authRequest: AuthenticateInterface){
 
-        const { issuer, unsignedToken } = config;
+        const { issuer, unsignedToken } = authRequest;
         const tokensOrigin = this.tokenLookup[issuer].tokenOrigin;
 
-        requiredParams((issuer && unsignedToken), { status: false, useEthKey: null, proof: null });
+        const addressMatch = await this.checkPublicAddressMatch(issuer, unsignedToken);
+
+        if (!addressMatch) {
+            throw new Error("Address does not match")
+        }
+
+        return this.messaging.sendMessage({
+            issuer: issuer,
+            action: MessageAction.GET_PROOF,
+            origin: tokensOrigin,
+            token: unsignedToken,
+            timeout: 0 // Don't time out on this event as it needs active input from the user
+        });
+    }
+
+    async authenticate(authRequest: AuthenticateInterface) {
+
+        const { issuer, unsignedToken } = authRequest;
+        requiredParams((issuer && unsignedToken), "issuer and signed token required.");
+
+        if (!this.tokenLookup[issuer])
+            throw new Error("Provided issuer was not found.");
 
         // TODO: How to handle error display in passive negotiation? Use optional UI or emit errors to listener?
-        if (this.popup)
-            this.popup.showLoader(
-                "<h4>Authenticating...</h4>",
-                "<small>You may need to sign a new challenge in your wallet</small>"
-            );
+        let timer;
+
+        if (this.popup) {
+            timer = setTimeout(() => {
+                this.popup.showLoader(
+                    "<h4>Authenticating...</h4>",
+                    "<small>You may need to sign a new challenge in your wallet</small>"
+                );
+                this.popup.openOverlay(true);
+            }, 1000);
+        }
 
         try {
-            const addressMatch = await this.checkPublicAddressMatch(issuer, unsignedToken);
 
-            // e.g. create warning notification inside overlay.
-            if (!addressMatch) {
-                if (this.popup)
-                    this.popup.showError("Address does not match.");
-                return;
+            let data;
+
+            if (this.tokenLookup[issuer].onChain){
+                data = await this.authenticateOnChain(authRequest);
+            } else {
+                data = await this.authenticateOffChain(authRequest);
             }
 
-            let data = await this.messaging.sendMessage({
-                issuer: issuer,
-                action: MessageAction.GET_PROOF,
-                origin: tokensOrigin,
-                token: unsignedToken,
-                timeout: 0 // Don't time out on this event as it needs active input from the user
-            });
-
             this.eventSender.emitProofToClient(data.proof, data.issuer);
+
         } catch (err) {
             console.log(err);
             if (this.popup)
-                this.popup.showError(err);
+                this.popup.showError(err.message);
+            throw new Error(err);
             return;
         }
 
-        if (this.popup)
+        if (this.popup) {
+            if (timer) clearTimeout(timer);
             this.popup.dismissLoader();
+            this.popup.closeOverlay();
+        }
     }
 
     async checkPublicAddressMatch(issuer: string, unsignedToken: any) {
 
-        const { unEndPoint, onChain } = tokenLookup[issuer];
+        let config:any = tokenLookup[issuer];
 
-        if (onChain === true || !unsignedToken || !unEndPoint) return { status: false, useEthKey: null, proof: null };
+        // TODO: Remove once fully implemented for on-chain tokens
+        if (!config.unEndPoint) {
+            config = {unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket", ethKeyitemStorageKey: "dcEthKeys"};
+        }
 
-        try {
+        if (!unsignedToken) return { status: false, useEthKey: null, proof: null };
 
-            let useEthKey = await getChallengeSigned(tokenLookup[issuer], this.web3WalletProvider);
+        //try {
 
-            const attestedAddress = await validateUseEthKey(unEndPoint, useEthKey);
+            let useEthKey = await getChallengeSigned(config, this.web3WalletProvider);
+
+            const attestedAddress = await validateUseEthKey(config.unEndPoint, useEthKey);
 
             const walletAddress = await connectMetamaskAndGetAddress();
 
             if (walletAddress.toLowerCase() !== attestedAddress.toLowerCase()) throw new Error('useEthKey validation failed.');
 
-            return true;
+            return useEthKey;
 
-        } catch (e) {
+        //} catch (e) {
 
-            requiredParams(null, "Could not authenticate token");
+            //requiredParams(null, "Could not authenticate token: " + e.message);
 
-        }
+        //}
 
     }
 

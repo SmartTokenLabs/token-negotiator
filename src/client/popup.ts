@@ -82,13 +82,23 @@ export class Popup {
     }
 
     closeOverlay() {
-                        
+
         this.popupContainer.classList.remove("open");
 
         window.KeyshapeJS.timelines()[0].time(0);
 
         window.KeyshapeJS.globalPause();
+    }
 
+    openOverlay(isSystem:boolean = false){
+
+        this.overlayShouldClose = !isSystem;
+
+        this.popupContainer.classList.add("open");
+
+        window.KeyshapeJS.timelines()[0].time(0);
+
+        window.KeyshapeJS.globalPlay();
     }
 
     togglePopup() {
@@ -98,21 +108,9 @@ export class Popup {
         let openOverlay = this.popupContainer.classList.toggle("open");
 
         if (openOverlay) {
-
-            this.popupContainer.classList.add("open");
-
-            window.KeyshapeJS.timelines()[0].time(0);
-
-            window.KeyshapeJS.globalPlay();
-
+            this.openOverlay();
         } else {
-
-            this.popupContainer.classList.remove("open");
-
-            window.KeyshapeJS.timelines()[0].time(0);
-
-            window.KeyshapeJS.globalPause();
-
+            this.closeOverlay();
         }
     }
 

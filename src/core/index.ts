@@ -223,7 +223,7 @@ export const getChallengeSigned = async (tokenIssuer: any, web3WalletProvider:an
 
   let ethKeys = (storageEthKeys && storageEthKeys.length) ? JSON.parse(storageEthKeys) : {};
 
-  try {
+  //try {
 
     let address = web3WalletProvider.getConnectedWalletData()[0].address;
 
@@ -268,11 +268,11 @@ export const getChallengeSigned = async (tokenIssuer: any, web3WalletProvider:an
 
     return useEthKey;
 
-  } catch (e: any) {
+  //} catch (e: any) {
 
-    throw new Error(e);
+    //throw new Error(e);
 
-  }
+  //}
 }
 
 export const connectMetamaskAndGetAddress = async () => {
