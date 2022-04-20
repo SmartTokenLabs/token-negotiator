@@ -85,7 +85,7 @@ export const readTokens = (itemStorageKey: any) => {
 
 export const decodeTokens = (rawTokens: any, tokenParser: any, unsignedTokenDataName: string) => {
 
-  var x = JSON.parse(rawTokens);
+  const x = JSON.parse(rawTokens);
 
   if (x.length) {
 
@@ -217,7 +217,7 @@ export const getUnpredictableNumber = async (endPoint: string) => {
 
 }
 
-export const getChallengeSigned = async (tokenIssuer: any, web3WalletProvider:any) => {
+export const getChallengeSigned = async (tokenIssuer: any, web3WalletProvider: any) => {
 
   const storageEthKeys = localStorage.getItem(tokenIssuer.ethKeyitemStorageKey);
 
@@ -287,7 +287,7 @@ export const connectMetamaskAndGetAddress = async () => {
 
 }
 
-export const signNewChallenge = async (unEndPoint: string, web3WalletProvider:any) => {
+export const signNewChallenge = async (unEndPoint: string, web3WalletProvider: any) => {
 
   console.log('sign new challenge');
 
@@ -316,9 +316,9 @@ export const signNewChallenge = async (unEndPoint: string, web3WalletProvider:an
 export const signMessageWithBrowserWallet = async (message: any, web3WalletProvider: any) => {
 
   // For testing paste this into the console.
-  // window.negotiator.authenticate({ 
-  //   issuer: "devcon", 
-  //   unsignedToken: { 
+  // window.negotiator.authenticate({
+  //   issuer: "devcon",
+  //   unsignedToken: {
   //     devconId: "6", ticketClass: 0, ticketId: "417541561854"
   //   }});
 
@@ -328,7 +328,7 @@ export const signMessageWithBrowserWallet = async (message: any, web3WalletProvi
 
 export const rawTokenCheck = async (unsignedToken: any, tokenIssuer: any) => {
 
-  // currently meta mask is needed to move beyond this point. 
+  // currently meta mask is needed to move beyond this point.
   // however the err msg given is not obvious that this is the issue.
   requiredParams(window.ethereum, 'Please install metamask to continue.');
 
@@ -384,10 +384,10 @@ export const getRawToken = (unsignedToken: any, tokenIssuer: any) => {
 
             let decodedTokenData = decodedToken[tokenIssuer.unsignedTokenDataName];
 
-            if (compareObjects(decodedTokenData, unsignedToken)){
+            if (compareObjects(decodedTokenData, unsignedToken)) {
 
               token = tokenData;
-            } 
+            }
 
           }
 

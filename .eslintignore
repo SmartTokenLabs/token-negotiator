@@ -1,0 +1,4 @@
+*.config.js
+dist
+node_modules
+token-negotiator*dist
