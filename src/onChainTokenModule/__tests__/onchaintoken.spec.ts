@@ -10,8 +10,8 @@ describe('On-chain token module', () => {
 
   test('getOnChainAPISupportBool should be false for unsupported APIs and chains', () => {
     const token = new OnChainTokenModule();
-    expect(token.getOnChainAPISupportBool('nosuchapi', 'eth')).toBe(false); // throws exception
-    expect(token.getOnChainAPISupportBool('opensea', 'nosuchchain')).toBe(false); // returns true
+    expect(token.getOnChainAPISupportBool('nosuchapi', 'eth')).toBe(false);
+    expect(token.getOnChainAPISupportBool('opensea', 'nosuchchain')).toBe(false);
   });
 
 });
