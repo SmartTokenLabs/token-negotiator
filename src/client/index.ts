@@ -97,7 +97,7 @@ export class Client {
         this.web3WalletProvider = new Web3WalletProvider();
 
         // on chain token manager module
-        this.onChainTokenModule = new OnChainTokenModule();
+        this.onChainTokenModule = new OnChainTokenModule(config.onChainModuleKeys);
 
         this.messaging = new Messaging();
 
@@ -111,8 +111,9 @@ export class Client {
 
         issuers.forEach((issuer: any) => {
 
-            // create key with address and chain for easy reference
             let issuerKey = issuer.collectionID;
+
+            issuerKey = issuerKey.replace(/\s+/g, '-').toLowerCase();
 
             // Populate the token lookup store with initial data.
             this.updateTokenLookupStore(issuerKey, issuer);
@@ -137,9 +138,9 @@ export class Client {
 
                 // off chain token attestations 
 
-                this.offChainTokens.tokenKeys.push(issuer.collectionID);
+                this.offChainTokens.tokenKeys.push(issuerKey);
 
-                this.offChainTokens[issuer.collectionID] = { tokens: [] };
+                this.offChainTokens[issuerKey] = { tokens: [] };
 
             }
 
