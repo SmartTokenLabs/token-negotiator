@@ -294,7 +294,7 @@ Key values applied to all tokens.
   filter: {
     'devconId': 6,
     'ticketId': 417541561854,
-    'class': 'gold'
+    'class': '7'
   }
 
 ````
