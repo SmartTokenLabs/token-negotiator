@@ -52,14 +52,12 @@ export class OnChainTokenModule {
 
     }
 
-    getOnChainAPISupportBool(config:any, apiName: string, chain: string) {
+    getOnChainAPISupportBool(config: any, apiName: string, chain: string) {
 
         // @ts-ignore
         return config[apiName].chainSupport.indexOf(chain) >= -1;
 
     }
-
-
 
     /**
      * @function getInitialContractAddressMetaData
@@ -126,32 +124,25 @@ export class OnChainTokenModule {
 
         if (this.getOnChainAPISupportBool(this.onChainConfig, 'opensea', chain) === false) return;
 
+        let options = { method: 'GET', headers: { Accept: 'application/json', 'X-API-KEY': this.onChainConfig.opensea.key } };
+
+        let url = null;
+
         if (chain.toLocaleLowerCase() === "rinkeby") {
 
-
-            let options = { method: 'GET', headers: { Accept: 'application/json', 'X-API-KEY': this.onChainConfig.opensea.key } };
-
-            return fetch(`https://rinkeby-api.opensea.io/api/v1/assets?asset_contract_address=${contractAddress}&collection=${openSeaSlug}&order_direction=desc&offset=0&limit=20`, options)
-                .then(response => response.json())
-                .then(response => {
-                    return {
-                        chain,
-                        contractAddress,
-                        image: response.assets[0].collection.image_url,
-                        title: response.assets[0].collection.name
-                    };
-                })
-                .catch((error:any) => {
-                    console.log('failed to collect contract data from OpenSea API', error);
-                });
+            url = `https://rinkeby-api.opensea.io/api/v1/assets?asset_contract_address=${contractAddress}&collection=${openSeaSlug}&order_direction=desc&offset=0&limit=20`;
 
         }
 
         if (chain.toLocaleLowerCase() === "mainnet" || chain.toLocaleLowerCase() === "eth") {
 
-            let options = { method: 'GET', headers: { Accept: 'application/json', 'X-API-KEY': this.onChainConfig.opensea.key } };
+            url = `https://api.opensea.io/api/v1/assets?asset_contract_address=${contractAddress}&collection=${openSeaSlug}&order_direction=desc&offset=0&limit=20`;
 
-            return fetch(`https://api.opensea.io/api/v1/assets?asset_contract_address=${contractAddress}&collection=${openSeaSlug}&order_direction=desc&offset=0&limit=20`, options)
+        }
+
+        if(url) {
+
+            return fetch(url, options)
                 .then(response => response.json())
                 .then(response => {
                     return {
@@ -161,11 +152,11 @@ export class OnChainTokenModule {
                         title: response.assets[0].collection.name
                     };
                 })
-                .catch((error:any) => {
+                .catch((error: any) => {
                     console.log('failed to collect contract data from OpenSea API', error);
                 });
 
-        }
+            }
 
         return;
 
@@ -196,7 +187,7 @@ export class OnChainTokenModule {
                     title: response.result[0].name
                 };
             })
-            .catch((error:any) => {
+            .catch((error: any) => {
                 console.log('failed to collect contract data from Moralis API', error);
             });
 
@@ -233,7 +224,7 @@ export class OnChainTokenModule {
                         title: result.nfts[0].title
                     });
                 })
-                .catch((error:any) => {
+                .catch((error: any) => {
                     console.log('failed to collect contract data from Alchemy API', error);
                 });
 
