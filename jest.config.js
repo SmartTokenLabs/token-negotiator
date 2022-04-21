@@ -19,7 +19,7 @@ module.exports = {
   coverageDirectory: '<rootDir>/reports/coverage/',
   coverageThreshold: {
     global: {
-      lines: 29
+      lines: 30
     }
   },
   testPathIgnorePatterns: [
