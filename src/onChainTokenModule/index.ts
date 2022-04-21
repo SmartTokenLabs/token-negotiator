@@ -43,8 +43,8 @@ export class OnChainTokenModule {
         // TODO add support XDAI.
         // https://www.xdaichain.com/for-developers/developer-resources/ankr-api
 
-        return apiBlockchainSupport[apiName].indexOf(chain) >= -1;
-
+        if (!(apiName in apiBlockchainSupport)) return false;
+        return apiBlockchainSupport[apiName].indexOf(chain) >= 0;
     }
 
     /**
