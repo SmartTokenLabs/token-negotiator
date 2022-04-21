@@ -44,7 +44,7 @@ export class OnChainTokenModule {
         // https://www.xdaichain.com/for-developers/developer-resources/ankr-api
 
         if (!(apiName in apiBlockchainSupport)) return false;
-        return apiBlockchainSupport[apiName].indexOf(chain) >= 0;
+        return apiBlockchainSupport[apiName].indexOf(chain) >= -1;
     }
 
     /**
