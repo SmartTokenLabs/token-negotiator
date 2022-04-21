@@ -1,58 +1,65 @@
-import {requiredParams} from './../utils/index';
+import { requiredParams, logger } from './../utils/index';
 
 export class OnChainTokenModule {
-    
-    onChainModuleKeys: { moralis: any; alchemy: any; opensea: any; };
+
+    onChainConfig: { moralis: any; alchemy: any; opensea: any; poap: any };
 
     constructor(onChainModuleKeys: any) {
-        this.onChainModuleKeys = {
-            moralis: onChainModuleKeys?.moralis ?? 'WMrMeZLy2pajBLmwf1AUccxFzQy98OEMeDQPaTK8BcTI8XK2f9WZrVpjGYQcujSF',
-            alchemy: onChainModuleKeys?.alchemy ?? 'CWaS4PkRjFi3dAzrRD6lsrQ7vAyPYsnU', 
-            opensea: onChainModuleKeys?.openSea ?? '99687116fafa4daebc766eeedccce201'
+
+        this.onChainConfig = {
+            moralis: {
+                key: onChainModuleKeys?.moralis ?? 'WMrMeZLy2pajBLmwf1AUccxFzQy98OEMeDQPaTK8BcTI8XK2f9WZrVpjGYQcujSF',
+                chainSupport: [
+                    'eth',
+                    'mainnet',
+                    'rinkeby',
+                    'ropsten',
+                    'goerli',
+                    'kovan',
+                    'bsc',
+                    'polygon',
+                    'mumbai',
+                    'avalanche',
+                    'fantom'
+                ]
+            },
+            alchemy: {
+                key: onChainModuleKeys?.alchemy ?? 'CWaS4PkRjFi3dAzrRD6lsrQ7vAyPYsnU',
+                chainSupport: [
+                    'eth',
+                    'mainnet',
+                    'rinkeby',
+                    'arbitrum',
+                    'polygon',
+                    'optimism'
+                ]
+            },
+            opensea: {
+                key: onChainModuleKeys?.opensea ?? '99687116fafa4daebc766eeedccce201',
+                chainSupport: [
+                    'eth',
+                    'mainnet',
+                    'rinkeby'
+                ]
+            },
+            poap: {
+                key: "",
+                chainSupport: [
+                    'xdai'
+                ]
+            }
         };
+
     }
 
-    getOnChainAPISupportBool (apiName:string, chain:string) {
-
-        const apiBlockchainSupport = {
-            opensea: [
-                'eth',
-                'mainnet', 
-                'rinkeby'
-            ],
-            alchemy: [
-                'eth',
-                'mainnet', 
-                'rinkeby', 
-                'arbitrum', 
-                'polygon', 
-                'optimism'
-            ],
-            moralis: [
-                'eth',
-                'mainnet', 
-                'rinkeby',
-                'ropsten',
-                'goerli',
-                'kovan',
-                'bsc',
-                'polygon',
-                'mumbai',
-                'avalanche',
-                'fantom'
-            ],
-            poap: [
-                'xdai'
-            ]
-        }
-        
-        // TODO add support XDAI.
-        // https://www.xdaichain.com/for-developers/developer-resources/ankr-api
+    getOnChainAPISupportBool(config:any, apiName: string, chain: string) {
 
         // @ts-ignore
-        return apiBlockchainSupport[apiName].indexOf(chain) >= -1;
+        return config[apiName].chainSupport.indexOf(chain) >= -1;
 
     }
+
+
 
     /**
      * @function getInitialContractAddressMetaData
@@ -67,7 +74,7 @@ export class OnChainTokenModule {
                 title: "OpenSea Creature Sale"
         }
     */
-    async getInitialContractAddressMetaData (issuer:any) {
+    async getInitialContractAddressMetaData(issuer: any) {
 
         const { contract, chain, openSeaSlug } = issuer;
 
@@ -75,7 +82,7 @@ export class OnChainTokenModule {
 
         // POAP
         // TODO: move this into a registry like tokenLookup
-        if (contract.toLowerCase() == "0x22c1f6050e56d2876009903609a2cc3fef83b415"){
+        if (contract.toLowerCase() == "0x22c1f6050e56d2876009903609a2cc3fef83b415") {
             return {
                 chain,
                 contract,
@@ -90,12 +97,12 @@ export class OnChainTokenModule {
         }
 
         // if there is no slug or no data try moralis
-        if(!collectionData){
+        if (!collectionData) {
             collectionData = await this.getContractDataMoralis(contract, chain);
         }
 
         // // if there is still no data try Alchemy
-        if(openSeaSlug === undefined && !collectionData) {
+        if (openSeaSlug === undefined && !collectionData) {
             collectionData = await this.getContractDataAlchemy(contract, chain);
         }
 
@@ -115,88 +122,89 @@ export class OnChainTokenModule {
                 title: "OpenSea Creature Sale"
         }
     */
-    async getContractDataOpenSea(contractAddress:string, chain:string, openSeaSlug:string) {
+    async getContractDataOpenSea(contractAddress: string, chain: string, openSeaSlug: string) {
 
-        if(this.getOnChainAPISupportBool('opensea', chain) === false) return;
-        
-        if(chain.toLocaleLowerCase() === "rinkeby") {
+        if (this.getOnChainAPISupportBool(this.onChainConfig, 'opensea', chain) === false) return;
 
-            let options = {method: 'GET', headers: {Accept: 'application/json', 'X-API-KEY': this.onChainModuleKeys.opensea }};
+        if (chain.toLocaleLowerCase() === "rinkeby") {
+
+
+            let options = { method: 'GET', headers: { Accept: 'application/json', 'X-API-KEY': this.onChainConfig.opensea.key } };
 
             return fetch(`https://rinkeby-api.opensea.io/api/v1/assets?asset_contract_address=${contractAddress}&collection=${openSeaSlug}&order_direction=desc&offset=0&limit=20`, options)
-            .then(response => response.json())
-            .then(response => {
-                return  {
-                    chain,
-                    contractAddress,
-                    image: response.assets[0].collection.image_url,
-                    title: response.assets[0].collection.name
-                };
-            })
-            .catch(err => {
-                console.log('failed to collect contract data from OpenSea API');
-            });
-        
-        } 
-        
-        if(chain.toLocaleLowerCase() === "mainnet" || chain.toLocaleLowerCase() === "eth") {
+                .then(response => response.json())
+                .then(response => {
+                    return {
+                        chain,
+                        contractAddress,
+                        image: response.assets[0].collection.image_url,
+                        title: response.assets[0].collection.name
+                    };
+                })
+                .catch(err => {
+                    logger('failed to collect contract data from OpenSea API');
+                });
 
-            let options = {method: 'GET', headers: {Accept: 'application/json', 'X-API-KEY': this.onChainModuleKeys.opensea }};
+        }
+
+        if (chain.toLocaleLowerCase() === "mainnet" || chain.toLocaleLowerCase() === "eth") {
+
+            let options = { method: 'GET', headers: { Accept: 'application/json', 'X-API-KEY': this.onChainConfig.opensea.key } };
 
             return fetch(`https://api.opensea.io/api/v1/assets?asset_contract_address=${contractAddress}&collection=${openSeaSlug}&order_direction=desc&offset=0&limit=20`, options)
-            .then(response => response.json())
-            .then(response => {
-                return  {
-                    chain,
-                    contractAddress,
-                    image: response.assets[0].collection.image_url,
-                    title: response.assets[0].collection.name
-                };
-            })
-            .catch(err => {
-                console.log('failed to collect contract data from OpenSea API');
-            });
-        
-        } 
+                .then(response => response.json())
+                .then(response => {
+                    return {
+                        chain,
+                        contractAddress,
+                        image: response.assets[0].collection.image_url,
+                        title: response.assets[0].collection.name
+                    };
+                })
+                .catch(err => {
+                    logger('failed to collect contract data from OpenSea API');
+                });
+
+        }
 
         return;
 
     }
-    
-    async getContractDataMoralis(contractAddress:string, chain:string) {
 
-        if(this.getOnChainAPISupportBool('moralis', chain) === false) return;
+    async getContractDataMoralis(contractAddress: string, chain: string) {
 
-        const options = { 
+        if (this.getOnChainAPISupportBool(this.onChainConfig, 'moralis', chain) === false) return;
+
+        const options = {
             method: 'GET',
             headers: {
-                'x-api-key': this.onChainModuleKeys.moralis
+                'x-api-key': this.onChainConfig.moralis.key
             }
         };
 
         return fetch(`https://deep-index.moralis.io/api/v2/nft/${contractAddress}?chain=${chain}&format=decimal&limit=1`, options)
-        .then(response => response.json())
-        .then(response => {
+            .then(response => response.json())
+            .then(response => {
 
-            const image = JSON.parse(response.result[0].metadata).image;
+                const image = JSON.parse(response.result[0].metadata).image;
 
-            return {
-                api: 'moralis',
-                chain,
-                contractAddress,
-                image,
-                title: response.result[0].name
-            };
-        })
-        .catch(error => {
-            console.log('failed to collect contract data from Moralis API');
-        });
-        
+                return {
+                    api: 'moralis',
+                    chain,
+                    contractAddress,
+                    image,
+                    title: response.result[0].name
+                };
+            })
+            .catch(error => {
+                logger('failed to collect contract data from Moralis API');
+            });
+
     }
-    
-    async getContractDataAlchemy(contractAddress:string, chain:string) {
 
-        if(this.getOnChainAPISupportBool('alchemy', chain) === false) return;
+    async getContractDataAlchemy(contractAddress: string, chain: string) {
+
+        if (this.getOnChainAPISupportBool(this.onChainConfig, 'alchemy', chain) === false) return;
 
         var requestOptions = {
             method: 'GET',
@@ -205,51 +213,50 @@ export class OnChainTokenModule {
             }
         };
 
-        const apiKey = this.onChainModuleKeys.alchemy;
-        const baseURL = `https://eth-mainnet.alchemyapi.io/v2/${apiKey}/getNFTsForCollection`;
+        const baseURL = `https://eth-mainnet.alchemyapi.io/v2/${this.onChainConfig.alchemy.key}/getNFTsForCollection`;
         const tokenId = "0";
         const withMetadata = "true";
         const fetchURL = `${baseURL}?contractAddress=${contractAddress}&cursorKey=${tokenId}&withMetadata=${withMetadata}`;
-    
+
         const promise = new Promise((resolve, reject) => {
             fetch(fetchURL, requestOptions)
-            .then(response => response.json())
-            .then((result:any) => {
-                
-                if(!result.nfts.length) resolve([]);
+                .then(response => response.json())
+                .then((result: any) => {
 
-                resolve({
-                    api: 'alchemy',
-                    chain,
-                    contractAddress,
-                    image: result.nfts[0].metadata.image,
-                    title: result.nfts[0].title
+                    if (!result.nfts.length) resolve([]);
+
+                    resolve({
+                        api: 'alchemy',
+                        chain,
+                        contractAddress,
+                        image: result.nfts[0].metadata.image,
+                        title: result.nfts[0].title
+                    });
+                })
+                .catch(error => {
+                    logger('failed to collect contract data from Alchemy API');
                 });
-            })
-            .catch(error => {
-                console.log('failed to collect contract data from Alchemy API');
-            });
-            
+
         });
         return promise;
     }
 
-    async connectOnChainToken (issuer:string, owner:string) {
+    async connectOnChainToken(issuer: string, owner: string) {
 
         // @ts-ignore
         const { contract, chain, openSeaSlug } = issuer;
 
         let tokens = [];
 
-        if (contract.toLowerCase() == "0x22c1f6050e56d2876009903609a2cc3fef83b415"){
+        if (contract.toLowerCase() == "0x22c1f6050e56d2876009903609a2cc3fef83b415") {
             return this.getTokensPOAP(owner);
         }
 
-        if(openSeaSlug !== undefined) tokens = await this.getTokensOpenSea(contract, chain, owner, openSeaSlug);
+        if (openSeaSlug !== undefined) tokens = await this.getTokensOpenSea(contract, chain, owner, openSeaSlug);
 
-        if(!tokens.length) tokens = await this.getTokensMoralis(contract, chain, owner);
+        if (!tokens.length) tokens = await this.getTokensMoralis(contract, chain, owner);
 
-        if(openSeaSlug === undefined && !tokens.length) {
+        if (openSeaSlug === undefined && !tokens.length) {
             // @ts-ignore
             tokens = await this.getTokensAlchemy(contract, chain, owner);
         }
@@ -258,111 +265,109 @@ export class OnChainTokenModule {
 
     }
 
-    async getTokensOpenSea(address:string, chain:string, owner:string, openSeaSlug:string, offset=0, limit=20) {
+    async getTokensOpenSea(address: string, chain: string, owner: string, openSeaSlug: string, offset = 0, limit = 20) {
 
-        if(this.getOnChainAPISupportBool('opensea', chain) === false) return;
+        if (this.getOnChainAPISupportBool(this.onChainConfig, 'opensea', chain) === false) return;
 
         requiredParams((chain && address && owner), 'cannot search for tokens, missing params');
 
-        if(chain === 'rinkeby') {
+        let options = { method: 'GET', headers: { Accept: 'application/json', 'X-API-KEY': this.onChainConfig.opensea.key } };
 
-            let options = {method: 'GET', headers: {Accept: 'application/json', 'X-API-KEY': this.onChainModuleKeys.opensea}};
-            
+        if (chain === 'rinkeby') {
+
             return fetch(`https://testnets-api.opensea.io/api/v1/assets?owner=${owner}&collection=${openSeaSlug}&order_direction=desc&offset=0&limit=20`, options)
-            .then(response => response.json())
-            .then(response => {
+                .then(response => response.json())
+                .then(response => {
 
-                return response.assets.map((item:any) => {
-                    const image = item.image_url ? item.image_url : '';
-                    const title = item.name ? item.name : '';
-                    return {
-                        api: 'opensea',
-                        title: title,
-                        image: image,
-                        data: item
-                    }
+                    return response.assets.map((item: any) => {
+                        const image = item.image_url ? item.image_url : '';
+                        const title = item.name ? item.name : '';
+                        return {
+                            api: 'opensea',
+                            title: title,
+                            image: image,
+                            data: item
+                        }
+                    });
+                })
+                .catch(error => {
+                    logger('failed to collect tokens from OpenSea API');
                 });
-            })
-            .catch(error => {
-                console.log('failed to collect tokens from OpenSea API');
-            });
 
         }
-        
-        if(chain === 'mainnet' || chain === 'eth') {
 
-            let options = { method: 'GET', headers: { Accept: 'application/json', 'X-API-KEY': this.onChainModuleKeys.opensea} };
-            
+        if (chain === 'mainnet' || chain === 'eth') {
+
             return fetch(`https://api.opensea.io/api/v1/assets?owner=${owner}&collection=${openSeaSlug}&order_direction=desc&offset=0&limit=20`, options)
-            .then(response => response.json())
-            .then(response => {
+                .then(response => response.json())
+                .then(response => {
 
-                return response.assets.map((item:any) => {
-                    const image = item.image_url ? item.image_url : '';
-                    const title = item.name ? item.name : '';
-                    return {
-                        api: 'opensea',
-                        title: title,
-                        image: image,
-                        data: item
-                    }
+                    return response.assets.map((item: any) => {
+                        const image = item.image_url ? item.image_url : '';
+                        const title = item.name ? item.name : '';
+                        return {
+                            api: 'opensea',
+                            title: title,
+                            image: image,
+                            data: item
+                        }
+                    });
+                })
+                .catch(error => {
+                    logger('failed to collect tokens from OpenSea API');
                 });
-            })
-            .catch(error => {
-                console.log('failed to collect tokens from OpenSea API');
-            });
         }
 
         return;
     }
-    
-    async getTokensMoralis(address:string, chain:string, owner:string, offset=0, limit=20) {
 
-        if(this.getOnChainAPISupportBool('moralis', chain) === false) return;
+    async getTokensMoralis(address: string, chain: string, owner: string, offset = 0, limit = 20) {
+
+        if (this.getOnChainAPISupportBool(this.onChainConfig, 'moralis', chain) === false) return;
 
         requiredParams((chain && address && owner), 'cannot search for tokens, missing params');
 
-        let _chain:string = chain;
+        let _chain: string = chain;
 
         if (chain === 'mainnet') _chain = 'eth';
 
         const options = {
             method: 'GET',
             headers: {
-                'x-api-key': this.onChainModuleKeys.moralis
+                'x-api-key': this.onChainConfig.moralis.key
             }
         };
 
         return fetch(`https://deep-index.moralis.io/api/v2/${owner}/nft/${address}?chain=${_chain}&format=decimal`, options)
-        .then(response => response.json())
-        .then((response:any) => {
+            .then(response => response.json())
+            .then((response: any) => {
 
-            return response.result.map((item:any) => {
-                
-                const parsedMetaObj = JSON.parse(item.metadata);
-                const image = parsedMetaObj.image ? parsedMetaObj.image : '';
-                const title = parsedMetaObj.name ? parsedMetaObj.name : '';
+                return response.result.map((item: any) => {
 
-                return {
-                    api: 'moralis',
-                    title: title,
-                    image: image,
-                    data: parsedMetaObj
-                }
+                    const parsedMetaObj = JSON.parse(item.metadata);
+                    const image = parsedMetaObj.image ? parsedMetaObj.image : '';
+                    const title = parsedMetaObj.name ? parsedMetaObj.name : '';
 
+                    return {
+                        api: 'moralis',
+                        title: title,
+                        image: image,
+                        data: parsedMetaObj
+                    }
+
+                });
+
+            })
+            .catch(error => {
+                logger('failed to collect tokens from Moralis API');
             });
 
-        })
-        .catch(error => {
-            console.log('failed to collect tokens from Moralis API');
-        });
-        
     }
 
-    async getTokensAlchemy (address:string, chain:string, owner:string) {
+    async getTokensAlchemy(address: string, chain: string, owner: string) {
 
-        if(this.getOnChainAPISupportBool('alchemy', chain) === false) return;
-        
+        if (this.getOnChainAPISupportBool(this.onChainConfig, 'alchemy', chain) === false) return;
+
         const promise = new Promise((resolve, reject) => {
 
             var requestOptions = {
@@ -371,33 +376,32 @@ export class OnChainTokenModule {
                     redirect: 'follow'
                 }
             };
-            
-            const apiKey = this.onChainModuleKeys.alchemy;
-            const baseURL = `https://eth-mainnet.alchemyapi.io/v2/${apiKey}/getNFTs`;
+
+            const baseURL = `https://eth-mainnet.alchemyapi.io/v2/${this.onChainConfig.alchemy.key}/getNFTs`;
             const fetchURL = `${baseURL}?owner=${owner}&contractAddresses[]=${address}`;
-            
+
             fetch(fetchURL, requestOptions)
-            .then(response => response.json())
-            .then(result => {
-                const tokens = result.ownedNfts.map((item:any) => {
-                    return {
-                        api: 'alchemy',
-                        title: item.title,
-                        image: item.metadata.image,
-                        data: item
-                    }
+                .then(response => response.json())
+                .then(result => {
+                    const tokens = result.ownedNfts.map((item: any) => {
+                        return {
+                            api: 'alchemy',
+                            title: item.title,
+                            image: item.metadata.image,
+                            data: item
+                        }
+                    });
+                    resolve(tokens);
+                })
+                .catch(error => {
+                    logger('failed to collect tokens from Alchemy API');
                 });
-                resolve(tokens);
-            })
-            .catch(error => {
-                console.log('failed to collect tokens from Alchemy API');
-            });
         });
 
         return promise;
     }
 
-    async getTokensPOAP(owner:string){
+    async getTokensPOAP(owner: string) {
 
         // Uncomment to test a really large POAP collection - this guy gets around
         //let url = `https://api.poap.xyz/actions/scan/0x4d2803f468b736b62fe9eec992c8f4c41be4cb15`;
@@ -411,7 +415,7 @@ export class OnChainTokenModule {
 
         let tokens = [];
 
-        for (let token of data){
+        for (let token of data) {
 
             tokens.push({
                 title: token.event.name,
@@ -431,7 +435,7 @@ export class OnChainTokenModule {
 
     // fetch('https://testnets-api.opensea.io/api/v1/asset_contract/0x586707c50670c322697e00275e3dc72543d1018f', options)
     // .then(response => response.json())
-    // .then(response => console.log(response))
+    // .then(response => logger(response))
     // .catch(err => console.error(err));
 
     // {

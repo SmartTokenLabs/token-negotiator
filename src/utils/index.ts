@@ -77,3 +77,4 @@ export const removePostMessageListener = (listener:any) => {
     window.detachEvent("onmessage", listener);
   }
 }
+
