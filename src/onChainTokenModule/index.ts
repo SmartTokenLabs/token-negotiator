@@ -1,4 +1,4 @@
-import { requiredParams, logger } from './../utils/index';
+import { requiredParams } from './../utils/index';
 
 export class OnChainTokenModule {
 
@@ -141,8 +141,8 @@ export class OnChainTokenModule {
                         title: response.assets[0].collection.name
                     };
                 })
-                .catch(err => {
-                    logger('failed to collect contract data from OpenSea API');
+                .catch((error:any) => {
+                    console.log('failed to collect contract data from OpenSea API', error);
                 });
 
         }
@@ -161,8 +161,8 @@ export class OnChainTokenModule {
                         title: response.assets[0].collection.name
                     };
                 })
-                .catch(err => {
-                    logger('failed to collect contract data from OpenSea API');
+                .catch((error:any) => {
+                    console.log('failed to collect contract data from OpenSea API', error);
                 });
 
         }
@@ -196,8 +196,8 @@ export class OnChainTokenModule {
                     title: response.result[0].name
                 };
             })
-            .catch(error => {
-                logger('failed to collect contract data from Moralis API');
+            .catch((error:any) => {
+                console.log('failed to collect contract data from Moralis API', error);
             });
 
     }
@@ -233,8 +233,8 @@ export class OnChainTokenModule {
                         title: result.nfts[0].title
                     });
                 })
-                .catch(error => {
-                    logger('failed to collect contract data from Alchemy API');
+                .catch((error:any) => {
+                    console.log('failed to collect contract data from Alchemy API', error);
                 });
 
         });
@@ -291,7 +291,7 @@ export class OnChainTokenModule {
                     });
                 })
                 .catch(error => {
-                    logger('failed to collect tokens from OpenSea API');
+                    console.log('failed to collect tokens from OpenSea API', error);
                 });
 
         }
@@ -314,7 +314,7 @@ export class OnChainTokenModule {
                     });
                 })
                 .catch(error => {
-                    logger('failed to collect tokens from OpenSea API');
+                    console.log('failed to collect tokens from OpenSea API', error);
                 });
         }
 
@@ -359,7 +359,7 @@ export class OnChainTokenModule {
 
             })
             .catch(error => {
-                logger('failed to collect tokens from Moralis API');
+                console.log('failed to collect tokens from Moralis API', error);
             });
 
     }
@@ -394,7 +394,7 @@ export class OnChainTokenModule {
                     resolve(tokens);
                 })
                 .catch(error => {
-                    logger('failed to collect tokens from Alchemy API');
+                    console.log('failed to collect tokens from Alchemy API', error);
                 });
         });
 
