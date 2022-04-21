@@ -126,7 +126,7 @@ export class OnChainTokenModule {
 
         let options = { method: 'GET', headers: { Accept: 'application/json', 'X-API-KEY': this.onChainConfig.opensea.key } };
 
-        let url = null;
+        let url = undefined;
 
         if (chain.toLocaleLowerCase() === "rinkeby") {
 
@@ -140,7 +140,7 @@ export class OnChainTokenModule {
 
         }
 
-        if(url) {
+        if (url) {
 
             return fetch(url, options)
                 .then(response => response.json())
@@ -156,7 +156,7 @@ export class OnChainTokenModule {
                     console.log('failed to collect contract data from OpenSea API', error);
                 });
 
-            }
+        }
 
         return;
 
@@ -263,31 +263,21 @@ export class OnChainTokenModule {
         requiredParams((chain && address && owner), 'cannot search for tokens, missing params');
 
         let options = { method: 'GET', headers: { Accept: 'application/json', 'X-API-KEY': this.onChainConfig.opensea.key } };
+        let url = undefined;
 
         if (chain === 'rinkeby') {
 
-            return fetch(`https://testnets-api.opensea.io/api/v1/assets?owner=${owner}&collection=${openSeaSlug}&order_direction=desc&offset=0&limit=20`, options)
-                .then(response => response.json())
-                .then(response => {
-
-                    return response.assets.map((item: any) => {
-                        const image = item.image_url ? item.image_url : '';
-                        const title = item.name ? item.name : '';
-                        return {
-                            api: 'opensea',
-                            title: title,
-                            image: image,
-                            data: item
-                        }
-                    });
-                })
-                .catch(error => {
-                    console.log('failed to collect tokens from OpenSea API', error);
-                });
+            url = `https://testnets-api.opensea.io/api/v1/assets?owner=${owner}&collection=${openSeaSlug}&order_direction=desc&offset=0&limit=20`;
 
         }
 
         if (chain === 'mainnet' || chain === 'eth') {
+
+            url = `https://api.opensea.io/api/v1/assets?owner=${owner}&collection=${openSeaSlug}&order_direction=desc&offset=0&limit=20`;
+
+        }
+
+        if (url) {
 
             return fetch(`https://api.opensea.io/api/v1/assets?owner=${owner}&collection=${openSeaSlug}&order_direction=desc&offset=0&limit=20`, options)
                 .then(response => response.json())
@@ -307,6 +297,7 @@ export class OnChainTokenModule {
                 .catch(error => {
                     console.log('failed to collect tokens from OpenSea API', error);
                 });
+
         }
 
         return;
