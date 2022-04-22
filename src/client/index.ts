@@ -14,13 +14,13 @@ interface NegotiationInterface {
     type: string;
     issuers: OnChainTokenConfig | OffChainTokenConfig[];
     options: any;
+    onChainKeys?: {[apiName: string]: string}
 }
 
 declare global {
     interface Window {
         KeyshapeJS?: any;
         tokenToggleSelection: any;
-        Authenticator: any;
         ethereum: any;
     }
 }
@@ -39,17 +39,19 @@ interface AuthenticateOnChainInterface {
 
 export class Client {
 
-    issuers: any[];
-    type: string;
-    filter: {};
-    options: any;
-    offChainTokens: any;
-    onChainTokens: any;
-    tokenLookup: any;
-    selectedTokens: any;
-    web3WalletProvider: any;
-    messaging: Messaging;
-    popup: Popup;
+    private issuers: OnChainTokenConfig | OffChainTokenConfig[];
+    private type: string;
+    private filter: {};
+    private options: any;
+    private offChainTokens: any;
+    private onChainTokens: any;
+    private tokenLookup: any;
+    private selectedTokens: any;
+    private web3WalletProvider: any;
+    private messaging: Messaging;
+    private popup: Popup;
+    private clientCallBackEvents: {};
+    private onChainTokenModule: OnChainTokenModule;
 
     constructor(config: NegotiationInterface) {
 
@@ -78,32 +80,15 @@ export class Client {
 
         this.clientCallBackEvents = {};
 
-        // apply data for view when active mode
-
-        /*
-
-            this.onChainTokens / this.offChainTokens: {
-                tokenKeys: ['devcon', '0x...'],
-                devcon: { 
-                    tokens: [] 
-                }
-            }
-
-        */
-
         this.prePopulateTokenLookupStore(issuers);
 
         // currently custom to Token Negotiator
         this.web3WalletProvider = new Web3WalletProvider();
 
         // on chain token manager module
-        this.onChainTokenModule = new OnChainTokenModule(config.onChainModuleKeys);
+        this.onChainTokenModule = new OnChainTokenModule(config.onChainKeys);
 
         this.messaging = new Messaging();
-
-        document.onclick = function (e) {
-
-        }
 
     }
 
@@ -362,7 +347,7 @@ export class Client {
         return data.tokens;
     }
 
-    async connectOnChainTokenIssuer(issuer: any): Promise<any[]> {
+    async connectOnChainTokenIssuer(issuer: any) {
 
         const tokens = await this.onChainTokenModule.connectOnChainToken(
             issuer,
@@ -418,7 +403,7 @@ export class Client {
         const { issuer, unsignedToken } = config;
         const tokensOrigin = this.tokenLookup[issuer].tokenOrigin;
 
-        requiredParams((issuer && unsignedToken), { status: false, useEthKey: null, proof: null });
+        requiredParams((issuer && unsignedToken), "Issuer and unsigned token not provided.");
 
         // TODO: How to handle error display in passive negotiation? Use optional UI or emit errors to listener?
         if (this.popup)

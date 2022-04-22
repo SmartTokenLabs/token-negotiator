@@ -1,7 +1,7 @@
 import { requiredParams } from '../utils';
 import { OnChainTokenConfig } from "../tokenLookup";
 
-interface OnChainConfig {
+interface OnChainApiConfig {
     [apiName: string]: {
         chainSupport: any[],
         config: {
@@ -15,7 +15,7 @@ interface OnChainConfig {
 
 export class OnChainTokenModule {
 
-    onChainConfig: OnChainConfig = {
+    onChainConfig: OnChainApiConfig = {
         moralis: {
             chainSupport: [
                 'eth',
@@ -87,7 +87,7 @@ export class OnChainTokenModule {
         }
     };
 
-    constructor(onChainModuleKeys: {[apiName: string]: string}) {
+    constructor(onChainModuleKeys?: {[apiName: string]: string}) {
 
         if (onChainModuleKeys){
             for (let apiName in onChainModuleKeys) {
