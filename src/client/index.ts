@@ -1,17 +1,20 @@
 // @ts-nocheck
 import { Messaging, MessageAction, MessageResponseAction } from "./messaging";
-import { Popup } from './popup';
-import { asyncHandle, logger, requiredParams } from './../utils/index';
-import { connectMetamaskAndGetAddress, getChallengeSigned, validateUseEthKey } from "../core/index";
-import { OffChainTokenConfig, OnChainTokenConfig, tokenLookup } from './../tokenLookup';
+import { Popup, PopupOptionsInterface } from './popup';
+import { asyncHandle, logger, requiredParams } from '../utils';
+import { connectMetamaskAndGetAddress, getChallengeSigned, validateUseEthKey } from "../core";
+import { OffChainTokenConfig, OnChainTokenConfig, tokenLookup } from '../tokenLookup';
 import OnChainTokenModule from './../onChainTokenModule'
 import Web3WalletProvider from './../utils/Web3WalletProvider';
 import './../vendor/keyShape';
 
 interface NegotiationInterface {
     type: string;
-    issuers: OnChainTokenConfig | OffChainTokenConfig[];
-    options: any;
+    issuers: (OnChainTokenConfig | OffChainTokenConfig)[];
+    options: {
+        overlay: PopupOptionsInterface,
+        filters: {}
+    };
     onChainKeys?: {[apiName: string]: string}
 }
 

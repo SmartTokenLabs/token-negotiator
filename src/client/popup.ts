@@ -4,12 +4,12 @@ import {requiredParams} from "../utils";
 import {Client} from "./index";
 import {ViewInterface, ViewConstructor, AbstractView} from "./views/view-interface";
 
-interface PopupOptionsInterface {
-    openingHeading:string,
-    issuerHeading:string,
-    repeatAction:string,
-    theme:string,
-    position:string
+export interface PopupOptionsInterface {
+    openingHeading?:string,
+    issuerHeading?:string,
+    repeatAction?:string,
+    theme?:string,
+    position?:string
 }
 
 export class Popup {
