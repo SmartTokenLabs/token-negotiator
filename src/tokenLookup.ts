@@ -20,7 +20,7 @@ export interface OffChainTokenConfig extends TokenConfigInterface {
 export interface OnChainTokenConfig extends TokenConfigInterface {
     contract: string,
     chain: string,
-    openSeaSlug: string
+    openSeaSlug?: string
 }
 
 export interface TokenConfigInterface {

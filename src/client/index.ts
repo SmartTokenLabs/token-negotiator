@@ -12,13 +12,13 @@ interface NegotiationInterface {
     type: string;
     issuers: OnChainTokenConfig | OffChainTokenConfig[];
     options: any;
+    onChainKeys?: {[apiName: string]: string}
 }
 
 declare global {
     interface Window {
         KeyshapeJS?: any;
         tokenToggleSelection: any;
-        Authenticator: any;
         ethereum: any;
     }
 }
@@ -33,20 +33,19 @@ interface AuthenticateInterface {
 
 export class Client {
 
-    issuers: OnChainTokenConfig | OffChainTokenConfig[];
-    type: string;
-    filter: {};
-    options: any;
-    offChainTokens: any;
-    onChainTokens: any;
-    tokenLookup: any;
-    selectedTokens: any;
-    web3WalletProvider: any;
-    messaging: Messaging;
-    popup: Popup;
-
-    clientCallBackEvents: object;
-    onChainTokenModule: OnChainTokenModule;
+    private issuers: OnChainTokenConfig | OffChainTokenConfig[];
+    private type: string;
+    private filter: {};
+    private options: any;
+    private offChainTokens: any;
+    private onChainTokens: any;
+    private tokenLookup: any;
+    private selectedTokens: any;
+    private web3WalletProvider: any;
+    private messaging: Messaging;
+    private popup: Popup;
+    private clientCallBackEvents: {};
+    private onChainTokenModule: OnChainTokenModule;
 
     constructor(config: NegotiationInterface) {
 
@@ -75,26 +74,13 @@ export class Client {
 
         this.clientCallBackEvents = {};
 
-        // apply data for view when active mode
-
-        /*
-
-            this.onChainTokens / this.offChainTokens: {
-                tokenKeys: ['devcon', '0x...'],
-                devcon: { 
-                    tokens: [] 
-                }
-            }
-
-        */
-
         this.prePopulateTokenLookupStore(issuers);
 
         // currently custom to Token Negotiator
         this.web3WalletProvider = new Web3WalletProvider();
 
         // on chain token manager module
-        this.onChainTokenModule = new OnChainTokenModule();
+        this.onChainTokenModule = new OnChainTokenModule(config.onChainKeys);
 
         this.messaging = new Messaging();
 
@@ -104,8 +90,9 @@ export class Client {
 
         issuers.forEach((issuer: any) => {
 
-            // create key with address and chain for easy reference
             let issuerKey = issuer.collectionID;
+
+            issuerKey = issuerKey.replace(/\s+/g, '-').toLowerCase();
 
             // Populate the token lookup store with initial data.
             this.updateTokenLookupStore(issuerKey, issuer);
@@ -130,9 +117,9 @@ export class Client {
 
                 // off chain token attestations 
 
-                this.offChainTokens.tokenKeys.push(issuer.collectionID);
+                this.offChainTokens.tokenKeys.push(issuerKey);
 
-                this.offChainTokens[issuer.collectionID] = { tokens: [] };
+                this.offChainTokens[issuerKey] = { tokens: [] };
 
             }
 
@@ -354,7 +341,7 @@ export class Client {
         return data.tokens;
     }
 
-    async connectOnChainTokenIssuer(issuer: any): Promise<any[]> {
+    async connectOnChainTokenIssuer(issuer: any) {
 
         const tokens = await this.onChainTokenModule.connectOnChainToken(
             issuer,
@@ -437,7 +424,7 @@ export class Client {
     async authenticate(authRequest: AuthenticateInterface) {
 
         const { issuer, unsignedToken } = authRequest;
-        requiredParams((issuer && unsignedToken), "issuer and signed token required.");
+        requiredParams((issuer && unsignedToken), "Issuer and signed token required.");
 
         if (!this.tokenLookup[issuer])
             throw new Error("Provided issuer was not found.");
@@ -472,7 +459,6 @@ export class Client {
             if (this.popup)
                 this.popup.showError(err.message);
             throw new Error(err);
-            return;
         }
 
         if (this.popup) {
