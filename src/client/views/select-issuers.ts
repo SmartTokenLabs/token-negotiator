@@ -64,11 +64,13 @@ export class SelectIssuers extends AbstractView {
         let html = "";
 
         data.offChainTokens.tokenKeys.map((issuer: string) => {
-            html += this.issuerConnectMarkup(data.tokenLookup[issuer].title, data.tokenLookup[issuer].image, issuer);
+            if (data.tokenLookup[issuer].title)
+                html += this.issuerConnectMarkup(data.tokenLookup[issuer].title, data.tokenLookup[issuer].image, issuer);
         });
 
         data.onChainTokens.tokenKeys.map((issuer: string) => {
-            html += this.issuerConnectMarkup(data.tokenLookup[issuer].title, data.tokenLookup[issuer].image, issuer);
+            if (data.tokenLookup[issuer].title)
+                html += this.issuerConnectMarkup(data.tokenLookup[issuer].title, data.tokenLookup[issuer].image, issuer);
         });
 
         this.issuerListContainer.innerHTML = html;
@@ -88,7 +90,8 @@ export class SelectIssuers extends AbstractView {
             if (e.target.classList.contains('connect-btn-tn')){
                 this.connectTokenIssuer(e);
             } else if (e.target.classList.contains('tokens-btn-tn')){
-                this.navigateToTokensView(e);
+                const issuer = e.target.parentNode.dataset.issuer;
+                this.navigateToTokensView(issuer);
             }
         });
     }
@@ -151,6 +154,11 @@ export class SelectIssuers extends AbstractView {
 
         this.popup.dismissLoader();
 
+        if (!tokens?.length){
+            this.popup.showError("No tokens found!");
+            return;
+        }
+
         this.issuerConnected(issuer, tokens);
     }
 
@@ -171,11 +179,10 @@ export class SelectIssuers extends AbstractView {
         tokenBtn.setAttribute('aria-label', `Navigate to select from ${tokens.length} of your ${issuer} tokens`);
         tokenBtn.setAttribute('tabIndex', 1);
 
+        setTimeout(() => {this.navigateToTokensView(issuer);}, 250); // Timeout just makes it a bit of a smoother transition
     }
 
-    navigateToTokensView(event: any) {
-
-        const issuer = event.target.parentNode.dataset.issuer;
+    navigateToTokensView(issuer: string) {
 
         this.updateTokensView(issuer);
 
