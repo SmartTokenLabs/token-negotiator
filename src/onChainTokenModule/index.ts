@@ -42,9 +42,9 @@ export class OnChainTokenModule {
                 'eth',
                 'mainnet',
                 'rinkeby',
-                // 'arbitrum',
-                // 'polygon',
-                // 'optimism'
+                'arbitrum',
+                'polygon',
+                'optimism'
             ],
             config: {
                 mainnet: {
@@ -54,7 +54,19 @@ export class OnChainTokenModule {
                 rinkeby: {
                     url: "https://eth-rinkeby.alchemyapi.io/v2/",
                     apiKey: 'CWaS4PkRjFi3dAzrRD6lsrQ7vAyPYsnU',
-                }
+                },
+                optimism: {
+                    url: "https://opt-mainnet.g.alchemy.com/v2/",
+                    apiKey: 'CWaS4PkRjFi3dAzrRD6lsrQ7vAyPYsnU',
+                },
+                arbitrum: {
+                    url: "wss://arb-mainnet.g.alchemy.com/v2/",
+                    apiKey: 'CWaS4PkRjFi3dAzrRD6lsrQ7vAyPYsnU',
+                },
+                polygon: {
+                    url: "https://polygon-mainnet.g.alchemyapi.io/v2/",
+                    apiKey: 'CWaS4PkRjFi3dAzrRD6lsrQ7vAyPYsnU',
+                },
             }
         },
         opensea: {
@@ -108,15 +120,14 @@ export class OnChainTokenModule {
 
     getOnChainAPISupportBool(apiName: string, chain: string) {
 
-        if (!this.onChainConfig[apiName])
-            return false;
+        if (!this.onChainConfig[apiName]) return false;
 
         return this.onChainConfig[apiName].chainSupport.indexOf(chain) > -1;
 
     }
 
     /**
-     * @function getInitialContractAddressMetaData
+     * @function c
      * @description returns initial contract address data collection name & image.
      * @example issuerKey example: 0x381748c76f2b8871afbbe4578781cd24df34ae0d-rinkeby
      * @param issuer

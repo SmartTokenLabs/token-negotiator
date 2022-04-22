@@ -6,7 +6,6 @@ import { connectMetamaskAndGetAddress, getChallengeSigned, validateUseEthKey } f
 import { OffChainTokenConfig, OnChainTokenConfig, tokenLookup } from '../tokenLookup';
 import OnChainTokenModule from './../onChainTokenModule'
 import Web3WalletProvider from './../utils/Web3WalletProvider';
-// import Server from './../server/index';
 import "./../theme/style.css";
 import './../vendor/keyShape';
 
@@ -103,18 +102,18 @@ export class Client {
 
             issuerKey = issuerKey.replace(/\s+/g, '-').toLowerCase();
 
+            if(issuer.chain) issuer.chain = issuer.chain.toLowerCase();
+
             // Populate the token lookup store with initial data.
             this.updateTokenLookupStore(issuerKey, issuer);
 
             if ((issuer.contract) && (issuer.chain)) {
 
                 // stop duplicate entries
-                if (this.onChainTokens[issuerKey]) { 
+                if (this.onChainTokens[issuerKey]) {
                     console.warn(`duplicate collectionID key ${issuerKey}, use unique keys per collection.`);
                     return;
                 }
-
-                issuer.chain = issuer.chain.toLocaleLowerCase();
 
                 // add onchain token (non-tokenscipt)
                 this.onChainTokens.tokenKeys.push(issuerKey);
@@ -124,7 +123,7 @@ export class Client {
 
             } else {
 
-                // off chain token attestations 
+                // off chain token attestations
 
                 this.offChainTokens.tokenKeys.push(issuerKey);
 
@@ -145,7 +144,7 @@ export class Client {
     }
 
     // To enrich the token lookup store with data.
-    // for on chain tokens that are not using token script this is 
+    // for on chain tokens that are not using token script this is
     // required, for off chain this is most likely not required because the configurations
     // are already pre-defined e.g. title, issuer image image etc.
     updateTokenLookupStore(tokenKey, data) {
@@ -200,7 +199,7 @@ export class Client {
     async enrichTokenLookupDataOffChainTokens(offChainTokens: any) {
 
         // TODO: Fetch offline token config from ticket issuer url
-        /*await Promise.all(offChainTokens.tokenKeys.map(async (issuerKey: string): Promise<any> => {
+        /* await Promise.all(offChainTokens.tokenKeys.map(async (issuerKey: string): Promise<any> => {
 
             return fetch(`${this.tokenLookup[issuerKey].tokenConfigURI}`, {})
             .then(response => response.json())
@@ -237,7 +236,7 @@ export class Client {
             ------------------------------
             blockchain token reader module
             ------------------------------
-        
+
             * await this.setBlockchainTokens(this.onChainTokens);
         */
 
@@ -373,34 +372,6 @@ export class Client {
         // TODO msg to include window.location.host
     }
 
-    async authenticateOnChain(config: AuthenticateOnChainInterface) {
-
-        // TODO implement onchain authentication & update api accordingly for end user.
-
-        // const { selectedNFTs, message } = config;
-        // e.g. message = window.location.host
-        // const signature = await signMessageWithBrowserWallet(message, this.web3WalletProvider);
-        // send message to backend server
-        // const response = await fetch(endPoint, {
-        //     method: 'POST',
-        //     cache: 'no-cache',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     redirect: 'follow',
-        //     referrerPolicy: 'no-referrer',
-        //     body: JSON.stringify({ 
-        //         signature: signature,
-        //         nfts: selectedNFTs,
-        //         message: message
-        //      })
-        // });
-
-        // mock backend server here / go direct to sever module
-        // const server = new Server();
-        // const result = await server.resolveNFTTokenOwnership();
-        // console.log(result);
-
-    }
-
     async authenticate(config: AuthenticateOffChainInterface) {
 
         const { issuer, unsignedToken } = config;
@@ -500,7 +471,7 @@ export class Client {
             origin: url.origin + url.pathname
         });
 
-        if (data.evt == MessageResponseAction.ISSUER_TOKENS)
+        if (data.evt === MessageResponseAction.ISSUER_TOKENS)
             return data.tokens;
 
         throw new Error(data.errors.join("\n"));
