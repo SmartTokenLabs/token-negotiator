@@ -1,6 +1,6 @@
 {
   "name": "@tokenscript/token-negotiator",
-  "version": "1.0.13-alpha-wd",
+  "version": "1.0.14-alpha-wd",
   "description": "Token-negotiator a token attestation bridge between web 2.0 and 3.0.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
