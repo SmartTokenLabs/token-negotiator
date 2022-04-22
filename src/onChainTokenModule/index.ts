@@ -1,9 +1,9 @@
 import { requiredParams } from '../utils';
 import { OnChainTokenConfig } from "../tokenLookup";
 
-interface OnChainApiConfig {
+interface onChainApiConfig {
     [apiName: string]: {
-        chainSupport: any[],
+        chainSupport: string[],
         config: {
             [network: string] : {
                 url: string,
@@ -14,115 +14,106 @@ interface OnChainApiConfig {
 }
 
 export class OnChainTokenModule {
-
-    onChainConfig: OnChainApiConfig = {
-        moralis: {
-            chainSupport: [
-                'eth',
-                'mainnet',
-                'rinkeby',
-                'ropsten',
-                'goerli',
-                'kovan',
-                'bsc',
-                'polygon',
-                'mumbai',
-                'avalanche',
-                'fantom'
-            ],
-            config: {
-                mainnet: {
-                    url: "https://deep-index.moralis.io/api/v2/",
-                    apiKey: 'WMrMeZLy2pajBLmwf1AUccxFzQy98OEMeDQPaTK8BcTI8XK2f9WZrVpjGYQcujSF',
-                }
-            }
-        },
-        alchemy: {
-            chainSupport: [
-                'eth',
-                'mainnet',
-                'rinkeby',
-                'arbitrum',
-                'polygon',
-                'optimism'
-            ],
-            config: {
-                mainnet: {
-                    url: "https://eth-mainnet.alchemyapi.io/v2/",
-                    apiKey: 'CWaS4PkRjFi3dAzrRD6lsrQ7vAyPYsnU',
-                },
-                rinkeby: {
-                    url: "https://eth-rinkeby.alchemyapi.io/v2/",
-                    apiKey: 'CWaS4PkRjFi3dAzrRD6lsrQ7vAyPYsnU',
-                },
-                optimism: {
-                    url: "https://opt-mainnet.g.alchemy.com/v2/",
-                    apiKey: 'CWaS4PkRjFi3dAzrRD6lsrQ7vAyPYsnU',
-                },
-                arbitrum: {
-                    url: "wss://arb-mainnet.g.alchemy.com/v2/",
-                    apiKey: 'CWaS4PkRjFi3dAzrRD6lsrQ7vAyPYsnU',
-                },
-                polygon: {
-                    url: "https://polygon-mainnet.g.alchemyapi.io/v2/",
-                    apiKey: 'CWaS4PkRjFi3dAzrRD6lsrQ7vAyPYsnU',
-                },
-            }
-        },
-        opensea: {
-            chainSupport: [
-                'eth',
-                'mainnet',
-                'rinkeby'
-            ],
-            config: {
-                mainnet: {
-                    url: "https://api.opensea.io/api/v1/",
-                    apiKey: '99687116fafa4daebc766eeedccce201',
-                },
-                rinkeby: {
-                    url: "https://testnets-api.opensea.io/api/v1/",
-                    apiKey: '99687116fafa4daebc766eeedccce201',
-                }
-            }
-        },
-        poap: {
-            chainSupport: [
-                'xdai'
-            ],
-            config: {
-                mainnet: {
-                    url: "",
-                    apiKey: "",
-                }
-            }
-        }
-    };
+    
+    onChainApiConfig: onChainApiConfig;
 
     constructor(onChainModuleKeys?: {[apiName: string]: string}) {
 
-        if (onChainModuleKeys){
-            for (let apiName in onChainModuleKeys) {
+        const moralisAPIKey = onChainModuleKeys?.moralis ?? 'WMrMeZLy2pajBLmwf1AUccxFzQy98OEMeDQPaTK8BcTI8XK2f9WZrVpjGYQcujSF';
+        const alchemyAPIKey = onChainModuleKeys?.alchemy ?? 'CWaS4PkRjFi3dAzrRD6lsrQ7vAyPYsnU';
+        const openSeaAPIKey = onChainModuleKeys?.opensea ?? '99687116fafa4daebc766eeedccce201';
 
-                if (!onChainModuleKeys[apiName])
-                    continue;
-
-                if (!this.onChainConfig[apiName])
-                    continue;
-
-                for (let network in this.onChainConfig[apiName].config) {
-                    this.onChainConfig[apiName].config[network].apiKey = onChainModuleKeys[apiName];
+        this.onChainApiConfig = {
+            moralis: {
+                chainSupport: [
+                    'eth',
+                    'mainnet',
+                    'rinkeby',
+                    'ropsten',
+                    'goerli',
+                    'kovan',
+                    'bsc',
+                    'polygon',
+                    'mumbai',
+                    'avalanche',
+                    'fantom'
+                ],
+                config: {
+                    mainnet: {
+                        url: "https://deep-index.moralis.io/api/v2/",
+                        apiKey: moralisAPIKey
+                    }
+                }
+            },
+            alchemy: {
+                chainSupport: [
+                    'eth',
+                    'mainnet',
+                    'rinkeby',
+                    'arbitrum',
+                    'polygon',
+                    'optimism'
+                ],
+                config: {
+                    mainnet: {
+                        url: "https://eth-mainnet.alchemyapi.io/v2/",
+                        apiKey: alchemyAPIKey
+                    },
+                    rinkeby: {
+                        url: "https://eth-rinkeby.alchemyapi.io/v2/",
+                        apiKey: alchemyAPIKey
+                    },
+                    optimism: {
+                        url: "https://opt-mainnet.g.alchemy.com/v2/",
+                        apiKey: alchemyAPIKey
+                    },
+                    arbitrum: {
+                        url: "wss://arb-mainnet.g.alchemy.com/v2/",
+                        apiKey: alchemyAPIKey
+                    },
+                    polygon: {
+                        url: "https://polygon-mainnet.g.alchemyapi.io/v2/",
+                        apiKey: alchemyAPIKey
+                    },
+                }
+            },
+            opensea: {
+                chainSupport: [
+                    'eth',
+                    'mainnet',
+                    'rinkeby'
+                ],
+                config: {
+                    mainnet: {
+                        url: "https://api.opensea.io/api/v1/",
+                        apiKey: openSeaAPIKey
+                    },
+                    rinkeby: {
+                        url: "https://testnets-api.opensea.io/api/v1/",
+                        apiKey: openSeaAPIKey
+                    }
+                }
+            },
+            poap: {
+                chainSupport: [
+                    'xdai'
+                ],
+                config: {
+                    mainnet: {
+                        url: "",
+                        apiKey: "",
+                    }
                 }
             }
-        }
+        };
 
     }
 
     getOnChainAPISupportBool(apiName: string, chain: string) {
 
-        if (!this.onChainConfig[apiName]) return false;
+        if (!this.onChainApiConfig[apiName]) return false;
 
-        return this.onChainConfig[apiName].chainSupport.indexOf(chain) > -1;
+        return this.onChainApiConfig[apiName].chainSupport.indexOf(chain) > -1;
 
     }
 
@@ -198,7 +189,7 @@ export class OnChainTokenModule {
         let response;
 
         try {
-            response = await  this.getDataOpensea(path, chain);
+            response = await this.getDataOpensea(path, chain);
         } catch(error: any) {
             console.warn('Failed to collect contract data from OpenSea API', error.message);
             return null;
@@ -220,9 +211,9 @@ export class OnChainTokenModule {
 
         if (!this.getOnChainAPISupportBool('moralis', chain)) return null;
 
-        const _chain = 'eth';
+        if(chain === 'mainnet') chain = 'eth';
 
-        const path = `/nft/${contractAddress}?chain=${_chain}&format=decimal&limit=1`;
+        const path = `/nft/${contractAddress}?chain=${chain}&format=decimal&limit=1`;
 
         let response;
 
@@ -251,28 +242,39 @@ export class OnChainTokenModule {
 
         if (!this.getOnChainAPISupportBool('alchemy', chain)) return;
 
-        const tokenId = "0";
-        const withMetadata = "true";
-        const path = `/getNFTsForCollection?contractAddress=${contractAddress}&cursorKey=${tokenId}&withMetadata=${withMetadata}`;
+        // TODO Mainnet API end point is supported by only. Watch Alchemy docs for further support to learn tokens
+        // without using the owners address.
 
-        let response;
+        if(chain === 'eth' || chain === 'mainnet') {
 
-        try {
-            response = await this.getDataAlchemy(path, chain);
-        } catch (err: any) {
-            console.warn('failed to collect contract data from Alchemy API', err);
+            const tokenId = "0";
+            const withMetadata = "true";
+            const path = `/getNFTsForCollection?contractAddress=${contractAddress}&cursorKey=${tokenId}&withMetadata=${withMetadata}`;
+
+            let response;
+
+            try {
+                response = await this.getDataAlchemy(path, chain);
+            } catch (err: any) {
+                console.warn('failed to collect contract data from Alchemy API', err);
+                return null;
+            }
+
+            if (!response?.nfts?.length) return null;
+
+            return {
+                api: 'alchemy',
+                chain: chain,
+                contract: contractAddress,
+                image: response.nfts[0].metadata.image,
+                title: response.nfts[0].title
+            };
+
+        } else {
+            
             return null;
+
         }
-
-        if (!response?.nfts?.length) return null;
-
-        return {
-            api: 'alchemy',
-            chain: chain,
-            contract: contractAddress,
-            image: response.nfts[0].metadata.image,
-            title: response.nfts[0].title
-        };
 
     }
 
@@ -448,13 +450,13 @@ export class OnChainTokenModule {
 
     private getConfigForServiceAndChain(service: string, chain: string, defaultCred: string = "mainnet") {
 
-        if (!this.onChainConfig[service])
+        if (!this.onChainApiConfig[service])
             throw new Error("Invalid API service: " + service);
 
         if (chain == "eth")
             chain = "mainnet";
 
-        const configs = this.onChainConfig[service].config;
+        const configs = this.onChainApiConfig[service].config;
 
         if (configs[chain])
             return configs[chain];
