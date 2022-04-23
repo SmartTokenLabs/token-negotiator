@@ -273,7 +273,7 @@
   opacity: .8;
 }
 
-.overlay-tn .wallet-button-tn:hover {
+.overlay-tn .wallet-button-tn:hover, .overlay-tn .wallet-button-tn:focus {
   opacity: 1;
 }
 

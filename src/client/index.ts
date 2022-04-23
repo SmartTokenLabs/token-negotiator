@@ -98,7 +98,9 @@ export class Client {
 
         issuers.forEach((issuer: any) => {
 
-            let issuerKey = issuer.collectionID;
+            let issuerKey = issuer?.collectionID;
+
+            if(!issuerKey) return;
 
             issuerKey = issuerKey.replace(/\s+/g, '-').toLowerCase();
 
