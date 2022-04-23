@@ -268,7 +268,6 @@ export class Client {
       );
 
       let outputOnChain = JSON.parse(JSON.stringify(this.onChainTokens));
-<<<<<<< HEAD
 
       delete outputOnChain.tokenKeys;
 
@@ -276,15 +275,6 @@ export class Client {
 
       delete outputOffChain.tokenKeys;
 
-=======
-
-      delete outputOnChain.tokenKeys;
-
-      let outputOffChain = JSON.parse(JSON.stringify(this.offChainTokens));
-
-      delete outputOffChain.tokenKeys;
-
->>>>>>> main
       console.log("Emit tokens");
       console.log(outputOffChain);
 
