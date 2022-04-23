@@ -117,7 +117,7 @@ export class OnChainTokenModule {
         
         if(chain.toLocaleLowerCase() === "rinkeby") {
 
-            let options = {method: 'GET', headers: {Accept: 'application/json', 'X-API-KEY': 'fa9bff5dbf294de883b279c42dbb3940'}};
+            let options = {method: 'GET', headers: {Accept: 'application/json', 'X-API-KEY': '99687116fafa4daebc766eeedccce201'}};
 
             return fetch(`https://rinkeby-api.opensea.io/api/v1/assets?asset_contract_address=${contractAddress}&collection=${openSeaSlug}&order_direction=desc&offset=0&limit=20`, options)
             .then(response => response.json())
@@ -135,7 +135,7 @@ export class OnChainTokenModule {
         
         if(chain.toLocaleLowerCase() === "mainnet" || chain.toLocaleLowerCase() === "eth") {
 
-            let options = {method: 'GET', headers: {Accept: 'application/json', 'X-API-KEY': 'fa9bff5dbf294de883b279c42dbb3940'}};
+            let options = {method: 'GET', headers: {Accept: 'application/json', 'X-API-KEY': '99687116fafa4daebc766eeedccce201'}};
 
             return fetch(`https://api.opensea.io/api/v1/assets?asset_contract_address=${contractAddress}&collection=${openSeaSlug}&order_direction=desc&offset=0&limit=20`, options)
             .then(response => response.json())
@@ -250,7 +250,7 @@ export class OnChainTokenModule {
 
         if(chain === 'rinkeby') {
 
-            let options = {method: 'GET', headers: {Accept: 'application/json', 'X-API-KEY': 'fa9bff5dbf294de883b279c42dbb3940'}};
+            let options = {method: 'GET', headers: {Accept: 'application/json', 'X-API-KEY': '99687116fafa4daebc766eeedccce201'}};
             
             return fetch(`https://testnets-api.opensea.io/api/v1/assets?owner=${owner}&collection=${openSeaSlug}&order_direction=desc&offset=0&limit=20`, options)
             .then(response => response.json())
@@ -275,7 +275,7 @@ export class OnChainTokenModule {
         
         if(chain === 'mainnet' || chain === 'eth') {
 
-            let options = { method: 'GET', headers: { Accept: 'application/json', 'X-API-KEY': 'fa9bff5dbf294de883b279c42dbb3940'} };
+            let options = { method: 'GET', headers: { Accept: 'application/json', 'X-API-KEY': '99687116fafa4daebc766eeedccce201'} };
             
             return fetch(`https://api.opensea.io/api/v1/assets?owner=${owner}&collection=${openSeaSlug}&order_direction=desc&offset=0&limit=20`, options)
             .then(response => response.json())
