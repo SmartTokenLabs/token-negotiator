@@ -1,11 +1,21 @@
 // @ts-nocheck
 import { Client } from "./../index";
 
-function getSimpleClient() {
+function getOffChainConfigClient() {
   return new Client({
     type: "active",
     issuers: [
-      "devcon"
+      {
+        collectionID: 'devcon', 
+        title: "Devcon",
+        onChain: false,
+        tokenOrigin: "http://localhost:3002/",
+        attestationOrigin: "https://stage.attestation.id/",
+        unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
+        image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
+        base64senderPublicKey: "",
+        base64attestorPubKey: ""
+      }
     ]
   });
 }
@@ -13,8 +23,20 @@ function getSimpleClient() {
 describe('client spec', () => {
 
   test('tokenNegotiatorClient a new instance of client', () => {
-    const tokenNegotiatorClient = getSimpleClient();
-    expect(tokenNegotiatorClient.issuers).toEqual(["devcon"]);
+    const tokenNegotiatorClient = getOffChainConfigClient();
+    expect(tokenNegotiatorClient.issuers).toEqual(
+      [{
+        collectionID: 'devcon', 
+        title: "Devcon",
+        onChain: false,
+        tokenOrigin: "http://localhost:3002/",
+        attestationOrigin: "https://stage.attestation.id/",
+        unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
+        image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
+        base64senderPublicKey: "",
+        base64attestorPubKey: ""
+      }]
+    );
   });
 
   test('tokenNegotiatorClient with valid contract and chain', () => {
@@ -63,7 +85,7 @@ describe('client spec', () => {
   });
 
   test('tokenNegotiatorClient on callback with event type tokens-selected ', () => {
-    const tokenNegotiatorClient = getSimpleClient();
+    const tokenNegotiatorClient = getOffChainConfigClient();
     const event = 'tokens-selected';
     tokenNegotiatorClient.on(event, () => {
       console.log(event)
@@ -72,25 +94,10 @@ describe('client spec', () => {
   });
 
   test('tokenNegotiatorClient on callback must have an event type', () => {
-    const tokenNegotiatorClient = getSimpleClient();
+    const tokenNegotiatorClient = getOffChainConfigClient();
     expect(() => {
       tokenNegotiatorClient.on('')
     }).toThrow('Event type is not defined');
   });
-
-  // NOTE: As of 20-apr-2022 addTokenThroughIframe method no longer exists
-  //
-  // test('tokenNegotiatorClient to connect Metamask And Get Address with window eth', async () => {
-  //   window.ethereum = () => {};
-  //   const tokenNegotiatorClient = new Client({
-  //     type: "active",
-  //     issuers: [
-  //       "devcon"
-  //     ],
-  //     options: {}
-  //   });
-  //   document.body.innerHTML = '<div><div style="margin: 0" class="test-app"></div></div>';
-  //   tokenNegotiatorClient.addTokenThroughIframe('http://www.coinbase.com');
-  // });
 
 });

@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { OnChainTokenModule } from "../index";
 
 function mockFetch(data: any) {
@@ -9,19 +11,12 @@ function mockFetch(data: any) {
   );
 }
 
-interface ContractAddressMetaData {
-  api?: string,
-  chain: string,
-  contractAddress: string,
-  title: string,
-  image: string
-}
-
 describe('On-chain token module', () => {
 
   test('getOnChainAPISupportBool should be true for supported APIs and chains', () => {
     const token = new OnChainTokenModule();
     expect(token.getOnChainAPISupportBool('opensea', 'eth')).toBe(true);
+    expect(token.getOnChainAPISupportBool('alchemy', 'rinkeby')).toBe(true);
     expect(token.getOnChainAPISupportBool('alchemy', 'polygon')).toBe(true);
   });
 
@@ -44,12 +39,11 @@ describe('On-chain token module', () => {
     }
     global.fetch = mockFetch(mockOpenSeaResponse);
     const token = new OnChainTokenModule();
-    const issuer =
-      { contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'stl-rnd-zed' }
-    const metaData = await token.getInitialContractAddressMetaData(issuer) as ContractAddressMetaData;
-    // expect(metaData.api).toBe('opensea'); // api property is not currently returned for OpenSea
+    const issuer = { collectionID: "c", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'stl-rnd-zed' }
+    const metaData = await token.getInitialContractAddressMetaData(issuer);
+    expect(metaData.api).toBe('opensea'); // api property is not currently returned for OpenSea
     expect(metaData.chain).toBe(issuer.chain);
-    expect(metaData.contractAddress).toBe(issuer.contract);
+    expect(metaData.contract).toBe(issuer.contract);
     expect(metaData.title).toBe(mockOpenSeaResponse.assets[0].collection.name);
     expect(metaData.image).toBe(mockOpenSeaResponse.assets[0].collection.image_url);
   });
@@ -67,11 +61,11 @@ describe('On-chain token module', () => {
     global.fetch = mockFetch(mockMoralisResponse);
     const token = new OnChainTokenModule();
     const issuer =
-      { contract: '0x94683E532AA9e5b47EF86bBb2D43b768C76c6C19', chain: 'polygon' }
-    const metaData = await token.getInitialContractAddressMetaData(issuer) as ContractAddressMetaData;
+      { collectionID: "c", contract: '0x94683E532AA9e5b47EF86bBb2D43b768C76c6C19', chain: 'polygon' }
+    const metaData = await token.getInitialContractAddressMetaData(issuer);
     expect(metaData.api).toBe('moralis');
     expect(metaData.chain).toBe(issuer.chain);
-    expect(metaData.contractAddress).toBe(issuer.contract);
+    expect(metaData.contract).toBe(issuer.contract);
     expect(metaData.title).toBe(mockMoralisResponse.result[0].name);
     expect(metaData.image).toBe(image);
   });
@@ -90,11 +84,11 @@ describe('On-chain token module', () => {
     global.fetch = mockFetch( alchemyResponse);
     const token = new OnChainTokenModule();
     const issuer =
-      { contract: '0x94683E532AA9e5b47EF86bBb2D43b768C76c6C19', chain: 'optimism' } // Chain not supported on Moralis, ensuring Alchemy is used
-    const metaData = await token.getInitialContractAddressMetaData(issuer) as ContractAddressMetaData;
+      { collectionID: "c", contract: '0x94683E532AA9e5b47EF86bBb2D43b768C76c6C19', chain: 'eth' } // Chain not supported on Moralis, ensuring Alchemy is used
+    const metaData = await token.getInitialContractAddressMetaData(issuer);
     expect(metaData.api).toBe('alchemy');
     expect(metaData.chain).toBe(issuer.chain);
-    expect(metaData.contractAddress).toBe(issuer.contract);
+    expect(metaData.contract).toBe(issuer.contract);
     expect(metaData.title).toBe(alchemyResponse.nfts[0].title);
     expect(metaData.image).toBe(alchemyResponse.nfts[0].metadata.image);
   });
@@ -102,8 +96,8 @@ describe('On-chain token module', () => {
   test('getInitialContractAddressMetaData should return undefined for unrecognised issuer', async () => {
     const token = new OnChainTokenModule();
     const issuer =
-      { contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'nosuchchain', openSeaSlug: 'stl-rnd-zed' }
-    expect(await token.getInitialContractAddressMetaData(issuer)).toBe(undefined);
+      { collectionID: "c", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'nosuchchain', openSeaSlug: 'stl-rnd-zed' }
+    expect(await token.getInitialContractAddressMetaData(issuer)).toBe(null);
   });
 
 });
