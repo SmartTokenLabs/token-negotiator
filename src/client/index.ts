@@ -50,6 +50,7 @@ export class Client {
     web3WalletProvider: any;
     messaging: Messaging;
     popup: Popup;
+    negotiateAlreadyFired: boolean;
 
     constructor(config: NegotiationInterface) {
 
@@ -77,6 +78,8 @@ export class Client {
         this.selectedTokens = {};
 
         this.clientCallBackEvents = {};
+
+        this.negotiateAlreadyFired = false;
 
         // apply data for view when active mode
 
@@ -244,6 +247,16 @@ export class Client {
 
     async negotiate() {
 
+        // in case if Outlet = Client then Outlet can emit event "tokensupdated" on the document.body and Client have to reread(renegotiate) tokens to avoid page reload
+        if (!this.negotiateAlreadyFired) {
+            document.body.addEventListener('tokensupdated', e=>{
+				// tokensupdated event
+				this.negotiate();
+			}, false);
+        }
+        // we need this variable to avoid attach listener multiple times
+        this.negotiateAlreadyFired = true;
+
         /*
             ------------------------------
             blockchain token reader module
@@ -264,8 +277,9 @@ export class Client {
             this.activeNegotiationStrategy();
 
         } else {
-
-            if (window.ethereum) await this.web3WalletProvider.connectWith('MetaMask');
+            // no need to enable Metamask at this stage, because user can get token list without wallet
+            // and better use selected wallet, it can be different Wallet than Metamask, flow should be universal
+            // if (window.ethereum) await this.web3WalletProvider.connectWith('MetaMask');
 
             this.passiveNegotiationStrategy();
 
