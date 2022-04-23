@@ -3,11 +3,11 @@ import {attachPostMessageListener, removePostMessageListener} from "../utils";
 // TODO move Message related interfaces/enum in to shared location /core 
 
 export interface MessageRequestInterface {
-    issuer:string,
+    issuer?:string,
     action:MessageAction,
     origin:string,
     timeout?:number,
-    filter?:string[],
+    filter?: {},
     token?:string,
     urlParams?:string
 }

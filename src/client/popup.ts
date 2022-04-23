@@ -4,15 +4,17 @@ import {requiredParams} from "../utils";
 import {Client} from "./index";
 import {ViewInterface, ViewConstructor, AbstractView} from "./views/view-interface";
 
-interface PopupOptionsInterface {
-    openingHeading:string,
-    issuerHeading:string,
-    repeatAction:string
+export interface PopupOptionsInterface {
+    openingHeading?:string,
+    issuerHeading?:string,
+    repeatAction?:string,
+    theme?:string,
+    position?:string
 }
 
 export class Popup {
 
-    options:PopupOptionsInterface
+    options?:PopupOptionsInterface
     client:Client;
     popupContainer:any;
     viewContainer:any;
@@ -156,8 +158,8 @@ export class Popup {
 
         let refTokenSelector = document.querySelector(".overlay-tn");
 
-        // @ts-ignore
-        refTokenSelector.classList.add(this.options?.overlay?.theme ? this.options?.overlay?.theme : 'light');
+        if (refTokenSelector)
+            refTokenSelector.classList.add((this.options?.theme ?? 'light'));
 
     }
 
