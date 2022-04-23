@@ -180,6 +180,9 @@ export class Client {
         console.log("tokens:");
         console.log(data.tokens);
 
+        console.log("tokens:");
+        console.log(data.tokens);
+
         this.offChainTokens[issuer].tokens = data.tokens;
 
         return;
@@ -206,21 +209,7 @@ export class Client {
   }
 
   async negotiate() {
-    // in case if Outlet = Client then Outlet can emit event "tokensupdated" on the document.body and Client have to reread(renegotiate) tokens to avoid page reload
-    if (!this.negotiateAlreadyFired) {
-      document.body.addEventListener(
-        "tokensupdated",
-        (e) => {
-          // tokensupdated event
-          this.negotiate();
-        },
-        false
-      );
-    }
-
-    // we need this variable to avoid attach listener multiple times
-    this.negotiateAlreadyFired = true;
-
+    
     await this.enrichTokenLookupDataOnChainTokens(this.onChainTokens);
 
     if (this.type === "active") {
@@ -279,6 +268,7 @@ export class Client {
       );
 
       let outputOnChain = JSON.parse(JSON.stringify(this.onChainTokens));
+<<<<<<< HEAD
 
       delete outputOnChain.tokenKeys;
 
@@ -286,6 +276,15 @@ export class Client {
 
       delete outputOffChain.tokenKeys;
 
+=======
+
+      delete outputOnChain.tokenKeys;
+
+      let outputOffChain = JSON.parse(JSON.stringify(this.offChainTokens));
+
+      delete outputOffChain.tokenKeys;
+
+>>>>>>> main
       console.log("Emit tokens");
       console.log(outputOffChain);
 
