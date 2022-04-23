@@ -427,7 +427,6 @@
 
 .overlay-tn .overlay-content-tn .toggle-tn input.mobileToggle-tn {
   opacity: 0;
-  visibility: hidden;
   position: absolute;
 }
 
