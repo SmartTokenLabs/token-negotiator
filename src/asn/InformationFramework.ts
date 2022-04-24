@@ -19,13 +19,13 @@ export class RelativeDistinguishedName {
 
 export class AttributeTypeAndValue {
     @AsnProp({ type: AsnPropTypes.ObjectIdentifier })
-    type: string;
+    type!: string;
 
     // @AsnProp({ type: AsnPropTypes.Any })//ANY -- DEFINED BY AttributeType
     // value: ArrayBuffer;
     // hardcode as UTF8String
     @AsnProp({ type: AsnPropTypes.Utf8String })
-    value: string;
+    value!: string;
 }
 
 @AsnType({ type: AsnTypeTypes.Set, itemType: AttributeTypeAndValue })

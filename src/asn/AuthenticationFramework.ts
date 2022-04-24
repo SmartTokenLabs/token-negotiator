@@ -3,7 +3,7 @@ import {AsnProp, AsnPropTypes, AsnType, AsnTypeTypes} from "@peculiar/asn1-schem
 
 export class AlgorithmIdentifierASN {
     // @AsnProp({ type: AsnPropTypes.ObjectIdentifier }) public algorithm: AsnPropTypes.ObjectIdentifier;// OBJECT IDENTIFIER,
-    @AsnProp({ type: AsnPropTypes.ObjectIdentifier }) public algorithm: string;// OBJECT IDENTIFIER,
+    @AsnProp({ type: AsnPropTypes.ObjectIdentifier }) public algorithm!: string;// OBJECT IDENTIFIER,
     @AsnProp({ type: AsnPropTypes.Any, optional: true }) public parameters?: AsnPropTypes.Any;// ANY DEFINED BY algorithm OPTIONAL
 }
 
@@ -28,9 +28,9 @@ class Time {
 }
 
 export class ValidityValue {
-    @AsnProp({ type: Time }) public notBefore: Time;
+    @AsnProp({ type: Time }) public notBefore!: Time;
     @AsnProp({ type: AsnPropTypes.Integer, optional: true }) public notBeforeInt?: number;
-    @AsnProp({ type: Time }) public notAfter: Time;
+    @AsnProp({ type: Time }) public notAfter!: Time;
     @AsnProp({ type: AsnPropTypes.Integer, optional: true }) public notAfterInt?: number;
 }
 
@@ -44,15 +44,15 @@ class Validity {
 
 export class Extension {
     @AsnProp({ type: AsnPropTypes.ObjectIdentifier })
-    public extnId: string;
+    public extnId!: string;
     @AsnProp({ type: AsnPropTypes.Boolean })
-    public critical: boolean;
+    public critical!: boolean;
     @AsnProp({ type: AsnPropTypes.OctetString })
-    public extnValue: Uint8Array;
+    public extnValue!: Uint8Array;
 }
 
 export class Extensions { //SEQUENCE OF Extension
-    @AsnProp({ type: Extension }) public extension: Extension;
+    @AsnProp({ type: Extension }) public extension!: Extension;
 }
 
 //
