@@ -103,8 +103,8 @@ export class SelectIssuers extends AbstractView {
                 <div class="img-container-tn issuer-icon-tn shimmer-tn" data-image-src="${image}" data-token-title="${title}"></div>
                 <p class="issuer-connect-title">${title}</p>
               </div>
-              <button aria-label="connect with the token issuer ${issuer}" aria-hidden="false" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="connect-btn-tn" data-issuer="${issuer}">Load</button>
-              <button aria-label="tokens available from token issuer ${issuer}" aria-hidden="true" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="tokens-btn-tn" data-issuer="${issuer}">Tokens Available</button>
+              <button aria-label="connect with the token issuer ${issuer}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="connect-btn-tn" data-issuer="${issuer}">Load</button>
+              <button aria-label="tokens available from token issuer ${issuer}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="tokens-btn-tn" data-issuer="${issuer}">Tokens Available</button>
             </li>
         `;
     }
@@ -115,22 +115,24 @@ export class SelectIssuers extends AbstractView {
 
         this.viewContainer.classList.toggle("open");
 
-        const connectBtns = this.viewContainer.querySelectorAll(`.connect-btn-tn`);
-        const tokenBtns = this.viewContainer.querySelectorAll(`.tokens-btn-tn`);
+        // TODO - Review and uplift this logic. Its not working as expected from tests.
 
-        connectBtns.forEach(function (userItem:any) {
-            userItem.setAttribute('aria-expanded', false);
-        });
+        // const connectBtns = this.viewContainer.querySelectorAll(`.connect-btn-tn`);
+        // const tokenBtns = this.viewContainer.querySelectorAll(`.tokens-btn-tn`);
 
-        tokenBtns.forEach(function (userItem:any) {
-            userItem.setAttribute('aria-expanded', false);
-        });
+        // connectBtns.forEach(function (userItem:any) {
+        //     userItem.setAttribute('aria-expanded', false);
+        // });
 
-        const issuerViewEl = this.viewContainer.querySelector(`.issuer-view-tn`);
-        const tokenViewEl = this.viewContainer.querySelector(`.token-view-tn`);
+        // tokenBtns.forEach(function (userItem:any) {
+        //     userItem.setAttribute('aria-expanded', false);
+        // });
 
-        issuerViewEl.setAttribute('aria-hidden', true);
-        tokenViewEl.setAttribute('aria-hidden', false);
+        // const issuerViewEl = this.viewContainer.querySelector(`.issuer-view-tn`);
+        // const tokenViewEl = this.viewContainer.querySelector(`.token-view-tn`);
+
+        // issuerViewEl.setAttribute('aria-hidden', true);
+        // tokenViewEl.setAttribute('aria-hidden', false);
 
     }
 
@@ -249,17 +251,19 @@ export class SelectIssuers extends AbstractView {
 
         this.viewContainer.classList.toggle("open");
 
-        const connectBtn = this.viewContainer.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`);
-        const tokenBtn = this.viewContainer.querySelector(`[data-issuer*="${issuer}"] .tokens-btn-tn`);
+        // TODO review and uplift this code, its not working as expected.
 
-        connectBtn.setAttribute('aria-expanded', true);
-        tokenBtn.setAttribute('aria-expanded', false);
+        // const connectBtn = this.viewContainer.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`);
+        // const tokenBtn = this.viewContainer.querySelector(`[data-issuer*="${issuer}"] .tokens-btn-tn`);
 
-        const issuerViewEl = this.viewContainer.querySelector(`.issuer-view-tn`);
-        const tokenViewEl = this.viewContainer.querySelector(`.token-view-tn`);
+        // connectBtn.setAttribute('aria-expanded', true);
+        // tokenBtn.setAttribute('aria-expanded', false);
 
-        issuerViewEl.setAttribute('aria-hidden', false);
-        tokenViewEl.setAttribute('aria-hidden', true);
+        // const issuerViewEl = this.viewContainer.querySelector(`.issuer-view-tn`);
+        // const tokenViewEl = this.viewContainer.querySelector(`.token-view-tn`);
+
+        // issuerViewEl.setAttribute('aria-hidden', false);
+        // tokenViewEl.setAttribute('aria-hidden', true);
     }
 
 }
