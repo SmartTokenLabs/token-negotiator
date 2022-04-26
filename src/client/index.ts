@@ -379,10 +379,14 @@ export class Client {
   async checkPublicAddressMatch(issuer: string, unsignedToken: any) {
     const { unEndPoint, onChain } = tokenLookup[issuer];
 
-    if (onChain === true || !unsignedToken || !unEndPoint)
-      return { status: false, useEthKey: null, proof: null };
+    if (onChain === true || !unsignedToken || !unEndPoint) return { status: false, useEthKey: null, proof: null };
 
     try {
+
+      if(!this.web3WalletProvider.getConnectedWalletData().length) {
+        await this.web3WalletProvider.connectWith("MetaMask");
+      } 
+      
       let useEthKey = await getChallengeSigned(
         tokenLookup[issuer],
         this.web3WalletProvider
