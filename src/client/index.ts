@@ -160,7 +160,11 @@ export class Client {
 
   async setPassiveNegotiationWebTokens(offChainTokens: any) {
     await Promise.all(
+      
+      // TODO load all on chain tokens logic needed here.
+
       offChainTokens.tokenKeys.map(async (issuer: string): Promise<any> => {
+
         let data;
 
         const tokensOrigin = this.tokenLookup[issuer].tokenOrigin;
@@ -215,9 +219,11 @@ export class Client {
     if (this.type === "active") {
       this.activeNegotiationStrategy();
     } else {
-      // no need to enable Metamask at this stage, because user can get token list without wallet
-      // and better use selected wallet, it can be different Wallet than Metamask, flow should be universal
-      // if (window.ethereum) await this.web3WalletProvider.connectWith('MetaMask');
+      
+      // TODO build logic to allow to connect with wallectConnect, Torus etc.
+      // Logic to ask user to connect to wallet when they have provided web3 tokens to negotiate with.
+      // See other TODO's in this flow.
+      // if (window.ethereum && this.onChainTokens.tokenKeys.length > 0) await this.web3WalletProvider.connectWith('MetaMask');
 
       this.passiveNegotiationStrategy();
     }
@@ -386,7 +392,7 @@ export class Client {
       if(!this.web3WalletProvider.getConnectedWalletData().length) {
         await this.web3WalletProvider.connectWith("MetaMask");
       } 
-      
+
       let useEthKey = await getChallengeSigned(
         tokenLookup[issuer],
         this.web3WalletProvider
