@@ -12,6 +12,17 @@ export const requiredParams = (item:any, msg:string) => {
 
 }
 
+export function uint8toBuffer(uint8: Uint8Array): any {
+  if (typeof Buffer != "undefined"){
+      // node Buffer
+      return Buffer.from(uint8);
+  } else {
+      // browser ArrayBuffer
+      return uint8;
+  }
+}
+
+
 // shallow equality comparison
 export const compareObjects = (o1: any, o2: any) => {
   const keys1 = Object.keys(o1);
