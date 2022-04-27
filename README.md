@@ -38,6 +38,20 @@ Within your application install the token negotiator:
   npm i @tokenscript/token-negotiator
 ```
 
+### In case if you want to use negotiator directly then you have to build UMD script 
+
+```npm run build-umd```
+
+and include _negotiator.js_ from _dist_ folder to the HTML page
+
+```<script type="text/javascript" src="./negotiator.js"></script>```
+
+In this case you have access to the _window.negotiator.Client_ and _window.negotiator.Outlet_
+
+Usage same as in [Passive Negotiation of tokens](#passive-negotiation-of-tokens)
+
+
+
 This library provides two ways to load tokens into your application, active or passive. 
 
 ### Active Negotiation of tokens
@@ -230,14 +244,14 @@ Authenticating ownership of the token will provide a proof with a limited expiry
 
 1. Go to the following URL: https://github.com/TokenScript/token-negotiator
 
-2. Download and then install this folder into your project `/token-negotiator-1.0.17-alpha-dist`
+2. Download and then install this folder into your project `/token-negotiator-1.0.18-alpha-dist`
 
 Configure the library using the following example.
 
 ````html
 
   <!-- add the JS library -->
-  <script type="text/javascript" src="./token-negotiator-1.0.17-alpha-dist/negotiator.js"></script>
+  <script type="text/javascript" src="./token-negotiator-1.0.18-alpha-dist/negotiator.js"></script>
 
   <body onload="init()">
 

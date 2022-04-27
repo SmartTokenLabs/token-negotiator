@@ -218,10 +218,16 @@ export class OnChainTokenModule {
 
     const path = `/nft/${contractAddress}?chain=${chain}&format=decimal&limit=1`;
 
-    let response;
+    let response, image;
 
     try {
       response = await this.getDataMoralis(path, chain);
+
+      if (!response?.result?.length) return null;
+
+      // TODO: handle null metadata, fetch metadata URL directly.
+      image = JSON.parse(response.result[0].metadata).image;
+
     } catch (err: any) {
       console.warn(
         "Failed to collect contract data from Moralis API",
@@ -229,10 +235,6 @@ export class OnChainTokenModule {
       );
       return null;
     }
-
-    if (!response?.result?.length) return null;
-
-    const image = JSON.parse(response.result[0].metadata).image;
 
     return {
       api: "moralis",

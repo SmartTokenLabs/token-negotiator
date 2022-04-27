@@ -79,9 +79,9 @@ export class SelectWallet extends AbstractView {
 
             this.popup.updatePopup(SelectIssuers);
 
-        } catch (err){
+        } catch (err:any){
             console.log(err);
-            this.popup.showError((err as string));
+            this.popup.showError((err.hasOwnProperty("message") ? err.message : err));
             return;
         }
 

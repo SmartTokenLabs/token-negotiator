@@ -4,8 +4,25 @@ import {decodeTokens, filterTokens} from './../core/index';
 import { MessageAction, MessageResponseInterface, MessageResponseAction } from '../client/messaging';
 import {AuthHandler} from "./auth-handler";
 
+// requred for default TicketDecoder
+import { SignedDevconTicket } from "./../asn/SignedDevconTicket";
+import { AsnParser } from "@peculiar/asn1-schema";
+import { uint8toBuffer } from "./../utils/index";
+
 interface OutletInterface {
   config: any;
+}
+
+class readSignedTicket {
+  ticket: any;
+  constructor (source: any) {
+
+      const signedDevconTicket: SignedDevconTicket = AsnParser.parse(uint8toBuffer(source), SignedDevconTicket);
+
+      this.ticket = signedDevconTicket.ticket;
+
+      console.log(this.ticket);
+  }
 }
 
 export class Outlet {
@@ -16,6 +33,11 @@ export class Outlet {
   constructor(config: OutletInterface) {
 
     this.tokenConfig = config;
+
+    // set default tokenReader
+    if (!this.tokenConfig.tokenParser) {
+      this.tokenConfig.tokenParser = readSignedTicket;
+    }
 
     this.pageOnLoadEventHandler();
 
@@ -38,8 +60,9 @@ export class Outlet {
     const evtid = this.getDataFromQuery('evtid');
     const action = this.getDataFromQuery('action');
 
-    if (!document.referrer && !this.getDataFromQuery('DEBUG'))
-      return;
+    // disable this check, because mostly user will open MagicLink from QR code reader or by MagicLink click at email, so document.referrer will be empty
+    // if (!document.referrer && !this.getDataFromQuery('DEBUG'))
+    //   return;
 
     console.log("Outlet received event ID " + evtid + " action " + action);
     // Outlet Page OnLoad Event Handler
@@ -86,6 +109,12 @@ export class Outlet {
             const tokens = readMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey, this.urlParams);
 
             storeMagicURL(tokens, itemStorageKey);
+
+            const event = new Event('tokensupdated');
+
+            // Dispatch the event to force negotiator to reread tokens.
+            // MagicLinkReader part of Outlet usually works in the parent window, same as Client, so it use same document
+            document.body.dispatchEvent(event);
 
             this.sendTokens(evtid);
 
@@ -163,6 +192,11 @@ export class Outlet {
   }
 
   public sendMessageResponse(response:MessageResponseInterface){
+
+    // dont send Message if no referrer defined
+    if (!document.referrer) {
+      return;
+    }
 
     let target, origin;
 
