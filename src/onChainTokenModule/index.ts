@@ -227,7 +227,6 @@ export class OnChainTokenModule {
 
       // TODO: handle null metadata, fetch metadata URL directly.
       image = JSON.parse(response.result[0].metadata).image;
-
     } catch (err: any) {
       console.warn(
         "Failed to collect contract data from Moralis API",
@@ -522,6 +521,199 @@ export class OnChainTokenModule {
     }
 
     return tokens;
+  }
+
+  // server not for use at this time - POC only
+
+  async getBoolVerifiedOwnershipOfTokens(
+    chain: string,
+    issuers: any[],
+    selectedTokens: any[]
+  ) {
+    let ownershipOfTokensBool = true;
+
+    issuers.forEach(async (issuer: any) => {
+      if (
+        !issuer.contract ||
+        selectedTokens[issuer.collectionID].tokens.length === 0
+      )
+        return;
+
+      const api = selectedTokens[issuer.collectionID].tokens[0].api;
+
+      if (api === "moralis") {
+        const bool = await this.getBoolVerifiedOwnershipOfTokensMoralis(
+          selectedTokens[issuer.collectionID].tokens,
+          issuer.contract,
+          chain
+        );
+        if (bool === false) ownershipOfTokensBool = false;
+      }
+      if (api === "opensea") {
+        const bool = await this.getBoolVerifiedOwnershipOfTokensOpensea(
+          selectedTokens[issuer.collectionID].tokens,
+          issuer.contract,
+          chain,
+          issuer.openSeaSlug
+        );
+        if (bool === false) ownershipOfTokensBool = false;
+      }
+      // if (api === "alchemy") {
+      //   const bool = await this.getBoolVerifiedOwnershipOfTokensAlchemy(
+      //     selectedTokens[issuer.collectionID].tokens,
+      //     issuer.contract,
+      //     chain
+      //   );
+      //   if (bool === false) ownershipOfTokensBool = false;
+      // }
+    });
+  }
+
+  // 
+  // async getBoolVerifiedOwnershipOfTokensAlchemy(
+  //   owner:string,
+  //   selectedTokens: any,
+  //   contractAddress: string,
+  //   chain: string
+  // ) {
+
+  //   if (!this.getOnChainAPISupportBool("alchemy", chain)) return [];
+
+  //   const path = `/getNFTs/?owner=${owner}&contractAddresses[]=${contractAddress}`;
+
+  //   this.getDataAlchemy(path, chain)
+  //     .then((result) => {
+  //       return result.ownedNfts.map((item: any) => {
+  //         // return {
+  //         //   api: "alchemy",
+  //         //   title: item.title,
+  //         //   image: item.metadata.image,
+  //         //   data: item,
+  //         // };
+
+  //       });
+  //     })
+  //     .catch((err) => {
+  //       console.warn("Failed to collect tokens from Alchemy API", err.message);
+  //       return false;
+  //     });
+
+  //   // if (!this.getOnChainAPISupportBool("alchemy", chain)) return;
+
+  //   // // TODO Mainnet API end point is supported by only. Watch Alchemy docs for further support to learn tokens
+  //   // // without using the owners address.
+
+  //   // if (chain !== "eth" && chain !== "mainnet") return false;
+
+  //   // const tokenId = "0";
+  //   // const withMetadata = "true";
+  //   // const path = `/getNFTsForCollection?contractAddress=${contractAddress}&cursorKey=${tokenId}&withMetadata=${withMetadata}`;
+
+  //   // let response;
+
+  //   // try {
+  //   //   response = await this.getDataAlchemy(path, chain);
+  //   // } catch (err: any) {
+  //   //   console.warn("failed to collect contract data from Alchemy API", err);
+  //   //   return false;
+  //   // }
+
+  //   // if (!response?.nfts?.length) return false;
+
+  //   // let ownershipOfTokensBool = true;
+
+  //   // response.nfts.map((asset: any) => {
+  //   //   let matchFound = false;
+
+  //   //   selectedTokens.tokens.map((token: any) => {
+  //   //     if (JSON.parse(asset.result[0].metadata).title === token.title)
+  //   //       matchFound = true;
+  //   //   });
+
+  //   //   if (!matchFound) ownershipOfTokensBool = false;
+  //   // });
+
+  //   // return ownershipOfTokensBool;
+  // }
+
+  async getBoolVerifiedOwnershipOfTokensMoralis(
+    selectedTokens: any,
+    contractAddress: string,
+    chain: string
+  ) {
+    if (!this.getOnChainAPISupportBool("moralis", chain)) return false;
+
+    const path = `/nft/${contractAddress}?chain=${chain}&format=decimal&limit=20`;
+
+    let response;
+
+    try {
+      response = await this.getDataMoralis(path, chain);
+
+      if (!response?.result?.length) return false;
+    } catch (err: any) {
+      console.warn(
+        "Failed to collect contract data from Moralis API",
+        err.message
+      );
+      return false;
+    }
+
+    if (!response?.result?.length) return false;
+
+    let ownershipOfTokensBool = true;
+
+    response.result.map((asset: any) => {
+      let matchFound = false;
+
+      selectedTokens.tokens.map((token: any) => {
+        if (JSON.parse(asset.metadata).name === token.title)
+          matchFound = true;
+      });
+
+      if (!matchFound) ownershipOfTokensBool = false;
+    });
+
+    return ownershipOfTokensBool;
+  }
+
+  async getBoolVerifiedOwnershipOfTokensOpensea(
+    selectedTokens: any,
+    contractAddress: string,
+    chain: string,
+    openSeaSlug: string
+  ) {
+    if (!this.getOnChainAPISupportBool("opensea", chain)) return;
+
+    const path = `/assets?asset_contract_address=${contractAddress}&collection=${openSeaSlug}&order_direction=desc&offset=0&limit=20`;
+
+    let response;
+
+    try {
+      response = await this.getDataOpensea(path, chain);
+    } catch (error: any) {
+      console.warn(
+        "Failed to collect contract data from OpenSea API",
+        error.message
+      );
+      return false;
+    }
+
+    if (!response?.assets?.length) return false;
+
+    let ownershipOfTokensBool = true;
+
+    response.assets.map((asset: any) => {
+      let matchFound = false;
+
+      selectedTokens.tokens.map((token: any) => {
+        if (asset.title === token.title) matchFound = true;
+      });
+
+      if (!matchFound) ownershipOfTokensBool = false;
+    });
+
+    return ownershipOfTokensBool;
   }
 }
 
