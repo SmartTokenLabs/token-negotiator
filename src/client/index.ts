@@ -379,7 +379,7 @@ export class Client {
                     "<h4>Authenticating...</h4>",
                     "<small>You may need to sign a new challenge in your wallet</small>"
                 );
-                this.popup.openOverlay(true);
+                this.popup.openOverlay();
             }, 1000);
         }
 
