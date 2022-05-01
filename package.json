@@ -1,6 +1,6 @@
 {
   "name": "@tokenscript/token-negotiator",
-  "version": "1.0.18-alpha",
+  "version": "1.0.19-alpha",
   "description": "Token-negotiator a token attestation bridge between web 2.0 and 3.0.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -11,7 +11,8 @@
     "copy-assets": "copyfiles ./src/theme/*.css dist/theme -V --flat && copyfiles ./src/vendor/*.js dist/vendor -V --flat",
     "prepublishOnly": "npm run build",
     "lint": "eslint . --quiet",
-    "test": "jest"
+    "test": "jest",
+    "test-watch": "jest --watch"
   },
   "repository": {
     "type": "git",
