@@ -24,6 +24,7 @@ interface NegotiationInterface {
     filters: {};
   };
   onChainKeys?: { [apiName: string]: string };
+  ipfsBaseUrl?: string
 }
 
 declare global {
@@ -90,7 +91,7 @@ export class Client {
 
     this.web3WalletProvider = new Web3WalletProvider();
 
-    this.onChainTokenModule = new OnChainTokenModule(config.onChainKeys);
+    this.onChainTokenModule = new OnChainTokenModule(config.onChainKeys, config.ipfsBaseUrl);
 
     this.messaging = new Messaging();
   }

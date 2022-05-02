@@ -29,10 +29,14 @@ export interface TokenData {
   data?: string;
 }
 
+const DEFAULT_IPFS_BASE_URL = "https://gateway.pinata.cloud/ipfs/";
+
 export class OnChainTokenModule {
   onChainApiConfig: OnChainApiConfig;
+  ipfsBaseUrl?: string;
+  hasIpfsSchemeSupport: boolean;
 
-  constructor(onChainModuleKeys?: { [apiName: string]: string }) {
+  constructor(onChainModuleKeys?: { [apiName: string]: string }, ipfsBaseUrl?: string) {
     const moralisAPIKey =
       onChainModuleKeys?.moralis ??
       "WMrMeZLy2pajBLmwf1AUccxFzQy98OEMeDQPaTK8BcTI8XK2f9WZrVpjGYQcujSF";
@@ -118,12 +122,44 @@ export class OnChainTokenModule {
         },
       },
     };
+
+    this.ipfsBaseUrl = ipfsBaseUrl;
+
+    // @ts-ignore
+    this.hasIpfsSchemeSupport = (navigator.brave && navigator.brave.isBrave.name === "isBrave" || false);
   }
 
   getOnChainAPISupportBool(apiName: string, chain: string) {
     if (!this.onChainApiConfig[apiName]) return false;
 
     return this.onChainApiConfig[apiName].chainSupport.indexOf(chain) > -1;
+  }
+
+  /**
+   * Substitute public IPFS base URLs with the config provided URL.
+   */
+  transformImageUrl(url: string){
+
+    if (!url)
+      return url;
+
+    // Browser has IPFS support and a custom gateway is not specified
+    if (this.hasIpfsSchemeSupport && !this.ipfsBaseUrl)
+      return url;
+
+    let useBase = this.ipfsBaseUrl ?? DEFAULT_IPFS_BASE_URL;
+
+    if (url.indexOf("ipfs://") === 0){
+      return url.replace("ipfs://", useBase);
+    }
+
+    if (!this.ipfsBaseUrl)
+      return url;
+
+    // TODO: Transform non-public ipfs gateways into specified URL.
+    const regex = /https:\/\/gateway.pinata.cloud\/ipfs\//i
+
+    return url.replace(regex, useBase);
   }
 
   /**
@@ -258,7 +294,7 @@ export class OnChainTokenModule {
       api: "moralis",
       chain: chain,
       contract: contractAddress,
-      image: image,
+      image: this.transformImageUrl(image),
       title: response.result[0].name,
     };
   }
@@ -270,7 +306,6 @@ export class OnChainTokenModule {
     // TODO Mainnet API end point is supported by only. Watch Alchemy docs for further support to learn tokens
     // without using the owners address.
 
-    if (chain === "eth" || chain === "mainnet") {
       const tokenId = "0";
       const withMetadata = "true";
       const path = `/getNFTsForCollection?contractAddress=${contractAddress}&cursorKey=${tokenId}&withMetadata=${withMetadata}`;
@@ -290,12 +325,9 @@ export class OnChainTokenModule {
         api: "alchemy",
         chain: chain,
         contract: contractAddress,
-        image: response.nfts[0].metadata.image,
+        image: this.transformImageUrl(response.nfts[0].metadata.image),
         title: response.nfts[0].title,
       };
-    } else {
-      return null;
-    }
   }
 
   async connectOnChainToken(issuer: OnChainTokenConfig, owner: string) {
@@ -438,7 +470,7 @@ export class OnChainTokenModule {
             api: "moralis",
             tokenId: item.token_id,
             title: parsedMeta?.title ? parsedMeta?.title : "",
-            image: parsedMeta?.image ? parsedMeta?.image : "",
+            image: parsedMeta?.image ? this.transformImageUrl(parsedMeta?.image) : "",
             data: parsedMeta,
           };
         });
@@ -466,7 +498,7 @@ export class OnChainTokenModule {
             api: "alchemy",
             tokenId: tokenId,
             title: item.title,
-            image: item.metadata.image,
+            image: this.transformImageUrl(item.metadata.image),
             data: item,
           };
         });
