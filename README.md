@@ -52,7 +52,7 @@ To do this, run the following command:
 
 ```npm run build-umd```
 
-and include _negotiator.js_ and _theme/style.css_ and from _dist_ folder to the HTML page:
+and include _negotiator.js_ and _theme/style.css_ from the _dist_ folder in the HTML page:
 
 ```html
 <script type="text/javascript" src="./negotiator.js"></script>
