@@ -38,19 +38,30 @@ Within your application install the token negotiator:
   npm i @tokenscript/token-negotiator
 ```
 
-### In case if you want to use negotiator directly then you have to build UMD script 
+### Use as ES6 module
+
+Import the Client or Outlet module using standard es6 syntax:
+```javascript
+import { Client, Outlet } from '@tokenscript/token-negotiator';
+```
+
+### Use as UMD bundle
+
+Sometimes you may need to bundle the library separate from your application.
+To do this, run the following command:
 
 ```npm run build-umd```
 
-and include _negotiator.js_ from _dist_ folder to the HTML page
+and include _negotiator.js_ and _theme/style.css_ and from _dist_ folder to the HTML page:
 
-```<script type="text/javascript" src="./negotiator.js"></script>```
+```html
+<script type="text/javascript" src="./negotiator.js"></script>
+<link rel="stylesheet" href="./theme/style.css" />
+```
 
-In this case you have access to the _window.negotiator.Client_ and _window.negotiator.Outlet_
+From there you can access _window.negotiator.Client_ and _window.negotiator.Outlet_
 
-Usage same as in [Passive Negotiation of tokens](#passive-negotiation-of-tokens)
-
-
+The usage is the same as [Passive Negotiation of tokens](#passive-negotiation-of-tokens)
 
 This library provides two ways to load tokens into your application, active or passive. 
 
@@ -65,6 +76,11 @@ To start, first include the following html element into your page, this is where
 ````html
     <div class="overlay-tn"></div>
 ````
+
+Add the CSS required for the UI widget:
+```javascript
+import "@tokenscript/token-negotiator/dist/theme/style.css";
+```
 
 Include the following Javascript to configure the Token Negotiator. 
 
