@@ -37,12 +37,12 @@ export class AuthHandler {
     private attestationSecret:bigint|null = null;
 
     private base64attestorPubKey:string|undefined;
-    private base64senderPublicKey:string|undefined;
+    private base64senderPublicKeys: {[key: string]: string};
 
     constructor(outlet:Outlet, evtid:any, tokenDef:Item, tokenObj:DevconToken|any) {
         this.outlet = outlet;
         this.evtid = evtid;
-        this.base64senderPublicKey = tokenDef.base64senderPublicKey;
+        this.base64senderPublicKeys = tokenDef.base64senderPublicKeys;
         this.base64attestorPubKey = tokenDef.base64attestorPubKey;
 
         this.signedTokenBlob = tokenObj.ticketBlob;
@@ -176,8 +176,7 @@ export class AuthHandler {
                 this.signedTokenBlob ,
                 this.attestationBlob ,
                 this.base64attestorPubKey,
-                this.base64senderPublicKey,
-                true
+                this.base64senderPublicKeys
             ).then((useToken:any) => {
                 if (useToken){
                     console.log('this.authResultCallback( useToken ): ');

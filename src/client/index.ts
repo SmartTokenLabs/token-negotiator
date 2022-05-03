@@ -400,7 +400,7 @@ export class Client {
             if (!data.proof)
                 return this.handleProofError("Failed to get proof from the outlet.")
 
-            Authenticator.validateUseTicket(data.proof, this.tokenLookup[issuer].base64attestorPubKey, this.tokenLookup[issuer].base64senderPublicKey, walletAddress);
+            Authenticator.validateUseTicket(data.proof, this.tokenLookup[issuer].base64attestorPubKey, this.tokenLookup[issuer].base64senderPublicKeys, walletAddress);
 
             console.log("Ticket proof successfully validated.");
 
