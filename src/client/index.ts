@@ -335,13 +335,13 @@ export class Client {
 
         const { issuer, unsignedToken } = authRequest;
 
-        let signedChallenge =  await this.checkPublicAddressMatch(issuer, unsignedToken);
+        let useEthKey =  await this.checkPublicAddressMatch(issuer, unsignedToken);
 
-        if (!signedChallenge) {
+        if (!useEthKey) {
             throw new Error("Address does not match")
         }
 
-        return {issuer: issuer, proof: signedChallenge};
+        return {issuer: issuer, proof: useEthKey};
     }
 
     async authenticateOffChain(authRequest: AuthenticateInterface){
@@ -349,19 +349,24 @@ export class Client {
         const { issuer, unsignedToken } = authRequest;
         const tokensOrigin = this.tokenLookup[issuer].tokenOrigin;
 
-        const addressMatch = await this.checkPublicAddressMatch(issuer, unsignedToken);
+        const useEthKey = await this.checkPublicAddressMatch(issuer, unsignedToken);
 
-        if (!addressMatch) {
+        if (!useEthKey) {
             throw new Error("Address does not match")
         }
 
-        return this.messaging.sendMessage({
+        let data = await this.messaging.sendMessage({
             issuer: issuer,
             action: MessageAction.GET_PROOF,
             origin: tokensOrigin,
             token: unsignedToken,
             timeout: 0 // Don't time out on this event as it needs active input from the user
         });
+
+        Authenticator.validateUseTicket(data.proof, this.tokenLookup[issuer].base64attestorPubKey, this.tokenLookup[issuer].base64senderPublicKeys, useEthKey.address);
+
+        // TODO: Provide object that include useEthKey object
+        return data;
     }
 
     async authenticate(authRequest: AuthenticateInterface) {
@@ -397,8 +402,6 @@ export class Client {
 
             if (!data.proof)
                 return this.handleProofError("Failed to get proof from the outlet.")
-
-            Authenticator.validateUseTicket(data.proof, this.tokenLookup[issuer].base64attestorPubKey, this.tokenLookup[issuer].base64senderPublicKeys, walletAddress);
 
             console.log("Ticket proof successfully validated.");
 
