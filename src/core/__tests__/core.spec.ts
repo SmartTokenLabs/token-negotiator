@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import { SignedDevconTicket } from './../../Attestation/SignedDevonTicket';
+import { SignedDevconTicket } from './../../asn/SignedDevonTicket';
 
 import {
   filterTokens,
