@@ -41,6 +41,7 @@ export enum MessageResponseAction {
 declare global {
     interface Window {
         NEGOTIATOR_DEBUG: boolean;
+        safari?: any
     }
 }
 
@@ -55,8 +56,13 @@ export class Messaging {
 
     async sendMessage(request:MessageRequestInterface, forceTab:boolean = false){
 
-        if (!forceTab && this.iframeStorageSupport === null)
-            this.iframeStorageSupport = await this.thirdPartyCookieSupportCheck(request.origin);
+        if (!forceTab && this.iframeStorageSupport === null) {
+            if (window.safari){
+                this.iframeStorageSupport = false;
+            } else {
+                this.iframeStorageSupport = await this.thirdPartyCookieSupportCheck(request.origin);
+            }
+        }
 
         // Uncomment to test popup mode
         //this.iframeStorageSupport = false;
@@ -169,7 +175,7 @@ export class Messaging {
         attachPostMessageListener(listener);
 
         if (timeout == undefined)
-            timeout = 25000;
+            timeout = 10000;
 
         if (timeout > 0)
             timer = setTimeout(()=>{
@@ -229,7 +235,7 @@ export class Messaging {
                 this.setResponseListener(
                     id,
                     origin,
-                    25000,
+                    10000,
                     (responseData:any)=>{
                         resolve(!!responseData.thirdPartyCookies);
                     },

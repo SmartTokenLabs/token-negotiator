@@ -67,10 +67,6 @@ export class Outlet {
     console.log("Outlet received event ID " + evtid + " action " + action);
     // Outlet Page OnLoad Event Handler
 
-    // store local storage item that can be later used to check if third party cookies are allowed.
-    // Note: This test can only be performed when the localstorage / cookie is assigned, then later requested.
-    localStorage.setItem('cookie-support-check', 'test');
-
     // TODO: should issuer be validated against requested issuer?
 
     switch (action) {
@@ -102,6 +98,10 @@ export class Outlet {
         break;
 
       default:
+
+        // store local storage item that can be later used to check if third party cookies are allowed.
+        // Note: This test can only be performed when the localstorage / cookie is assigned, then later requested.
+        localStorage.setItem('cookie-support-check', 'test');
 
         const { tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey } = this.tokenConfig;
 
