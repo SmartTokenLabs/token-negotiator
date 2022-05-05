@@ -15,6 +15,7 @@ import {
 import OnChainTokenModule from "./../onChainTokenModule";
 import Web3WalletProvider from "./../utils/Web3WalletProvider";
 import "./../vendor/keyShape";
+import { Authenticator } from "@tokenscript/attestation";
 
 interface NegotiationInterface {
   type: string;
@@ -40,7 +41,7 @@ declare global {
 interface AuthenticateInterface {
     issuer: any;
     tokenId?: number|string
-    token: any;
+    unsignedToken: any;
 }
 
 export class Client {
@@ -394,13 +395,18 @@ export class Client {
                 data = await this.authenticateOffChain(authRequest);
             }
 
+            if (!data.proof)
+                return this.handleProofError("Failed to get proof from the outlet.")
+
+            Authenticator.validateUseTicket(data.proof, this.tokenLookup[issuer].base64attestorPubKey, this.tokenLookup[issuer].base64senderPublicKeys, walletAddress);
+
+            console.log("Ticket proof successfully validated.");
+
             this.eventSender.emitProofToClient(data.proof, data.issuer);
 
         } catch (err) {
             console.log(err);
-            if (this.popup)
-                this.popup.showError(err.message);
-            throw new Error(err);
+            this.handleProofError(err, issuer);
         }
 
         if (this.popup) {
@@ -410,7 +416,13 @@ export class Client {
         }
     }
 
-    async checkPublicAddressMatch(issuer: string, unsignedToken: any) {
+    private handleProofError(err, issuer){
+        if (this.popup)
+            this.popup.showError(err);
+        this.eventSender.emitProofToClient(null, issuer);
+    }
+
+    async checkPublicAddressMatch(issuer:string, unsignedToken:any) {
 
         let config:any = tokenLookup[issuer];
 
