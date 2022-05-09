@@ -51,14 +51,14 @@ This approach embeds a html element UI widget into the web page. The end user ca
 To start, first include the following html element into your page, this is where the token negotiator overlay widget will be embedded into the page.
 
 ````html
-    <div class="overlay-tn"></div>
+  <div class="overlay-tn"></div>
 ````
 
-Add the JS and CSS required for the UI widget:
+Add the library and styles for the UI component.
 
 ```javascript
-import { Client } from '@tokenscript/token-negotiator';
-import "@tokenscript/token-negotiator/dist/theme/style.css";
+  import { Client } from '@tokenscript/token-negotiator';
+  import "@tokenscript/token-negotiator/dist/theme/style.css";
 ```
 
 Include the following Javascript to configure the Token Negotiator with issuers that your website will recognise. 
