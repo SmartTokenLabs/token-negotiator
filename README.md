@@ -38,30 +38,12 @@ Within your application install the token negotiator:
   npm i @tokenscript/token-negotiator
 ```
 
-### Use as ES6 module
+## Reading Tokens into a website or web application.
 
-Import the Client or Outlet module using standard es6 syntax:
 ```javascript
-import { Client, Outlet } from '@tokenscript/token-negotiator';
+import { Client } from '@tokenscript/token-negotiator';
+import "@tokenscript/token-negotiator/dist/theme/style.css";
 ```
-
-### Use as UMD bundle
-
-Sometimes you may need to bundle the library separate from your application.
-To do this, run the following command:
-
-```npm run build-umd```
-
-and include _negotiator.js_ and _theme/style.css_ from the _dist_ folder in the HTML page:
-
-```html
-<script type="text/javascript" src="./negotiator.js"></script>
-<link rel="stylesheet" href="./theme/style.css" />
-```
-
-From there you can access _window.negotiator.Client_ and _window.negotiator.Outlet_
-
-The usage is the same as [Passive Negotiation of tokens](#passive-negotiation-of-tokens)
 
 This library provides two ways to load tokens into your application, active or passive. 
 
@@ -329,6 +311,17 @@ Key values applied to all tokens.
 
 ````
 
+## Token Issuers
+
+```javascript
+import { client, outlet } from '@tokenscript/token-negotiator';
+```
+
+For token issuers (using off chain attestations), ensure you have been provided an attestation schema file will enable the Token Negotiator to:
+
+- Interpret tokens
+- Decode them to provide meta to the client (either the page this is installed, or cross origin)
+
 ## New Token Issuers
 
 Please reach out to us at <sayhi@smarttokenlabs.com>
@@ -347,7 +340,6 @@ Please contact us or open an issue via github:
 sayhi@smarttokenlabs.com
 
 ### Quick Start with Vue, React or Svelte
-
 
 https://github.com/TokenScript/token-negotiator/wiki/quick-start-Vue
 
