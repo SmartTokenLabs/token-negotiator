@@ -40,11 +40,6 @@ Within your application install the token negotiator:
 
 ## Reading Tokens into a website or web application.
 
-```javascript
-import { Client } from '@tokenscript/token-negotiator';
-import "@tokenscript/token-negotiator/dist/theme/style.css";
-```
-
 This library provides two ways to load tokens into your application, active or passive. 
 
 ### Active Negotiation of tokens
@@ -59,14 +54,14 @@ To start, first include the following html element into your page, this is where
     <div class="overlay-tn"></div>
 ````
 
-Add the CSS required for the UI widget:
+Add the JS and CSS required for the UI widget:
+
 ```javascript
+import { Client } from '@tokenscript/token-negotiator';
 import "@tokenscript/token-negotiator/dist/theme/style.css";
 ```
 
-Include the following Javascript to configure the Token Negotiator. 
-
-Add issuers with tokens that you wish for your website to recognise. 
+Include the following Javascript to configure the Token Negotiator with issuers that your website will recognise. 
 
 ```javascript
   
