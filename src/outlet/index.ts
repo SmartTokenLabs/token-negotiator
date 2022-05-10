@@ -13,7 +13,7 @@ interface OutletInterface {
   config: any;
 }
 
-class readSignedTicket {
+export class readSignedTicket {
 	ticket: any;
 	constructor (source: any) {
 
