@@ -141,7 +141,7 @@ describe('client spec', () => {
 	test('tokenNegotiatorClient method checkPublicAddressMatch to throw error', async () => {
 		const tokenNegotiatorClient = getOffChainConfigClient();
 		return tokenNegotiatorClient.checkPublicAddressMatch("devcon", { fake: "data" }).catch(err => {
-			expect(err).toEqual(new Error("Could not authenticate token"));
+			expect(err).toEqual(new Error("MetaMask is not available. Please check the extension is supported and active."));
 		});
 	});
 

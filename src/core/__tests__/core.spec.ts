@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import { SignedDevconTicket } from './../../asn/SignedDevonTicket';
+import { SignedDevconTicket } from './../../asn/SignedDevconTicket';
 
 import {
 	filterTokens,
@@ -19,6 +19,7 @@ import {
 	getRawToken,
 	getTokens,
 } from './../index';
+import {readSignedTicket} from "../../outlet";
 
 // const mockToken = `?ticket="MIGWMA0MATYCBWE3ap3-AgEABEEEKJZVxMEXbkSZZBWnNUTX_5ieu8GUqf0bx_a0tBPF6QYskABaMJBYhDOXsmQt3csk_TfMZ2wdmfRkK7ePCOI2kgNCAOOZKRpcE6tLBuPbfE_SmwPk2wNjbj5vpa6kkD7eqQXvBOCa0WNo8dEHKvipeUGZZEWWjJKxooB44dEYdQO70Vgc"&secret=45845870684&id="mah@mah.com"`
 
@@ -87,13 +88,12 @@ describe('core Spec', () => {
 	});
 	test('expect to decode tokens', () => {
 		const rawTokens = '[{"token":"MIGSMAkMATkCAQECAQwEQQQbX0WI0BzxKHYHBSbyFIt7L44Rxcxqv8rXGpFuuO-bBBZ6YTzmvDzQWbmq2OqsTclAxy3cN2wzmPywz2A_nn0lA0IAi1qN7894PWzmk2wyQUo4MtlKkO5NZGNfkt7A6BbrfZY_E58Zy6kqYsciBsJY7P-UO2vnjCG88Dzx6bL-pdkmshs=","secret":"10593082611958123069159986522878346963005475009650354554005852930286854271222","id":"nicktaras@hotmail.co.uk","magic_link":"https://devcontickets.herokuapp.com/outlet/?ticket=MIGSMAkMATkCAQECAQwEQQQbX0WI0BzxKHYHBSbyFIt7L44Rxcxqv8rXGpFuuO-bBBZ6YTzmvDzQWbmq2OqsTclAxy3cN2wzmPywz2A_nn0lA0IAi1qN7894PWzmk2wyQUo4MtlKkO5NZGNfkt7A6BbrfZY_E58Zy6kqYsciBsJY7P-UO2vnjCG88Dzx6bL-pdkmshs=&secret=10593082611958123069159986522878346963005475009650354554005852930286854271222&id=nicktaras@hotmail.co.uk"}]';
-		const tokenParser = SignedDevconTicket;
 		const unsignedTokenDataName = 'ticket';
 		expect(decodeTokens(
 			rawTokens,
-			tokenParser,
+			readSignedTicket,
 			unsignedTokenDataName
-		)).toEqual([{"devconId": "9", "ticketClass": 12, "ticketId": 1}]);
+		)).toEqual([{"devconId": "9", "ticketClass": 12, "ticketIdNumber": 1}]);
 	});
 	test('expect store tokens inside cookies', () => {
 		const tokens = [ 
