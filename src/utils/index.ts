@@ -13,7 +13,7 @@ export const requiredParams = (item: any, msg: string) => {
 }
 
 export function uint8toBuffer(uint8: Uint8Array): any {
-	if (typeof Buffer != "undefined"){
+	if (typeof Buffer !== "undefined"){
 		// node Buffer
 		return Buffer.from(uint8);
 	} else {

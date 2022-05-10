@@ -104,7 +104,7 @@ export const readMagicUrl = (
 	itemStorageKey: string,
 	urlParams: URLSearchParams | null = null
 ) => {
-	if (urlParams == null)
+	if (urlParams === null)
 		urlParams = new URLSearchParams(window.location.search);
 
 	const tokenFromQuery = urlParams.get(tokenUrlName);

@@ -18,30 +18,30 @@ import "./../vendor/keyShape";
 import { Authenticator } from "@tokenscript/attestation";
 
 interface NegotiationInterface {
-  type: string;
-  issuers: (OnChainTokenConfig | OffChainTokenConfig)[];
-  options: {
-    overlay: PopupOptionsInterface;
-    filters: {};
-  };
-  onChainKeys?: { [apiName: string]: string };
-  ipfsBaseUrl?: string
+	type: string;
+	issuers: (OnChainTokenConfig | OffChainTokenConfig)[];
+	options: {
+		overlay: PopupOptionsInterface;
+		filters: {};
+	};
+	onChainKeys?: { [apiName: string]: string };
+	ipfsBaseUrl?: string;
 }
 
 declare global {
-  interface Window {
-    KeyshapeJS?: any;
-    tokenToggleSelection: any;
-    ethereum: any;
-  }
+	interface Window {
+		KeyshapeJS?: any;
+		tokenToggleSelection: any;
+		ethereum: any;
+	}
 }
 
 // TODO: Implement tokenId - each issuer token should have a unique ID (tokenId for instance).
 //  webster should not be required to pass the whole object as it can lead to hard to solve errors for webster.
 interface AuthenticateInterface {
-    issuer: any;
-    tokenId?: number|string
-    unsignedToken: any;
+	issuer: any;
+	tokenId?: number | string;
+	unsignedToken: any;
 }
 
 export class Client {
@@ -92,7 +92,10 @@ export class Client {
 
 		this.web3WalletProvider = new Web3WalletProvider();
 
-		this.onChainTokenModule = new OnChainTokenModule(config.onChainKeys, config.ipfsBaseUrl);
+		this.onChainTokenModule = new OnChainTokenModule(
+			config.onChainKeys,
+			config.ipfsBaseUrl
+		);
 
 		this.messaging = new Messaging();
 	}
@@ -121,7 +124,6 @@ export class Client {
 
 				this.onChainTokens[issuerKey] = { tokens: [] };
 			} else {
-
 				this.offChainTokens.tokenKeys.push(issuerKey);
 
 				this.offChainTokens[issuerKey] = { tokens: [] };
@@ -158,7 +160,6 @@ export class Client {
 
 	async setPassiveNegotiationWebTokens(offChainTokens: any) {
 		await Promise.all(
-
 			// TODO load all on chain tokens logic needed here.
 
 			offChainTokens.tokenKeys.map(async (issuer: string): Promise<any> => {
@@ -192,9 +193,9 @@ export class Client {
 		await Promise.all(
 			onChainTokens.tokenKeys.map(async (issuerKey: string): Promise<any> => {
 				let lookupData =
-          await this.onChainTokenModule.getInitialContractAddressMetaData(
-          	this.tokenLookup[issuerKey]
-          );
+					await this.onChainTokenModule.getInitialContractAddressMetaData(
+						this.tokenLookup[issuerKey]
+					);
 
 				if (lookupData) {
 					lookupData.onChain = true;
@@ -207,13 +208,11 @@ export class Client {
 	}
 
 	async negotiate() {
-
 		await this.enrichTokenLookupDataOnChainTokens(this.onChainTokens);
 
 		if (this.type === "active") {
 			this.activeNegotiationStrategy();
 		} else {
-
 			// TODO build logic to allow to connect with wallectConnect, Torus etc.
 			// Logic to ask user to connect to wallet when they have provided web3 tokens to negotiate with.
 			// See other TODO's in this flow.
@@ -311,7 +310,7 @@ export class Client {
 
 	async connectOnChainTokenIssuer(issuer: any) {
 		const walletAddress =
-      this.web3WalletProvider.getConnectedWalletData()[0]?.address;
+			this.web3WalletProvider.getConnectedWalletData()[0]?.address;
 
 		requiredParams(issuer, "issuer is required.");
 		requiredParams(walletAddress, "wallet address is missing.");
@@ -336,20 +335,18 @@ export class Client {
 	}
 
 	async authenticateOnChain(authRequest: AuthenticateInterface) {
-
 		const { issuer, unsignedToken } = authRequest;
 
-		let useEthKey =  await this.checkPublicAddressMatch(issuer, unsignedToken);
+		let useEthKey = await this.checkPublicAddressMatch(issuer, unsignedToken);
 
 		if (!useEthKey) {
-			throw new Error("Address does not match")
+			throw new Error("Address does not match");
 		}
 
-		return {issuer: issuer, proof: useEthKey};
+		return { issuer: issuer, proof: useEthKey };
 	}
 
-	async authenticateOffChain(authRequest: AuthenticateInterface){
-
+	async authenticateOffChain(authRequest: AuthenticateInterface) {
 		const { issuer, unsignedToken } = authRequest;
 		const tokenConfig = this.tokenLookup[issuer];
 
@@ -361,7 +358,7 @@ export class Client {
 			useEthKey = await this.checkPublicAddressMatch(issuer, unsignedToken);
 
 			if (!useEthKey) {
-				throw new Error("Address does not match")
+				throw new Error("Address does not match");
 			}
 		}
 
@@ -370,20 +367,27 @@ export class Client {
 			action: MessageAction.GET_PROOF,
 			origin: tokenConfig.tokenOrigin,
 			token: unsignedToken,
-			timeout: 0 // Don't time out on this event as it needs active input from the user
+			timeout: 0, // Don't time out on this event as it needs active input from the user
 		});
 
 		if (useEthKey)
-			Authenticator.validateUseTicket(data.proof, this.tokenLookup[issuer].base64attestorPubKey, this.tokenLookup[issuer].base64senderPublicKeys, useEthKey.address);
+			Authenticator.validateUseTicket(
+				data.proof,
+				this.tokenLookup[issuer].base64attestorPubKey,
+				this.tokenLookup[issuer].base64senderPublicKeys,
+				useEthKey.address
+			);
 
 		// TODO: Provide object that include useEthKey object
 		return data;
 	}
 
 	async authenticate(authRequest: AuthenticateInterface) {
-
 		const { issuer, unsignedToken } = authRequest;
-		requiredParams((issuer && unsignedToken), "Issuer and signed token required.");
+		requiredParams(
+			issuer && unsignedToken,
+			"Issuer and signed token required."
+		);
 
 		if (!this.tokenLookup[issuer])
 			throw new Error("Provided issuer was not found.");
@@ -402,22 +406,20 @@ export class Client {
 		}
 
 		try {
-
 			let data;
 
-			if (this.tokenLookup[issuer].onChain){
+			if (this.tokenLookup[issuer].onChain) {
 				data = await this.authenticateOnChain(authRequest);
 			} else {
 				data = await this.authenticateOffChain(authRequest);
 			}
 
 			if (!data.proof)
-				return this.handleProofError("Failed to get proof from the outlet.")
+				return this.handleProofError("Failed to get proof from the outlet.");
 
 			console.log("Ticket proof successfully validated.");
 
 			this.eventSender.emitProofToClient(data.proof, data.issuer);
-
 		} catch (err) {
 			console.log(err);
 			this.handleProofError(err, issuer);
@@ -430,35 +432,40 @@ export class Client {
 		}
 	}
 
-	private handleProofError(err, issuer){
-		if (this.popup)
-			this.popup.showError(err);
+	private handleProofError(err, issuer) {
+		if (this.popup) this.popup.showError(err);
 		this.eventSender.emitProofToClient(null, issuer);
 	}
 
 	async checkPublicAddressMatch(issuer: string, unsignedToken: any) {
-
 		let config: any = tokenLookup[issuer];
 
 		// TODO: Remove once fully implemented for on-chain tokens
 		if (!config.unEndPoint) {
-			config = {unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket", ethKeyitemStorageKey: "dcEthKeys"};
+			config = {
+				unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
+				ethKeyitemStorageKey: "dcEthKeys",
+			};
 		}
 
 		if (!unsignedToken) return { status: false, useEthKey: null, proof: null };
 
 		// try {
-		if(!this.web3WalletProvider.getConnectedWalletData().length) {
+		if (!this.web3WalletProvider.getConnectedWalletData().length) {
 			await this.web3WalletProvider.connectWith("MetaMask");
 		}
 
 		let useEthKey = await getChallengeSigned(config, this.web3WalletProvider);
 
-		const attestedAddress = await validateUseEthKey(config.unEndPoint, useEthKey);
+		const attestedAddress = await validateUseEthKey(
+			config.unEndPoint,
+			useEthKey
+		);
 
 		const walletAddress = await connectMetamaskAndGetAddress();
 
-		if (walletAddress.toLowerCase() !== attestedAddress.toLowerCase()) throw new Error('useEthKey validation failed.');
+		if (walletAddress.toLowerCase() !== attestedAddress.toLowerCase())
+			throw new Error("useEthKey validation failed.");
 
 		return useEthKey;
 
@@ -467,7 +474,6 @@ export class Client {
 		// requiredParams(null, "Could not authenticate token: " + e.message);
 
 		// }
-
 	}
 
 	eventSender = {
@@ -485,7 +491,7 @@ export class Client {
 	async addTokenViaMagicLink(magicLink: any) {
 		let url = new URL(magicLink);
 		let params =
-      url.hash.length > 1 ? url.hash.substring(1) : url.search.substring(1);
+			url.hash.length > 1 ? url.hash.substring(1) : url.search.substring(1);
 
 		let data = await this.messaging.sendMessage({
 			action: MessageAction.MAGIC_URL,
