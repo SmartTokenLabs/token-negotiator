@@ -194,7 +194,8 @@ export const getChallengeSigned = async (
   let ethKeys =
     storageEthKeys && storageEthKeys.length ? JSON.parse(storageEthKeys) : {};
 
-  try {
+  //try {
+
     let address = web3WalletProvider.getConnectedWalletData()[0].address;
 
     if (!address) {
@@ -233,10 +234,13 @@ export const getChallengeSigned = async (
     }
 
     return useEthKey;
-  } catch (e: any) {
-    throw new Error(e);
-  }
-};
+
+  //} catch (e: any) {
+
+    //throw new Error(e);
+
+  //}
+}
 
 export const connectMetamaskAndGetAddress = async () => {
   requiredParams(window.ethereum, "Please install metamask to continue.");

@@ -20,12 +20,10 @@ export class Popup {
     viewContainer:any;
     loadContainer:any;
     currentView:ViewInterface|undefined;
-    overlayShouldClose: boolean;
 
     constructor(options:PopupOptionsInterface, client:Client) {
         this.options = options;
         this.client = client;
-        this.overlayShouldClose = true;
     }
 
     initialize(){
@@ -51,9 +49,14 @@ export class Popup {
             `;
 
             this.popupContainer.querySelector('.overlay-fab-button-tn').addEventListener('click', this.togglePopup.bind(this));
-            this.popupContainer.querySelector('.overlay-content-tn').addEventListener('click', this.overlayClickEvt.bind(this));
-            
-            document.addEventListener('click', this.windowClickEvt.bind(this));
+
+            this.popupContainer.addEventListener('click', (event: Event) => {
+                event.stopPropagation();
+            });
+
+            document.addEventListener('click', () => {
+                this.closeOverlay();
+            });
 
             this.assignFabButtonAnimation();
 
@@ -69,52 +72,34 @@ export class Popup {
         }
     }
 
-    windowClickEvt(event:any) {
-        if(
-            this.overlayShouldClose && 
-            event.target !== this.popupContainer.querySelector('.overlay-fab-button-tn'))
-        { 
-            this.closeOverlay();
-        }
-        this.overlayShouldClose = true;
-    }
-
-    overlayClickEvt() {
-        this.overlayShouldClose = false;
-    }
-
     closeOverlay() {
-                        
+
         this.popupContainer.classList.remove("open");
 
         window.KeyshapeJS.timelines()[0].time(0);
 
         window.KeyshapeJS.globalPause();
+    }
 
+    openOverlay(){
+
+        this.popupContainer.classList.add("open");
+
+        window.KeyshapeJS.timelines()[0].time(0);
+
+        window.KeyshapeJS.globalPlay();
     }
 
     togglePopup() {
 
         requiredParams(this.popupContainer, 'No overlay element found.');
 
-        let openOverlay = this.popupContainer.classList.toggle("open");
+        let openOverlay = !this.popupContainer.classList.contains("open");
 
         if (openOverlay) {
-
-            this.popupContainer.classList.add("open");
-
-            window.KeyshapeJS.timelines()[0].time(0);
-
-            window.KeyshapeJS.globalPlay();
-
+            this.openOverlay();
         } else {
-
-            this.popupContainer.classList.remove("open");
-
-            window.KeyshapeJS.timelines()[0].time(0);
-
-            window.KeyshapeJS.globalPause();
-
+            this.closeOverlay();
         }
     }
 

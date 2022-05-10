@@ -1,7 +1,7 @@
 import { requiredParams } from "../utils";
 import { OnChainTokenConfig } from "../tokenLookup";
 
-interface onChainApiConfig {
+interface OnChainApiConfig {
   [apiName: string]: {
     chainSupport: string[];
     config: {
@@ -13,10 +13,30 @@ interface onChainApiConfig {
   };
 }
 
-export class OnChainTokenModule {
-  onChainApiConfig: onChainApiConfig;
+interface ContractData {
+  api: string;
+  chain: string;
+  contract: string;
+  image?: string;
+  title?: string;
+}
 
-  constructor(onChainModuleKeys?: { [apiName: string]: string }) {
+export interface TokenData {
+  api: string;
+  tokenId: string;
+  title?: string;
+  image?: string;
+  data?: string;
+}
+
+const DEFAULT_IPFS_BASE_URL = "https://gateway.pinata.cloud/ipfs/";
+
+export class OnChainTokenModule {
+  onChainApiConfig: OnChainApiConfig;
+  ipfsBaseUrl?: string;
+  hasIpfsSchemeSupport: boolean;
+
+  constructor(onChainModuleKeys?: { [apiName: string]: string }, ipfsBaseUrl?: string) {
     const moralisAPIKey =
       onChainModuleKeys?.moralis ??
       "WMrMeZLy2pajBLmwf1AUccxFzQy98OEMeDQPaTK8BcTI8XK2f9WZrVpjGYQcujSF";
@@ -102,12 +122,44 @@ export class OnChainTokenModule {
         },
       },
     };
+
+    this.ipfsBaseUrl = ipfsBaseUrl;
+
+    // @ts-ignore
+    this.hasIpfsSchemeSupport = (navigator.brave && navigator.brave.isBrave.name === "isBrave" || false);
   }
 
   getOnChainAPISupportBool(apiName: string, chain: string) {
     if (!this.onChainApiConfig[apiName]) return false;
 
     return this.onChainApiConfig[apiName].chainSupport.indexOf(chain) > -1;
+  }
+
+  /**
+   * Substitute public IPFS base URLs with the config provided URL.
+   */
+  transformImageUrl(url: string){
+
+    if (!url)
+      return url;
+
+    // Browser has IPFS support and a custom gateway is not specified
+    if (this.hasIpfsSchemeSupport && !this.ipfsBaseUrl)
+      return url;
+
+    let useBase = this.ipfsBaseUrl ?? DEFAULT_IPFS_BASE_URL;
+
+    if (url.indexOf("ipfs://") === 0){
+      return url.replace("ipfs://", useBase);
+    }
+
+    if (!this.ipfsBaseUrl)
+      return url;
+
+    // TODO: Transform non-public ipfs gateways into specified URL.
+    const regex = /https:\/\/gateway.pinata.cloud\/ipfs\//i
+
+    return url.replace(regex, useBase);
   }
 
   /**
@@ -183,8 +235,9 @@ export class OnChainTokenModule {
     contractAddress: string,
     chain: string,
     openSeaSlug: string
-  ) {
-    if (!this.getOnChainAPISupportBool("opensea", chain)) return;
+  ): Promise<ContractData|null> {
+
+    if (!this.getOnChainAPISupportBool("opensea", chain)) return null;
 
     const path = `/assets?asset_contract_address=${contractAddress}&collection=${openSeaSlug}&order_direction=desc&offset=0&limit=20`;
 
@@ -211,7 +264,8 @@ export class OnChainTokenModule {
     };
   }
 
-  async getContractDataMoralis(contractAddress: string, chain: string) {
+  async getContractDataMoralis(contractAddress: string, chain: string): Promise<ContractData|null> {
+
     if (!this.getOnChainAPISupportBool("moralis", chain)) return null;
 
     if (chain === "mainnet") chain = "eth";
@@ -239,18 +293,18 @@ export class OnChainTokenModule {
       api: "moralis",
       chain: chain,
       contract: contractAddress,
-      image: image,
+      image: this.transformImageUrl(image),
       title: response.result[0].name,
     };
   }
 
-  async getContractDataAlchemy(contractAddress: string, chain: string) {
-    if (!this.getOnChainAPISupportBool("alchemy", chain)) return;
+  async getContractDataAlchemy(contractAddress: string, chain: string): Promise<ContractData|null> {
+
+    if (!this.getOnChainAPISupportBool("alchemy", chain)) return null;
 
     // TODO Mainnet API end point is supported by only. Watch Alchemy docs for further support to learn tokens
     // without using the owners address.
 
-    if (chain === "eth" || chain === "mainnet") {
       const tokenId = "0";
       const withMetadata = "true";
       const path = `/getNFTsForCollection?contractAddress=${contractAddress}&cursorKey=${tokenId}&withMetadata=${withMetadata}`;
@@ -270,18 +324,15 @@ export class OnChainTokenModule {
         api: "alchemy",
         chain: chain,
         contract: contractAddress,
-        image: response.nfts[0].metadata.image,
+        image: this.transformImageUrl(response.nfts[0].metadata.image),
         title: response.nfts[0].title,
       };
-    } else {
-      return null;
-    }
   }
 
   async connectOnChainToken(issuer: OnChainTokenConfig, owner: string) {
     const { contract, chain, openSeaSlug } = issuer;
 
-    let tokens: any[] | undefined = [];
+    let tokens: {[tokenId: string]: TokenData} | undefined = {};
 
     if (
       contract.toLowerCase() == "0x22c1f6050e56d2876009903609a2cc3fef83b415"
@@ -289,16 +340,55 @@ export class OnChainTokenModule {
       return this.getTokensPOAP(owner);
     }
 
-    if (openSeaSlug !== undefined)
-      tokens = await this.getTokensOpenSea(contract, chain, owner, openSeaSlug);
+    if (openSeaSlug !== undefined) {
+      let openseaTokens = await this.getTokensOpenSea(contract, chain, owner, openSeaSlug);
+      tokens = this.mergeTokenMetadata(tokens, openseaTokens);
+    }
 
-    if (!tokens || !tokens.length)
-      tokens = await this.getTokensMoralis(contract, chain, owner);
+    if (!this.validateTokenMetadata(tokens)) {
+      let moralisTokens = await this.getTokensMoralis(contract, chain, owner);
+      tokens = this.mergeTokenMetadata(tokens, moralisTokens);
+    }
 
-    if (openSeaSlug === undefined && (!tokens || !tokens.length))
-      tokens = await this.getTokensAlchemy(contract, chain, owner);
+    if (!this.validateTokenMetadata(tokens) && openSeaSlug === undefined) {
+      let alchemyTokens = await this.getTokensAlchemy(contract, chain, owner);
+      tokens = this.mergeTokenMetadata(tokens, alchemyTokens);
+    }
 
-    return tokens;
+    console.log(tokens);
+
+    return Object.values(tokens); // TODO: Use object keyed by tokenId rather than an array in Client.
+  }
+
+  private mergeTokenMetadata(curTokens: {[tokenId: string]: TokenData}, tokens: TokenData[]): {[tokenId: string]: TokenData} {
+
+    for (let token of tokens){
+      if (!curTokens[token.tokenId]){
+        curTokens[token.tokenId] = token;
+        continue;
+      }
+
+      if (!curTokens[token.tokenId].title && token.title)
+        curTokens[token.tokenId].title = token.title;
+
+      if (!curTokens[token.tokenId].image && token.image)
+        curTokens[token.tokenId].image = token.image;
+    }
+
+    return curTokens;
+  }
+
+  private validateTokenMetadata(tokens:  {[tokenId: string]: TokenData}) : boolean {
+
+    if (!Object.keys(tokens).length)
+      return false;
+
+    for (let tokenId in tokens){
+      if (!tokens[tokenId].image || !tokens[tokenId].title)
+        return false;
+    }
+
+    return true;
   }
 
   async getTokensOpenSea(
@@ -308,7 +398,7 @@ export class OnChainTokenModule {
     openSeaSlug: string,
     offset = 0,
     limit = 20
-  ) {
+  ): Promise<TokenData[]> {
     if (!this.getOnChainAPISupportBool("opensea", chain)) return [];
 
     requiredParams(
@@ -320,11 +410,17 @@ export class OnChainTokenModule {
 
     return this.getDataOpensea(path, chain)
       .then((response: any) => {
-        return response.assets.map((item: any) => {
+
+        return response.assets.filter((item: any) => {
+          return item.token_id != null;
+        }).map((item: any) => {
+
           const image = item.image_url ? item.image_url : "";
           const title = item.name ? item.name : "";
+
           return {
             api: "opensea",
+            tokenId: item.token_id,
             title: title,
             image: image,
             data: item,
@@ -343,7 +439,7 @@ export class OnChainTokenModule {
     owner: string,
     offset = 0,
     limit = 20
-  ) {
+  ): Promise<TokenData[]> {
     if (!this.getOnChainAPISupportBool("moralis", chain)) return [];
 
     requiredParams(
@@ -357,18 +453,24 @@ export class OnChainTokenModule {
 
     const path = `/${owner}/nft/${address}?chain=${_chain}&format=decimal`;
 
-    return this.getDataMoralis(path, chain)
-      .then((response: any) => {
-        return response.result.map((item: any) => {
-          const parsedMetaObj = JSON.parse(item.metadata);
-          const image = parsedMetaObj.image ? parsedMetaObj.image : "";
-          const title = parsedMetaObj.name ? parsedMetaObj.name : "";
+    return this.getDataMoralis(path, chain).then((response: any) => {
+
+        return response.result.filter((item: any) => {
+          return item.token_id != null;
+        }).map((item: any) => {
+
+          let parsedMeta = null;
+
+          if (item.metadata){
+            parsedMeta = JSON.parse(item.metadata);
+          }
 
           return {
             api: "moralis",
-            title: title,
-            image: image,
-            data: parsedMetaObj,
+            tokenId: item.token_id,
+            title: parsedMeta?.title ? parsedMeta?.title : "",
+            image: parsedMeta?.image ? this.transformImageUrl(parsedMeta?.image) : "",
+            data: parsedMeta,
           };
         });
       })
@@ -378,18 +480,24 @@ export class OnChainTokenModule {
       });
   }
 
-  async getTokensAlchemy(address: string, chain: string, owner: string) {
+  async getTokensAlchemy(address: string, chain: string, owner: string): Promise<TokenData[]> {
     if (!this.getOnChainAPISupportBool("alchemy", chain)) return [];
 
     const path = `/getNFTs/?owner=${owner}&contractAddresses[]=${address}`;
 
-    this.getDataAlchemy(path, chain)
+    return this.getDataAlchemy(path, chain)
       .then((result) => {
-        return result.ownedNfts.map((item: any) => {
+        return result.ownedNfts.filter((item: any) => {
+          return item?.id.tokenId != null;
+        }).map((item: any) => {
+
+          const tokenId = Number(item.id.tokenId).toFixed(0);
+
           return {
             api: "alchemy",
+            tokenId: tokenId,
             title: item.title,
-            image: item.metadata.image,
+            image: this.transformImageUrl(item.metadata.image),
             data: item,
           };
         });
@@ -426,7 +534,7 @@ export class OnChainTokenModule {
 
     const config = this.getConfigForServiceAndChain("alchemy", chain);
 
-    let url = this.joinUrl(config.url, path);
+    let url = this.joinUrl(config.url, config.apiKey + path);
 
     return await this.httpJsonRequest(url, options);
   }

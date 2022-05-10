@@ -4,7 +4,7 @@ import {IconView} from "./icon-view";
 export interface TokenListItemInterface {
     tokenIssuerKey: string;
     title: string;
-    index: number;
+    index: string;
     image: string;
     data: any;
     toggleState: boolean;
@@ -148,12 +148,17 @@ export class TokenList extends AbstractView {
     createTokenMarkup(config: TokenListItemInterface) {
 
         const { tokenIssuerKey, title, data, index, image, toggleState } = config;
+
+        const tokenId = index.length > 15 ?
+            (index.substring(0, 5) + "..." + index.substring(index.length-5, index.length))
+            : index;
+
         return `
             <li class='token-tn'>
               <div class="img-container-tn image-tn shimmer-tn" data-image-src="${image}" data-token-title="${title}"></div>
               <div class='data-tn'>
                   <p class='token-title-tn'>${title}</p>
-                  <p class='detail-tn'>#${index}</p>
+                  <p class='detail-tn' title="${index}">#${(tokenId)}</p>
                 </div>
               <div class='toggle-tn'>
                 <input ${toggleState ? 'checked' : '' } data-key='${tokenIssuerKey}' data-token='${JSON.stringify(data)}' data-index='${index}' type='checkbox' name='toggle${index}' class='mobileToggle-tn toggle-tn' id='toggle${index}'>

@@ -1,5 +1,4 @@
 export interface OffChainTokenConfig extends TokenConfigInterface {
-    tokenIssuerPublicKey?: any;
     tokenName?: any;
     attestationOrigin?: any;
     tokenOrigin?: any;
@@ -13,7 +12,7 @@ export interface OffChainTokenConfig extends TokenConfigInterface {
     tokenParser?: any;
     smartContractAddress?: any;
     symbol?: any;
-    base64senderPublicKey?: string;
+    base64senderPublicKeys?: {[key: string]: string};
     base64attestorPubKey?: string;
 }
 

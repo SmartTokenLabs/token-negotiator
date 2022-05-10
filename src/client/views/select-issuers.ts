@@ -223,7 +223,7 @@ export class SelectIssuers extends AbstractView {
                 tokens.push({
                     data: t,
                     tokenIssuerKey: issuer,
-                    index: i,
+                    index: t.ticketId,
                     title: title,
                     image: image,
                     toggleState: isSelected
@@ -231,10 +231,12 @@ export class SelectIssuers extends AbstractView {
 
             } else {
 
+                const tokenId = t.tokenId ?? i.toString();
+
                 tokens.push({
                     data: t,
                     tokenIssuerKey: issuer,
-                    index: i,
+                    index: tokenId,
                     title: t.title,
                     image: t.image,
                     toggleState: isSelected

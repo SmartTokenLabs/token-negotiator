@@ -384,7 +384,7 @@
 
 .overlay-tn .overlay-content-tn .token-tn .image-tn {
   width: 89px;
-  min-height: 48px;
+  min-height: 89px;
   margin: 0 14px;
 }
 
@@ -500,11 +500,22 @@
   z-index: 200;
   background-color: rgba(52, 52, 52, 0.70);
   text-align: center;
-  color: #fff;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
+  font-size: 16px;
+  color: #fff;
+}
+
+.loader-msg-tn h4 {
+  color: #fff;
+  font-size: 16px;
+}
+
+.loader-msg-tn small {
+  color: #fff;
+  font-size: 13px;
 }
 
 /* loader */

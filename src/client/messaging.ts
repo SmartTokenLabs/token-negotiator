@@ -7,7 +7,7 @@ export interface MessageRequestInterface {
     action:MessageAction,
     origin:string,
     timeout?:number,
-    filter?: {},
+    filter?:{},
     token?:string,
     urlParams?:string
 }

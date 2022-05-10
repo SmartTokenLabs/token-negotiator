@@ -38,19 +38,7 @@ Within your application install the token negotiator:
   npm i @tokenscript/token-negotiator
 ```
 
-### In case if you want to use negotiator directly then you have to build UMD script 
-
-```npm run build-umd```
-
-and include _negotiator.js_ from _dist_ folder to the HTML page
-
-```<script type="text/javascript" src="./negotiator.js"></script>```
-
-In this case you have access to the _window.negotiator.Client_ and _window.negotiator.Outlet_
-
-Usage same as in [Passive Negotiation of tokens](#passive-negotiation-of-tokens)
-
-
+## Reading Tokens into a website or web application.
 
 This library provides two ways to load tokens into your application, active or passive. 
 
@@ -63,12 +51,17 @@ This approach embeds a html element UI widget into the web page. The end user ca
 To start, first include the following html element into your page, this is where the token negotiator overlay widget will be embedded into the page.
 
 ````html
-    <div class="overlay-tn"></div>
+  <div class="overlay-tn"></div>
 ````
 
-Include the following Javascript to configure the Token Negotiator. 
+Add the library and styles for the UI component.
 
-Add issuers with tokens that you wish for your website to recognise. 
+```javascript
+  import { Client } from '@tokenscript/token-negotiator';
+  import "@tokenscript/token-negotiator/dist/theme/style.css";
+```
+
+Include the following Javascript to configure the Token Negotiator with issuers that your website will recognise. 
 
 ```javascript
   
@@ -313,6 +306,17 @@ Key values applied to all tokens.
 
 ````
 
+## Token Issuers
+
+```javascript
+import { client, outlet } from '@tokenscript/token-negotiator';
+```
+
+For token issuers (using off chain attestations), ensure you have been provided an attestation schema file will enable the Token Negotiator to:
+
+- Interpret tokens
+- Decode them to provide meta to the client (either the page this is installed, or cross origin)
+
 ## New Token Issuers
 
 Please reach out to us at <sayhi@smarttokenlabs.com>
@@ -331,7 +335,6 @@ Please contact us or open an issue via github:
 sayhi@smarttokenlabs.com
 
 ### Quick Start with Vue, React or Svelte
-
 
 https://github.com/TokenScript/token-negotiator/wiki/quick-start-Vue
 
