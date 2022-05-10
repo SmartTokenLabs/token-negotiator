@@ -351,23 +351,30 @@ export class Client {
 	async authenticateOffChain(authRequest: AuthenticateInterface){
 
 		const { issuer, unsignedToken } = authRequest;
-		const tokensOrigin = this.tokenLookup[issuer].tokenOrigin;
+		const tokenConfig = this.tokenLookup[issuer];
 
-		const useEthKey = await this.checkPublicAddressMatch(issuer, unsignedToken);
+		let useEthKey = null;
 
-		if (!useEthKey) {
-			throw new Error("Address does not match")
+		// useEthKey is not required when using the proof in a smart contract - UN endpoint config can be removed to prevent this check
+		// TODO: Make this an explicit setting passed to the authenticate function
+		if (config.unEndPoint) {
+			useEthKey = await this.checkPublicAddressMatch(issuer, unsignedToken);
+
+			if (!useEthKey) {
+				throw new Error("Address does not match")
+			}
 		}
 
 		let data = await this.messaging.sendMessage({
 			issuer: issuer,
 			action: MessageAction.GET_PROOF,
-			origin: tokensOrigin,
+			origin: tokenConfig.tokenOrigin,
 			token: unsignedToken,
 			timeout: 0 // Don't time out on this event as it needs active input from the user
 		});
 
-		Authenticator.validateUseTicket(data.proof, this.tokenLookup[issuer].base64attestorPubKey, this.tokenLookup[issuer].base64senderPublicKeys, useEthKey.address);
+		if (useEthKey)
+			Authenticator.validateUseTicket(data.proof, this.tokenLookup[issuer].base64attestorPubKey, this.tokenLookup[issuer].base64senderPublicKeys, useEthKey.address);
 
 		// TODO: Provide object that include useEthKey object
 		return data;
