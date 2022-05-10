@@ -1,7 +1,7 @@
 const babelOptions = {
-    parserOpts: {
-        'allowReturnOutsideFunction': true
-    },
+	parserOpts: {
+		'allowReturnOutsideFunction': true
+	},
 };
 
 // eslint-disable-next-line no-undef, @typescript-eslint/no-var-requires

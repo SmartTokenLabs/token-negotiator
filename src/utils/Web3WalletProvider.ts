@@ -5,237 +5,237 @@ import { ethers } from "ethers";
 
 class Web3WalletProvider {
 
-    state: any;
+	state: any;
 
-    constructor() {
+	constructor() {
 
-        this.state = { addresses: [ /* { address, chainId, provider } */ ] };
+		this.state = { addresses: [ /* { address, chainId, provider } */ ] };
         
-    }
+	}
 
-    async connectWith ( walletType: string ) {
+	async connectWith ( walletType: string ) {
 
-        if(!walletType) throw new Error('Please provide a Wallet type to connect with.');
+		if(!walletType) throw new Error('Please provide a Wallet type to connect with.');
 
-        if(this[walletType as keyof Web3WalletProvider]) {
+		if(this[walletType as keyof Web3WalletProvider]) {
             
-            const address = await this[walletType as keyof Web3WalletProvider]();
+			const address = await this[walletType as keyof Web3WalletProvider]();
 
-            console.log('address', address);
+			console.log('address', address);
 
-            return address;
+			return address;
              
-        } else {
+		} else {
 
-            throw new Error('Wallet type not found');
+			throw new Error('Wallet type not found');
 
-        }
+		}
 
-    };
+	}
 
-    async signWith ( message: string, walletData: any ) {
+	async signWith ( message: string, walletData: any ) {
 
-        let provider = new ethers.providers.Web3Provider(walletData.provider);
+		let provider = new ethers.providers.Web3Provider(walletData.provider);
 
-        let signer = provider.getSigner();
+		let signer = provider.getSigner();
   
-        return await signer.signMessage(message);
+		return await signer.signMessage(message);
 
-    }
+	}
 
-    getConnectedWalletData () {
+	getConnectedWalletData () {
 
-        return this.state.addresses;
+		return this.state.addresses;
 
-    }
+	}
 
-    registerNewWalletAddress ( address:string, chainId:string, provider:any ) {
+	registerNewWalletAddress ( address: string, chainId: string, provider: any ) {
         
-        this.state.addresses.push({ address, chainId, provider });
+		this.state.addresses.push({ address, chainId, provider });
 
-        return this.state.addresses;
+		return this.state.addresses;
 
-    };
+	}
 
-    async getWeb3ChainId ( web3: any) {
+	async getWeb3ChainId ( web3: any) {
 
-        return web3.eth.getChainId();
+		return web3.eth.getChainId();
 
-    };
+	}
 
-    async getWeb3Accounts( web3: any ) {
+	async getWeb3Accounts( web3: any ) {
 
-        return web3.eth.getAccounts();
+		return web3.eth.getAccounts();
 
-    };
+	}
 
-    async getWeb3ChainIdAndAccounts( web3: any ) {
+	async getWeb3ChainIdAndAccounts( web3: any ) {
 
-        const chainId = await this.getWeb3ChainId( web3 );
+		const chainId = await this.getWeb3ChainId( web3 );
         
-        const accounts = await this.getWeb3Accounts( web3 );
+		const accounts = await this.getWeb3Accounts( web3 );
 
-        return { chainId, accounts };
+		return { chainId, accounts };
 
-    };
+	}
 
-    async MetaMask () {
+	async MetaMask () {
 
-        console.log('connect MetaMask');
+		console.log('connect MetaMask');
       
-        if (typeof window.ethereum !== 'undefined') {
+		if (typeof window.ethereum !== 'undefined') {
 
-            //@ts-ignore
-            // await ethereum.enable(); // fall back may be needed for FF to open Extension Prompt.
+			// @ts-ignore
+			// await ethereum.enable(); // fall back may be needed for FF to open Extension Prompt.
             
-            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+			const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             
-            const hexChainId = await window.ethereum.request({ method: 'eth_chainId' });
+			const hexChainId = await window.ethereum.request({ method: 'eth_chainId' });
 
-            const accountAddress = accounts[0];
+			const accountAddress = accounts[0];
 
-            // @ts-ignore
-            const registeredWalletAddress = this.registerNewWalletAddress(accountAddress, parseInt(hexChainId, 16), ethereum);
+			// @ts-ignore
+			const registeredWalletAddress = this.registerNewWalletAddress(accountAddress, parseInt(hexChainId, 16), ethereum);
 
-            return registeredWalletAddress;
+			return registeredWalletAddress;
 
-        } else {
+		} else {
 
-            throw new Error("MetaMask is not available. Please check the extension is supported and active.");
+			throw new Error("MetaMask is not available. Please check the extension is supported and active.");
 
-        }
+		}
         
-    };
+	}
 
-    async WalletConnect () {
+	async WalletConnect () {
 
-        console.log('connect Wallet Connect');
+		console.log('connect Wallet Connect');
 
-        return new Promise((resolve, reject) => {
+		return new Promise((resolve, reject) => {
 
-            try {
+			try {
 
-                const walletConnectProvider = new WalletConnectProvider({
-                    infuraId: "7753fa7b79d2469f97c156780fce37ac",
-                });
+				const walletConnectProvider = new WalletConnectProvider({
+					infuraId: "7753fa7b79d2469f97c156780fce37ac",
+				});
 
-                walletConnectProvider.on("accountsChanged", (accounts: string[]) => {
+				walletConnectProvider.on("accountsChanged", (accounts: string[]) => {
 
-                    console.log(accounts);
+					console.log(accounts);
 
-                    const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], '1', walletConnectProvider);
+					const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], '1', walletConnectProvider);
 
-                    resolve(registeredWalletAddress);
+					resolve(registeredWalletAddress);
 
-                });
+				});
 
-                walletConnectProvider.on("chainChanged", (chainId: number) => {
+				walletConnectProvider.on("chainChanged", (chainId: number) => {
 
-                    console.log(chainId);
+					console.log(chainId);
 
-                });
+				});
 
-                walletConnectProvider.on("disconnect", (code: number, reason: string) => {
+				walletConnectProvider.on("disconnect", (code: number, reason: string) => {
 
-                    console.log(code, reason);
+					console.log(code, reason);
 
-                });
+				});
 
-                walletConnectProvider.enable().catch(e => {
-                    reject(e);
-                });
+				walletConnectProvider.enable().catch(e => {
+					reject(e);
+				});
 
-            } catch (e){
-                reject(e);
-            }
+			} catch (e){
+				reject(e);
+			}
 
-        });
+		});
 
-    };
+	}
 
-    async Torus () {
+	async Torus () {
 
-        console.log('connect Torus');
+		console.log('connect Torus');
 
-        const torus = new Torus();
+		const torus = new Torus();
         
-        await torus.init();
+		await torus.init();
 
-        await torus.login();
+		await torus.login();
         
-        // @ts-ignore
-        const web3 = new Web3(torus.provider);
+		// @ts-ignore
+		const web3 = new Web3(torus.provider);
 
-        const { accounts, chainId } = await this.getWeb3ChainIdAndAccounts( web3 );
+		const { accounts, chainId } = await this.getWeb3ChainIdAndAccounts( web3 );
 
-        const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], chainId, torus.provider);
+		const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], chainId, torus.provider);
 
-        return registeredWalletAddress;
+		return registeredWalletAddress;
 
-    };
+	}
 
-    // async Fortmatic () {
+	// async Fortmatic () {
 
-    //     console.log('connect Fortmatic');
+	//     console.log('connect Fortmatic');
 
-    //     // https://replit.com/@fortmatic/demo-kitchen-sink
+	//     // https://replit.com/@fortmatic/demo-kitchen-sink
 
-    //     // const fm = new Fortmatic('pk_test_96DF5BB9127A2C79');
+	//     // const fm = new Fortmatic('pk_test_96DF5BB9127A2C79');
 
-    //     const fm = new Fortmatic('pk_live_7F5E8827DC55A364');
+	//     const fm = new Fortmatic('pk_live_7F5E8827DC55A364');
         
-    //     const fortmaticProvider = fm.getProvider();
+	//     const fortmaticProvider = fm.getProvider();
 
-    //     // @ts-ignore
-    //     const web3 = new Web3(fortmaticProvider);
+	//     // @ts-ignore
+	//     const web3 = new Web3(fortmaticProvider);
 
-    //     const { accounts, chainId } = await this.getWeb3ChainIdAndAccounts( web3 );
+	//     const { accounts, chainId } = await this.getWeb3ChainIdAndAccounts( web3 );
 
-    //     const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], chainId, fortmaticProvider);
+	//     const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], chainId, fortmaticProvider);
 
-    //     return registeredWalletAddress;
+	//     return registeredWalletAddress;
 
-    // };
+	// };
 
-    // async Portis () {
+	// async Portis () {
 
-    //     console.log('connect Portis');
+	//     console.log('connect Portis');
 
-    //     // https://docs.portis.io/#/methods
+	//     // https://docs.portis.io/#/methods
 
-    //     const portis = new Portis("211b48db-e8cc-4b68-82ad-bf781727ea9e", "rinkeby");
+	//     const portis = new Portis("211b48db-e8cc-4b68-82ad-bf781727ea9e", "rinkeby");
 
-    //     portis.onError(error => { console.log('portis error', error) });
+	//     portis.onError(error => { console.log('portis error', error) });
 
-    //     const web3 = new Web3(portis.provider);
+	//     const web3 = new Web3(portis.provider);
 
-    //     const { accounts, chainId } = await this.getWeb3ChainIdAndAccounts( web3 );
+	//     const { accounts, chainId } = await this.getWeb3ChainIdAndAccounts( web3 );
 
-    //     const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], chainId, portis.provider);
+	//     const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], chainId, portis.provider);
 
-    //     return registeredWalletAddress;
+	//     return registeredWalletAddress;
         
-    // };
+	// };
 
-    // async Authereum  () {
+	// async Authereum  () {
 
-    //     console.log('connect Authereum');
+	//     console.log('connect Authereum');
 
-    //     const authereum = new Authereum('kovan');
+	//     const authereum = new Authereum('kovan');
 
-    //     const authereumProvider = authereum.getProvider();
+	//     const authereumProvider = authereum.getProvider();
 
-    //     const web3 = new Web3(authereumProvider);
+	//     const web3 = new Web3(authereumProvider);
 
-    //     await authereumProvider.enable();
+	//     await authereumProvider.enable();
 
-    //     const { accounts, chainId } = await this.getWeb3ChainIdAndAccounts( web3 );
+	//     const { accounts, chainId } = await this.getWeb3ChainIdAndAccounts( web3 );
 
-    //     const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], chainId, authereumProvider);
+	//     const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], chainId, authereumProvider);
 
-    //     return registeredWalletAddress;
+	//     return registeredWalletAddress;
 
-    // };
+	// };
 
 }
 

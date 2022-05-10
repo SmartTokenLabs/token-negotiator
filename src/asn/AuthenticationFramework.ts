@@ -8,7 +8,7 @@ export class AlgorithmIdentifierASN {
 }
 
 export class Version {
-    @AsnProp({ type: AsnPropTypes.Integer }) public version: number = 0;// Version ::= INTEGER { v1(0), v2(1), v3(2) }
+    @AsnProp({ type: AsnPropTypes.Integer }) public version = 0;// Version ::= INTEGER { v1(0), v2(1), v3(2) }
 }
 
 // export class CertificateSerialNumber {
@@ -22,7 +22,7 @@ export class Version {
 @AsnType({ type: AsnTypeTypes.Choice })
 class Time {
     @AsnProp({ type: AsnPropTypes.UTCTime})
-    public utcTime?: AsnPropTypes.UTCTime;
+	public utcTime?: AsnPropTypes.UTCTime;
     @AsnProp({ type: AsnPropTypes.GeneralizedTime })
     public generalizedTime?: Date;
 }
@@ -37,21 +37,21 @@ export class ValidityValue {
 @AsnType({ type: AsnTypeTypes.Choice })
 class Validity {
     @AsnProp({ type: ValidityValue, context: 0 })
-    public value?: ValidityValue;
+	public value?: ValidityValue;
     @AsnProp({ type: AsnPropTypes.Integer, context: 1 })
     public null?: null;
 }
 
 export class Extension {
     @AsnProp({ type: AsnPropTypes.ObjectIdentifier })
-    public extnId!: string;
+	public extnId!: string;
     @AsnProp({ type: AsnPropTypes.Boolean })
     public critical!: boolean;
     @AsnProp({ type: AsnPropTypes.OctetString })
     public extnValue!: Uint8Array;
 }
 
-export class Extensions { //SEQUENCE OF Extension
+export class Extensions { // SEQUENCE OF Extension
     @AsnProp({ type: Extension }) public extension!: Extension;
 }
 

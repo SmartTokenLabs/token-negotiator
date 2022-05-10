@@ -18,13 +18,13 @@ export class DevconTicket {
 
 export class PublicKeyInfo {
     @AsnProp({ type: AlgorithmIdentifierASN }) public algorithm!: AlgorithmIdentifierASN;
-    @AsnProp({ type: AsnPropTypes.BitString }) public publicKey!:AsnPropTypes.BitString;
+    @AsnProp({ type: AsnPropTypes.BitString }) public publicKey!: AsnPropTypes.BitString;
 }
 
 export class SignedDevconTicket {
 
     @AsnProp({ type: DevconTicket })
-    public ticket!: DevconTicket;
+	public ticket!: DevconTicket;
 
     @AsnProp({ type: AsnPropTypes.OctetString, optional: true }) public commitment?: Uint8Array;
 

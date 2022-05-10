@@ -54,10 +54,10 @@
             "undefined"
         ],
         "id-match": "error",
-        "indent": "off",
+        "indent": ["error", "tab"],
         "no-eval": "error",
         "no-redeclare": "error",
-        "no-trailing-spaces": "error",
+        "no-trailing-spaces": "off",
         "no-underscore-dangle": "off",
         "no-var": "error",
         "prefer-const": "off",

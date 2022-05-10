@@ -12,148 +12,148 @@ export interface TokenListItemInterface {
 
 export class TokenList extends AbstractView {
 
-    loadedCount:number = 0;
-    numberToLoad:number = 25;
-    autoLoadMore = true; // TODO: Expose as option?
-    interceptObs:IntersectionObserver|undefined;
+	loadedCount = 0;
+	numberToLoad = 25;
+	autoLoadMore = true; // TODO: Expose as option?
+	interceptObs: IntersectionObserver|undefined;
 
-    init() {
-        this.viewContainer.addEventListener('click', (e: any) => {
-            if (e.target.classList.contains('mobileToggle-tn')) {
-                this.tokenToggleSelection();
-            } else if (e.target.classList.contains('load-more-btn-tn')) {
-                this.loadMoreTokens();
-            }
-        });
-    }
+	init() {
+		this.viewContainer.addEventListener('click', (e: any) => {
+			if (e.target.classList.contains('mobileToggle-tn')) {
+				this.tokenToggleSelection();
+			} else if (e.target.classList.contains('load-more-btn-tn')) {
+				this.loadMoreTokens();
+			}
+		});
+	}
 
-    render(): void {
+	render(): void {
 
-        this.loadedCount = 0;
+		this.loadedCount = 0;
 
-        this.viewContainer.innerHTML = this.getTokenListItems();
+		this.viewContainer.innerHTML = this.getTokenListItems();
 
-        this.renderIcons();
+		this.renderIcons();
 
-        if (this.autoLoadMore){
-            let loadMoreElem = this.viewContainer.querySelector('.load-more-tn');
+		if (this.autoLoadMore){
+			let loadMoreElem = this.viewContainer.querySelector('.load-more-tn');
 
-            if (loadMoreElem) {
+			if (loadMoreElem) {
 
-                if (!this.interceptObs)
-                    this.interceptObs = new IntersectionObserver((payload) => {
-                        if (payload[0].isIntersecting) {
-                            this.loadMoreTokens();
-                        }
-                    }, {root: document.querySelector('.view-content-tn')});
+				if (!this.interceptObs)
+					this.interceptObs = new IntersectionObserver((payload) => {
+						if (payload[0].isIntersecting) {
+							this.loadMoreTokens();
+						}
+					}, {root: document.querySelector('.view-content-tn')});
 
-                this.interceptObs.observe(loadMoreElem);
-            }
-        }
-    }
+				this.interceptObs.observe(loadMoreElem);
+			}
+		}
+	}
 
-    getTokenListItems(){
+	getTokenListItems(){
 
-        let html = "";
+		let html = "";
 
-        let newCount = Math.min((this.loadedCount + this.numberToLoad), this.params.tokens.length);
+		let newCount = Math.min((this.loadedCount + this.numberToLoad), this.params.tokens.length);
 
-        for (let i:number = this.loadedCount; i < newCount; i++){
-            html += this.createTokenMarkup(this.params.tokens[i]);
-        }
+		for (let i: number = this.loadedCount; i < newCount; i++){
+			html += this.createTokenMarkup(this.params.tokens[i]);
+		}
 
-        this.loadedCount = newCount;
+		this.loadedCount = newCount;
 
-        if (this.loadedCount < this.params.tokens.length)
-            html += this.createLoadMoreMarkup();
+		if (this.loadedCount < this.params.tokens.length)
+			html += this.createLoadMoreMarkup();
 
-        return html;
-    }
+		return html;
+	}
 
-    loadMoreTokens(){
+	loadMoreTokens(){
 
-        let loadMoreElem = this.viewContainer.getElementsByClassName('load-more-tn')[0];
+		let loadMoreElem = this.viewContainer.getElementsByClassName('load-more-tn')[0];
 
-        if (this.interceptObs)
-            this.interceptObs.unobserve(loadMoreElem);
+		if (this.interceptObs)
+			this.interceptObs.unobserve(loadMoreElem);
 
-        // This is required because updating innerHTML resets the DOM state for previously added elements
-        // i.e. tokens that have been selected appear as unselected
-        loadMoreElem.insertAdjacentHTML('afterend', this.getTokenListItems());
-        loadMoreElem.remove();
+		// This is required because updating innerHTML resets the DOM state for previously added elements
+		// i.e. tokens that have been selected appear as unselected
+		loadMoreElem.insertAdjacentHTML('afterend', this.getTokenListItems());
+		loadMoreElem.remove();
 
-        this.renderIcons();
+		this.renderIcons();
 
-        if (this.interceptObs) {
-            let loadMoreElem = this.viewContainer.querySelector('.load-more-tn');
-            if (loadMoreElem)
-                this.interceptObs.observe(loadMoreElem);
-        }
-    }
+		if (this.interceptObs) {
+			let loadMoreElem = this.viewContainer.querySelector('.load-more-tn');
+			if (loadMoreElem)
+				this.interceptObs.observe(loadMoreElem);
+		}
+	}
 
-    private renderIcons(){
+	private renderIcons(){
 
-        for(let elem of this.viewContainer.getElementsByClassName('img-container-tn')){
+		for(let elem of this.viewContainer.getElementsByClassName('img-container-tn')){
 
-            // ignore already rendered icons
-            if (elem.querySelector('img'))
-                continue;
+			// ignore already rendered icons
+			if (elem.querySelector('img'))
+				continue;
 
-            let params = {
-                src: elem.getAttribute('data-image-src'),
-                title: elem.getAttribute('data-token-title'),
-            };
+			let params = {
+				src: elem.getAttribute('data-image-src'),
+				title: elem.getAttribute('data-token-title'),
+			};
 
-            new IconView(elem, params).render();
-        }
-    }
+			new IconView(elem, params).render();
+		}
+	}
 
-    // TODO: probably don't need to iterate all inputs.
-    tokenToggleSelection() {
+	// TODO: probably don't need to iterate all inputs.
+	tokenToggleSelection() {
 
-        let selectedTokens = this.client.getTokenData().selectedTokens;
+		let selectedTokens = this.client.getTokenData().selectedTokens;
 
-        this.viewContainer.querySelectorAll('.mobileToggle-tn').forEach((token: any, index: number) => {
+		this.viewContainer.querySelectorAll('.mobileToggle-tn').forEach((token: any, index: number) => {
 
-            if (index === 0) {
+			if (index === 0) {
 
-                selectedTokens[token.dataset.key] = {};
-                selectedTokens[token.dataset.key]['tokens'] = [];
-            }
+				selectedTokens[token.dataset.key] = {};
+				selectedTokens[token.dataset.key]['tokens'] = [];
+			}
 
-            if (token.checked === true) {
+			if (token.checked === true) {
 
-                let output = JSON.parse(token.dataset.token);
+				let output = JSON.parse(token.dataset.token);
 
-                selectedTokens[token.dataset.key].tokens.push(output);
-            }
+				selectedTokens[token.dataset.key].tokens.push(output);
+			}
 
-        });
+		});
 
-        console.log("Tokens selected:");
-        console.log(selectedTokens);
+		console.log("Tokens selected:");
+		console.log(selectedTokens);
 
-        this.client.updateSelectedTokens(selectedTokens);
+		this.client.updateSelectedTokens(selectedTokens);
 
-    }
+	}
 
-    createLoadMoreMarkup(){
-        return `
+	createLoadMoreMarkup(){
+		return `
             <li class='load-more-tn'>
                 <button class="load-more-btn-tn btn-tn">Load More</button>
             </li>
         `;
-    }
+	}
 
-    createTokenMarkup(config: TokenListItemInterface) {
+	createTokenMarkup(config: TokenListItemInterface) {
 
-        const { tokenIssuerKey, title, data, index, image, toggleState } = config;
+		const { tokenIssuerKey, title, data, index, image, toggleState } = config;
 
-        const tokenId = index.length > 15 ?
-            (index.substring(0, 5) + "..." + index.substring(index.length-5, index.length))
-            : index;
+		const tokenId = index.length > 15 ?
+			(index.substring(0, 5) + "..." + index.substring(index.length-5, index.length))
+			: index;
 
-        return `
+		return `
             <li class='token-tn'>
               <div class="img-container-tn image-tn shimmer-tn" data-image-src="${image}" data-token-title="${title}"></div>
               <div class='data-tn'>
@@ -166,5 +166,5 @@ export class TokenList extends AbstractView {
               </div>
             </li>
         `;
-    }
+	}
 }

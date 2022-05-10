@@ -3,8 +3,8 @@ import {SelectWallet} from "./select-wallet";
 
 export class Start extends AbstractView {
 
-    render(){
-        this.viewContainer.innerHTML = `
+	render(){
+		this.viewContainer.innerHTML = `
             <div class="opening-content-view-tn">
               <div class="brand-tn"></div>
               <div class="inner-content-tn">
@@ -16,11 +16,11 @@ export class Start extends AbstractView {
             </div>
         `;
 
-        this.viewContainer.querySelector('.opening-btn-tn').addEventListener('click', this.goToWalletSelection.bind(this));
-    }
+		this.viewContainer.querySelector('.opening-btn-tn').addEventListener('click', this.goToWalletSelection.bind(this));
+	}
 
-    goToWalletSelection(){
-        this.popup.updatePopup(SelectWallet);
-    }
+	goToWalletSelection(){
+		this.popup.updatePopup(SelectWallet);
+	}
 
 }

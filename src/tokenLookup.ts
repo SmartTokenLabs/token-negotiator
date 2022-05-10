@@ -41,4 +41,4 @@ interface TokenLookupInterface { [issuer: string]: OffChainTokenConfig|OnChainTo
         { ... }
     }
 */
-export const tokenLookup:TokenLookupInterface = {};
+export const tokenLookup: TokenLookupInterface = {};

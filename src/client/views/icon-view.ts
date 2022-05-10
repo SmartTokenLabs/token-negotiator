@@ -2,97 +2,97 @@
 
 export class IconView {
 
-    viewContainer:any;
-    params:any = {};
+	viewContainer: any;
+	params: any = {};
 
-    constructor(viewContainer:any, params:any) {
-        this.viewContainer = viewContainer;
-        this.params = params;
-    }
+	constructor(viewContainer: any, params: any) {
+		this.viewContainer = viewContainer;
+		this.params = params;
+	}
 
 
-    render(): void {
+	render(): void {
 
-        let src = this.params.src;
-        let image;
+		let src = this.params.src;
+		let image;
 
-        if (src && src != "undefined"){
+		if (src && src != "undefined"){
 
-            // Create image elements and add onload/onerror events
-            image = document.createElement('img');
-            image.loading = "lazy";
-            image.addEventListener('load', (e:Event)=>{
-                this.onLoad(e);
-            });
-            image.addEventListener('error', (e:Event)=>{
-                this.onError(e);
-            });
-            image.src = src;
+			// Create image elements and add onload/onerror events
+			image = document.createElement('img');
+			image.loading = "lazy";
+			image.addEventListener('load', (e: Event)=>{
+				this.onLoad(e);
+			});
+			image.addEventListener('error', (e: Event)=>{
+				this.onError(e);
+			});
+			image.src = src;
 
-        } else {
-            image = this.createAvatar();
-            this.viewContainer.classList.remove('shimmer-tn');
-        }
+		} else {
+			image = this.createAvatar();
+			this.viewContainer.classList.remove('shimmer-tn');
+		}
 
-        this.viewContainer.appendChild(image);
+		this.viewContainer.appendChild(image);
 
-    }
+	}
 
-    onLoad(e:Event){
-        this.viewContainer.classList.remove('shimmer-tn');
-    }
+	onLoad(e: Event){
+		this.viewContainer.classList.remove('shimmer-tn');
+	}
 
-    onError(e:Event){
-        this.viewContainer.innerHTML = "";
-        this.viewContainer.appendChild(this.createAvatar());
-        this.viewContainer.classList.remove('shimmer-tn');
-    }
+	onError(e: Event){
+		this.viewContainer.innerHTML = "";
+		this.viewContainer.appendChild(this.createAvatar());
+		this.viewContainer.classList.remove('shimmer-tn');
+	}
 
-    private createAvatar(){
-        let image = document.createElement('img');
+	private createAvatar(){
+		let image = document.createElement('img');
 
-        image.src = this.generateAvatar(this.params.title);
+		image.src = this.generateAvatar(this.params.title);
 
-        return image;
-    }
+		return image;
+	}
 
-    private generateAvatar(text:string) {
+	private generateAvatar(text: string) {
 
-        const canvas = document.createElement("canvas");
-        const context = canvas.getContext("2d");
+		const canvas = document.createElement("canvas");
+		const context = canvas.getContext("2d");
 
-        canvas.width = 200;
-        canvas.height = 200;
+		canvas.width = 200;
+		canvas.height = 200;
 
-        if (!context)
-            return "";
+		if (!context)
+			return "";
 
-        // Draw background
-        context.fillStyle = this.getRandomBackgroundColor();
-        context.fillRect(0, 0, canvas.width, canvas.height);
+		// Draw background
+		context.fillStyle = this.getRandomBackgroundColor();
+		context.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Draw text
-        context.font = "bold 100px 'Arial', sans-serif";
-        context.fillStyle = "#fff";
-        context.textAlign = "center";
-        context.textBaseline = "middle";
+		// Draw text
+		context.font = "bold 100px 'Arial', sans-serif";
+		context.fillStyle = "#fff";
+		context.textAlign = "center";
+		context.textBaseline = "middle";
 
-        let words = text.split(" ");
-        let initials = "";
+		let words = text.split(" ");
+		let initials = "";
 
-        for (let i=0; initials.length < 2 && i < words.length; i++){
-            let chars = words[i].split('');
-            if (chars.length)
-                initials += chars[0].toUpperCase();
-        }
+		for (let i=0; initials.length < 2 && i < words.length; i++){
+			let chars = words[i].split('');
+			if (chars.length)
+				initials += chars[0].toUpperCase();
+		}
 
-        context.fillText(initials, canvas.width / 2, canvas.height / 2);
+		context.fillText(initials, canvas.width / 2, canvas.height / 2);
 
-        return canvas.toDataURL("image/png");
-    }
+		return canvas.toDataURL("image/png");
+	}
 
-    private getRandomBackgroundColor(){
-        // TODO: Add background colors
-        return "#0029a7";
-    }
+	private getRandomBackgroundColor(){
+		// TODO: Add background colors
+		return "#0029a7";
+	}
 }

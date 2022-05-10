@@ -14,203 +14,203 @@ interface OutletInterface {
 }
 
 class readSignedTicket {
-  ticket: any;
-  constructor (source: any) {
+	ticket: any;
+	constructor (source: any) {
 
-      const signedDevconTicket: SignedDevconTicket = AsnParser.parse(uint8toBuffer(source), SignedDevconTicket);
+		const signedDevconTicket: SignedDevconTicket = AsnParser.parse(uint8toBuffer(source), SignedDevconTicket);
 
-      this.ticket = signedDevconTicket.ticket;
+		this.ticket = signedDevconTicket.ticket;
 
-      console.log(this.ticket);
-  }
+		console.log(this.ticket);
+	}
 }
 
 export class Outlet {
 
-  tokenConfig: any;
-  urlParams?: URLSearchParams;
+	tokenConfig: any;
+	urlParams?: URLSearchParams;
 
-  constructor(config: OutletInterface) {
+	constructor(config: OutletInterface) {
 
-    this.tokenConfig = config;
+		this.tokenConfig = config;
 
-    // set default tokenReader
-    if (!this.tokenConfig.tokenParser) {
-      this.tokenConfig.tokenParser = readSignedTicket;
-    }
+		// set default tokenReader
+		if (!this.tokenConfig.tokenParser) {
+			this.tokenConfig.tokenParser = readSignedTicket;
+		}
 
-    this.pageOnLoadEventHandler();
+		this.pageOnLoadEventHandler();
 
-  };
+	}
 
-  getDataFromQuery ( itemKey:any ) {
-    return this.urlParams ? this.urlParams.get(itemKey) : undefined;
-  }
+	getDataFromQuery ( itemKey: any ) {
+		return this.urlParams ? this.urlParams.get(itemKey) : undefined;
+	}
 
-  getFilter(){
-    const filter = this.getDataFromQuery('filter');
-    return filter ? JSON.parse(filter) : {};
-  }
+	getFilter(){
+		const filter = this.getDataFromQuery('filter');
+		return filter ? JSON.parse(filter) : {};
+	}
 
-  pageOnLoadEventHandler () {
+	pageOnLoadEventHandler () {
 
-    let params = window.location.hash.length > 1 ? "?"+window.location.hash.substring(1) : window.location.search;
-    this.urlParams = new URLSearchParams(params);
+		let params = window.location.hash.length > 1 ? "?"+window.location.hash.substring(1) : window.location.search;
+		this.urlParams = new URLSearchParams(params);
 
-    const evtid = this.getDataFromQuery('evtid');
-    const action = this.getDataFromQuery('action');
+		const evtid = this.getDataFromQuery('evtid');
+		const action = this.getDataFromQuery('action');
 
-    // disable this check, because mostly user will open MagicLink from QR code reader or by MagicLink click at email, so document.referrer will be empty
-    // if (!document.referrer && !this.getDataFromQuery('DEBUG'))
-    //   return;
+		// disable this check, because mostly user will open MagicLink from QR code reader or by MagicLink click at email, so document.referrer will be empty
+		// if (!document.referrer && !this.getDataFromQuery('DEBUG'))
+		//   return;
 
-    console.log("Outlet received event ID " + evtid + " action " + action);
-    // Outlet Page OnLoad Event Handler
+		console.log("Outlet received event ID " + evtid + " action " + action);
+		// Outlet Page OnLoad Event Handler
 
-    // TODO: should issuer be validated against requested issuer?
+		// TODO: should issuer be validated against requested issuer?
 
-    switch (action) {
+		switch (action) {
 
-      case MessageAction.GET_ISSUER_TOKENS:
+		case MessageAction.GET_ISSUER_TOKENS:
 
-        this.sendTokens(evtid);
+			this.sendTokens(evtid);
 
-        break;
+			break;
 
-      case MessageAction.GET_PROOF:
+		case MessageAction.GET_PROOF:
 
-        const token = this.getDataFromQuery('token');
+			const token = this.getDataFromQuery('token');
 
-        requiredParams(token, "unsigned token is missing");
+			requiredParams(token, "unsigned token is missing");
 
-        this.sendTokenProof(evtid, token);
+			this.sendTokenProof(evtid, token);
 
-        break;
+			break;
 
-      case MessageAction.COOKIE_CHECK:
+		case MessageAction.COOKIE_CHECK:
 
-        this.sendMessageResponse({
-          evtid: evtid,
-          evt: MessageResponseAction.COOKIE_CHECK,
-          thirdPartyCookies: localStorage.getItem('cookie-support-check')
-        })
+			this.sendMessageResponse({
+				evtid: evtid,
+				evt: MessageResponseAction.COOKIE_CHECK,
+				thirdPartyCookies: localStorage.getItem('cookie-support-check')
+			})
 
-        break;
+			break;
 
-      default:
+		default:
 
-        // store local storage item that can be later used to check if third party cookies are allowed.
-        // Note: This test can only be performed when the localstorage / cookie is assigned, then later requested.
-        localStorage.setItem('cookie-support-check', 'test');
+			// store local storage item that can be later used to check if third party cookies are allowed.
+			// Note: This test can only be performed when the localstorage / cookie is assigned, then later requested.
+			localStorage.setItem('cookie-support-check', 'test');
 
-        const { tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey } = this.tokenConfig;
+			const { tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey } = this.tokenConfig;
 
-        try {
-            const tokens = readMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey, this.urlParams);
+			try {
+				const tokens = readMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey, this.urlParams);
 
-            storeMagicURL(tokens, itemStorageKey);
+				storeMagicURL(tokens, itemStorageKey);
 
-            const event = new Event('tokensupdated');
+				const event = new Event('tokensupdated');
 
-            // Dispatch the event to force negotiator to reread tokens.
-            // MagicLinkReader part of Outlet usually works in the parent window, same as Client, so it use same document
-            document.body.dispatchEvent(event);
+				// Dispatch the event to force negotiator to reread tokens.
+				// MagicLinkReader part of Outlet usually works in the parent window, same as Client, so it use same document
+				document.body.dispatchEvent(event);
 
-            this.sendTokens(evtid);
+				this.sendTokens(evtid);
 
-        } catch (e:any) {
-            this.sendErrorResponse(evtid, e.message);
-        }
+			} catch (e: any) {
+				this.sendErrorResponse(evtid, e.message);
+			}
 
-        break;
+			break;
 
-    }
+		}
 
-  }
+	}
 
-  prepareTokenOutput ( filter: any ) {
+	prepareTokenOutput ( filter: any ) {
 
-    const storageTokens = localStorage.getItem(this.tokenConfig.itemStorageKey);
+		const storageTokens = localStorage.getItem(this.tokenConfig.itemStorageKey);
 
-    if(!storageTokens) return [];
+		if(!storageTokens) return [];
 
-    const decodedTokens = decodeTokens(storageTokens, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName);
+		const decodedTokens = decodeTokens(storageTokens, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName);
 
-    return filterTokens(decodedTokens, filter);
+		return filterTokens(decodedTokens, filter);
 
-  }
+	}
 
-  async sendTokenProof (evtid:any, token: any) {
+	async sendTokenProof (evtid: any, token: any) {
 
-    if(!token) return 'error';
+		if(!token) return 'error';
 
-    const unsignedToken = JSON.parse(token);
+		const unsignedToken = JSON.parse(token);
 
-    try {
-          // check if token issuer
-          let tokenObj = await rawTokenCheck(unsignedToken, this.tokenConfig);
+		try {
+			// check if token issuer
+			let tokenObj = await rawTokenCheck(unsignedToken, this.tokenConfig);
 
-          let authHandler = new AuthHandler(this, evtid, this.tokenConfig, tokenObj);
+			let authHandler = new AuthHandler(this, evtid, this.tokenConfig, tokenObj);
 
-          let tokenProof = await authHandler.authenticate();
+			let tokenProof = await authHandler.authenticate();
 
-          this.sendMessageResponse({
-            evtid: evtid,
-            evt: MessageResponseAction.PROOF,
-            issuer: this.tokenConfig.tokenName,
-            proof: tokenProof
-          });
+			this.sendMessageResponse({
+				evtid: evtid,
+				evt: MessageResponseAction.PROOF,
+				issuer: this.tokenConfig.tokenName,
+				proof: tokenProof
+			});
 
-    } catch (e:any){
-        console.log("Error getting proof:");
-        console.log(e);
+		} catch (e: any){
+			console.log("Error getting proof:");
+			console.log(e);
 
-        // TODO: We shouldn't be sending the full exception here, instead return error messages only.
-        this.sendErrorResponse(evtid, e);
-    }
+			// TODO: We shouldn't be sending the full exception here, instead return error messages only.
+			this.sendErrorResponse(evtid, e);
+		}
 
-  }
+	}
 
-  private sendTokens(evtid: any){
+	private sendTokens(evtid: any){
 
-    let issuerTokens = this.prepareTokenOutput(this.getFilter());
+		let issuerTokens = this.prepareTokenOutput(this.getFilter());
 
-    this.sendMessageResponse({
-      evtid: evtid,
-      evt: MessageResponseAction.ISSUER_TOKENS,
-      issuer: this.tokenConfig.tokenName,
-      tokens: issuerTokens
-    });
-  }
+		this.sendMessageResponse({
+			evtid: evtid,
+			evt: MessageResponseAction.ISSUER_TOKENS,
+			issuer: this.tokenConfig.tokenName,
+			tokens: issuerTokens
+		});
+	}
 
-  public sendErrorResponse(evtid: any, error:string){
-    this.sendMessageResponse({
-      evtid: evtid,
-      evt: MessageResponseAction.ERROR,
-      errors: [error]
-    });
-  }
+	public sendErrorResponse(evtid: any, error: string){
+		this.sendMessageResponse({
+			evtid: evtid,
+			evt: MessageResponseAction.ERROR,
+			errors: [error]
+		});
+	}
 
-  public sendMessageResponse(response:MessageResponseInterface){
+	public sendMessageResponse(response: MessageResponseInterface){
 
-    // dont send Message if no referrer defined
-    if (!document.referrer) {
-      return;
-    }
+		// dont send Message if no referrer defined
+		if (!document.referrer) {
+			return;
+		}
 
-    let target, origin;
+		let target, origin;
 
-    if (!window.opener) {
-      target = window.parent;
-    } else {
-      target = window.opener;
-    }
+		if (!window.opener) {
+			target = window.parent;
+		} else {
+			target = window.opener;
+		}
 
-    let pUrl = new URL(document.referrer);
-    origin = pUrl.origin;
+		let pUrl = new URL(document.referrer);
+		origin = pUrl.origin;
 
-    if (target)
-      target.postMessage(response, origin);
-  }
+		if (target)
+			target.postMessage(response, origin);
+	}
 
 }

@@ -3,13 +3,13 @@ import {attachPostMessageListener, removePostMessageListener} from "../utils";
 // TODO move Message related interfaces/enum in to shared location /core 
 
 export interface MessageRequestInterface {
-    issuer?:string,
-    action:MessageAction,
-    origin:string,
-    timeout?:number,
-    filter?:{},
-    token?:string,
-    urlParams?:string
+    issuer?: string,
+    action: MessageAction,
+    origin: string,
+    timeout?: number,
+    filter?: {},
+    token?: string,
+    urlParams?: string
 }
 
 export enum MessageAction {
@@ -23,10 +23,10 @@ export interface MessageResponseInterface {
     evtid: any,
     evt: string,
     issuer?: string,
-    tokens?:[],
-    proof?:any,
-    thirdPartyCookies?:any,
-    errors?:any[]|undefined
+    tokens?: [],
+    proof?: any,
+    thirdPartyCookies?: any,
+    errors?: any[]|undefined
 }
 
 export enum MessageResponseAction {
@@ -35,7 +35,7 @@ export enum MessageResponseAction {
     PROOF = "proof",
     ERROR = "error",
     SHOW_FRAME = "show-frame" // User input required in the iframe - don't resolve promise yet, setup iframe view if required.
-    //USER_CANCEL = "user_cancel" Could be handled different to an error
+    // USER_CANCEL = "user_cancel" Could be handled different to an error
 }
 
 declare global {
@@ -47,157 +47,157 @@ declare global {
 
 export class Messaging {
 
-    iframeStorageSupport:null|boolean = null;
-    requestQueue = {};
+	iframeStorageSupport: null|boolean = null;
+	requestQueue = {};
 
-    constructor() {
-        // Should we just check cookie support on initialisation or when requested?
-    }
+	constructor() {
+		// Should we just check cookie support on initialisation or when requested?
+	}
 
-    async sendMessage(request:MessageRequestInterface, forceTab:boolean = false){
+	async sendMessage(request: MessageRequestInterface, forceTab = false){
 
-        if (!forceTab && this.iframeStorageSupport === null) {
-            if (window.safari){
-                this.iframeStorageSupport = false;
-            } else {
-                this.iframeStorageSupport = await this.thirdPartyCookieSupportCheck(request.origin);
-            }
-        }
+		if (!forceTab && this.iframeStorageSupport === null) {
+			if (window.safari){
+				this.iframeStorageSupport = false;
+			} else {
+				this.iframeStorageSupport = await this.thirdPartyCookieSupportCheck(request.origin);
+			}
+		}
 
-        // Uncomment to test popup mode
-        //this.iframeStorageSupport = false;
+		// Uncomment to test popup mode
+		// this.iframeStorageSupport = false;
 
-        console.log("Send request: ");
-        console.log(request);
+		console.log("Send request: ");
+		console.log(request);
 
-        if (!forceTab && this.iframeStorageSupport){
-            return this.sendIframe(request);
-        } else {
-            return this.sendPopup(request);
-        }
-    }
+		if (!forceTab && this.iframeStorageSupport){
+			return this.sendIframe(request);
+		} else {
+			return this.sendPopup(request);
+		}
+	}
 
-    private sendIframe(request:MessageRequestInterface){
+	private sendIframe(request: MessageRequestInterface){
 
-        return new Promise((resolve, reject) => {
+		return new Promise((resolve, reject) => {
 
-            let id = Messaging.getUniqueEventId();
-            let url = this.constructUrl(id, request);
+			let id = Messaging.getUniqueEventId();
+			let url = this.constructUrl(id, request);
 
-            let iframe = this.createIframe();
+			let iframe = this.createIframe();
 
-            this.setResponseListener(id, request.origin, request.timeout, resolve, reject,
-                ()=>{
+			this.setResponseListener(id, request.origin, request.timeout, resolve, reject,
+				()=>{
 
-                    if (iframe?.parentNode)
-                        iframe.parentNode.removeChild(iframe);
+					if (iframe?.parentNode)
+						iframe.parentNode.removeChild(iframe);
 
-                    let modal = this.getModal();
-                    if (modal)
-                        modal.style.display = "none";
-                },
-                iframe
-            );
+					let modal = this.getModal();
+					if (modal)
+						modal.style.display = "none";
+				},
+				iframe
+			);
 
-            iframe.src = url;
+			iframe.src = url;
 
-        });
-    }
+		});
+	}
 
-    private sendPopup(request:MessageRequestInterface){
+	private sendPopup(request: MessageRequestInterface){
 
-        return new Promise((resolve, reject) => {
+		return new Promise((resolve, reject) => {
 
-            let id = Messaging.getUniqueEventId();
+			let id = Messaging.getUniqueEventId();
 
-            var tabRef:any = null;
+			let tabRef: any = null;
 
-            this.setResponseListener(id, request.origin, request.timeout, resolve, reject, ()=>{
-                if (tabRef)
-                    tabRef.close();
-            });
+			this.setResponseListener(id, request.origin, request.timeout, resolve, reject, ()=>{
+				if (tabRef)
+					tabRef.close();
+			});
 
-            tabRef = this.openTab(this.constructUrl(id, request));
+			tabRef = this.openTab(this.constructUrl(id, request));
 
-        });
+		});
 
-    }
+	}
 
-    private setResponseListener(id:any, origin:string, timeout:number|undefined, resolve:any, reject:any, cleanUpCallback:any, iframe:any = null){
+	private setResponseListener(id: any, origin: string, timeout: number|undefined, resolve: any, reject: any, cleanUpCallback: any, iframe: any = null){
 
-        let received = false;
-        let timer:any = null;
+		let received = false;
+		let timer: any = null;
 
-        let listener = (event: any) => {
+		let listener = (event: any) => {
 
-            let response:MessageResponseInterface = event.data;
-            let requestUrl = new URL(origin);
+			let response: MessageResponseInterface = event.data;
+			let requestUrl = new URL(origin);
 
-            if (response.evtid == id) {
+			if (response.evtid == id) {
 
-                if (requestUrl.origin == event.origin){
+				if (requestUrl.origin == event.origin){
 
-                    console.log("event response received");
-                    console.log(event.data);
+					console.log("event response received");
+					console.log(event.data);
 
-                    received = true;
+					received = true;
 
-                    if (response.evt == MessageResponseAction.ERROR) {
-                        reject(response.errors);
-                    } else if (response.evt == MessageResponseAction.SHOW_FRAME){
+					if (response.evt == MessageResponseAction.ERROR) {
+						reject(response.errors);
+					} else if (response.evt == MessageResponseAction.SHOW_FRAME){
 
-                        if (iframe) {
-                            let modal = this.getModal();
-                            modal.style.display = "block";
-                        }
+						if (iframe) {
+							let modal = this.getModal();
+							modal.style.display = "block";
+						}
 
-                        return;
-                    } else {
-                        resolve(event.data);
-                    }
+						return;
+					} else {
+						resolve(event.data);
+					}
 
-                    if (timer)
-                        clearTimeout(timer);
-                    afterResolveOrError();
+					if (timer)
+						clearTimeout(timer);
+					afterResolveOrError();
 
-                } else {
-                    console.log("Does not match origin " + event.origin);
-                }
-            }
-        }
+				} else {
+					console.log("Does not match origin " + event.origin);
+				}
+			}
+		}
 
-        let afterResolveOrError = () => {
-            removePostMessageListener(listener);
-            if (!window.NEGOTIATOR_DEBUG)
-                cleanUpCallback();
-        };
+		let afterResolveOrError = () => {
+			removePostMessageListener(listener);
+			if (!window.NEGOTIATOR_DEBUG)
+				cleanUpCallback();
+		};
 
-        attachPostMessageListener(listener);
+		attachPostMessageListener(listener);
 
-        if (timeout == undefined)
-            timeout = 10000;
+		if (timeout == undefined)
+			timeout = 10000;
 
-        if (timeout > 0)
-            timer = setTimeout(()=>{
-                if (!received)
-                    reject("Failed to receive response from window/iframe");
-                afterResolveOrError();
-            }, timeout);
-    }
+		if (timeout > 0)
+			timer = setTimeout(()=>{
+				if (!received)
+					reject("Failed to receive response from window/iframe");
+				afterResolveOrError();
+			}, timeout);
+	}
 
-    private getModal(){
+	private getModal(){
 
-        let modal = document.getElementById("modal-tn");
+		let modal = document.getElementById("modal-tn");
 
-        if (modal)
-            return modal;
+		if (modal)
+			return modal;
 
-        modal = document.createElement('div');
-        modal.id = "modal-tn";
-        modal.className = "modal-tn";
-        modal.style.display = "none";
+		modal = document.createElement('div');
+		modal.id = "modal-tn";
+		modal.className = "modal-tn";
+		modal.style.display = "none";
 
-        modal.innerHTML = `
+		modal.innerHTML = `
             <div class="modal-content-tn">
                 <div class="modal-header-tn">
                     <span class="modal-close-tn">&times;</span>
@@ -206,93 +206,93 @@ export class Messaging {
             </div>
         `;
 
-        document.body.appendChild(modal);
+		document.body.appendChild(modal);
 
-        modal.getElementsByClassName('modal-close-tn')[0].addEventListener('click', () => {
-            if (modal)
-                modal.style.display = "none";
-        });
+		modal.getElementsByClassName('modal-close-tn')[0].addEventListener('click', () => {
+			if (modal)
+				modal.style.display = "none";
+		});
 
-        return modal;
-    }
+		return modal;
+	}
 
-    async getCookieSupport(testOrigin:string){
-        if (this.iframeStorageSupport === null)
-            this.iframeStorageSupport = await this.thirdPartyCookieSupportCheck(testOrigin);
+	async getCookieSupport(testOrigin: string){
+		if (this.iframeStorageSupport === null)
+			this.iframeStorageSupport = await this.thirdPartyCookieSupportCheck(testOrigin);
 
-        return this.iframeStorageSupport;
-    }
+		return this.iframeStorageSupport;
+	}
 
-    private thirdPartyCookieSupportCheck(origin:string):Promise<boolean> {
+	private thirdPartyCookieSupportCheck(origin: string): Promise<boolean> {
 
-        return new Promise((resolve, reject) => {
+		return new Promise((resolve, reject) => {
 
-            let id = Messaging.getUniqueEventId();
-            let url = origin + '#action=' + MessageAction.COOKIE_CHECK +'&evtid=' + id;
+			let id = Messaging.getUniqueEventId();
+			let url = origin + '#action=' + MessageAction.COOKIE_CHECK +'&evtid=' + id;
 
-            let iframe = this.createIframe();
+			let iframe = this.createIframe();
 
-                this.setResponseListener(
-                    id,
-                    origin,
-                    10000,
-                    (responseData:any)=>{
-                        resolve(!!responseData.thirdPartyCookies);
-                    },
-                    (err:any)=>{
-                        resolve(false);
-                    },
-                    () => {
-                        if (iframe?.parentNode)
-                            iframe.parentNode.removeChild(iframe);
-                    }
-                );
+			this.setResponseListener(
+				id,
+				origin,
+				10000,
+				(responseData: any)=>{
+					resolve(!!responseData.thirdPartyCookies);
+				},
+				(err: any)=>{
+					resolve(false);
+				},
+				() => {
+					if (iframe?.parentNode)
+						iframe.parentNode.removeChild(iframe);
+				}
+			);
 
-            iframe.src = url;
+			iframe.src = url;
 
-        });
+		});
 
-    }
+	}
 
-    private constructUrl(id:any, request:MessageRequestInterface){
+	private constructUrl(id: any, request: MessageRequestInterface){
 
-        let url = `${request.origin}#evtid=${id}&action=${request.action}`;
+		let url = `${request.origin}#evtid=${id}&action=${request.action}`;
 
-        if (request.filter)
-            url += `&filter=${JSON.stringify(request.filter)}`;
+		if (request.filter)
+			url += `&filter=${JSON.stringify(request.filter)}`;
 
-        if (request.token)
-            url += `&token=${JSON.stringify(request.token)}`;
+		if (request.token)
+			url += `&token=${JSON.stringify(request.token)}`;
 
-        if (request.urlParams)
-            url += `&${request.urlParams}`;
+		if (request.urlParams)
+			url += `&${request.urlParams}`;
 
-        return url;
-    }
+		return url;
+	}
 
-    public openTab(url: string){
-        return window.open(
-            url,
-            "win1",
-            "left=0,top=0,width=320,height=320"
-        );
-    }
+	public openTab(url: string){
+		return window.open(
+			url,
+			"win1",
+			"left=0,top=0,width=320,height=320"
+		);
+	}
 
-    public createIframe(url?: string) {
+	public createIframe(url?: string) {
 
-        const iframe = document.createElement('iframe');
+		const iframe = document.createElement('iframe');
 
-        let modal = this.getModal();
+		let modal = this.getModal();
 
-        modal.getElementsByClassName('modal-body-tn')[0].appendChild(iframe);
+		modal.getElementsByClassName('modal-body-tn')[0].appendChild(iframe);
 
-        if (url)
-            iframe.src = url;
+		if (url)
+			iframe.src = url;
 
-        return iframe;
-    }
+		return iframe;
+	}
 
-    private static getUniqueEventId(){
-        return new Date().getTime();
-    }
+	private static getUniqueEventId(){
+		return new Date().getTime();
+	}
 }

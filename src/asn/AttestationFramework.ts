@@ -33,13 +33,13 @@ export class PrivateKeyInfo {
 @AsnType({ type: AsnTypeTypes.Choice })
 export class Payload {
     @AsnProp({ type: Extensions, context: 3})
-    public extensions?: Extensions;
+	public extensions?: Extensions;
     // @AsnProp({ type: AsnPropTypes.Any, context: 3})
     // public extensions?: AsnPropTypes.Any;
     @AsnProp({ type: AsnPropTypes.Any, context: 4 })
     public dataObject?: AsnPropTypes.Any;
 }
-//attestsTo         CHOICE {
+// attestsTo         CHOICE {
 //             extensions        [3] EXPLICIT Extensions,
 //             dataObject        [4] DataObject -- defined per objectClass
 //     }
@@ -53,12 +53,12 @@ export class SignedInfo {
     @AsnProp({ type: Version }) public version!: Version; // [0]  EXPLICIT Version,
     @AsnProp({ type: AsnPropTypes.Integer }) public serialNumber!: number; // CertificateSerialNumber,
     @AsnProp({ type: AlgorithmIdentifierASN }) public signature!: AlgorithmIdentifierASN; // AlgorithmIdentifier,
-    @AsnProp({ type: Name }) public issuer!:Name; // Name,
-    @AsnProp({ type: ValidityValue, optional: true }) public validity?:ValidityValue; // Validity,
+    @AsnProp({ type: Name }) public issuer!: Name; // Name,
+    @AsnProp({ type: ValidityValue, optional: true }) public validity?: ValidityValue; // Validity,
     @AsnProp({ type: Name }) public subject!: Name; //  Name,
     @AsnProp({ type: SubjectPublicKeyInfo }) public subjectPublicKeyInfo!: SubjectPublicKeyInfo; // SubjectPublicKeyInfo,
     @AsnProp({ type: SmartContract, optional: true }) public contract?: SmartContract; // contract             SEQUENCE OF SmartContract OPTIONAL,
-    @AsnProp({ type: Payload, optional: true }) public attestsTo?: Payload; //attestsTo
+    @AsnProp({ type: Payload, optional: true }) public attestsTo?: Payload; // attestsTo
 }
 
 export class MyAttestation {

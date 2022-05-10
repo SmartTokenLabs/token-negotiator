@@ -10,15 +10,15 @@ const torusSVG = '<svg width="62px" height="62px" viewBox="0 0 319 319" version=
 
 export class SelectWallet extends AbstractView {
 
-    render(){
+	render(){
 
-        const MetaMaskButton = (typeof window.ethereum !== 'undefined') ?
-            `<button class="wallet-button-tn" data-wallet="MetaMask">
+		const MetaMaskButton = (typeof window.ethereum !== 'undefined') ?
+			`<button class="wallet-button-tn" data-wallet="MetaMask">
                 ${metaMaskSVG}
                 <p>MetaMask</p>
             </button>` : ' ';
 
-        this.viewContainer.innerHTML = `
+		this.viewContainer.innerHTML = `
             <div class="inner-content-tn scroll-tn">
               <div class="wallet-selection-view-tn">
                 <div class="issuer-view-tn">
@@ -42,51 +42,51 @@ export class SelectWallet extends AbstractView {
             </div>
         `;
 
-        this.viewContainer.querySelectorAll('.wallet-button-tn').forEach((elem:any) => {
-            elem.addEventListener('click', this.connectWallet.bind(this));
-        });
+		this.viewContainer.querySelectorAll('.wallet-button-tn').forEach((elem: any) => {
+			elem.addEventListener('click', this.connectWallet.bind(this));
+		});
 
-        // TODO - Add to attestation.id to enable e2e support of additional Wallet Technologies.
-        // <button class="wallet-button-tn" class="" onClick="negotiatorConnectToWallet('Fortmatic')">
-        // ${fortmaticSVG}
-        // <p>Fortmatic</p>
-        // </button>
-        // <button class="wallet-button-tn" class="" onClick="negotiatorConnectToWallet('Portis')">
-        // ${portisSVG}
-        // <p>Portis</p>
-        // </button>
-        // <button class="wallet-button-tn" class="" onClick="negotiatorConnectToWallet('Authereum')">
-        // ${authereumSVG}
-        // <p>Authereum</p>
-        // </button>
-    }
+		// TODO - Add to attestation.id to enable e2e support of additional Wallet Technologies.
+		// <button class="wallet-button-tn" class="" onClick="negotiatorConnectToWallet('Fortmatic')">
+		// ${fortmaticSVG}
+		// <p>Fortmatic</p>
+		// </button>
+		// <button class="wallet-button-tn" class="" onClick="negotiatorConnectToWallet('Portis')">
+		// ${portisSVG}
+		// <p>Portis</p>
+		// </button>
+		// <button class="wallet-button-tn" class="" onClick="negotiatorConnectToWallet('Authereum')">
+		// ${authereumSVG}
+		// <p>Authereum</p>
+		// </button>
+	}
 
-    async connectWallet(e:any){
+	async connectWallet(e: any){
 
-        let wallet:any = e.currentTarget.dataset.wallet;
+		let wallet: any = e.currentTarget.dataset.wallet;
 
-        console.log("Connect wallet: " + wallet);
+		console.log("Connect wallet: " + wallet);
 
-        let timer = setTimeout(() => {
-            this.popup.showLoader(
-                "<h4>Connecting to " + wallet + "...</h4>",
-                "<small>You may need to unlock your wallet to continue.</small>"
-            );
-        }, 500); // In case already authorized
+		let timer = setTimeout(() => {
+			this.popup.showLoader(
+				"<h4>Connecting to " + wallet + "...</h4>",
+				"<small>You may need to unlock your wallet to continue.</small>"
+			);
+		}, 500); // In case already authorized
 
-        try {
-            await this.client.negotiatorConnectToWallet(wallet);
+		try {
+			await this.client.negotiatorConnectToWallet(wallet);
 
-            this.popup.updatePopup(SelectIssuers);
+			this.popup.updatePopup(SelectIssuers);
 
-        } catch (err:any){
-            console.log(err);
-            this.popup.showError((err.hasOwnProperty("message") ? err.message : err));
-            return;
-        }
+		} catch (err: any){
+			console.log(err);
+			this.popup.showError((err.hasOwnProperty("message") ? err.message : err));
+			return;
+		}
 
-        if (timer) clearTimeout(timer);
-        this.popup.dismissLoader();
-    }
+		if (timer) clearTimeout(timer);
+		this.popup.dismissLoader();
+	}
 
 }

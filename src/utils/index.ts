@@ -1,91 +1,91 @@
 import { Buffer } from "buffer";
 
-export const logger = (item:any) => {
+export const logger = (item: any) => {
   
-  console.log(item);
+	console.log(item);
 
 };
 
-export const requiredParams = (item:any, msg:string) => {
+export const requiredParams = (item: any, msg: string) => {
   
-  if (!item) throw new Error(msg);
+	if (!item) throw new Error(msg);
 
 }
 
 export function uint8toBuffer(uint8: Uint8Array): any {
-  if (typeof Buffer != "undefined"){
-      // node Buffer
-      return Buffer.from(uint8);
-  } else {
-      // browser ArrayBuffer
-      return uint8;
-  }
+	if (typeof Buffer != "undefined"){
+		// node Buffer
+		return Buffer.from(uint8);
+	} else {
+		// browser ArrayBuffer
+		return uint8;
+	}
 }
 
 
 // shallow equality comparison
 export const compareObjects = (o1: any, o2: any) => {
-  const keys1 = Object.keys(o1);
-  const keys2 = Object.keys(o2);
-  if (keys1.length !== keys2.length) {
-    return false;
-  }
-  for (let key of keys1) {
-    if (o1[key] !== o2[key]) {
-      return false;
-    }
-  }
-  return true;
+	const keys1 = Object.keys(o1);
+	const keys2 = Object.keys(o2);
+	if (keys1.length !== keys2.length) {
+		return false;
+	}
+	for (let key of keys1) {
+		if (o1[key] !== o2[key]) {
+			return false;
+		}
+	}
+	return true;
 
 };
 
 export const base64ToUint8array = (base64str: string) => {
   
-  base64str = base64str.split('-').join('+').split('_').join('/').split('.').join('=');
+	base64str = base64str.split('-').join('+').split('_').join('/').split('.').join('=');
   
-  return Uint8Array.from(Buffer.from(base64str, 'base64'));
+	return Uint8Array.from(Buffer.from(base64str, 'base64'));
 
 }
 
-export const asyncHandle = async (promise:any) => {
+export const asyncHandle = async (promise: any) => {
   
-  try {
+	try {
   
-    const data = await promise;
+		const data = await promise;
   
-    return [data, undefined];
+		return [data, undefined];
   
-  } catch (error) {
+	} catch (error) {
   
-    return [undefined, error];
-  }
+		return [undefined, error];
+	}
   
 }
 
-export const attachPostMessageListener = (listener:any) => {
+export const attachPostMessageListener = (listener: any) => {
                 
-  if (window.addEventListener) {
+	if (window.addEventListener) {
   
-      window.addEventListener("message", listener, false);
+		window.addEventListener("message", listener, false);
   
-  } else {
+	} else {
   
-      // IE8
-      // @ts-ignore
-      window.attachEvent("onmessage", listener);
+		// IE8
+		// @ts-ignore
+		window.attachEvent("onmessage", listener);
   
-  }
+	}
 }
 
-export const removePostMessageListener = (listener:any) => {
+export const removePostMessageListener = (listener: any) => {
 
-  // @ts-ignore
-  if (window.removeEventListener){
-    window.removeEventListener("message", listener);
-  } else {
-    // IE8
-    // @ts-ignore
-    window.detachEvent("onmessage", listener);
-  }
+	// @ts-ignore
+	if (window.removeEventListener){
+		window.removeEventListener("message", listener);
+	} else {
+		// IE8
+		// @ts-ignore
+		window.detachEvent("onmessage", listener);
+	}
 }
 
