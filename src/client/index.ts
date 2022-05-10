@@ -46,6 +46,7 @@ interface AuthenticateInterface {
 
 export class Client {
   private issuers: OnChainTokenConfig | OffChainTokenConfig[];
+  private negotiateAlreadyFired: boolean;
   private type: string;
   private filter: {};
   private options: any;
@@ -56,7 +57,6 @@ export class Client {
   private web3WalletProvider: any;
   private messaging: Messaging;
   private popup: Popup;
-  private negotiateAlreadyFired: boolean;
   private clientCallBackEvents: {};
   private onChainTokenModule: OnChainTokenModule;
 
@@ -162,7 +162,6 @@ export class Client {
       // TODO load all on chain tokens logic needed here.
 
       offChainTokens.tokenKeys.map(async (issuer: string): Promise<any> => {
-
         let data;
 
         const tokensOrigin = this.tokenLookup[issuer].tokenOrigin;
@@ -311,6 +310,12 @@ export class Client {
   }
 
   async connectOnChainTokenIssuer(issuer: any) {
+    const walletAddress =
+      this.web3WalletProvider.getConnectedWalletData()[0]?.address;
+
+    requiredParams(issuer, "issuer is required.");
+    requiredParams(walletAddress, "wallet address is missing.");
+
     const tokens = await this.onChainTokenModule.connectOnChainToken(
       issuer,
       this.web3WalletProvider.getConnectedWalletData()[0].address
@@ -323,7 +328,6 @@ export class Client {
 
   updateSelectedTokens(selectedTokens) {
     this.selectedTokens = selectedTokens;
-
     this.eventSender.emitSelectedTokensToClient();
   }
 

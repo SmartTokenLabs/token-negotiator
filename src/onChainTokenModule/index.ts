@@ -281,7 +281,6 @@ export class OnChainTokenModule {
 
       // TODO: handle null metadata, fetch metadata URL directly.
       image = JSON.parse(response.result[0].metadata).image;
-
     } catch (err: any) {
       console.warn(
         "Failed to collect contract data from Moralis API",
@@ -631,6 +630,7 @@ export class OnChainTokenModule {
 
     return tokens;
   }
+
 }
 
 export default OnChainTokenModule;

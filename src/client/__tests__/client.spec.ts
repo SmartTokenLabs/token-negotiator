@@ -39,6 +39,38 @@ describe('client spec', () => {
     );
   });
 
+  test('tokenNegotiatorClient getTokenData', () => {
+    const tokenNegotiatorClient = getOffChainConfigClient();
+    const output = tokenNegotiatorClient.getTokenData();
+    expect(output).toEqual({
+      offChainTokens: {
+        "devcon": {
+          "tokens": [],
+        },
+        "tokenKeys": [
+          "devcon",
+        ],
+      },
+      onChainTokens: {
+        tokenKeys: [],
+      },
+      tokenLookup: {
+        "devcon": {
+          "attestationOrigin": "https://stage.attestation.id/",
+          "base64attestorPubKey": "",
+          "base64senderPublicKey": "",
+          "collectionID": "devcon",
+          "image": "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
+          "onChain": false,
+          "title": "Devcon",
+          "tokenOrigin": "http://localhost:3002/",
+          "unEndPoint": "https://crypto-verify.herokuapp.com/use-devcon-ticket",
+        },
+      },
+      selectedTokens: {}
+    });
+  });
+
   test('tokenNegotiatorClient with valid contract and chain', () => {
     const tokenNegotiatorClient = new Client({
       type: "active",
@@ -99,5 +131,56 @@ describe('client spec', () => {
       tokenNegotiatorClient.on('')
     }).toThrow('Event type is not defined');
   });
+  
+  test('tokenNegotiatorClient method checkPublicAddressMatch to return failed check data', async () => {
+    const tokenNegotiatorClient = getOffChainConfigClient();
+    const output = await tokenNegotiatorClient.checkPublicAddressMatch("devcon", null);
+    expect(output).toEqual({ status: false, useEthKey: null, proof: null });
+  });
+  
+  test('tokenNegotiatorClient method checkPublicAddressMatch to throw error', async () => {
+    const tokenNegotiatorClient = getOffChainConfigClient();
+    return tokenNegotiatorClient.checkPublicAddressMatch("devcon", { fake: "data" }).catch(err => {
+      expect(err).toEqual(new Error("Could not authenticate token"));
+    });
+  });
 
+  test('tokenNegotiatorClient method eventSender event hook functions', async () => {
+    const tokenNegotiatorClient = getOffChainConfigClient();
+    tokenNegotiatorClient.eventSender.emitAllTokensToClient([]);
+    tokenNegotiatorClient.eventSender.emitSelectedTokensToClient();
+    tokenNegotiatorClient.eventSender.emitProofToClient('test', 'devcon');
+  });
+  
+  test('tokenNegotiatorClient method getOffChainConfigClient', async () => {
+    const tokenNegotiatorClient = getOffChainConfigClient();
+    return tokenNegotiatorClient.connectOnChainTokenIssuer('bayc').catch(err => {
+      expect(err).toEqual(new Error("wallet address is missing."));
+    });
+  });
+  
+  test('tokenNegotiatorClient method updateSelectedTokens', async () => {
+    const tokenNegotiatorClient = getOffChainConfigClient(); 
+    tokenNegotiatorClient.updateSelectedTokens({'devcon': { "a": 'true' }});
+  });
+  
+  // TOOD Mock response from window
+  // test('tokenNegotiatorClient method addTokenViaMagicLink to succeed in collection of tokens', async () => {
+  //   window.open = jest.fn({
+  //     data: { 
+  //       evt: "issuer-tokens"
+  //     },
+  //     tokens: [
+  //       { 
+  //         class: "web3",  
+  //         colour: "gold",
+  //         vip: "true"
+  //       }
+  //     ]
+  //   });
+  //   const tokenNegotiatorClient = getOffChainConfigClient();
+  //   const output = await tokenNegotiatorClient.addTokenViaMagicLink("https://en.wikipedia.org/wiki/Gavin_Wood?ticket=test&secret=test&id=test");
+  //   expect(output).toEqual({});
+  // });
+  
 });
