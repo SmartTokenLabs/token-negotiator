@@ -312,10 +312,7 @@ Key values applied to all tokens.
 import { client, outlet } from '@tokenscript/token-negotiator';
 ```
 
-For token issuers (using off chain attestations), ensure you have been provided an attestation schema file will enable the Token Negotiator to:
-
-- Interpret tokens
-- Decode them to provide meta to the client (either the page this is installed, or cross origin)
+For off chain token issuers, there is an additional module within the Token Negotiator named { outlet } this is used to safely store, decode and dispatch token meta data to the client module (in page or cross origin).
 
 ## New Token Issuers
 
