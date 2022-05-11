@@ -183,7 +183,7 @@ export class OnChainTokenModule {
 		// POAP
 		// TODO: move this into a registry like tokenLookup
 		if (
-			contract.toLowerCase() == "0x22c1f6050e56d2876009903609a2cc3fef83b415"
+			contract.toLowerCase() === "0x22c1f6050e56d2876009903609a2cc3fef83b415"
 		) {
 			return {
 				api: "poap",
@@ -335,7 +335,7 @@ export class OnChainTokenModule {
 		let tokens: {[tokenId: string]: TokenData} | undefined = {};
 
 		if (
-			contract.toLowerCase() == "0x22c1f6050e56d2876009903609a2cc3fef83b415"
+			contract.toLowerCase() === "0x22c1f6050e56d2876009903609a2cc3fef83b415"
 		) {
 			return this.getTokensPOAP(owner);
 		}
@@ -412,7 +412,7 @@ export class OnChainTokenModule {
 			.then((response: any) => {
 
 				return response.assets.filter((item: any) => {
-					return item.token_id != null;
+					return item.token_id !== null;
 				}).map((item: any) => {
 
 					const image = item.image_url ? item.image_url : "";
@@ -456,7 +456,7 @@ export class OnChainTokenModule {
 		return this.getDataMoralis(path, chain).then((response: any) => {
 
 			return response.result.filter((item: any) => {
-				return item.token_id != null;
+				return item.token_id !== null;
 			}).map((item: any) => {
 
 				let parsedMeta = null;
@@ -488,7 +488,7 @@ export class OnChainTokenModule {
 		return this.getDataAlchemy(path, chain)
 			.then((result) => {
 				return result.ownedNfts.filter((item: any) => {
-					return item?.id.tokenId != null;
+					return item?.id.tokenId !== null;
 				}).map((item: any) => {
 
 					const tokenId = Number(item.id.tokenId).toFixed(0);
@@ -558,9 +558,9 @@ export class OnChainTokenModule {
 		let baseEnd = baseUrl.charAt(baseUrl.length - 1);
 		let pathStart = path.charAt(0);
 
-		if (baseEnd != "/" && pathStart != "/") {
+		if (baseEnd !== "/" && pathStart !== "/") {
 			return baseUrl + "/" + path;
-		} else if (baseEnd == "/" && pathStart == "/") {
+		} else if (baseEnd === "/" && pathStart === "/") {
 			return baseUrl + path.substring(1);
 		}
 
@@ -575,7 +575,7 @@ export class OnChainTokenModule {
 		if (!this.onChainApiConfig[service])
 			throw new Error("Invalid API service: " + service);
 
-		if (chain == "eth") chain = "mainnet";
+		if (chain === "eth") chain = "mainnet";
 
 		const configs = this.onChainApiConfig[service].config;
 

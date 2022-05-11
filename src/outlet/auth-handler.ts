@@ -152,8 +152,8 @@ export class AuthHandler {
 		}
 
 		if (
-			!event.data.hasOwnProperty('attestation')
-            || !event.data.hasOwnProperty('requestSecret')
+			!event?.data?.attestation
+            || !event?.data?.requestSecret
 		) {
 			return;
 		}

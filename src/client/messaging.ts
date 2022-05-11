@@ -133,18 +133,18 @@ export class Messaging {
 			let response: MessageResponseInterface = event.data;
 			let requestUrl = new URL(origin);
 
-			if (response.evtid == id) {
+			if (response.evtid === id) {
 
-				if (requestUrl.origin == event.origin){
+				if (requestUrl.origin === event.origin){
 
 					console.log("event response received");
 					console.log(event.data);
 
 					received = true;
 
-					if (response.evt == MessageResponseAction.ERROR) {
+					if (response.evt === MessageResponseAction.ERROR) {
 						reject(response.errors);
-					} else if (response.evt == MessageResponseAction.SHOW_FRAME){
+					} else if (response.evt === MessageResponseAction.SHOW_FRAME){
 
 						if (iframe) {
 							let modal = this.getModal();
@@ -174,7 +174,7 @@ export class Messaging {
 
 		attachPostMessageListener(listener);
 
-		if (timeout == undefined)
+		if (timeout === undefined)
 			timeout = 10000;
 
 		if (timeout > 0)
@@ -293,6 +293,6 @@ export class Messaging {
 	}
 
 	private static getUniqueEventId(){
-		return new Date().getTime();
+		return new Date().getTime().toString();
 	}
 }
