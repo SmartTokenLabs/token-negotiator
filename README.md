@@ -46,12 +46,13 @@ This library provides two ways to load tokens into your application, active or p
 
 This approach embeds a html element UI widget into the web page. 
 
-As the web developer you can configure which collections are supported by your website to provide custom experiences to token holders.
+As the web developer you can configure which collections are supported by your website to provide custom experiences to token holders. 
+
+Token holders can then attest ownership of tokens within collections, towards opening up custom tokenised web experiences you design. 
 
 <img src="https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/tn-example.png" alt="token negotiator component" style="width:280px;"/>
 
 To start, first include the following html element into your page, this is where the token negotiator overlay widget will be embedded into the page.
-Token holders can then attest ownership of tokens within collections, towards opening up custom tokenised web experiences you design. 
 
 ````html
   <div class="overlay-tn"></div>
