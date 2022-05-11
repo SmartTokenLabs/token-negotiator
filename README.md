@@ -314,6 +314,8 @@ import { client, outlet } from '@tokenscript/token-negotiator';
 
 For off chain token issuers, there is an additional module within the Token Negotiator named { outlet } used to safely store, decode and dispatch token meta data to the client module (in page or cross origin).
 
+A mock token implementation can be found here: https://github.com/TokenScript/token-negotiator-examples/tree/main/token-outlet-website/src
+
 ## New Token Issuers
 
 Please reach out to us at <sayhi@smarttokenlabs.com>
