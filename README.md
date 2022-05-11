@@ -44,7 +44,9 @@ This library provides two ways to load tokens into your application, active or p
 
 ### Active Negotiation of tokens
 
-This approach embeds a html element UI widget into the web page. The end user can then select which collections they wish for the website to learn. 
+This approach embeds a html element UI widget into the web page. 
+
+As the web developer you can configure which collections are supported by your website to provide custom experiences to token holders.
 
 <img src="https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/tn-example.png" alt="token negotiator component" style="width:280px;"/>
 
