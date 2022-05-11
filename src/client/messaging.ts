@@ -293,6 +293,6 @@ export class Messaging {
 	}
 
 	private static getUniqueEventId(){
-		return new Date().getTime();
+		return new Date().getTime().toString();
 	}
 }
