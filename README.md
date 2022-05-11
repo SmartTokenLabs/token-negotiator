@@ -51,6 +51,7 @@ As the web developer you can configure which collections are supported by your w
 <img src="https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/tn-example.png" alt="token negotiator component" style="width:280px;"/>
 
 To start, first include the following html element into your page, this is where the token negotiator overlay widget will be embedded into the page.
+Token holders can then attest ownership of tokens within collections, towards opening up custom tokenised web experiences you design. 
 
 ````html
   <div class="overlay-tn"></div>
