@@ -312,7 +312,7 @@ Key values applied to all tokens.
 import { client, outlet } from '@tokenscript/token-negotiator';
 ```
 
-For off chain token issuers, there is an additional module within the Token Negotiator named { outlet } this is used to safely store, decode and dispatch token meta data to the client module (in page or cross origin).
+For off chain token issuers, there is an additional module within the Token Negotiator named { outlet } used to safely store, decode and dispatch token meta data to the client module (in page or cross origin).
 
 ## New Token Issuers
 
