@@ -36,7 +36,7 @@ For code changes, please include unit tests that ensure the change is performing
 
 ### Pull Request
 
-When you're finished with the changes, create a pull request, also known as a PR from your forked repository back to this main library.
+When you're finished with the changes, update your local main branch and merge it into your branch then create a pull request to our main branch.
 
 ### Your PR is merged!
 
