@@ -39,7 +39,9 @@
   },
   "devDependencies": {
     "@babel/preset-env": "^7.15.8",
+    "@types/create-hash": "^1.2.2",
     "@types/jest": "^27.0.2",
+    "@types/keccak": "^3.0.1",
     "@types/readable-stream": "^2.3.13",
     "@typescript-eslint/eslint-plugin": "^5.20.0",
     "@typescript-eslint/parser": "^5.20.0",
