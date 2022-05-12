@@ -40,6 +40,7 @@
   "devDependencies": {
     "@babel/preset-env": "^7.15.8",
     "@types/jest": "^27.0.2",
+    "@types/readable-stream": "^2.3.13",
     "@typescript-eslint/eslint-plugin": "^5.20.0",
     "@typescript-eslint/parser": "^5.20.0",
     "babel-jest": "^28.1.0",
@@ -50,6 +51,7 @@
     "file-loader": "^6.2.0",
     "https-browserify": "^1.0.0",
     "jest": "^28.1.0",
+    "jest-environment-jsdom": "^28.1.0",
     "jest-junit": "^13.0.0",
     "os-browserify": "^0.3.0",
     "shx": "^0.3.3",
