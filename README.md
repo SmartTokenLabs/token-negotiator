@@ -243,8 +243,9 @@ Configure the library using the following example.
 
 ````html
 
-  <!-- add the JS library -->
+  
   <script type="text/javascript" src="./token-negotiator-alpha-dist/negotiator.js"></script>
+  <link rel="stylesheet" href="./token-negotiator-alpha-dist/theme/style.css" />
 
   <body onload="init()">
 
