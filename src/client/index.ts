@@ -354,7 +354,7 @@ export class Client {
 
 		// useEthKey is not required when using the proof in a smart contract - UN endpoint config can be removed to prevent this check
 		// TODO: Make this an explicit setting passed to the authenticate function
-		if (config.unEndPoint) {
+		if (tokenConfig.unEndPoint) {
 			useEthKey = await this.checkPublicAddressMatch(issuer, unsignedToken);
 
 			if (!useEthKey) {
@@ -407,8 +407,8 @@ export class Client {
 
 		try {
 			let data;
-
-			if (this.tokenLookup[issuer].onChain) {
+      
+      if (this.tokenLookup[issuer].onChain) {
 				data = await this.authenticateOnChain(authRequest);
 			} else {
 				data = await this.authenticateOffChain(authRequest);

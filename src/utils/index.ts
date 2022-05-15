@@ -31,7 +31,8 @@ export const compareObjects = (o1: any, o2: any) => {
 		return false;
 	}
 	for (let key of keys1) {
-		if (o1[key] !== o2[key]) {
+		// skip compare objects, because of "commitment" is object
+		if (o1[key] !== o2[key] && typeof o2[key] !== "object") {
 			return false;
 		}
 	}

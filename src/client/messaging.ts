@@ -209,8 +209,14 @@ export class Messaging {
 		document.body.appendChild(modal);
 
 		modal.getElementsByClassName('modal-close-tn')[0].addEventListener('click', () => {
-			if (modal)
+			if (modal) {
 				modal.style.display = "none";
+				// remove content with iframe, because another iframe will be added next time 
+				let content = modal.querySelector('.modal-body-tn');
+				if (content) {
+					content.innerHTML = "";
+				}
+			}
 		});
 
 		return modal;
