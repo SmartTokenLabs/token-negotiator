@@ -82,14 +82,26 @@ export const decodeTokens = (
 					base64ToUint8array(tokenData.token).buffer
 				);
 
-				if (decodedToken && decodedToken[unsignedTokenDataName])
-					return decodedToken[unsignedTokenDataName];
+				if (decodedToken && decodedToken[unsignedTokenDataName]){
+					let token = decodedToken[unsignedTokenDataName];
+					
+					return propsArrayBufferToArray(token);
+				}
 			}
 		});
 	} else {
 		return [];
 	}
 };
+
+function propsArrayBufferToArray(obj: any){
+	Object.keys(obj).forEach(key => {
+		if (obj[key] instanceof ArrayBuffer){
+			obj[key] = Array.from( new Uint8Array(obj[key]) );
+		}
+	});
+	return obj;
+}
 
 export const storeMagicURL = (tokens: any, itemStorageKey: string) => {
 	if (tokens) {
@@ -365,8 +377,8 @@ export const getRawToken = (unsignedToken: any, tokenIssuer: any) => {
 					);
 
 					if (decodedToken && decodedToken[tokenIssuer.unsignedTokenDataName]) {
-						let decodedTokenData =
-              decodedToken[tokenIssuer.unsignedTokenDataName];
+						let decodedTokenData = decodedToken[tokenIssuer.unsignedTokenDataName];
+						decodedTokenData = propsArrayBufferToArray(decodedTokenData);
 
 						if (compareObjects(decodedTokenData, unsignedToken)) {
 							token = tokenData;
@@ -375,7 +387,7 @@ export const getRawToken = (unsignedToken: any, tokenIssuer: any) => {
 				}
 			});
 		}
-    
+		
 		return token;
 	} else {
 		return null;
