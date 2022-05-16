@@ -102,7 +102,7 @@ export class AuthHandler {
 		document.body.appendChild(iframeWrap);
 	}
 
-	postMessageAttestationListener(event: MessageEvent, resolve: Function, reject: Function){
+	async postMessageAttestationListener(event: MessageEvent, resolve: Function, reject: Function){
 
 		console.log('postMessageAttestationListener event (Authenticator)',event);
 
@@ -111,12 +111,15 @@ export class AuthHandler {
             && event.data.ready === true
 		) {
 			let sendData: PostMessageData = {force: false};
-			if (this.magicLink){
-				sendData.magicLink = this.magicLink;
+			// We will not use magicLink attestation anymore 
+			// because of lower security level
+			//
+			// if (this.magicLink){
+			//     sendData.magicLink = this.magicLink;
 
-				if (sendData.magicLink.indexOf("#") > -1)
-					sendData.magicLink = sendData.magicLink.replace("#", "?");
-			}
+			//     if (sendData.magicLink.indexOf("#") > -1)
+			//         sendData.magicLink = sendData.magicLink.replace("#", "?");
+			// }
 			if (this.email) sendData.email = this.email;
 
 			this.iframe.contentWindow.postMessage(sendData, this.attestationOrigin);
@@ -150,44 +153,49 @@ export class AuthHandler {
 
 			}
 		}
-
-		if (
-			!event?.data?.attestation
-            || !event?.data?.requestSecret
-		) {
-			return;
-		}
-        
+    
 		this.iframeWrap.remove();
         
-		this.attestationBlob = event.data.attestation;
-		this.attestationSecret = event.data.requestSecret;
-
-		console.log('attestation data received.');
-		console.log(this.attestationBlob);
-		console.log(this.attestationSecret);
-		console.log(this.base64attestorPubKey);
+		this.attestationBlob = event.data?.attestation;
+		this.attestationSecret = event.data?.requestSecret;
 
 		try {
 
-			Authenticator.getUseTicket(
+			if (!this.signedTokenSecret ) {
+				throw new Error("signedTokenSecret required")
+			}
+			if (!this.attestationSecret ) {
+				throw new Error("attestationSecret required")
+			}
+			if (!this.signedTokenBlob ) {
+				throw new Error("signedTokenBlob required")
+			}
+			if (!this.attestationBlob ) {
+				throw new Error("attestationBlob required")
+			}
+			if (!this.base64attestorPubKey ) {
+				throw new Error("base64attestorPubKey required")
+			}
+			if (!this.base64senderPublicKeys ) {
+				throw new Error("base64senderPublicKeys required")
+			}
+
+			let useToken = await Authenticator.getUseTicket(
 				this.signedTokenSecret,
 				this.attestationSecret,
 				this.signedTokenBlob ,
 				this.attestationBlob ,
 				this.base64attestorPubKey,
 				this.base64senderPublicKeys
-			).then((useToken: any) => {
-				if (useToken){
-					console.log('this.authResultCallback( useToken ): ');
-					resolve(useToken);
-				} else {
-					console.log('this.authResultCallback( empty ): ');
-					reject(useToken);
-				}
-
-			});
-
+			);
+            
+			if (useToken){
+				console.log('this.authResultCallback( useToken ): ');
+				resolve(useToken);
+			} else {
+				console.log('this.authResultCallback( empty ): ');
+				reject(useToken);
+			}
 
 		} catch (e){
 			console.log(`UseDevconTicket. Something went wrong. ${e}`);

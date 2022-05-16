@@ -912,7 +912,7 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
 
 .modal-body-tn iframe {
   width: 100%;
-  min-height: 400px;
+  min-height: 600px;
   background-color: #fff;
   border: 6px solid #696969;
   border-radius: 3px;
@@ -925,7 +925,7 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
   margin: auto;
   padding: 0;
 
-  width: 50%;
+  max-width: 500px;
 
   -webkit-animation-name: animatetop;
   -webkit-animation-duration: 0.4s;

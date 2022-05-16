@@ -172,7 +172,6 @@ export class Outlet {
 				proof: tokenProof,
 			});
 		} catch (e: any) {
-			console.log("Error getting proof:");
 			console.log(e);
 
 			// TODO: We shouldn't be sending the full exception here, instead return error messages only.
