@@ -325,8 +325,8 @@ export const rawTokenCheck = async (unsignedToken: any, tokenIssuer: any) => {
 	// currently meta mask is needed to move beyond this point.
 	// however the err msg given is not obvious that this is the issue.
 
-  // metamask is only one of the wallets, we have to use walletConnect to
-  // check if user have some wallet immediately before use wallet 
+	// metamask is only one of the wallets, we have to use walletConnect to
+	// check if user have some wallet immediately before use wallet 
 	// requiredParams(window.ethereum, "Please install metamask to continue.");
 
 	let rawTokenData = getRawToken(unsignedToken, tokenIssuer);

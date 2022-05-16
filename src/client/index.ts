@@ -408,7 +408,7 @@ export class Client {
 		try {
 			let data;
       
-      if (this.tokenLookup[issuer].onChain) {
+			if (this.tokenLookup[issuer].onChain) {
 				data = await this.authenticateOnChain(authRequest);
 			} else {
 				data = await this.authenticateOffChain(authRequest);
