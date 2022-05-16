@@ -287,6 +287,7 @@ export class Messaging {
 	public createIframe(url?: string) {
 
 		const iframe = document.createElement('iframe');
+		iframe.setAttribute('allow',"clipboard-read");
 
 		let modal = this.getModal();
 
