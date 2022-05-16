@@ -153,18 +153,11 @@ export class AuthHandler {
 
 			}
 		}
-
-		if (
-			!event.data.hasOwnProperty('attestation')
-            || !event.data.hasOwnProperty('requestSecret')
-		) {
-			return;
-		}
-        
+    
 		this.iframeWrap.remove();
         
-		this.attestationBlob = event.data.attestation;
-		this.attestationSecret = event.data.requestSecret;
+		this.attestationBlob = event.data?.attestation;
+		this.attestationSecret = event.data?.requestSecret;
 
 		try {
 
