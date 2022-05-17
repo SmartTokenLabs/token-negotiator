@@ -68,11 +68,11 @@ export class Popup {
 
 			this.loadContainer.querySelector('.dismiss-error-tn').addEventListener('click', this.dismissLoader.bind(this));
 
-            if (this.client.web3WalletProvider.getConnectedWalletCount()){
-                this.updatePopup(SelectIssuers)
-            } else {
-                this.updatePopup(Start);
-            }
+			if (this.client.web3WalletProvider.getConnectedWalletCount()){
+				this.updatePopup(SelectIssuers)
+			} else {
+				this.updatePopup(Start);
+			}
 
 		}
 	}

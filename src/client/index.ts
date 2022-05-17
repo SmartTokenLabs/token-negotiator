@@ -210,18 +210,18 @@ export class Client {
 	async negotiate() {
 		await this.enrichTokenLookupDataOnChainTokens(this.onChainTokens);
 
-        await this.web3WalletProvider.loadConnections();
+		await this.web3WalletProvider.loadConnections();
 
-        if (this.type === "active") {
-            this.activeNegotiationStrategy();
-        } else {
+		if (this.type === "active") {
+			this.activeNegotiationStrategy();
+		} else {
 
-        // TODO build logic to allow to connect with wallectConnect, Torus etc.
-        // Logic to ask user to connect to wallet when they have provided web3 tokens to negotiate with.
-        // See other TODO's in this flow.
-        if (!this.web3WalletProvider.getConnectedWalletCount() && window.ethereum && this.onChainTokens.tokenKeys.length > 0){
-            await this.web3WalletProvider.connectWith('MetaMask');
-        }
+			// TODO build logic to allow to connect with wallectConnect, Torus etc.
+			// Logic to ask user to connect to wallet when they have provided web3 tokens to negotiate with.
+			// See other TODO's in this flow.
+			if (!this.web3WalletProvider.getConnectedWalletCount() && window.ethereum && this.onChainTokens.tokenKeys.length > 0){
+				await this.web3WalletProvider.connectWith('MetaMask');
+			}
 
 			this.passiveNegotiationStrategy();
 		}
@@ -239,10 +239,10 @@ export class Client {
 			onChainTokens.tokenKeys.map(async (issuerKey: string): Promise<any> => {
 				const issuer = this.tokenLookup[issuerKey];
 
-            const tokens = await this.onChainTokenModule.connectOnChainToken(
-                issuer,
-                this.web3WalletProvider.getConnectedWallet().address
-            );
+				const tokens = await this.onChainTokenModule.connectOnChainToken(
+					issuer,
+					this.web3WalletProvider.getConnectedWallet().address
+				);
 
 				this.onChainTokens[issuerKey].tokens = tokens;
 			})

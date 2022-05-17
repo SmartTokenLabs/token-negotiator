@@ -18,64 +18,64 @@ interface WalletConnection {
 
 class Web3WalletProvider {
 
-    private static LOCAL_STORAGE_KEY = "tn-wallet-connections";
+	private static LOCAL_STORAGE_KEY = "tn-wallet-connections";
 
-    state: WalletConnectionState = {
-        connections: {
+	state: WalletConnectionState = {
+		connections: {
 
-        }
-    };
+		}
+	};
 
-    saveConnections(){
+	saveConnections(){
 
-        let savedConnections: WalletConnectionState = { connections: {} };
+		let savedConnections: WalletConnectionState = { connections: {} };
 
-        for (let address in this.state.connections){
-            let con = this.state.connections[address];
+		for (let address in this.state.connections){
+			let con = this.state.connections[address];
 
-            savedConnections.connections[address] = {
-                address: con.address,
-                chainId: con.chainId,
-                providerType: con.providerType
-            };
-        }
+			savedConnections.connections[address] = {
+				address: con.address,
+				chainId: con.chainId,
+				providerType: con.providerType
+			};
+		}
 
-        localStorage.setItem(Web3WalletProvider.LOCAL_STORAGE_KEY, JSON.stringify(savedConnections));
-    }
+		localStorage.setItem(Web3WalletProvider.LOCAL_STORAGE_KEY, JSON.stringify(savedConnections));
+	}
 
-    deleteConnections(){
-        localStorage.removeItem(Web3WalletProvider.LOCAL_STORAGE_KEY);
-    }
+	deleteConnections(){
+		localStorage.removeItem(Web3WalletProvider.LOCAL_STORAGE_KEY);
+	}
 
-    async loadConnections(){
+	async loadConnections(){
 
-        let data = localStorage.getItem(Web3WalletProvider.LOCAL_STORAGE_KEY);
+		let data = localStorage.getItem(Web3WalletProvider.LOCAL_STORAGE_KEY);
 
-        if (!data) return;
+		if (!data) return;
 
-        let state = JSON.parse(data);
+		let state = JSON.parse(data);
 
-        if (!state) return;
+		if (!state) return;
 
-        for (let address in state.connections){
+		for (let address in state.connections){
 
-            let connection = state.connections[address];
+			let connection = state.connections[address];
 
-            // TODO: get provider object and get connection without initialising a new connection
-            await this.constructConnection(connection.providerType);
-        }
+			// TODO: get provider object and get connection without initialising a new connection
+			await this.constructConnection(connection.providerType);
+		}
 
-        console.log(this.state);
-    }
+		console.log(this.state);
+	}
 
 	async connectWith ( walletType: string ) {
 
 		if(!walletType) throw new Error('Please provide a Wallet type to connect with.');
 
-        await this.constructConnection(walletType);
+		await this.constructConnection(walletType);
 
-        this.saveConnections();
-    };
+		this.saveConnections();
+	}
 
 	async signWith ( message: string, walletData: any ) {
 
@@ -87,34 +87,34 @@ class Web3WalletProvider {
 
 	}
 
-    getConnectedWallet(address?: string) {
+	getConnectedWallet(address?: string) {
 
-        if (address){
-            if (!this.state.connections[address])
-                throw new Error("Connected wallet with address " + address + " does not exist");
+		if (address){
+			if (!this.state.connections[address])
+				throw new Error("Connected wallet with address " + address + " does not exist");
 
-            return this.state.connections[address];
-        }
+			return this.state.connections[address];
+		}
 
-        // Backward compatibility with single address mode
-        let addresses = Object.keys(this.state.connections);
-        if (addresses.length)
-            return this.state.connections[addresses[0]];
+		// Backward compatibility with single address mode
+		let addresses = Object.keys(this.state.connections);
+		if (addresses.length)
+			return this.state.connections[addresses[0]];
 
-        throw new Error("No connected wallets exist");
-    }
+		throw new Error("No connected wallets exist");
+	}
 
-    getConnectedWalletCount(){
-        return Object.keys(this.state.connections).length
-    }
+	getConnectedWalletCount(){
+		return Object.keys(this.state.connections).length
+	}
 
-    registerNewWalletAddress ( address:string, chainId:string, providerType:string, provider:any ) {
+	registerNewWalletAddress ( address: string, chainId: string, providerType: string, provider: any ) {
 
-        address = address.toLowerCase();
+		address = address.toLowerCase();
         
-        this.state.connections[address] = { address, chainId, providerType, provider };
+		this.state.connections[address] = { address, chainId, providerType, provider };
 
-        return this.state.connections;
+		return this.state.connections;
 
 	}
 
@@ -140,38 +140,38 @@ class Web3WalletProvider {
 
 	}
 
-    async constructConnection(walletType: string){
+	async constructConnection(walletType: string){
 
-        switch (walletType){
-            case "MetaMask":
-                return await this.MetaMask();
-            case "WalletConnect":
-                return await this.WalletConnect();
-            case "Torus":
-                return await this.Torus();
-        }
+		switch (walletType){
+		case "MetaMask":
+			return await this.MetaMask();
+		case "WalletConnect":
+			return await this.WalletConnect();
+		case "Torus":
+			return await this.Torus();
+		}
 
-        throw new Error("Wallet provider " + walletType + " does not exist.");
-    }
+		throw new Error("Wallet provider " + walletType + " does not exist.");
+	}
 
-    async MetaMask () {
+	async MetaMask () {
 
-        console.log('connect MetaMask');
+		console.log('connect MetaMask');
 
-        if (typeof window.ethereum !== 'undefined') {
+		if (typeof window.ethereum !== 'undefined') {
 
-            //@ts-ignore
-            // await ethereum.enable(); // fall back may be needed for FF to open Extension Prompt.
+			// @ts-ignore
+			// await ethereum.enable(); // fall back may be needed for FF to open Extension Prompt.
 
-            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+			const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
 
-            const hexChainId = await window.ethereum.request({ method: 'eth_chainId' });
+			const hexChainId = await window.ethereum.request({ method: 'eth_chainId' });
 
-            for (let account of accounts){
-                this.registerNewWalletAddress(account, parseInt(hexChainId, 16).toString(), "MetaMask", window.ethereum);
-            }
+			for (let account of accounts){
+				this.registerNewWalletAddress(account, parseInt(hexChainId, 16).toString(), "MetaMask", window.ethereum);
+			}
 
-            return this.state.connections;
+			return this.state.connections;
 
 		} else {
 
@@ -197,7 +197,7 @@ class Web3WalletProvider {
 
 					console.log(accounts);
 
-                    const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], '1', "WalletConnect", walletConnectProvider);
+					const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], '1', "WalletConnect", walletConnectProvider);
 
 					resolve(registeredWalletAddress);
 
@@ -242,7 +242,7 @@ class Web3WalletProvider {
 
 		const { accounts, chainId } = await this.getWeb3ChainIdAndAccounts( web3 );
 
-        const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], chainId, "Torus", torus.provider);
+		const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], chainId, "Torus", torus.provider);
 
 		return registeredWalletAddress;
 

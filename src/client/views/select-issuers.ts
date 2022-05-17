@@ -41,13 +41,13 @@ export class SelectIssuers extends AbstractView {
 
 		this.viewContainer.querySelector('.back-to-menu-tn').addEventListener('click', this.backToIssuers.bind(this));
 
-        this.viewContainer.querySelector('.dis-wallet-tn').addEventListener('click', () => {
-            this.client.web3WalletProvider.deleteConnections();
-            this.popup.updatePopup(SelectWallet);
-        });
+		this.viewContainer.querySelector('.dis-wallet-tn').addEventListener('click', () => {
+			this.client.web3WalletProvider.deleteConnections();
+			this.popup.updatePopup(SelectWallet);
+		});
 
-        this.issuerListContainer = document.querySelector(".token-issuer-list-container-tn");
-        this.tokensContainer = document.getElementsByClassName("token-view-tn")[0];
+		this.issuerListContainer = document.querySelector(".token-issuer-list-container-tn");
+		this.tokensContainer = document.getElementsByClassName("token-view-tn")[0];
 
 		if (!this.issuerListContainer){
 			console.log("Element .token-issuer-list-container-tn not found");
