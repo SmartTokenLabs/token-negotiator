@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import { SignedDevconTicket } from './../../asn/SignedDevconTicket';
+import { SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket';
 
 import {
 	filterTokens,
@@ -93,7 +93,7 @@ describe('core Spec', () => {
 			rawTokens,
 			readSignedTicket,
 			unsignedTokenDataName
-		)).toEqual([{"devconId": "9", "ticketClass": 12, "ticketIdNumber": 1}]);
+		)).toEqual([{"devconId": "9", "ticketClass": 12, "tiketIdNumber": 1}]);
 	});
 	test('expect store tokens inside cookies', () => {
 		const tokens = [ 
