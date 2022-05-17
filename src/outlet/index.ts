@@ -9,7 +9,7 @@ import {
 import { AuthHandler } from "./auth-handler";
 
 // requred for default TicketDecoder
-import { SignedDevconTicket } from "./../asn/SignedDevconTicket";
+import { SignedDevconTicket } from "@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket";
 import { AsnParser } from "@peculiar/asn1-schema";
 import { uint8toBuffer } from "./../utils/index";
 
