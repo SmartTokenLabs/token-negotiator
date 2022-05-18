@@ -99,13 +99,13 @@ export class AuthHandler {
 		this.iframeWrap = iframeWrap;
 		iframeWrap.setAttribute('style', 'width:100%;min-height: 100vh; position: fixed; align-items: center; justify-content: center;display: none;top: 0; left: 0; background: #fffa');
 		iframeWrap.appendChild(iframe);
-
+        
 		document.body.appendChild(iframeWrap);
 	}
 
 	async postMessageAttestationListener(event: MessageEvent, resolve: Function, reject: Function){
 
-		console.log('postMessageAttestationListener event (Authenticator)',event);
+		console.log('postMessageAttestationListener event (Authenticator)',event.data);
 
 		if (
 			typeof event.data.ready !== "undefined"
@@ -155,8 +155,13 @@ export class AuthHandler {
 			}
 		}
     
-		this.iframeWrap.remove();
         
+        if (!event.data?.attestation || !event.data?.requestSecret){
+            return;
+        }
+
+        this.iframeWrap.remove();
+
 		this.attestationBlob = event.data?.attestation;
 		this.attestationSecret = event.data?.requestSecret;
 
