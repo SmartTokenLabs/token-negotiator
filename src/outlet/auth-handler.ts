@@ -3,7 +3,8 @@
 import {Item} from '../tokenLookup'
 import {MessageResponseAction} from '../client/messaging'
 import {Outlet} from "./index";
-import {Authenticator} from '@tokenscript/attestation'
+import {Authenticator} from '@tokenscript/attestation';
+import {logger} from '../utils/index'
 
 export interface DevconToken {
     ticketBlob: string,
@@ -58,7 +59,7 @@ export class AuthHandler {
 		return new Promise((resolve, reject) => {
 
 			if (!this.attestationOrigin)
-				return reject("Attestation origin is null");
+				return reject( new Error("Attestation origin is null"));
 
 			window.addEventListener("message", (e) => {
 
@@ -105,7 +106,7 @@ export class AuthHandler {
 
 	async postMessageAttestationListener(event: MessageEvent, resolve: Function, reject: Function){
 
-		console.log('postMessageAttestationListener event (Authenticator)',event.data);
+		logger(2,'postMessageAttestationListener event (Authenticator)',event.data);
 
 		if (
 			typeof event.data.ready !== "undefined"
@@ -145,8 +146,8 @@ export class AuthHandler {
 			} else {
 
 				if (event.data.error){
-					console.log("Error received from the iframe: " + event.data.error);
-					reject(event.data.error);
+					logger(2,"Error received from the iframe: " + event.data.error);
+					reject(new Error(event.data.error));
 				}
 
 				this.iframeWrap.style.display = 'none';
@@ -196,16 +197,16 @@ export class AuthHandler {
 			);
             
 			if (useToken){
-				console.log('this.authResultCallback( useToken ): ');
+				logger(2,'this.authResultCallback( useToken ): ');
 				resolve(useToken);
 			} else {
-				console.log('this.authResultCallback( empty ): ');
-				reject(useToken);
+				throw new Error("Empty useToken");
 			}
 
 		} catch (e){
-			console.log(`UseDevconTicket. Something went wrong. ${e}`);
-			reject(e);
+			logger(2,`UseDevconTicket failed.`, e.message);
+			logger(3, e);
+			reject(new Error("Failed to create UseTicket. " + e.message));
 		}
 		// construct UseDevconTicket, see
 		// https://github.com/TokenScript/attestation/blob/main/data-modules/src/UseDevconTicket.asd
