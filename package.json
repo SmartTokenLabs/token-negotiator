@@ -11,7 +11,6 @@
     "copy-assets": "copyfiles ./src/theme/*.css dist/theme -V --flat && copyfiles ./src/vendor/*.js dist/vendor -V --flat",
     "prepublishOnly": "npm run build",
     "lint": "eslint . --quiet",
-    "lint-fix": "eslint .",
     "test": "jest",
     "test-watch": "jest --watch"
   },
