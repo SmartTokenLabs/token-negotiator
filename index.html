@@ -6,8 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 
-    <script type="text/javascript" src="./token-negotiator-alpha-dist/negotiator.js"></script>
-    <link rel="stylesheet" href="./token-negotiator-alpha-dist/theme/style.css" />
+    <script type="text/javascript" src="./dist/negotiator.js"></script>
+    <link rel="stylesheet" href="./dist/theme/style.css" />
+    <!-- <script type="text/javascript" src="./token-negotiator-alpha-dist/negotiator.js"></script> -->
+    <!-- <link rel="stylesheet" href="./token-negotiator-alpha-dist/theme/style.css" /> -->
  
 </head>
 <body onload="init()">
@@ -21,19 +23,19 @@
             window.negotiator = new negotiator.Client({
                 type: 'active',
                 issuers: [
-                    {    
-                        collectionID: 'devcon', 
-                        title: "Devcon",
-                        onChain: false,
-                        tokenOrigin: "http://localhost:3002/",
-                        attestationOrigin: "https://stage.attestation.id/",
-                        unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
-                        image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
-                        base64senderPublicKey: "",
-                        base64attestorPubKey: ""
-                    },
-                    { collectionID: "exp", contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth', openSeaSlug: 'expansionpunks' },
-                    { collectionID: "rink", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'rinkeby-punk' },
+                    // {    
+                    //     collectionID: 'devcon', 
+                    //     title: "Devcon",
+                    //     onChain: false,
+                    //     tokenOrigin: "http://localhost:3002/",
+                    //     attestationOrigin: "https://stage.attestation.id/",
+                    //     unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
+                    //     image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
+                    //     base64senderPublicKey: "",
+                    //     base64attestorPubKey: ""
+                    // },
+                    { collectionID: "expUKNss", contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth', openSeaSlug: 'expansionpunks' },
+                    { collectionID: "rink f f f", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'rinkeby-punk' },
                     { collectionID: "bayc", contract: '0x26472AA24D795AbcB687bddb44d733ef55Ebdf09', chain: 'Rinkeby' }
                 ],
                 options: {

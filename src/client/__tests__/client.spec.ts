@@ -163,7 +163,30 @@ describe('client spec', () => {
 		const tokenNegotiatorClient = getOffChainConfigClient(); 
 		tokenNegotiatorClient.updateSelectedTokens({'devcon': { "a": 'true' }});
 	});
-  
+	
+	test('tokenNegotiatorClient method formatCollectionID collection with uppercase chars and spaces', async () => {
+		const tokenNegotiatorClient = new Client({
+			type: "active",
+			issuers: [
+				{ collectionID: "B a Y c", contract: '0x26472AA24D795AbcB687bddb44d733ef55Ebdf09', chain: 'rinkeby' }
+			],
+			options: {}
+		});
+		expect((tokenNegotiatorClient.onChainTokens["b-a-y-c"]) ? true : false).toEqual(true);
+		expect(tokenNegotiatorClient.tokenLookup["b-a-y-c"].chain).toEqual("rinkeby");
+	});
+	
+	test('tokenNegotiatorClient method formatCollectionChain chain with uppercase chars', async () => {
+		const tokenNegotiatorClient = new Client({
+			type: "active",
+			issuers: [
+				{ collectionID: "bayc", contract: '0x26472AA24D795AbcB687bddb44d733ef55Ebdf09', chain: 'RINKEBY' }
+			],
+			options: {}
+		});
+		expect(tokenNegotiatorClient.tokenLookup["bayc"].chain).toEqual("rinkeby");
+	});
+
 	// TOOD Mock response from window
 	// test('tokenNegotiatorClient method addTokenViaMagicLink to succeed in collection of tokens', async () => {
 	//   window.open = jest.fn({
