@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/TokenScript/token-negotiator#readme",
   "dependencies": {
-    "@tokenscript/attestation": "^0.3.4",
+    "@tokenscript/attestation": "^0.3.7",
     "@toruslabs/torus-embed": "^1.20.2",
     "@walletconnect/web3-provider": "^1.7.1",
     "big-integer": "^1.6.48",
