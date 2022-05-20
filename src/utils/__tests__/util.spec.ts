@@ -1,4 +1,5 @@
 // @ts-nocheck
+window.DISPLAY_DEBUG_LEVEL = 1
 
 import { logger, requiredParams, compareObjects, base64ToUint8array } from './../index';
 
