@@ -162,6 +162,8 @@ export class Client {
 
 		if (issuers) this.tokenStore.updateIssuers(issuers);
 
+		requiredParams(Object.keys(this.tokenStore.getCurrentIssuers()).length, "issuers are missing.");
+
 		await this.enrichTokenLookupDataOnChainTokens();
 
 		if (this.type === "active") {
@@ -286,6 +288,9 @@ export class Client {
 
 		const filter = this.filter ? this.filter : {};
 		const config = this.tokenStore.getCurrentIssuers()[issuer];
+
+		if (!config)
+			throw new Error("Undefined token issuer")
 
 		let tokens;
 

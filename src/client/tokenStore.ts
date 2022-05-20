@@ -1,5 +1,6 @@
 import {OffChainTokenConfig, OnChainTokenConfig} from "../tokenLookup";
 import {ContractData} from "../onChainTokenModule";
+import {logger} from "../utils";
 
 interface TokenLookup {
 	[collectionID: string]: OnChainTokenConfig | OffChainTokenConfig | ContractData
@@ -96,9 +97,7 @@ export class TokenStore {
 				issuer.chain = this.formatCollectionChain(issuer.chain);
 
 				if (this.onChainTokens[issuer.collectionID]) {
-					console.warn(
-						`duplicate collectionID key ${issuer.collectionID}, use unique keys per collection.`
-					);
+					logger(1, `duplicate collectionID key ${issuer.collectionID}, use unique keys per collection.`);
 					return;
 				}
 
@@ -140,9 +139,7 @@ export class TokenStore {
 		if (/[A-Z]+/g.test(collectionID) || /\s+/g.test(collectionID)) {
 			formatedCollectionID = collectionID.replace(/\s+/g, "-").toLowerCase();
 
-			console.warn(
-				`Token Negotiator: Spaces or capital letters found in collectionID definition ${collectionID}, this has been re-formatted to ${formatedCollectionID}`
-			);
+			logger(1, `Token Negotiator: Spaces or capital letters found in collectionID definition ${collectionID}, this has been re-formatted to ${formatedCollectionID}`);
 
 			collectionID = formatedCollectionID;
 		}
