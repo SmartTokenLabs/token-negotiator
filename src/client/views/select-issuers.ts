@@ -101,6 +101,10 @@ export class SelectIssuers extends AbstractView {
 				this.navigateToTokensView(issuer);
 			}
 		});
+
+		this.client.getTokenStore().registerIssuerUpdateHook("select-issuers", ()=> {
+			this.render();
+		});
 	}
 
 	issuerConnectMarkup(title: string, image: string|undefined, issuer: string){
@@ -145,22 +149,20 @@ export class SelectIssuers extends AbstractView {
 
 	async autoLoadTokens(){
 
-		this.popup.showLoader("<h4>Loading tokens...</h4>");
-
+		// TODO: prevent further token loading when issuers are updated
 		await this.client.autoLoadTokens(this.issuerLoading.bind(this), (issuer: string, tokens: any[]) => {
 
-			if (!tokens){
+			if (!tokens?.length){
 				const connectBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`);
 
-				connectBtn.innerText = "Load";
+				if (connectBtn)
+					connectBtn.innerText = "Load";
 
 				return;
 			}
 
 			this.issuerConnected(issuer, tokens, false);
 		});
-
-		this.popup.dismissLoader();
 	}
 
 	async connectTokenIssuer(event: any) {
@@ -194,9 +196,8 @@ export class SelectIssuers extends AbstractView {
 	issuerLoading(issuer: string){
 		const connectBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`);
 
-		connectBtn.innerHTML = `
-			<div class="lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>
-		`;
+		if (connectBtn)
+			connectBtn.innerHTML = '<div class="lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>';
 	}
 
 	issuerConnected(issuer: string, tokens: any[], showTokens = true) {
