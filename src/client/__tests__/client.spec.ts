@@ -110,18 +110,6 @@ describe('client spec', () => {
 		});
 	});
 
-	test('tokenNegotiatorClient a failed new instance of client - missing type', () => {
-		expect(() => {
-			new Client({
-				type: undefined,
-				issuers: [
-					"devcon"
-				],
-				options: {}
-			})
-		}).toThrow('type is required.');
-	});
-
 	test('tokenNegotiatorClient on callback with event type tokens-selected ', () => {
 		const tokenNegotiatorClient = getOffChainConfigClient();
 		const event = 'tokens-selected';
