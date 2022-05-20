@@ -174,8 +174,7 @@ export class Outlet {
 		} catch (e: any) {
 			logger(2,e);
 
-			// TODO: We shouldn't be sending the full exception here, instead return error messages only.
-			this.sendErrorResponse(evtid, e);
+			this.sendErrorResponse(evtid, e.message);
 		}
 	}
 
