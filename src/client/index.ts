@@ -2,16 +2,8 @@
 import { Messaging, MessageAction, MessageResponseAction } from "./messaging";
 import { Popup, PopupOptionsInterface } from "./popup";
 import { asyncHandle, logger, requiredParams } from "../utils";
-import {
-	connectMetamaskAndGetAddress,
-	getChallengeSigned,
-	validateUseEthKey,
-} from "../core";
-import {
-	OffChainTokenConfig,
-	OnChainTokenConfig,
-	tokenLookup,
-} from "../tokenLookup";
+import {connectMetamaskAndGetAddress, getChallengeSigned, validateUseEthKey } from "../core";
+import { OffChainTokenConfig, OnChainTokenConfig, tokenLookup } from "../tokenLookup";
 import OnChainTokenModule from "./../onChainTokenModule";
 import Web3WalletProvider from "./../utils/Web3WalletProvider";
 import "./../vendor/keyShape";
@@ -37,7 +29,7 @@ declare global {
 }
 
 // TODO: Implement tokenId - each issuer token should have a unique ID (tokenId for instance).
-//  webster should not be required to pass the whole object as it can lead to hard to solve errors for webster.
+// webster should not be required to pass the whole object as it can lead to hard to solve errors for webster.
 interface AuthenticateInterface {
 	issuer: any;
 	tokenId?: number | string;
@@ -71,16 +63,15 @@ export class Client {
 
 		requiredParams(issuers, "issuers are missing.");
 
-		// TODO: Remove token lookup and use issuers instead - pretty much the same data
 		this.tokenLookup = tokenLookup;
 
 		this.type = type;
 
 		this.options = options;
 
-		this.filter = filter ? filter : {};
-
 		this.issuers = issuers;
+
+		this.filter = filter ? filter : {};
 
 		this.offChainTokens = { tokenKeys: [] };
 
@@ -104,35 +95,57 @@ export class Client {
 		this.messaging = new Messaging();
 	}
 
+	formatCollectionID(collectionID: string) {
+		let formatedCollectionID = collectionID;
+
+		if (/[A-Z]+/g.test(collectionID) || /\s+/g.test(collectionID)) {
+			formatedCollectionID = collectionID.replace(/\s+/g, "-").toLowerCase();
+
+			console.warn(
+				`Token Negotiator: Spaces or capital letters found in collectionID definition ${collectionID}, this has been re-formatted to ${formatedCollectionID}`
+			);
+
+			collectionID = formatedCollectionID;
+		}
+
+		return collectionID;
+	}
+
+	formatCollectionChain(chain: string) {
+		return chain.toLowerCase();
+	}
+
 	prePopulateTokenLookupStore = (issuers: any) => {
 		issuers.forEach((issuer: any) => {
-			let issuerKey = issuer?.collectionID;
+			if (!issuer.collectionID) return;
 
-			if (!issuerKey) return;
+			issuer.collectionID = this.formatCollectionID(issuer.collectionID);
 
-			issuerKey = issuerKey.replace(/\s+/g, "-").toLowerCase();
+			const isOnChainToken = issuer.contract && issuer.chain;
 
-			if (issuer.chain) issuer.chain = issuer.chain.toLowerCase();
+			if (isOnChainToken) {
+				issuer.chain = this.formatCollectionChain(issuer.chain);
 
-			this.updateTokenLookupStore(issuerKey, issuer);
-
-			if (issuer.contract && issuer.chain) {
-				if (this.onChainTokens[issuerKey]) {
+				if (this.onChainTokens[issuer.collectionID]) {
 					console.warn(
-						`duplicate collectionID key ${issuerKey}, use unique keys per collection.`
+						`duplicate collectionID key ${issuer.collectionID}, use unique keys per collection.`
 					);
 					return;
 				}
 
-				this.onChainTokens.tokenKeys.push(issuerKey);
+				this.onChainTokens.tokenKeys.push(issuer.collectionID);
 
-				this.onChainTokens[issuerKey] = { tokens: [] };
+				this.onChainTokens[issuer.collectionID] = { tokens: [] };
 			} else {
-				this.offChainTokens.tokenKeys.push(issuerKey);
+				this.offChainTokens.tokenKeys.push(issuer.collectionID);
 
-				this.offChainTokens[issuerKey] = { tokens: [] };
+				this.offChainTokens[issuer.collectionID] = { tokens: [] };
 			}
+
+			this.updateTokenLookupStore(issuer.collectionID, issuer);
 		});
+
+		return issuers;
 	};
 
 	getTokenData() {
@@ -411,7 +424,7 @@ export class Client {
 
 		try {
 			let data;
-      
+
 			if (this.tokenLookup[issuer].onChain) {
 				data = await this.authenticateOnChain(authRequest);
 			} else {

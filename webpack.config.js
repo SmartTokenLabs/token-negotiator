@@ -3,6 +3,16 @@ const webpack = require('webpack');
 
 // more polyfills will be required as the library extends to support blockchain and non blockchain token attestations.
 
+// http-server settings: 
+// CORS: disabled
+// Cache: 3600 seconds
+// Connection Timeout: 120 seconds
+// Directory Listings: visible
+// AutoIndex: visible
+// Serve GZIP Files: false
+// Serve Brotli Files: false
+// Default File Extension: none
+
 module.exports = {
     mode: "production",
     entry: './src/index.ts',

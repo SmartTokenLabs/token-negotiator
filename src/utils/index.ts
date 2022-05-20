@@ -49,7 +49,7 @@ export const compareObjects = (o1: any, o2: any) => {
 	for (let key of keys1) {
 		// compare commitment (array)
 		if (typeof o2[key] === "object") {
-			if (JSON.stringify(o1[key]) != JSON.stringify(o2[key])){
+			if (JSON.stringify(o1[key]) !== JSON.stringify(o2[key])){
 				return false;
 			}
 		} else if (o1[key] !== o2[key] ) {
