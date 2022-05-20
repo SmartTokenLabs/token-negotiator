@@ -1,4 +1,4 @@
-import {OffChainTokenConfig, OnChainTokenConfig} from "../tokenLookup";
+import {OffChainTokenConfig, OnChainTokenConfig} from "./interface";
 import {ContractData} from "../onChainTokenModule";
 import {logger} from "../utils";
 

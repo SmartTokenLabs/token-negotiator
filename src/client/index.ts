@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { Messaging, MessageAction, MessageResponseAction } from "./messaging";
-import { Popup, PopupOptionsInterface } from "./popup";
+import { Popup } from "./popup";
 import { asyncHandle, logger, requiredParams } from "../utils";
 import {connectMetamaskAndGetAddress, getChallengeSigned, validateUseEthKey } from "../core";
 import { OffChainTokenConfig, OnChainTokenConfig } from "../tokenLookup";
@@ -9,19 +9,7 @@ import Web3WalletProvider from "./../utils/Web3WalletProvider";
 import "./../vendor/keyShape";
 import { Authenticator } from "@tokenscript/attestation";
 import {TokenStore} from "./tokenStore";
-
-interface NegotiationInterface {
-	type: string;
-	issuers?: (OnChainTokenConfig | OffChainTokenConfig)[];
-	options: {
-		overlay: PopupOptionsInterface;
-		filters: {};
-	};
-	onChainKeys?: { [apiName: string]: string };
-	ipfsBaseUrl?: string;
-	autoLoadTokens?: number | boolean;
-	autoEnableTokens?: boolean;
-}
+import {AuthenticateInterface, NegotiationInterface} from "./interface";
 
 declare global {
 	interface Window {
@@ -31,28 +19,30 @@ declare global {
 	}
 }
 
-// TODO: Implement tokenId - each issuer token should have a unique ID (tokenId for instance).
-// webster should not be required to pass the whole object as it can lead to hard to solve errors for webster.
-interface AuthenticateInterface {
-	issuer: any;
-	tokenId?: number | string;
-	unsignedToken: any;
+const defaultConfig: NegotiationInterface = {
+	type: "active",
+	issuers: [],
+	options: {
+		overlay: {
+			openingHeading: "Validate your token ownership for access",
+			issuerHeading: "Detected tokens"
+		},
+		filter: {}
+	},
+	autoLoadTokens: true,
+	autoEnableTokens: true,
 }
 
 export class Client {
 
 	private negotiateAlreadyFired: boolean;
-	private type: string;
-	private filter: {};
-	private options: any;
-	private web3WalletProvider: any;
+	private config: NegotiationInterface;
+	private web3WalletProvider: Web3WalletProvider;
 	private messaging: Messaging;
 	private popup: Popup;
 	private clientCallBackEvents: {} = {};
 	private onChainTokenModule: OnChainTokenModule;
 	private tokenStore: TokenStore;
-	private autoLoadTokens: number | boolean
-	private autoEnableTokens: boolean
 
 	static getKey(file: string){
 		return  Authenticator.decodePublicKey(file);
@@ -60,32 +50,20 @@ export class Client {
 
 	constructor(config: NegotiationInterface) {
 
-		const { type, issuers, options, filter, autoLoadTokens, autoEnableTokens } = config;
-
-		requiredParams(type, "type is required.");
-
-		this.type = type;
-
-		this.options = options;
-
-		this.filter = filter ? filter : {};
+		this.config = Object.assign(defaultConfig, config);
 
 		this.negotiateAlreadyFired = false;
 
-		// TODO: merge full config into object of default values
-		this.autoLoadTokens = (autoLoadTokens !== undefined ? autoLoadTokens : true);
-		this.autoEnableTokens = (autoEnableTokens !== undefined ? autoEnableTokens : true);
+		this.tokenStore = new TokenStore(this.config.autoEnableTokens);
 
-		this.tokenStore = new TokenStore(autoEnableTokens);
-
-		if (issuers)
-			this.tokenStore.updateIssuers(issuers);
+		if (this.config.issuers?.length > 0)
+			this.tokenStore.updateIssuers(this.config.issuers);
 
 		this.web3WalletProvider = new Web3WalletProvider();
 
 		this.onChainTokenModule = new OnChainTokenModule(
-			config.onChainKeys,
-			config.ipfsBaseUrl
+			this.config.onChainKeys,
+			this.config.ipfsBaseUrl
 		);
 
 		this.messaging = new Messaging();
@@ -116,7 +94,7 @@ export class Client {
 					data = await this.messaging.sendMessage({
 						issuer: issuer,
 						action: MessageAction.GET_ISSUER_TOKENS,
-						filter: this.filter,
+						filter: this.config.options.filters,
 						origin: tokensOrigin,
 					});
 				} catch (err) {
@@ -166,7 +144,7 @@ export class Client {
 
 		await this.enrichTokenLookupDataOnChainTokens();
 
-		if (this.type === "active") {
+		if (this.config.type === "active") {
 			this.activeNegotiationStrategy(openPopup);
 		} else {
 			// TODO build logic to allow to connect with wallectConnect, Torus etc.
@@ -192,7 +170,7 @@ export class Client {
 
 	async tokenAutoLoad(onLoading: (issuer: string) => void, onComplete: (issuer: string, tokens: any[]) => void) {
 
-		if (this.autoLoadTokens === false)
+		if (this.config.autoLoadTokens === false)
 			return;
 
 		this.cancelAutoload = false;
@@ -214,7 +192,7 @@ export class Client {
 
 			count++;
 
-			if (this.cancelAutoload || (this.autoLoadTokens !== true && count > this.autoLoadTokens))
+			if (this.cancelAutoload || (this.config.autoLoadTokens !== true && count > this.config.autoLoadTokens))
 				break;
 		}
 	}
@@ -286,7 +264,6 @@ export class Client {
 
 	async connectTokenIssuer(issuer: string): Promise<any[]> {
 
-		const filter = this.filter ? this.filter : {};
 		const config = this.tokenStore.getCurrentIssuers()[issuer];
 
 		if (!config)
@@ -311,7 +288,7 @@ export class Client {
 				issuer: issuer,
 				action: MessageAction.GET_ISSUER_TOKENS,
 				origin: config.tokenOrigin,
-				filter: filter,
+				filter: this.config.options.filters,
 			});
 
 			tokens = data.tokens;
@@ -319,7 +296,7 @@ export class Client {
 			this.tokenStore.setOffChainTokens(issuer, data.tokens);
 		}
 
-		if (this.autoEnableTokens)
+		if (this.config.autoEnableTokens)
 			this.eventSender.emitSelectedTokensToClient(this.tokenStore.getSelectedTokens())
 
 		return tokens;
@@ -470,12 +447,6 @@ export class Client {
 			throw new Error("useEthKey validation failed.");
 
 		return useEthKey;
-
-		// } catch (e) {
-
-		// requiredParams(null, "Could not authenticate token: " + e.message);
-
-		// }
 	}
 
 	eventSender = {

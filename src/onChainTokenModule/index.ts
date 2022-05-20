@@ -1,5 +1,5 @@
 import { logger, requiredParams } from "../utils";
-import { OnChainTokenConfig } from "../tokenLookup";
+import { OnChainTokenConfig } from "../client/interface";
 
 interface OnChainApiConfig {
   [apiName: string]: {
