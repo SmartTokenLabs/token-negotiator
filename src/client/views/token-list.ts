@@ -112,7 +112,7 @@ export class TokenList extends AbstractView {
 	// TODO: probably don't need to iterate all inputs.
 	tokenToggleSelection() {
 
-		let selectedTokens = this.client.getTokenData().selectedTokens;
+		let selectedTokens = this.client.getTokenStore().getSelectedTokens();
 
 		this.viewContainer.querySelectorAll('.mobileToggle-tn').forEach((token: any, index: number) => {
 

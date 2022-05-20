@@ -62,18 +62,22 @@ export class SelectIssuers extends AbstractView {
 
 	populateIssuers(){
 
-		let data = this.client.getTokenData();
+		let store = this.client.getTokenStore();
 
 		let html = "";
 
-		data.offChainTokens.tokenKeys.map((issuer: string) => {
-			if (data.tokenLookup[issuer].title)
-				html += this.issuerConnectMarkup(data.tokenLookup[issuer].title, data.tokenLookup[issuer].image, issuer);
+		store.getOffChainTokens().tokenKeys.map((issuer: string) => {
+			let data = store.getCurrentIssuers()[issuer];
+
+			if (data.title)
+				html += this.issuerConnectMarkup(data.title, data.image, issuer);
 		});
 
-		data.onChainTokens.tokenKeys.map((issuer: string) => {
-			if (data.tokenLookup[issuer].title)
-				html += this.issuerConnectMarkup(data.tokenLookup[issuer].title, data.tokenLookup[issuer].image, issuer);
+		store.getOnChainTokens().tokenKeys.map((issuer: string) => {
+			let data = store.getCurrentIssuers()[issuer];
+
+			if (data.title)
+				html += this.issuerConnectMarkup(data.title, data.image, issuer);
 		});
 
 		this.issuerListContainer.innerHTML = html;
@@ -99,7 +103,7 @@ export class SelectIssuers extends AbstractView {
 		});
 	}
 
-	issuerConnectMarkup(title: string, image: string, issuer: string){
+	issuerConnectMarkup(title: string, image: string|undefined, issuer: string){
 		return `
             <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
               <div style="display: flex; align-items: center;">
@@ -231,30 +235,35 @@ export class SelectIssuers extends AbstractView {
 
 		this.tokensContainer.scrollTo(0, 0);
 
-		const tokenData = this.client.getTokenData();
-		const config = this.client.getTokenData().tokenLookup[issuer];
-		const location = config.onChain === false ? 'offChainTokens' : 'onChainTokens';
+		const tokenStore = this.client.getTokenStore();
+		const config = this.client.getTokenStore().getCurrentIssuers()[issuer];
+		const onChain = "onChain" in config && config.onChain;
+		const tokenData = onChain ? tokenStore.getOnChainTokens()[issuer] : tokenStore.getOffChainTokens()[issuer];
 
-		document.getElementsByClassName("headline-tn token-name")[0].innerHTML = config.title;
+		console.log(onChain);
+		console.log(tokenData);
+
+		if (config.title)
+			document.getElementsByClassName("headline-tn token-name")[0].innerHTML = config.title;
 
 		let tokens: TokenListItemInterface[] = [];
 
-		tokenData[location][issuer].tokens.map((t: any, i: any) => {
+		tokenData.tokens.map((t: any, i: any) => {
 
 			let isSelected = false;
 
 			// TODO Define a constant value that can be checked regardless of which issuer token to speed up this check.
-			tokenData.selectedTokens[issuer]?.tokens.map((st: any, si: any) => {
+			tokenStore.getSelectedTokens()[issuer]?.tokens.map((st: any, si: any) => {
 
 				if (JSON.stringify(t) === JSON.stringify(st)) isSelected = true;
 
 			});
 
-			if(location === "offChainTokens") {
+			if(!onChain) {
 
 				const { title, image } = config;
 
-				tokens.push({
+				tokens.push(<TokenListItemInterface>{
 					data: t,
 					tokenIssuerKey: issuer,
 					index: t.ticketId,

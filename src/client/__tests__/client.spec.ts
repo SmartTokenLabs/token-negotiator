@@ -41,7 +41,7 @@ describe('client spec', () => {
 
 	test('tokenNegotiatorClient getTokenData', () => {
 		const tokenNegotiatorClient = getOffChainConfigClient();
-		const output = tokenNegotiatorClient.getTokenData();
+		const output = tokenNegotiatorClient.getTokenStore();
 		expect(output).toEqual({
 			offChainTokens: {
 				"devcon": {

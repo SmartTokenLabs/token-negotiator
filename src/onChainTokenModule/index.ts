@@ -13,7 +13,7 @@ interface OnChainApiConfig {
   };
 }
 
-interface ContractData {
+export interface ContractData {
   api: string;
   chain: string;
   contract: string;

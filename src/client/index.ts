@@ -3,21 +3,23 @@ import { Messaging, MessageAction, MessageResponseAction } from "./messaging";
 import { Popup, PopupOptionsInterface } from "./popup";
 import { asyncHandle, logger, requiredParams } from "../utils";
 import {connectMetamaskAndGetAddress, getChallengeSigned, validateUseEthKey } from "../core";
-import { OffChainTokenConfig, OnChainTokenConfig, tokenLookup } from "../tokenLookup";
+import { OffChainTokenConfig, OnChainTokenConfig } from "../tokenLookup";
 import OnChainTokenModule from "./../onChainTokenModule";
 import Web3WalletProvider from "./../utils/Web3WalletProvider";
 import "./../vendor/keyShape";
 import { Authenticator } from "@tokenscript/attestation";
+import {TokenStore} from "./tokenStore";
 
 interface NegotiationInterface {
 	type: string;
-	issuers: (OnChainTokenConfig | OffChainTokenConfig)[];
+	issuers?: (OnChainTokenConfig | OffChainTokenConfig)[];
 	options: {
 		overlay: PopupOptionsInterface;
 		filters: {};
 	};
 	onChainKeys?: { [apiName: string]: string };
 	ipfsBaseUrl?: string;
+	autoLoadTokens?: number | boolean
 }
 
 declare global {
@@ -37,20 +39,17 @@ interface AuthenticateInterface {
 }
 
 export class Client {
-	private issuers: OnChainTokenConfig | OffChainTokenConfig[];
+
 	private negotiateAlreadyFired: boolean;
 	private type: string;
 	private filter: {};
 	private options: any;
-	private offChainTokens: any;
-	private onChainTokens: any;
-	private tokenLookup: any;
-	private selectedTokens: any;
 	private web3WalletProvider: any;
 	private messaging: Messaging;
 	private popup: Popup;
 	private clientCallBackEvents: {};
 	private onChainTokenModule: OnChainTokenModule;
+	private tokenStore: TokenStore;
 
 	static getKey(file: string){
 		return  Authenticator.decodePublicKey(file);
@@ -61,10 +60,6 @@ export class Client {
 
 		requiredParams(type, "type is required.");
 
-		requiredParams(issuers, "issuers are missing.");
-
-		this.tokenLookup = tokenLookup;
-
 		this.type = type;
 
 		this.options = options;
@@ -73,17 +68,14 @@ export class Client {
 
 		this.filter = filter ? filter : {};
 
-		this.offChainTokens = { tokenKeys: [] };
-
-		this.onChainTokens = { tokenKeys: [] };
-
-		this.selectedTokens = {};
-
 		this.clientCallBackEvents = {};
 
 		this.negotiateAlreadyFired = false;
 
-		this.prePopulateTokenLookupStore(issuers);
+		this.tokenStore = new TokenStore();
+
+		if (issuers)
+			this.tokenStore.updateIssuers(issuers);
 
 		this.web3WalletProvider = new Web3WalletProvider();
 
@@ -95,76 +87,8 @@ export class Client {
 		this.messaging = new Messaging();
 	}
 
-	formatCollectionID(collectionID: string) {
-		let formatedCollectionID = collectionID;
-
-		if (/[A-Z]+/g.test(collectionID) || /\s+/g.test(collectionID)) {
-			formatedCollectionID = collectionID.replace(/\s+/g, "-").toLowerCase();
-
-			console.warn(
-				`Token Negotiator: Spaces or capital letters found in collectionID definition ${collectionID}, this has been re-formatted to ${formatedCollectionID}`
-			);
-
-			collectionID = formatedCollectionID;
-		}
-
-		return collectionID;
-	}
-
-	formatCollectionChain(chain: string) {
-		return chain.toLowerCase();
-	}
-
-	prePopulateTokenLookupStore = (issuers: any) => {
-		issuers.forEach((issuer: any) => {
-			if (!issuer.collectionID) return;
-
-			issuer.collectionID = this.formatCollectionID(issuer.collectionID);
-
-			const isOnChainToken = issuer.contract && issuer.chain;
-
-			if (isOnChainToken) {
-				issuer.chain = this.formatCollectionChain(issuer.chain);
-
-				if (this.onChainTokens[issuer.collectionID]) {
-					console.warn(
-						`duplicate collectionID key ${issuer.collectionID}, use unique keys per collection.`
-					);
-					return;
-				}
-
-				this.onChainTokens.tokenKeys.push(issuer.collectionID);
-
-				this.onChainTokens[issuer.collectionID] = { tokens: [] };
-			} else {
-				this.offChainTokens.tokenKeys.push(issuer.collectionID);
-
-				this.offChainTokens[issuer.collectionID] = { tokens: [] };
-			}
-
-			this.updateTokenLookupStore(issuer.collectionID, issuer);
-		});
-
-		return issuers;
-	};
-
-	getTokenData() {
-		return {
-			offChainTokens: this.offChainTokens,
-			onChainTokens: this.onChainTokens,
-			tokenLookup: this.tokenLookup,
-			selectedTokens: this.selectedTokens,
-		};
-	}
-
-	// To enrich the token lookup store with data.
-	// for on chain tokens that are not using token script this is
-	// required, for off chain this is most likely not required because the configurations
-	// are already pre-defined e.g. title, issuer image image etc.
-	updateTokenLookupStore(tokenKey, data) {
-		if (!this.tokenLookup[tokenKey]) this.tokenLookup[tokenKey] = {};
-
-		this.tokenLookup[tokenKey] = { ...this.tokenLookup[tokenKey], ...data };
+	getTokenStore() {
+		return this.tokenStore;
 	}
 
 	async negotiatorConnectToWallet(walletType: string) {
@@ -175,14 +99,14 @@ export class Client {
 		return walletAddress;
 	}
 
-	async setPassiveNegotiationWebTokens(offChainTokens: any) {
+	async setPassiveNegotiationWebTokens() {
 		await Promise.all(
 			// TODO load all on chain tokens logic needed here.
 
-			offChainTokens.tokenKeys.map(async (issuer: string): Promise<any> => {
+			this.tokenStore.getOffChainTokens().tokenKeys.map(async (issuer: string): Promise<any> => {
 				let data;
 
-				const tokensOrigin = this.tokenLookup[issuer].tokenOrigin;
+				const tokensOrigin = this.tokenStore.getCurrentIssuers()[issuer].tokenOrigin;
 
 				try {
 					data = await this.messaging.sendMessage({
@@ -199,33 +123,42 @@ export class Client {
 				logger(2,"tokens:");
 				logger(2,data.tokens);
 
-				this.offChainTokens[issuer].tokens = data.tokens;
+				this.tokenStore.setOffChainTokens(issuer, data.tokens);
 
 				return;
 			})
 		);
 	}
 
-	async enrichTokenLookupDataOnChainTokens(onChainTokens: any) {
+	async enrichTokenLookupDataOnChainTokens() {
+
 		await Promise.all(
-			onChainTokens.tokenKeys.map(async (issuerKey: string): Promise<any> => {
-				let lookupData =
-					await this.onChainTokenModule.getInitialContractAddressMetaData(
-						this.tokenLookup[issuerKey]
-					);
+			this.tokenStore.getOnChainTokens().tokenKeys.map(async (issuerKey: string): Promise<any> => {
+
+				let tokenData = this.tokenStore.getCurrentIssuers()[issuerKey];
+
+				// Issuer contract data already loaded
+				if (tokenData.title)
+					return;
+
+				let lookupData = await this.onChainTokenModule.getInitialContractAddressMetaData(tokenData);
 
 				if (lookupData) {
+					// TODO: this might be redundant
 					lookupData.onChain = true;
 
 					// enrich the tokenLookup store with contract meta data
-					this.updateTokenLookupStore(issuerKey, lookupData);
+					this.tokenStore.updateTokenLookupStore(issuerKey, lookupData);
 				}
 			})
 		);
 	}
 
-	async negotiate() {
-		await this.enrichTokenLookupDataOnChainTokens(this.onChainTokens);
+	async negotiate(issuers?: OnChainTokenConfig | OffChainTokenConfig[], openPopup = false) {
+
+		if (issuers) this.tokenStore.updateIssuers(issuers);
+
+		await this.enrichTokenLookupDataOnChainTokens();
 
 		if (this.type === "active") {
 			this.activeNegotiationStrategy();
@@ -233,7 +166,7 @@ export class Client {
 			// TODO build logic to allow to connect with wallectConnect, Torus etc.
 			// Logic to ask user to connect to wallet when they have provided web3 tokens to negotiate with.
 			// See other TODO's in this flow.
-			// if (window.ethereum && this.onChainTokens.tokenKeys.length > 0) await this.web3WalletProvider.connectWith('MetaMask');
+			// if (window.ethereum && onChainTokens.tokenKeys.length > 0) await this.web3WalletProvider.connectWith('MetaMask');
 
 			this.passiveNegotiationStrategy();
 		}
@@ -248,7 +181,7 @@ export class Client {
 
 	async autoLoadTokens(onLoading: (issuer: string) => void, onComplete: (issuer: string, tokens: any[]) => void) {
 
-		for (let issuerKey in this.tokenLookup){
+		for (let issuerKey in this.tokenStore.getCurrentIssuers()){
 
 			onLoading(issuerKey);
 
@@ -263,17 +196,17 @@ export class Client {
 		}
 	}
 
-	async setPassiveNegotiationOnChainTokens(onChainTokens: any) {
+	async setPassiveNegotiationOnChainTokens() {
 		await Promise.all(
-			onChainTokens.tokenKeys.map(async (issuerKey: string): Promise<any> => {
-				const issuer = this.tokenLookup[issuerKey];
+			this.tokenStore.getOnChainTokens().tokenKeys.map(async (issuerKey: string): Promise<any> => {
+				const issuer = this.tokenStore.getCurrentIssuers()[issuerKey];
 
 				const tokens = await this.onChainTokenModule.connectOnChainToken(
 					issuer,
 					this.web3WalletProvider.getConnectedWalletData()[0].address
 				);
 
-				this.onChainTokens[issuerKey].tokens = tokens;
+				this.tokenStore.setOnChainTokens(issuerKey, tokens);
 			})
 		);
 	}
@@ -285,26 +218,28 @@ export class Client {
 		//       if there are offchain tokens, but there are also onchain tokens, show loaded tokens along with an error/warning message?
 
 		let canUsePassive = false;
+		
+		let offChainTokens = this.tokenStore.getOffChainTokens();
 
-		if (this.offChainTokens.tokenKeys.length) {
+		if (offChainTokens.tokenKeys.length) {
 			canUsePassive = await this.messaging.getCookieSupport(
-				this.tokenLookup[this.offChainTokens.tokenKeys[0]]?.tokenOrigin
+				this.getTokenStore().getCurrentIssuers()[offChainTokens.tokenKeys[0]]?.tokenOrigin
 			);
 		}
 
 		if (canUsePassive) {
 			await asyncHandle(
-				this.setPassiveNegotiationWebTokens(this.offChainTokens)
+				this.setPassiveNegotiationWebTokens()
 			);
 			await asyncHandle(
-				this.setPassiveNegotiationOnChainTokens(this.onChainTokens)
+				this.setPassiveNegotiationOnChainTokens()
 			);
 
-			let outputOnChain = JSON.parse(JSON.stringify(this.onChainTokens));
+			let outputOnChain = JSON.parse(JSON.stringify(this.tokenStore.getOnChainTokens()));
 
 			delete outputOnChain.tokenKeys;
 
-			let outputOffChain = JSON.parse(JSON.stringify(this.offChainTokens));
+			let outputOffChain = JSON.parse(JSON.stringify(this.tokenStore.getOnChainTokens()));
 
 			delete outputOffChain.tokenKeys;
 
@@ -324,10 +259,11 @@ export class Client {
 
 	async connectTokenIssuer(issuer: string): Promise<any[]> {
 		const filter = this.filter ? this.filter : {};
-		const tokensOrigin = this.tokenLookup[issuer].tokenOrigin;
+		const config = this.tokenStore.getCurrentIssuers()[issuer];
+		const tokensOrigin = config.tokenOrigin;
 
-		if (this.tokenLookup[issuer].onChain) {
-			return this.connectOnChainTokenIssuer(this.tokenLookup[issuer]);
+		if (config.onChain) {
+			return this.connectOnChainTokenIssuer(config);
 		}
 
 		let data = await this.messaging.sendMessage({
@@ -337,7 +273,7 @@ export class Client {
 			filter: filter,
 		});
 
-		this.offChainTokens[issuer].tokens = data.tokens;
+		this.tokenStore.setOffChainTokens(issuer, data.tokens);
 
 		return data.tokens;
 	}
@@ -354,14 +290,14 @@ export class Client {
 			this.web3WalletProvider.getConnectedWalletData()[0].address
 		);
 
-		this.onChainTokens[issuer.collectionID].tokens = tokens;
+		this.tokenStore.setOnChainTokens(issuer.collectionID,  tokens);
 
 		return tokens;
 	}
 
 	updateSelectedTokens(selectedTokens) {
-		this.selectedTokens = selectedTokens;
-		this.eventSender.emitSelectedTokensToClient();
+		this.tokenStore.setSelectedTokens(selectedTokens);
+		this.eventSender.emitSelectedTokensToClient(selectedTokens);
 	}
 
 	createSignature() {
@@ -382,7 +318,7 @@ export class Client {
 
 	async authenticateOffChain(authRequest: AuthenticateInterface) {
 		const { issuer, unsignedToken } = authRequest;
-		const tokenConfig = this.tokenLookup[issuer];
+		const tokenConfig = this.tokenStore.getCurrentIssuers()[issuer];
 
 		let useEthKey = null;
 
@@ -407,8 +343,8 @@ export class Client {
 		if (useEthKey)
 			Authenticator.validateUseTicket(
 				data.proof,
-				this.tokenLookup[issuer].base64attestorPubKey,
-				this.tokenLookup[issuer].base64senderPublicKeys,
+				tokenConfig.base64attestorPubKey,
+				tokenConfig.base64senderPublicKeys,
 				useEthKey.address
 			);
 
@@ -423,7 +359,9 @@ export class Client {
 			"Issuer and signed token required."
 		);
 
-		if (!this.tokenLookup[issuer])
+		const config = this.tokenStore.getCurrentIssuers()[issuer];
+
+		if (!config)
 			throw new Error("Provided issuer was not found.");
 
 		// TODO: How to handle error display in passive negotiation? Use optional UI or emit errors to listener?
@@ -442,7 +380,7 @@ export class Client {
 		try {
 			let data;
 
-			if (this.tokenLookup[issuer].onChain) {
+			if (config.onChain) {
 				data = await this.authenticateOnChain(authRequest);
 			} else {
 				data = await this.authenticateOffChain(authRequest);
@@ -472,7 +410,7 @@ export class Client {
 	}
 
 	async checkPublicAddressMatch(issuer: string, unsignedToken: any) {
-		let config: any = tokenLookup[issuer];
+		let config: any = this.tokenStore.getCurrentIssuers()[issuer];
 
 		// TODO: Remove once fully implemented for on-chain tokens
 		if (!config.unEndPoint) {
@@ -514,8 +452,8 @@ export class Client {
 		emitAllTokensToClient: (tokens: any) => {
 			this.on("tokens", null, tokens);
 		},
-		emitSelectedTokensToClient: () => {
-			this.on("tokens-selected", null, { selectedTokens: this.selectedTokens });
+		emitSelectedTokensToClient: (tokens: any) => {
+			this.on("tokens-selected", null, { selectedTokens: tokens });
 		},
 		emitProofToClient: (proof: any, issuer: any, error = "") => {
 			this.on("token-proof", null, { proof, issuer, error });
