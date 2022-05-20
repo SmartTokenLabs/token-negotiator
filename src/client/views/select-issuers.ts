@@ -197,7 +197,7 @@ export class SelectIssuers extends AbstractView {
 		const connectBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`);
 
 		if (connectBtn)
-			connectBtn.innerHTML = '<div class="lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>';
+			connectBtn.innerHTML = '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>';
 	}
 
 	issuerConnected(issuer: string, tokens: any[], showTokens = true) {
@@ -240,9 +240,6 @@ export class SelectIssuers extends AbstractView {
 		const config = this.client.getTokenStore().getCurrentIssuers()[issuer];
 		const onChain = "onChain" in config && config.onChain;
 		const tokenData = onChain ? tokenStore.getOnChainTokens()[issuer] : tokenStore.getOffChainTokens()[issuer];
-
-		console.log(onChain);
-		console.log(tokenData);
 
 		if (config.title)
 			document.getElementsByClassName("headline-tn token-name")[0].innerHTML = config.title;
