@@ -2,6 +2,7 @@ import {AbstractView} from "./view-interface";
 import {TokenList} from "./token-list";
 import {TokenListItemInterface} from "./token-list";
 import {IconView} from "./icon-view";
+import { logger } from "../../utils";
 
 export class SelectIssuers extends AbstractView {
 
@@ -43,7 +44,7 @@ export class SelectIssuers extends AbstractView {
 		this.tokensContainer = document.getElementsByClassName("token-view-tn")[0];
 
 		if (!this.issuerListContainer){
-			console.log("Element .token-issuer-list-container-tn not found");
+			logger(2, "Element .token-issuer-list-container-tn not found");
 			return;
 		}
 
@@ -149,7 +150,7 @@ export class SelectIssuers extends AbstractView {
 		try {
 			tokens = await this.client.connectTokenIssuer(issuer);
 		} catch (err){
-			console.log(err);
+			logger(2, err);
 			this.popup.showError((err as string));
 			return;
 		}
@@ -170,7 +171,7 @@ export class SelectIssuers extends AbstractView {
 		const tokenBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .tokens-btn-tn`);
 
 		if (!connectBtn || !tokenBtn){
-			console.log("Could not find button handler");
+			logger(2, "Could not find button handler");
 		}
 
 		connectBtn.style.display = "none";

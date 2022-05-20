@@ -60,6 +60,10 @@ export class Client {
 	private clientCallBackEvents: {};
 	private onChainTokenModule: OnChainTokenModule;
 
+	static getKey(file: string){
+		return  Authenticator.decodePublicKey(file);
+	}
+
 	constructor(config: NegotiationInterface) {
 		const { type, issuers, options, filter } = config;
 
@@ -153,7 +157,7 @@ export class Client {
 	async negotiatorConnectToWallet(walletType: string) {
 		let walletAddress = await this.web3WalletProvider.connectWith(walletType);
 
-		logger("wallet address found: " + walletAddress);
+		logger(2, "wallet address found: " + walletAddress);
 
 		return walletAddress;
 	}
@@ -175,12 +179,12 @@ export class Client {
 						origin: tokensOrigin,
 					});
 				} catch (err) {
-					console.log(err);
+					logger(2,err);
 					return;
 				}
 
-				console.log("tokens:");
-				console.log(data.tokens);
+				logger(2,"tokens:");
+				logger(2,data.tokens);
 
 				this.offChainTokens[issuer].tokens = data.tokens;
 
@@ -274,15 +278,15 @@ export class Client {
 
 			delete outputOffChain.tokenKeys;
 
-			console.log("Emit tokens");
-			console.log(outputOffChain);
+			logger(2, "Emit tokens");
+			logger(2, outputOffChain);
 
 			this.eventSender.emitAllTokensToClient({
 				...outputOffChain,
 				...outputOnChain,
 			});
 		} else {
-			logger(
+			logger(2, 
 				"Enable 3rd party cookies via your browser settings to use this negotiation type."
 			);
 		}
@@ -417,11 +421,11 @@ export class Client {
 			if (!data.proof)
 				return this.handleProofError("Failed to get proof from the outlet.");
 
-			console.log("Ticket proof successfully validated.");
+			logger(2,"Ticket proof successfully validated.");
 
 			this.eventSender.emitProofToClient(data.proof, data.issuer);
 		} catch (err) {
-			console.log(err);
+			logger(2,err);
 			this.handleProofError(err, issuer);
 		}
 
@@ -434,7 +438,7 @@ export class Client {
 
 	private handleProofError(err, issuer) {
 		if (this.popup) this.popup.showError(err);
-		this.eventSender.emitProofToClient(null, issuer);
+		this.eventSender.emitProofToClient(null, issuer, err);
 	}
 
 	async checkPublicAddressMatch(issuer: string, unsignedToken: any) {
@@ -483,8 +487,8 @@ export class Client {
 		emitSelectedTokensToClient: () => {
 			this.on("tokens-selected", null, { selectedTokens: this.selectedTokens });
 		},
-		emitProofToClient: (proof: any, issuer: any) => {
-			this.on("token-proof", null, { proof: proof, issuer: issuer });
+		emitProofToClient: (proof: any, issuer: any, error = "") => {
+			this.on("token-proof", null, { proof, issuer, error });
 		},
 	};
 

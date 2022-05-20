@@ -120,7 +120,7 @@ describe('client spec', () => {
 		const tokenNegotiatorClient = getOffChainConfigClient();
 		const event = 'tokens-selected';
 		tokenNegotiatorClient.on(event, () => {
-			console.log(event)
+			logger(2, event)
 		});
 		expect(tokenNegotiatorClient.clientCallBackEvents[event]).toBeDefined();
 	});
