@@ -33,6 +33,7 @@ export class TokenStore {
 		if (this.currentIssuers.length > 0) {
 			this.offChainTokens = {tokenKeys: []};
 			this.onChainTokens = {tokenKeys: []};
+			this.selectedTokens = {};
 		}
 
 		this.currentIssuers = this.prePopulateTokenLookupStore(issuers);

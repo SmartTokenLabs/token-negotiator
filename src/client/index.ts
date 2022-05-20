@@ -159,7 +159,7 @@ export class Client {
 	async activeNegotiationStrategy(openPopup: boolean) {
 
 		if (!this.popup){
-			this.popup = new Popup(this.options?.overlay, this);
+			this.popup = new Popup(this.config.options?.overlay, this);
 			this.popup.initialize();
 		}
 
