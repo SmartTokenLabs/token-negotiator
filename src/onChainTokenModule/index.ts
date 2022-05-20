@@ -1,4 +1,4 @@
-import { requiredParams } from "../utils";
+import { logger, requiredParams } from "../utils";
 import { OnChainTokenConfig } from "../tokenLookup";
 
 interface OnChainApiConfig {
@@ -355,7 +355,7 @@ export class OnChainTokenModule {
 			tokens = this.mergeTokenMetadata(tokens, alchemyTokens);
 		}
 
-		console.log(tokens);
+		logger(2, tokens);
 
 		return Object.values(tokens); // TODO: Use object keyed by tokenId rather than an array in Client.
 	}
@@ -615,7 +615,7 @@ export class OnChainTokenModule {
 				method: "GET",
 			});
 		} catch (e: any) {
-			console.log(e.message);
+			logger(2, e.message);
 			return tokens;
 		}
 

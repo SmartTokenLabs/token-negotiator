@@ -52,7 +52,7 @@ describe('util logging and errors', () => {
 	test('expect logger', () => {
 		console.log = jest.fn();
 		const msg = "It's the possibility of having a dream come true that makes life interesting.";
-		logger(msg);
+		logger(1, msg);
 		// The first argument of the first call to the function was 'hello'
 		expect(console.log).toHaveBeenCalledWith(msg);
 	});

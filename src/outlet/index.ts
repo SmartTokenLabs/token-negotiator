@@ -1,5 +1,5 @@
 import { rawTokenCheck, readMagicUrl, storeMagicURL } from "../core";
-import { requiredParams } from "../utils/index";
+import { logger, requiredParams } from "../utils/index";
 import { decodeTokens, filterTokens } from "./../core/index";
 import {
 	MessageAction,
@@ -27,7 +27,7 @@ export class readSignedTicket {
 
 		this.ticket = signedDevconTicket.ticket;
 
-		console.log(this.ticket);
+		logger(3,this.ticket);
 	}
 }
 
@@ -69,7 +69,7 @@ export class Outlet {
 		// if (!document.referrer && !this.getDataFromQuery('DEBUG'))
 		//   return;
 
-		console.log("Outlet received event ID " + evtid + " action " + action);
+		logger(2,"Outlet received event ID " + evtid + " action " + action);
 		// Outlet Page OnLoad Event Handler
 
 		// TODO: should issuer be validated against requested issuer?
@@ -172,7 +172,7 @@ export class Outlet {
 				proof: tokenProof,
 			});
 		} catch (e: any) {
-			console.log(e);
+			logger(2,e);
 
 			// TODO: We shouldn't be sending the full exception here, instead return error messages only.
 			this.sendErrorResponse(evtid, e);

@@ -1,6 +1,6 @@
 import {Start} from './views/start';
 
-import {requiredParams} from "../utils";
+import {logger, requiredParams} from "../utils";
 import {Client} from "./index";
 import {ViewInterface, ViewConstructor, AbstractView} from "./views/view-interface";
 
@@ -106,7 +106,7 @@ export class Popup {
 	updatePopup(ViewClass: ViewConstructor<AbstractView>, data?: any) {
 
 		if (!this.viewContainer){
-			console.log("Element .overlay-content-tn not found: popup not initialized");
+			logger(3, "Element .overlay-content-tn not found: popup not initialized");
 			return;
 		}
 

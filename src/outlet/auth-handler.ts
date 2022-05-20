@@ -4,6 +4,7 @@ import { Item } from "../tokenLookup";
 import { MessageResponseAction } from "../client/messaging";
 import { Outlet } from "./index";
 import { Authenticator } from "@tokenscript/attestation";
+import { logger } from "../utils/index";
 
 export interface DevconToken {
 	ticketBlob: string;
@@ -59,7 +60,8 @@ export class AuthHandler {
 	// TODO: combine functionality with messaging to enable tab support? Changes required in attestation.id code
 	public authenticate() {
 		return new Promise((resolve, reject) => {
-			if (!this.attestationOrigin) return reject("Attestation origin is null");
+
+			if (!this.attestationOrigin) return reject(new Error("Attestation origin is null"));
 
 			window.addEventListener("message", (e) => {
 				if (!this.attestationOrigin) return;
@@ -107,11 +109,8 @@ export class AuthHandler {
 		resolve: Function,
 		reject: Function
 	) {
-		console.log(
-			"postMessageAttestationListener event (Authenticator)",
-			event.data
-		);
-
+		logger(2,'postMessageAttestationListener event (Authenticator)', event.data);
+    
 		if (typeof event.data.ready !== "undefined" && event.data.ready === true) {
 			let sendData: PostMessageData = { force: false };
 			// We will not use magicLink attestation anymore
@@ -139,9 +138,10 @@ export class AuthHandler {
 					evt: MessageResponseAction.SHOW_FRAME,
 				});
 			} else {
-				if (event.data.error) {
-					console.log("Error received from the iframe: " + event.data.error);
-					reject(event.data.error);
+
+				if (event.data.error){
+					logger(2,"Error received from the iframe: " + event.data.error);
+					reject(new Error(event.data.error));
 				}
 
 				this.iframeWrap.style.display = "none";
@@ -188,15 +188,16 @@ export class AuthHandler {
 			);
 
 			if (useToken) {
-				console.log("this.authResultCallback( useToken ): ");
+				logger(2,'this.authResultCallback( useToken ): ');
 				resolve(useToken);
 			} else {
 				console.log("this.authResultCallback( empty ): ");
-				reject(useToken);
+				throw new Error("Empty useToken");
 			}
 		} catch (e) {
-			console.log(`UseDevconTicket. Something went wrong. ${e}`);
-			reject(e);
+			logger(2,`UseDevconTicket failed.`, e.message);
+			logger(3, e);
+			reject(new Error("Failed to create UseTicket. " + e.message));
 		}
 		// construct UseDevconTicket, see
 		// https://github.com/TokenScript/attestation/blob/main/data-modules/src/UseDevconTicket.asd

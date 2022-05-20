@@ -1,5 +1,6 @@
 import {AbstractView} from "./view-interface";
 import {IconView} from "./icon-view";
+import { logger } from "../../utils";
 
 export interface TokenListItemInterface {
     tokenIssuerKey: string;
@@ -130,8 +131,8 @@ export class TokenList extends AbstractView {
 
 		});
 
-		console.log("Tokens selected:");
-		console.log(selectedTokens);
+		logger(2, "Tokens selected:");
+		logger(2, selectedTokens);
 
 		this.client.updateSelectedTokens(selectedTokens);
 

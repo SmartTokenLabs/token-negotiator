@@ -1,4 +1,4 @@
-import {attachPostMessageListener, removePostMessageListener} from "../utils";
+import {attachPostMessageListener, logger, removePostMessageListener} from "../utils";
 
 // TODO move Message related interfaces/enum in to shared location /core 
 
@@ -67,8 +67,8 @@ export class Messaging {
 		// Uncomment to test popup mode
 		// this.iframeStorageSupport = false;
 
-		console.log("Send request: ");
-		console.log(request);
+		logger(2,"Send request: ");
+		logger(2,request);
 
 		if (!forceTab && this.iframeStorageSupport){
 			return this.sendIframe(request);
@@ -137,8 +137,8 @@ export class Messaging {
 
 				if (requestUrl.origin === event.origin){
 
-					console.log("event response received");
-					console.log(event.data);
+					logger(2,"event response received");
+					logger(2,event.data);
 
 					received = true;
 
@@ -161,7 +161,7 @@ export class Messaging {
 					afterResolveOrError();
 
 				} else {
-					console.log("Does not match origin " + event.origin);
+					logger(2,"Does not match origin " + event.origin);
 				}
 			}
 		}

@@ -2,6 +2,7 @@ import {
 	base64ToUint8array,
 	requiredParams,
 	compareObjects,
+	logger,
 } from "../utils/index";
 // @ts-ignore
 import { ethers } from "ethers";
@@ -271,7 +272,7 @@ export const signNewChallenge = async (
 	unEndPoint: string,
 	web3WalletProvider: any
 ) => {
-	console.log("sign new challenge");
+	logger(2,"sign new challenge");
 
 	let res = await getUnpredictableNumber(unEndPoint);
 

@@ -2,6 +2,7 @@ import WalletConnectProvider from "@walletconnect/web3-provider";
 import Torus from "@toruslabs/torus-embed";
 import Web3 from "web3";
 import { ethers } from "ethers";
+import { logger } from ".";
 
 class Web3WalletProvider {
 
@@ -21,7 +22,7 @@ class Web3WalletProvider {
             
 			const address = await this[walletType as keyof Web3WalletProvider]();
 
-			console.log('address', address);
+			logger(2, 'address', address);
 
 			return address;
              
@@ -81,7 +82,7 @@ class Web3WalletProvider {
 
 	async MetaMask () {
 
-		console.log('connect MetaMask');
+		logger(2, 'connect MetaMask');
       
 		if (typeof window.ethereum !== 'undefined') {
 
@@ -109,7 +110,7 @@ class Web3WalletProvider {
 
 	async WalletConnect () {
 
-		console.log('connect Wallet Connect');
+		logger(2, 'connect Wallet Connect');
 
 		return new Promise((resolve, reject) => {
 
@@ -121,7 +122,7 @@ class Web3WalletProvider {
 
 				walletConnectProvider.on("accountsChanged", (accounts: string[]) => {
 
-					console.log(accounts);
+					logger(2, accounts);
 
 					const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], '1', walletConnectProvider);
 
@@ -131,13 +132,13 @@ class Web3WalletProvider {
 
 				walletConnectProvider.on("chainChanged", (chainId: number) => {
 
-					console.log(chainId);
+					logger(2, chainId);
 
 				});
 
 				walletConnectProvider.on("disconnect", (code: number, reason: string) => {
 
-					console.log(code, reason);
+					logger(2, code, reason);
 
 				});
 
@@ -155,7 +156,7 @@ class Web3WalletProvider {
 
 	async Torus () {
 
-		console.log('connect Torus');
+		logger(2, 'connect Torus');
 
 		const torus = new Torus();
         
@@ -176,7 +177,7 @@ class Web3WalletProvider {
 
 	// async Fortmatic () {
 
-	//     console.log('connect Fortmatic');
+	//     logger(2, 'connect Fortmatic');
 
 	//     // https://replit.com/@fortmatic/demo-kitchen-sink
 
@@ -199,13 +200,13 @@ class Web3WalletProvider {
 
 	// async Portis () {
 
-	//     console.log('connect Portis');
+	//     logger(2, 'connect Portis');
 
 	//     // https://docs.portis.io/#/methods
 
 	//     const portis = new Portis("211b48db-e8cc-4b68-82ad-bf781727ea9e", "rinkeby");
 
-	//     portis.onError(error => { console.log('portis error', error) });
+	//     portis.onError(error => { logger(2, 'portis error', error) });
 
 	//     const web3 = new Web3(portis.provider);
 
@@ -219,7 +220,7 @@ class Web3WalletProvider {
 
 	// async Authereum  () {
 
-	//     console.log('connect Authereum');
+	//     logger(2, 'connect Authereum');
 
 	//     const authereum = new Authereum('kovan');
 
