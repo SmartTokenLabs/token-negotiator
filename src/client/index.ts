@@ -19,7 +19,8 @@ interface NegotiationInterface {
 	};
 	onChainKeys?: { [apiName: string]: string };
 	ipfsBaseUrl?: string;
-	autoLoadTokens?: number | boolean
+	autoLoadTokens?: number | boolean;
+	autoEnableTokens?: boolean;
 }
 
 declare global {
@@ -47,16 +48,19 @@ export class Client {
 	private web3WalletProvider: any;
 	private messaging: Messaging;
 	private popup: Popup;
-	private clientCallBackEvents: {};
+	private clientCallBackEvents: {} = {};
 	private onChainTokenModule: OnChainTokenModule;
 	private tokenStore: TokenStore;
+	private autoLoadTokens: number | boolean
+	private autoEnableTokens: boolean
 
 	static getKey(file: string){
 		return  Authenticator.decodePublicKey(file);
 	}
 
 	constructor(config: NegotiationInterface) {
-		const { type, issuers, options, filter } = config;
+
+		const { type, issuers, options, filter, autoLoadTokens, autoEnableTokens } = config;
 
 		requiredParams(type, "type is required.");
 
@@ -64,15 +68,15 @@ export class Client {
 
 		this.options = options;
 
-		this.issuers = issuers;
-
 		this.filter = filter ? filter : {};
-
-		this.clientCallBackEvents = {};
 
 		this.negotiateAlreadyFired = false;
 
-		this.tokenStore = new TokenStore();
+		// TODO: merge full config into object of default values
+		this.autoLoadTokens = (autoLoadTokens !== undefined ? autoLoadTokens : true);
+		this.autoEnableTokens = (autoEnableTokens !== undefined ? autoEnableTokens : true);
+
+		this.tokenStore = new TokenStore(autoEnableTokens);
 
 		if (issuers)
 			this.tokenStore.updateIssuers(issuers);
@@ -182,7 +186,16 @@ export class Client {
 		if (openPopup) this.popup.openOverlay();
 	}
 
-	async autoLoadTokens(onLoading: (issuer: string) => void, onComplete: (issuer: string, tokens: any[]) => void) {
+	private cancelAutoload = true;
+
+	async tokenAutoLoad(onLoading: (issuer: string) => void, onComplete: (issuer: string, tokens: any[]) => void) {
+
+		if (this.autoLoadTokens === false)
+			return;
+
+		this.cancelAutoload = false;
+
+		let count = 1;
 
 		for (let issuerKey in this.tokenStore.getCurrentIssuers()){
 
@@ -196,7 +209,16 @@ export class Client {
 				console.log("Failed to load " + issuerKey + ": " + e);
 				onComplete(issuerKey, null);
 			}
+
+			count++;
+
+			if (this.cancelAutoload || (this.autoLoadTokens !== true && count > this.autoLoadTokens))
+				break;
 		}
+	}
+
+	cancelTokenAutoload(){
+		this.cancelAutoload = true;
 	}
 
 	async setPassiveNegotiationOnChainTokens() {
@@ -261,39 +283,39 @@ export class Client {
 	}
 
 	async connectTokenIssuer(issuer: string): Promise<any[]> {
+
 		const filter = this.filter ? this.filter : {};
 		const config = this.tokenStore.getCurrentIssuers()[issuer];
-		const tokensOrigin = config.tokenOrigin;
+
+		let tokens;
 
 		if (config.onChain) {
-			return this.connectOnChainTokenIssuer(config);
+
+			const walletAddress = this.web3WalletProvider.getConnectedWalletData()[0]?.address;
+
+			requiredParams(issuer, "issuer is required.");
+			requiredParams(walletAddress, "wallet address is missing.");
+
+			tokens = await this.onChainTokenModule.connectOnChainToken(config, walletAddress);
+
+			this.tokenStore.setOnChainTokens(issuer,  tokens);
+
+		} else {
+
+			let data = await this.messaging.sendMessage({
+				issuer: issuer,
+				action: MessageAction.GET_ISSUER_TOKENS,
+				origin: config.tokenOrigin,
+				filter: filter,
+			});
+
+			tokens = data.tokens;
+
+			this.tokenStore.setOffChainTokens(issuer, data.tokens);
 		}
 
-		let data = await this.messaging.sendMessage({
-			issuer: issuer,
-			action: MessageAction.GET_ISSUER_TOKENS,
-			origin: tokensOrigin,
-			filter: filter,
-		});
-
-		this.tokenStore.setOffChainTokens(issuer, data.tokens);
-
-		return data.tokens;
-	}
-
-	async connectOnChainTokenIssuer(issuer: any) {
-		const walletAddress =
-			this.web3WalletProvider.getConnectedWalletData()[0]?.address;
-
-		requiredParams(issuer, "issuer is required.");
-		requiredParams(walletAddress, "wallet address is missing.");
-
-		const tokens = await this.onChainTokenModule.connectOnChainToken(
-			issuer,
-			this.web3WalletProvider.getConnectedWalletData()[0].address
-		);
-
-		this.tokenStore.setOnChainTokens(issuer.collectionID,  tokens);
+		if (this.autoEnableTokens)
+			this.eventSender.emitSelectedTokensToClient(this.tokenStore.getSelectedTokens())
 
 		return tokens;
 	}
@@ -452,6 +474,7 @@ export class Client {
 	}
 
 	eventSender = {
+		// TODO: consolidate these events
 		emitAllTokensToClient: (tokens: any) => {
 			this.on("tokens", null, tokens);
 		},

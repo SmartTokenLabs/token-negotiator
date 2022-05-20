@@ -103,6 +103,7 @@ export class SelectIssuers extends AbstractView {
 		});
 
 		this.client.getTokenStore().registerIssuerUpdateHook("select-issuers", ()=> {
+			this.client.cancelTokenAutoload();
 			this.render();
 		});
 	}
@@ -149,8 +150,7 @@ export class SelectIssuers extends AbstractView {
 
 	async autoLoadTokens(){
 
-		// TODO: prevent further token loading when issuers are updated
-		await this.client.autoLoadTokens(this.issuerLoading.bind(this), (issuer: string, tokens: any[]) => {
+		await this.client.tokenAutoLoad(this.issuerLoading.bind(this), (issuer: string, tokens: any[]) => {
 
 			if (!tokens?.length){
 				const connectBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`);

@@ -12,6 +12,8 @@ export class TokenStore {
 	private currentIssuers: string[] = [];
 	// TODO: Cache token data? Example: user is navigating around single page application. Some page loads token data, the same token is requested by a another page.
 	// 	Instead of reloading tokens again, use cached data. this would require getOff/OnChainTokens functions to filter according current issuers.
+	//  We could also store this data in local storage to speed up loading on sites that are not a SPA.
+	// TODO: merge these data structures?
 	private offChainTokens: any = {tokenKeys: []};
 	private onChainTokens: any = {tokenKeys: []};
 	// Cached issuer data for contract level metadata
@@ -19,6 +21,11 @@ export class TokenStore {
 	// TODO: change to disabled tokens
 	private selectedTokens: any = {};
 	private updatedCallbacks: {[id: string]: Function} = {}
+	private autoEnableTokens: boolean;
+
+	constructor(autoEnableTokens: boolean){
+		this.autoEnableTokens = autoEnableTokens;
+	}
 
 	public updateIssuers(issuers: TokenConfig[]){
 
@@ -52,6 +59,9 @@ export class TokenStore {
 
 	public setOnChainTokens(issuer: string, tokens: any[]){
 		this.onChainTokens[issuer].tokens = tokens;
+
+		if (this.autoEnableTokens)
+			this.selectedTokens[issuer] = { tokens: tokens }
 	}
 
 	public getOffChainTokens(){
@@ -60,6 +70,9 @@ export class TokenStore {
 
 	public setOffChainTokens(issuer: string, tokens: any[]){
 		this.offChainTokens[issuer].tokens = tokens;
+
+		if (this.autoEnableTokens)
+			this.selectedTokens[issuer] = { tokens: tokens }
 	}
 
 	public getSelectedTokens(){
