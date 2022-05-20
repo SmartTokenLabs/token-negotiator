@@ -246,6 +246,23 @@ export class Client {
 		}, 0);
 	}
 
+	async autoLoadTokens(onLoading: (issuer: string) => void, onComplete: (issuer: string, tokens: any[]) => void) {
+
+		for (let issuerKey in this.tokenLookup){
+
+			onLoading(issuerKey);
+
+			try {
+				let tokens = await this.connectTokenIssuer(issuerKey);
+
+				onComplete(issuerKey, tokens)
+			} catch (e){
+				console.log("Failed to load " + issuerKey + ": " + e);
+				onComplete(issuerKey, null);
+			}
+		}
+	}
+
 	async setPassiveNegotiationOnChainTokens(onChainTokens: any) {
 		await Promise.all(
 			onChainTokens.tokenKeys.map(async (issuerKey: string): Promise<any> => {

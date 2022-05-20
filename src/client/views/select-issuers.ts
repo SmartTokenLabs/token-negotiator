@@ -54,6 +54,8 @@ export class SelectIssuers extends AbstractView {
 
 		this.tokenListView = new TokenList(this.client, this.popup, tokensListElem, {});
 
+		this.autoLoadTokens();
+
 	}
 
 	// TODO: back to wallet selection?
@@ -137,6 +139,26 @@ export class SelectIssuers extends AbstractView {
 
 	}
 
+	async autoLoadTokens(){
+
+		this.popup.showLoader("<h4>Loading tokens...</h4>");
+
+		await this.client.autoLoadTokens(this.issuerLoading.bind(this), (issuer: string, tokens: any[]) => {
+
+			if (!tokens){
+				const connectBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`);
+
+				connectBtn.innerText = "Load";
+
+				return;
+			}
+
+			this.issuerConnected(issuer, tokens, false);
+		});
+
+		this.popup.dismissLoader();
+	}
+
 	async connectTokenIssuer(event: any) {
 
 		const data = event.target.dataset;
@@ -165,7 +187,15 @@ export class SelectIssuers extends AbstractView {
 		this.issuerConnected(issuer, tokens);
 	}
 
-	issuerConnected(issuer: string, tokens: any[]) {
+	issuerLoading(issuer: string){
+		const connectBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`);
+
+		connectBtn.innerHTML = `
+			<div class="lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>
+		`;
+	}
+
+	issuerConnected(issuer: string, tokens: any[], showTokens = true) {
 
 		const connectBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`);
 		const tokenBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .tokens-btn-tn`);
@@ -182,9 +212,10 @@ export class SelectIssuers extends AbstractView {
 		tokenBtn.setAttribute('aria-label', `Navigate to select from ${tokens.length} of your ${issuer} tokens`);
 		tokenBtn.setAttribute('tabIndex', 1);
 
-		setTimeout(() => {
-			this.navigateToTokensView(issuer);
-		}, 250); // Timeout just makes it a bit of a smoother transition
+		if (showTokens)
+			setTimeout(() => {
+				this.navigateToTokensView(issuer);
+			}, 250); // Timeout just makes it a bit of a smoother transition
 	}
 
 	navigateToTokensView(issuer: string) {
