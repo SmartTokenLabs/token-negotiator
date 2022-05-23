@@ -267,45 +267,34 @@ export class Client {
 	async passiveNegotiationStrategy() {
 		// Feature not supported when an end users third party cookies are disabled
 		// because the use of a tab requires a user gesture.
-		// TODO: this check should be skipped if there is no offchain tokens
-		//       if there are offchain tokens, but there are also onchain tokens, show loaded tokens along with an error/warning message?
 
-		let canUsePassive = false;
+		await asyncHandle(
+			this.setPassiveNegotiationWebTokens(this.offChainTokens)
+		);
+		await asyncHandle(
+			this.setPassiveNegotiationOnChainTokens(this.onChainTokens)
+		);
 
-		if (this.offChainTokens.tokenKeys.length) {
-			canUsePassive = await this.messaging.getCookieSupport(
-				this.tokenLookup[this.offChainTokens.tokenKeys[0]]?.tokenOrigin
-			);
-		}
+		let outputOnChain = JSON.parse(JSON.stringify(this.onChainTokens));
 
-		if (canUsePassive) {
-			await asyncHandle(
-				this.setPassiveNegotiationWebTokens(this.offChainTokens)
-			);
-			await asyncHandle(
-				this.setPassiveNegotiationOnChainTokens(this.onChainTokens)
-			);
+		delete outputOnChain.tokenKeys;
 
-			let outputOnChain = JSON.parse(JSON.stringify(this.onChainTokens));
+		let outputOffChain = JSON.parse(JSON.stringify(this.offChainTokens));
 
-			delete outputOnChain.tokenKeys;
+		delete outputOffChain.tokenKeys;
 
-			let outputOffChain = JSON.parse(JSON.stringify(this.offChainTokens));
+		logger(2, "Emit tokens");
+		logger(2, outputOffChain);
 
-			delete outputOffChain.tokenKeys;
+		this.eventSender.emitAllTokensToClient({
+			...outputOffChain,
+			...outputOnChain,
+		});
 
-			logger(2, "Emit tokens");
-			logger(2, outputOffChain);
-
-			this.eventSender.emitAllTokensToClient({
-				...outputOffChain,
-				...outputOnChain,
-			});
-		} else {
+		if (Object.keys(outputOffChain).length === 0 && this.messaging.iframeStorageSupport !== true)
 			logger(2, 
-				"Enable 3rd party cookies via your browser settings to use this negotiation type."
+				"iFrame storage support not detected: Enable popups via your browser to access off-chain tokens with this negotiation type."
 			);
-		}
 	}
 
 	async connectTokenIssuer(issuer: string): Promise<any[]> {

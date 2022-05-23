@@ -71,6 +71,14 @@ export class Outlet {
 
 		// TODO: should issuer be validated against requested issuer?
 
+		this.sendMessageResponse({
+			evtid: evtid,
+			evt: ResponseActionBase.COOKIE_CHECK,
+			data: {
+				thirdPartyCookies: localStorage.getItem("cookie-support-check"),
+			}
+		});
+
 		switch (action) {
 		case OutletAction.GET_ISSUER_TOKENS: {
 			this.sendTokens(evtid);
@@ -83,17 +91,6 @@ export class Outlet {
 			requiredParams(token, "unsigned token is missing");
 
 			this.sendTokenProof(evtid, token);
-
-			break;
-		}
-		case OutletAction.COOKIE_CHECK: {
-			this.sendMessageResponse({
-				evtid: evtid,
-				evt: OutletResponseAction.COOKIE_CHECK,
-				data: {
-					thirdPartyCookies: localStorage.getItem("cookie-support-check"),
-				}
-			});
 
 			break;
 		}

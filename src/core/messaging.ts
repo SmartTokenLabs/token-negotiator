@@ -21,6 +21,7 @@ export interface ResponseInterfaceBase {
 }
 
 export enum ResponseActionBase {
+	COOKIE_CHECK = "cookie-check",
     ERROR = "error",
     SHOW_FRAME = "show-frame" // User input required in the iframe - don't resolve promise yet, setup iframe view if required.
     // USER_CANCEL = "user_cancel" Could be handled different to an error
@@ -44,11 +45,8 @@ export class Messaging {
 	async sendMessage(request: RequestInterfaceBase, forceTab = false){
 
 		if (!forceTab && this.iframeStorageSupport === null) {
-			if (window.safari){
+			if (window.safari)
 				this.iframeStorageSupport = false;
-			} else {
-				this.iframeStorageSupport = await this.thirdPartyCookieSupportCheck(request.origin);
-			}
 		}
 
 		// Uncomment to test popup mode
@@ -57,8 +55,15 @@ export class Messaging {
 		logger(2,"Send request: ");
 		logger(2,request);
 
-		if (!forceTab && this.iframeStorageSupport){
-			return this.sendIframe(request);
+		if (!forceTab && this.iframeStorageSupport !== false){
+			try {
+				return await this.sendIframe(request);
+			} catch (e){
+				if (e === "IFRAME_STORAGE"){
+					return this.sendPopup(request);
+				}
+				throw e;
+			}
 		} else {
 			return this.sendPopup(request);
 		}
@@ -129,6 +134,18 @@ export class Messaging {
 
 					received = true;
 
+					if (response.evt === ResponseActionBase.COOKIE_CHECK){
+						if (!iframe || this.iframeStorageSupport === true)
+							return;
+
+						this.iframeStorageSupport = !!response?.data?.thirdPartyCookies;
+						if (!this.iframeStorageSupport){
+							afterResolveOrError();
+							reject("IFRAME_STORAGE");
+						}
+						return;
+					}
+
 					if (response.evt === ResponseActionBase.ERROR) {
 						reject(response.errors);
 					} else if (response.evt === ResponseActionBase.SHOW_FRAME){
@@ -143,8 +160,6 @@ export class Messaging {
 						resolve({evt: response.evt, ...response.data});
 					}
 
-					if (timer)
-						clearTimeout(timer);
 					afterResolveOrError();
 
 				} else {
@@ -154,6 +169,8 @@ export class Messaging {
 		}
 
 		let afterResolveOrError = () => {
+			if (timer)
+				clearTimeout(timer);
 			removePostMessageListener(listener);
 			if (!window.NEGOTIATOR_DEBUG)
 				cleanUpCallback();
@@ -207,44 +224,6 @@ export class Messaging {
 		});
 
 		return modal;
-	}
-
-	async getCookieSupport(testOrigin: string){
-		if (this.iframeStorageSupport === null)
-			this.iframeStorageSupport = await this.thirdPartyCookieSupportCheck(testOrigin);
-
-		return this.iframeStorageSupport;
-	}
-
-	private thirdPartyCookieSupportCheck(origin: string): Promise<boolean> {
-
-		return new Promise((resolve, reject) => {
-
-			let id = Messaging.getUniqueEventId();
-			let url = origin + '#action=' + MessageActionBase.COOKIE_CHECK +'&evtid=' + id;
-
-			let iframe = this.createIframe();
-
-			this.setResponseListener(
-				id,
-				origin,
-				10000,
-				(responseData: any)=>{
-					resolve(!!responseData.thirdPartyCookies);
-				},
-				(err: any)=>{
-					resolve(false);
-				},
-				() => {
-					if (iframe?.parentNode)
-						iframe.parentNode.removeChild(iframe);
-				}
-			);
-
-			iframe.src = url;
-
-		});
-
 	}
 
 	private constructUrl(id: any, request: RequestInterfaceBase){
