@@ -102,7 +102,7 @@ export class SelectIssuers extends AbstractView {
 			}
 		});
 
-		this.client.getTokenStore().registerIssuerUpdateHook("select-issuers", ()=> {
+		this.client.registerUiUpdateCallback("select-issuers", ()=> {
 			this.client.cancelTokenAutoload();
 			this.render();
 		});

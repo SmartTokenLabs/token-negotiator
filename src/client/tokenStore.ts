@@ -21,7 +21,6 @@ export class TokenStore {
 	private tokenLookup: TokenLookup = {};
 	// TODO: change to disabled tokens
 	private selectedTokens: any = {};
-	private updatedCallbacks: {[id: string]: Function} = {}
 	private autoEnableTokens: boolean;
 
 	constructor(autoEnableTokens: boolean){
@@ -37,14 +36,6 @@ export class TokenStore {
 		}
 
 		this.currentIssuers = this.prePopulateTokenLookupStore(issuers);
-
-		for (let i in this.updatedCallbacks){
-			this.updatedCallbacks[i]();
-		}
-	}
-
-	public registerIssuerUpdateHook(id: string, callback: Function){
-		this.updatedCallbacks[id] = callback;
 	}
 
 	public getCurrentIssuers(){

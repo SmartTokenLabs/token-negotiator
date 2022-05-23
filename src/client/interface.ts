@@ -1,6 +1,6 @@
 import { PopupOptionsInterface } from "./popup";
 
-export interface OffChainTokenConfig extends Interface {
+export interface OffChainTokenConfig extends IssuerConfigInterface {
     tokenName?: any;
     attestationOrigin?: any;
     tokenOrigin?: any;
@@ -18,13 +18,13 @@ export interface OffChainTokenConfig extends Interface {
     base64attestorPubKey?: string;
 }
 
-export interface OnChainTokenConfig extends Interface {
+export interface OnChainTokenConfig extends IssuerConfigInterface {
     contract: string,
     chain: string,
     openSeaSlug?: string
 }
 
-export interface Interface {
+export interface IssuerConfigInterface {
     collectionID: string,
     onChain: boolean
     title?: string;

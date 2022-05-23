@@ -43,6 +43,7 @@ export class Client {
 	private clientCallBackEvents: {} = {};
 	private onChainTokenModule: OnChainTokenModule;
 	private tokenStore: TokenStore;
+	private uiUpdateCallbacks: {[id: string]: Function} = {}
 
 	static getKey(file: string){
 		return  Authenticator.decodePublicKey(file);
@@ -71,6 +72,16 @@ export class Client {
 
 	getTokenStore() {
 		return this.tokenStore;
+	}
+
+	triggerUiUpdateCallbacks(){
+		for (let i in this.uiUpdateCallbacks){
+			this.uiUpdateCallbacks[i]();
+		}
+	}
+
+	public registerUiUpdateCallback(id: string, callback: Function){
+		this.uiUpdateCallbacks[id] = callback;
 	}
 
 	async negotiatorConnectToWallet(walletType: string) {
@@ -158,7 +169,9 @@ export class Client {
 
 	async activeNegotiationStrategy(openPopup: boolean) {
 
-		if (!this.popup){
+		if (this.popup) {
+			this.triggerUiUpdateCallbacks();
+		} else {
 			this.popup = new Popup(this.config.options?.overlay, this);
 			this.popup.initialize();
 		}
