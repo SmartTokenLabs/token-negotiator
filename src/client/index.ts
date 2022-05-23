@@ -1,5 +1,6 @@
 // @ts-nocheck
-import { Messaging, MessageAction, MessageResponseAction } from "./messaging";
+import { OutletAction } from "./messaging";
+import { Messaging } from "../core/messaging";
 import { Popup, PopupOptionsInterface } from "./popup";
 import { asyncHandle, logger, requiredParams } from "../utils";
 import {connectMetamaskAndGetAddress, getChallengeSigned, validateUseEthKey } from "../core";
@@ -186,10 +187,12 @@ export class Client {
 
 				try {
 					data = await this.messaging.sendMessage({
-						issuer: issuer,
-						action: MessageAction.GET_ISSUER_TOKENS,
-						filter: this.filter,
+						action: OutletAction.GET_ISSUER_TOKENS,
 						origin: tokensOrigin,
+						data: {
+							issuer: issuer,
+							filter: this.filter
+						}
 					});
 				} catch (err) {
 					logger(2,err);
@@ -314,10 +317,12 @@ export class Client {
 		}
 
 		let data = await this.messaging.sendMessage({
-			issuer: issuer,
-			action: MessageAction.GET_ISSUER_TOKENS,
+			action: OutletAction.GET_ISSUER_TOKENS,
 			origin: tokensOrigin,
-			filter: filter,
+			data : {
+				issuer: issuer,
+				filter: filter
+			},
 		});
 
 		this.offChainTokens[issuer].tokens = data.tokens;
@@ -380,11 +385,13 @@ export class Client {
 		}
 
 		let data = await this.messaging.sendMessage({
-			issuer: issuer,
-			action: MessageAction.GET_PROOF,
+			action: OutletAction.GET_PROOF,
 			origin: tokenConfig.tokenOrigin,
-			token: unsignedToken,
 			timeout: 0, // Don't time out on this event as it needs active input from the user
+			data: {
+				issuer: issuer,
+				token: unsignedToken
+			}
 		});
 
 		if (useEthKey)
@@ -511,9 +518,11 @@ export class Client {
 			url.hash.length > 1 ? url.hash.substring(1) : url.search.substring(1);
 
 		let data = await this.messaging.sendMessage({
-			action: MessageAction.MAGIC_URL,
-			urlParams: params,
+			action: OutletAction.MAGIC_URL,
 			origin: url.origin + url.pathname,
+			data: {
+				urlParams: params
+			}
 		});
 
 		if (data.evt === MessageResponseAction.ISSUER_TOKENS) return data.tokens;
