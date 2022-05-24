@@ -30,8 +30,8 @@ export class TokenStore {
 	public updateIssuers(issuers: TokenConfig[]){
 
 		if (this.currentIssuers.length > 0) {
-			this.offChainTokens = {tokenKeys: []};
-			this.onChainTokens = {tokenKeys: []};
+			this.offChainTokens.tokenKeys = [];
+			this.onChainTokens.tokenKeys = [];
 			this.selectedTokens = {};
 		}
 
@@ -85,21 +85,24 @@ export class TokenStore {
 
 			issuer.collectionID = this.formatCollectionID(issuer.collectionID);
 
+			if (collectionIds.indexOf(issuer.collectionID) > -1){
+				logger(1, `duplicate collectionID key ${issuer.collectionID}, use unique keys per collection.`);
+				return;
+			}
+
 			if ("contract" in issuer && "chain" in issuer) {
 				issuer.chain = this.formatCollectionChain(issuer.chain);
 
-				if (this.onChainTokens[issuer.collectionID]) {
-					logger(1, `duplicate collectionID key ${issuer.collectionID}, use unique keys per collection.`);
-					return;
-				}
-
 				this.onChainTokens.tokenKeys.push(issuer.collectionID);
 
-				this.onChainTokens[issuer.collectionID] = { tokens: [] };
+				if (!this.onChainTokens[issuer.collectionID])
+					this.onChainTokens[issuer.collectionID] = { tokens: [] };
+
 			} else {
 				this.offChainTokens.tokenKeys.push(issuer.collectionID);
 
-				this.offChainTokens[issuer.collectionID] = { tokens: [] };
+				if (!this.onChainTokens[issuer.collectionID])
+					this.offChainTokens[issuer.collectionID] = { tokens: [] };
 			}
 
 			// Don't overwrite config of existing/cached issuers

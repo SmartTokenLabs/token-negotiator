@@ -68,16 +68,18 @@ export class SelectIssuers extends AbstractView {
 
 		store.getOffChainTokens().tokenKeys.map((issuer: string) => {
 			let data = store.getCurrentIssuers()[issuer];
+			let tokens = store.getOffChainTokens()[issuer].tokens;
 
 			if (data.title)
-				html += this.issuerConnectMarkup(data.title, data.image, issuer);
+				html += this.issuerConnectMarkup(data.title, data.image, issuer, tokens);
 		});
 
 		store.getOnChainTokens().tokenKeys.map((issuer: string) => {
 			let data = store.getCurrentIssuers()[issuer];
+			let tokens = store.getOnChainTokens()[issuer].tokens;
 
 			if (data.title)
-				html += this.issuerConnectMarkup(data.title, data.image, issuer);
+				html += this.issuerConnectMarkup(data.title, data.image, issuer, tokens);
 		});
 
 		this.issuerListContainer.innerHTML = html;
@@ -108,15 +110,17 @@ export class SelectIssuers extends AbstractView {
 		});
 	}
 
-	issuerConnectMarkup(title: string, image: string|undefined, issuer: string){
+	issuerConnectMarkup(title: string, image: string|undefined, issuer: string, tokens: []){
 		return `
             <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
               <div style="display: flex; align-items: center;">
                 <div class="img-container-tn issuer-icon-tn shimmer-tn" data-image-src="${image}" data-token-title="${title}"></div>
                 <p class="issuer-connect-title">${title}</p>
               </div>
-              <button aria-label="connect with the token issuer ${issuer}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="connect-btn-tn" data-issuer="${issuer}">Load</button>
-              <button aria-label="tokens available from token issuer ${issuer}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="tokens-btn-tn" data-issuer="${issuer}">Tokens Available</button>
+              <button aria-label="connect with the token issuer ${issuer}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" 
+              			class="connect-btn-tn" style="${(tokens.length ? "display: none;" : "")}" data-issuer="${issuer}">Load</button>
+              <button aria-label="tokens available from token issuer ${issuer}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" 
+              			class="tokens-btn-tn" style="${(tokens.length ? "display: block;" : "")}" data-issuer="${issuer}">${tokens.length} token${(tokens.length > 1 ? "s" : "")} available</button>
             </li>
         `;
 	}
@@ -213,7 +217,7 @@ export class SelectIssuers extends AbstractView {
 		connectBtn.setAttribute('tabIndex', -1);
 
 		tokenBtn.style.display = "block";
-		tokenBtn.innerHTML = `${tokens.length} token/s available`;
+		tokenBtn.innerHTML = `${tokens.length} token${(tokens.length > 1 ? "s" : "")} available`;
 		tokenBtn.setAttribute('aria-label', `Navigate to select from ${tokens.length} of your ${issuer} tokens`);
 		tokenBtn.setAttribute('tabIndex', 1);
 

@@ -192,6 +192,13 @@ export class Client {
 
 		for (let issuerKey in this.tokenStore.getCurrentIssuers()){
 
+			let tokens = this.tokenStore.getCurrentIssuers()[issuerKey].onChain ? this.tokenStore.getOnChainTokens()[issuerKey].tokens : this.tokenStore.getOffChainTokens()[issuerKey].tokens
+
+			if (tokens.length > 0){
+				// onComplete(issuerKey, tokens);
+				continue;
+			}
+
 			onLoading(issuerKey);
 
 			try {
