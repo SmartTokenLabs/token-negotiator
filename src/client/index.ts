@@ -1,16 +1,15 @@
 // @ts-nocheck
 import { OutletAction } from "./messaging";
 import { Messaging } from "../core/messaging";
-import { Popup, PopupOptionsInterface } from "./popup";
+import { Popup } from "./popup";
 import { asyncHandle, logger, requiredParams } from "../utils";
 import {connectMetamaskAndGetAddress, getChallengeSigned, validateUseEthKey } from "../core";
-import { OffChainTokenConfig, OnChainTokenConfig } from "../tokenLookup";
 import OnChainTokenModule from "./../onChainTokenModule";
 import Web3WalletProvider from "./../utils/Web3WalletProvider";
 import "./../vendor/keyShape";
 import { Authenticator } from "@tokenscript/attestation";
-import {TokenStore} from "./tokenStore";
-import {AuthenticateInterface, NegotiationInterface} from "./interface";
+import {TokenConfig, TokenStore} from "./tokenStore";
+import {OffChainTokenConfig, OnChainTokenConfig, AuthenticateInterface, NegotiationInterface} from "./interface";
 
 declare global {
 	interface Window {
@@ -286,7 +285,7 @@ export class Client {
 			);
 	}
 
-	async connectTokenIssuer(issuer: string): Promise<any[]> {
+	async connectTokenIssuer(issuer: string) {
 
 		const config = this.tokenStore.getCurrentIssuers()[issuer];
 
@@ -310,7 +309,7 @@ export class Client {
 
 			let data = await this.messaging.sendMessage({
 				action: OutletAction.GET_ISSUER_TOKENS,
-				origin: tokensOrigin,
+				origin: config.tokenOrigin,
 				data : {
 					issuer: issuer,
 					filter: this.config.options.filters
