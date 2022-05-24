@@ -371,7 +371,9 @@ export class Client {
 			timeout: 0, // Don't time out on this event as it needs active input from the user
 			data: {
 				issuer: issuer,
-				token: unsignedToken
+				token: unsignedToken,
+				address: authRequest.address ? authRequest.address : "",
+				wallet: authRequest.wallet ? authRequest.wallet : ""
 			}
 		});
 

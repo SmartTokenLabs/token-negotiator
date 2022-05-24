@@ -51,4 +51,6 @@ export interface AuthenticateInterface {
     issuer: any;
     tokenId?: number | string;
     unsignedToken: any;
+    address?: string;
+    wallet?: string;
 }

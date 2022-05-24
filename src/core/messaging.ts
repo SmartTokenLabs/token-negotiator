@@ -37,6 +37,7 @@ declare global {
 export class Messaging {
 
 	iframeStorageSupport: null|boolean = null;
+	rejectHandler: Function|null = null;
 
 	constructor() {
 		// Should we just check cookie support on initialisation or when requested?
@@ -119,6 +120,7 @@ export class Messaging {
 
 		let received = false;
 		let timer: any = null;
+		this.rejectHandler = reject;
 
 		let listener = (event: any) => {
 
@@ -219,6 +221,11 @@ export class Messaging {
 				let content = modal.querySelector('.modal-body-tn');
 				if (content) {
 					content.innerHTML = "";
+				}
+
+				if (this.rejectHandler) {
+					this.rejectHandler("Popup closed by user");
+					this.rejectHandler = null;
 				}
 			}
 		});
