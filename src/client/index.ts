@@ -93,58 +93,60 @@ export class Client {
 	}
 
 	async setPassiveNegotiationWebTokens() {
-		await Promise.all(
-			// TODO load all on chain tokens logic needed here.
 
-			this.tokenStore.getOffChainTokens().tokenKeys.map(async (issuer: string): Promise<any> => {
-				let data;
+		let issuers = this.tokenStore.getCurrentIssuers(false);
 
-				const tokensOrigin = this.tokenStore.getCurrentIssuers()[issuer].tokenOrigin;
+		for (let issuerKey in issuers){
 
-				try {
-					data = await this.messaging.sendMessage({
-						issuer: issuer,
-						action: MessageAction.GET_ISSUER_TOKENS,
-						filter: this.config.options.filters,
-						origin: tokensOrigin,
-					});
-				} catch (err) {
-					logger(2,err);
-					return;
-				}
+			let data;
 
-				logger(2,"tokens:");
-				logger(2,data.tokens);
+			let issuer = issuers[issuerKey];
 
-				this.tokenStore.setOffChainTokens(issuer, data.tokens);
+			const tokensOrigin = this.tokenStore.getCurrentIssuers()[issuer].tokenOrigin;
 
+			try {
+				data = await this.messaging.sendMessage({
+					issuer: issuer,
+					action: MessageAction.GET_ISSUER_TOKENS,
+					filter: this.config.options.filters,
+					origin: tokensOrigin,
+				});
+			} catch (err) {
+				logger(2,err);
 				return;
-			})
-		);
+			}
+
+			logger(2,"tokens:");
+			logger(2,data.tokens);
+
+			this.tokenStore.setTokens(issuer, data.tokens);
+
+			return;
+		}
 	}
 
 	async enrichTokenLookupDataOnChainTokens() {
 
-		await Promise.all(
-			this.tokenStore.getOnChainTokens().tokenKeys.map(async (issuerKey: string): Promise<any> => {
+		let issuers = this.tokenStore.getCurrentIssuers(true);
 
-				let tokenData = this.tokenStore.getCurrentIssuers()[issuerKey];
+		for (let issuer in issuers){
 
-				// Issuer contract data already loaded
-				if (tokenData.title)
-					return;
+			let tokenData = issuers[issuer];
 
-				let lookupData = await this.onChainTokenModule.getInitialContractAddressMetaData(tokenData);
+			// Issuer contract data already loaded
+			if (tokenData.title)
+				continue;
 
-				if (lookupData) {
-					// TODO: this might be redundant
-					lookupData.onChain = true;
+			let lookupData = await this.onChainTokenModule.getInitialContractAddressMetaData(tokenData);
 
-					// enrich the tokenLookup store with contract meta data
-					this.tokenStore.updateTokenLookupStore(issuerKey, lookupData);
-				}
-			})
-		);
+			if (lookupData) {
+				// TODO: this might be redundant
+				lookupData.onChain = true;
+
+				// enrich the tokenLookup store with contract meta data
+				this.tokenStore.updateTokenLookupStore(issuer, lookupData);
+			}
+		}
 	}
 
 	async negotiate(issuers?: OnChainTokenConfig | OffChainTokenConfig[], openPopup = false) {
@@ -197,12 +199,10 @@ export class Client {
 
 		for (let issuerKey in this.tokenStore.getCurrentIssuers()){
 
-			let tokens = this.tokenStore.getCurrentIssuers()[issuerKey].onChain ? this.tokenStore.getOnChainTokens()[issuerKey].tokens : this.tokenStore.getOffChainTokens()[issuerKey].tokens
+			let tokens = this.tokenStore.getIssuerTokens(issuerKey)
 
-			if (tokens.length > 0){
-				// onComplete(issuerKey, tokens);
+			if (tokens?.length > 0)
 				continue;
-			}
 
 			onLoading(issuerKey);
 
@@ -227,18 +227,20 @@ export class Client {
 	}
 
 	async setPassiveNegotiationOnChainTokens() {
-		await Promise.all(
-			this.tokenStore.getOnChainTokens().tokenKeys.map(async (issuerKey: string): Promise<any> => {
-				const issuer = this.tokenStore.getCurrentIssuers()[issuerKey];
 
-				const tokens = await this.onChainTokenModule.connectOnChainToken(
-					issuer,
-					this.web3WalletProvider.getConnectedWalletData()[0].address
-				);
+		let issuers = this.tokenStore.getCurrentIssuers(true);
 
-				this.tokenStore.setOnChainTokens(issuerKey, tokens);
-			})
-		);
+		for (let issuerKey in issuers){
+
+			let issuer = issuers[issuerKey];
+
+			const tokens = await this.onChainTokenModule.connectOnChainToken(
+				issuer,
+				this.web3WalletProvider.getConnectedWalletData()[0].address
+			);
+
+			this.tokenStore.setTokens(issuerKey, tokens);
+		}
 	}
 
 	async passiveNegotiationStrategy() {
@@ -248,12 +250,13 @@ export class Client {
 		//       if there are offchain tokens, but there are also onchain tokens, show loaded tokens along with an error/warning message?
 
 		let canUsePassive = false;
-		
-		let offChainTokens = this.tokenStore.getOffChainTokens();
 
-		if (offChainTokens.tokenKeys.length) {
+		let offChainIssuers = this.tokenStore.getCurrentIssuers(false);
+
+		if (Object.keys(offChainIssuers).length) {
+
 			canUsePassive = await this.messaging.getCookieSupport(
-				this.getTokenStore().getCurrentIssuers()[offChainTokens.tokenKeys[0]]?.tokenOrigin
+				offChainIssuers[Object.keys(offChainIssuers)[0]]?.tokenOrigin
 			);
 		}
 
@@ -265,21 +268,12 @@ export class Client {
 				this.setPassiveNegotiationOnChainTokens()
 			);
 
-			let outputOnChain = JSON.parse(JSON.stringify(this.tokenStore.getOnChainTokens()));
-
-			delete outputOnChain.tokenKeys;
-
-			let outputOffChain = JSON.parse(JSON.stringify(this.tokenStore.getOnChainTokens()));
-
-			delete outputOffChain.tokenKeys;
+			let tokens = this.tokenStore.getCurrentTokens();
 
 			logger(2, "Emit tokens");
-			logger(2, outputOffChain);
+			logger(2, tokens);
 
-			this.eventSender.emitAllTokensToClient({
-				...outputOffChain,
-				...outputOnChain,
-			});
+			this.eventSender.emitAllTokensToClient(tokens);
 		} else {
 			logger(2, 
 				"Enable 3rd party cookies via your browser settings to use this negotiation type."
@@ -305,7 +299,7 @@ export class Client {
 
 			tokens = await this.onChainTokenModule.connectOnChainToken(config, walletAddress);
 
-			this.tokenStore.setOnChainTokens(issuer,  tokens);
+			this.tokenStore.setTokens(issuer,  tokens);
 
 		} else {
 
@@ -318,7 +312,7 @@ export class Client {
 
 			tokens = data.tokens;
 
-			this.tokenStore.setOffChainTokens(issuer, data.tokens);
+			this.tokenStore.setTokens(issuer, data.tokens);
 		}
 
 		if (this.config.autoEnableTokens)

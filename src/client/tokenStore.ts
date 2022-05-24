@@ -3,20 +3,18 @@ import {ContractData} from "../onChainTokenModule";
 import {logger} from "../utils";
 
 interface TokenLookup {
-	[collectionID: string]: OnChainTokenConfig | OffChainTokenConfig | ContractData
+	[collectionID: string]: OnChainTokenConfig | OffChainTokenConfig | ContractData // TODO: Remove contract data here - put title & image in Issuer config interface
 }
 
 type TokenConfig = OnChainTokenConfig | OffChainTokenConfig;
 
 export class TokenStore {
 
-	private currentIssuers: string[] = [];
-	// TODO: Cache token data? Example: user is navigating around single page application. Some page loads token data, the same token is requested by a another page.
-	// 	Instead of reloading tokens again, use cached data. this would require getOff/OnChainTokens functions to filter according current issuers.
-	//  We could also store this data in local storage to speed up loading on sites that are not a SPA.
-	// TODO: merge these data structures?
-	private offChainTokens: any = {tokenKeys: []};
-	private onChainTokens: any = {tokenKeys: []};
+	private currentIssuers: {[issuer: string]: boolean} = {}; // mapping of issuer to on/off chain
+
+	//  TODO: We could also store this data in local storage to speed up loading on sites that are not a SPA.
+	// Cached token data
+	private tokens: {[issuer: string]: []} = {};
 	// Cached issuer data for contract level metadata
 	private tokenLookup: TokenLookup = {};
 	// TODO: change to disabled tokens
@@ -29,40 +27,39 @@ export class TokenStore {
 
 	public updateIssuers(issuers: TokenConfig[]){
 
-		if (this.currentIssuers.length > 0) {
-			this.offChainTokens.tokenKeys = [];
-			this.onChainTokens.tokenKeys = [];
+		if (Object.keys(this.currentIssuers).length > 0) {
 			this.selectedTokens = {};
 		}
 
-		this.currentIssuers = this.prePopulateTokenLookupStore(issuers);
+		this.prePopulateTokenLookupStore(issuers);
 	}
 
-	public getCurrentIssuers(){
+	public getCurrentIssuers(onChainFilter?: boolean){
 		let current: TokenLookup = {};
-		for (let collectionId of this.currentIssuers){
-			current[collectionId] = this.tokenLookup[collectionId];
+		for (let collectionId in this.currentIssuers){
+			if (onChainFilter === undefined || onChainFilter === this.currentIssuers[collectionId])
+				current[collectionId] = this.tokenLookup[collectionId];
 		}
-		return current
+		return current;
 	}
 
-	public getOnChainTokens(){
-		return this.onChainTokens;
+	public getCurrentTokens(onChainFilter?: boolean){
+		let current: {[issuer: string]: {}} = {};
+		for (let collectionId in this.currentIssuers){
+			if (onChainFilter === undefined || onChainFilter === this.currentIssuers[collectionId])
+				current[collectionId] = this.tokens[collectionId];
+		}
+		return current;
 	}
 
-	public setOnChainTokens(issuer: string, tokens: any[]){
-		this.onChainTokens[issuer].tokens = tokens;
-
-		if (this.autoEnableTokens)
-			this.selectedTokens[issuer] = { tokens: tokens }
+	public getIssuerTokens(issuer: string){
+		if (this.tokens[issuer])
+			return this.tokens[issuer];
+		return null;
 	}
 
-	public getOffChainTokens(){
-		return this.offChainTokens;
-	}
-
-	public setOffChainTokens(issuer: string, tokens: any[]){
-		this.offChainTokens[issuer].tokens = tokens;
+	public setTokens(issuer: string, tokens: []){
+		this.tokens[issuer] = tokens;
 
 		if (this.autoEnableTokens)
 			this.selectedTokens[issuer] = { tokens: tokens }
@@ -76,56 +73,38 @@ export class TokenStore {
 		this.selectedTokens = selectedTokens;
 	}
 
-	private prePopulateTokenLookupStore(issuers: TokenConfig[]): string[] {
+	private prePopulateTokenLookupStore(issuers: TokenConfig[]) {
 
-		let collectionIds: string[] = [];
+		let collectionIds: {[issuer: string]: boolean} = {};
 
 		issuers.forEach((issuer: TokenConfig, i ) => {
 			if (!issuer.collectionID) return;
 
 			issuer.collectionID = this.formatCollectionID(issuer.collectionID);
 
-			if (collectionIds.indexOf(issuer.collectionID) > -1){
+			if (collectionIds[issuer.collectionID] !== undefined){
 				logger(1, `duplicate collectionID key ${issuer.collectionID}, use unique keys per collection.`);
 				return;
 			}
 
-			if ("contract" in issuer && "chain" in issuer) {
+			if ("chain" in issuer)
 				issuer.chain = this.formatCollectionChain(issuer.chain);
 
-				this.onChainTokens.tokenKeys.push(issuer.collectionID);
-
-				if (this.onChainTokens[issuer.collectionID]) {
-					if (this.onChainTokens[issuer.collectionID].tokens?.length > 0)
-						this.updateSelectedTokensFromExisting(issuer.collectionID, this.onChainTokens[issuer.collectionID].tokens);
-				} else {
-					this.onChainTokens[issuer.collectionID] = {tokens: []};
-				}
-
+			if (this.tokens[issuer.collectionID] !== undefined){
+				if (this.autoEnableTokens && this.tokens[issuer.collectionID].length)
+					this.selectedTokens[issuer.collectionID] = { tokens: this.tokens[issuer.collectionID] }
 			} else {
-				this.offChainTokens.tokenKeys.push(issuer.collectionID);
-
-				if (this.offChainTokens[issuer.collectionID]){
-					if (this.offChainTokens[issuer.collectionID].tokens?.length > 0)
-						this.updateSelectedTokensFromExisting(issuer.collectionID, this.offChainTokens[issuer.collectionID].tokens);
-				} else {
-					this.offChainTokens[issuer.collectionID] = {tokens: []};
-				}
+				this.tokens[issuer.collectionID] = [];
 			}
 
 			// Don't overwrite config of existing/cached issuers
 			if (!this.tokenLookup[issuer.collectionID])
 				this.updateTokenLookupStore(issuer.collectionID, issuer);
 
-			collectionIds.push(issuer.collectionID)
+			collectionIds[issuer.collectionID] = issuer.onChain;
 		});
 
-		return collectionIds;
-	}
-
-	private updateSelectedTokensFromExisting(issuer: string, tokens: []){
-		if (this.autoEnableTokens)
-			this.selectedTokens[issuer] = { tokens: tokens }
+		this.currentIssuers = collectionIds;
 	}
 
 	// To enrich the token lookup store with data.

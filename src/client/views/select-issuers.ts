@@ -62,25 +62,17 @@ export class SelectIssuers extends AbstractView {
 
 	populateIssuers(){
 
-		let store = this.client.getTokenStore();
-
 		let html = "";
 
-		store.getOffChainTokens().tokenKeys.map((issuer: string) => {
-			let data = store.getCurrentIssuers()[issuer];
-			let tokens = store.getOffChainTokens()[issuer].tokens;
+		let issuers = this.client.getTokenStore().getCurrentIssuers();
+
+		for (let issuerKey in issuers){
+			let data = issuers[issuerKey];
+			let tokens = this.client.getTokenStore().getIssuerTokens(issuerKey);
 
 			if (data.title)
-				html += this.issuerConnectMarkup(data.title, data.image, issuer, tokens);
-		});
-
-		store.getOnChainTokens().tokenKeys.map((issuer: string) => {
-			let data = store.getCurrentIssuers()[issuer];
-			let tokens = store.getOnChainTokens()[issuer].tokens;
-
-			if (data.title)
-				html += this.issuerConnectMarkup(data.title, data.image, issuer, tokens);
-		});
+				html += this.issuerConnectMarkup(data.title, data.image, issuerKey, tokens);
+		}
 
 		this.issuerListContainer.innerHTML = html;
 
@@ -110,7 +102,7 @@ export class SelectIssuers extends AbstractView {
 		});
 	}
 
-	issuerConnectMarkup(title: string, image: string|undefined, issuer: string, tokens: []){
+	issuerConnectMarkup(title: string, image: string|undefined, issuer: string, tokens: []|null){
 		return `
             <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
               <div style="display: flex; align-items: center;">
@@ -118,9 +110,9 @@ export class SelectIssuers extends AbstractView {
                 <p class="issuer-connect-title">${title}</p>
               </div>
               <button aria-label="connect with the token issuer ${issuer}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" 
-              			class="connect-btn-tn" style="${(tokens.length ? "display: none;" : "")}" data-issuer="${issuer}">Load</button>
+              			class="connect-btn-tn" style="${(tokens?.length ? "display: none;" : "")}" data-issuer="${issuer}">Load</button>
               <button aria-label="tokens available from token issuer ${issuer}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" 
-              			class="tokens-btn-tn" style="${(tokens.length ? "display: block;" : "")}" data-issuer="${issuer}">${tokens.length} token${(tokens.length > 1 ? "s" : "")} available</button>
+              			class="tokens-btn-tn" style="${(tokens?.length ? "display: block;" : "")}" data-issuer="${issuer}">${tokens?.length} token${(tokens?.length ? "s" : "")} available</button>
             </li>
         `;
 	}
@@ -241,16 +233,15 @@ export class SelectIssuers extends AbstractView {
 		this.tokensContainer.scrollTo(0, 0);
 
 		const tokenStore = this.client.getTokenStore();
-		const config = this.client.getTokenStore().getCurrentIssuers()[issuer];
-		const onChain = "onChain" in config && config.onChain;
-		const tokenData = onChain ? tokenStore.getOnChainTokens()[issuer] : tokenStore.getOffChainTokens()[issuer];
+		const config = tokenStore.getCurrentIssuers()[issuer];
+		const tokenData = tokenStore.getIssuerTokens(issuer);
 
 		if (config.title)
 			document.getElementsByClassName("headline-tn token-name")[0].innerHTML = config.title;
 
 		let tokens: TokenListItemInterface[] = [];
 
-		tokenData.tokens.map((t: any, i: any) => {
+		tokenData?.map((t: any, i: any) => {
 
 			let isSelected = false;
 
@@ -261,7 +252,7 @@ export class SelectIssuers extends AbstractView {
 
 			});
 
-			if(!onChain) {
+			if(!config.onChain) {
 
 				const { title, image } = config;
 

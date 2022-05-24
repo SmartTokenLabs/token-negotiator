@@ -19,6 +19,7 @@ export interface ContractData {
   contract: string;
   image?: string;
   title?: string;
+  onChain?: boolean;
 }
 
 export interface TokenData {
