@@ -95,14 +95,22 @@ export class TokenStore {
 
 				this.onChainTokens.tokenKeys.push(issuer.collectionID);
 
-				if (!this.onChainTokens[issuer.collectionID])
-					this.onChainTokens[issuer.collectionID] = { tokens: [] };
+				if (this.onChainTokens[issuer.collectionID]) {
+					if (this.onChainTokens[issuer.collectionID].tokens?.length > 0)
+						this.updateSelectedTokensFromExisting(issuer.collectionID, this.onChainTokens[issuer.collectionID].tokens);
+				} else {
+					this.onChainTokens[issuer.collectionID] = {tokens: []};
+				}
 
 			} else {
 				this.offChainTokens.tokenKeys.push(issuer.collectionID);
 
-				if (!this.onChainTokens[issuer.collectionID])
-					this.offChainTokens[issuer.collectionID] = { tokens: [] };
+				if (this.offChainTokens[issuer.collectionID]){
+					if (this.offChainTokens[issuer.collectionID].tokens?.length > 0)
+						this.updateSelectedTokensFromExisting(issuer.collectionID, this.offChainTokens[issuer.collectionID].tokens);
+				} else {
+					this.offChainTokens[issuer.collectionID] = {tokens: []};
+				}
 			}
 
 			// Don't overwrite config of existing/cached issuers
@@ -113,6 +121,11 @@ export class TokenStore {
 		});
 
 		return collectionIds;
+	}
+
+	private updateSelectedTokensFromExisting(issuer: string, tokens: []){
+		if (this.autoEnableTokens)
+			this.selectedTokens[issuer] = { tokens: tokens }
 	}
 
 	// To enrich the token lookup store with data.

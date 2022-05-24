@@ -176,6 +176,11 @@ export class Client {
 			this.popup.initialize();
 		}
 
+		// emit existing cached tokens
+		if (this.config.autoEnableTokens && Object.keys(this.tokenStore.getSelectedTokens()).length)
+			this.eventSender.emitSelectedTokensToClient(this.tokenStore.getSelectedTokens())
+
+		// TODO: Add option to only open when loading new tokens
 		if (openPopup) this.popup.openOverlay();
 	}
 
