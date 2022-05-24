@@ -24,9 +24,10 @@ describe('client spec', () => {
 
 	test('tokenNegotiatorClient a new instance of client', () => {
 		const tokenNegotiatorClient = getOffChainConfigClient();
-		expect(tokenNegotiatorClient.issuers).toEqual(
-			[{
-				collectionID: 'devcon', 
+
+		expect(tokenNegotiatorClient.getTokenStore().getCurrentIssuers()).toEqual({
+			"devcon": {
+				collectionID: 'devcon',
 				title: "Devcon",
 				onChain: false,
 				tokenOrigin: "http://localhost:3002/",
@@ -35,40 +36,35 @@ describe('client spec', () => {
 				image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
 				base64senderPublicKey: "",
 				base64attestorPubKey: ""
-			}]
-		);
+			}
+		});
 	});
 
-	test('tokenNegotiatorClient getTokenData', () => {
+	test('tokenNegotiatorClient getTokenStore Data', () => {
 		const tokenNegotiatorClient = getOffChainConfigClient();
-		const output = tokenNegotiatorClient.getTokenData();
-		expect(output).toEqual({
-			offChainTokens: {
-				"devcon": {
-					"tokens": [],
-				},
-				"tokenKeys": [
-					"devcon",
-				],
-			},
-			onChainTokens: {
-				tokenKeys: [],
-			},
-			tokenLookup: {
-				"devcon": {
-					"attestationOrigin": "https://stage.attestation.id/",
-					"base64attestorPubKey": "",
-					"base64senderPublicKey": "",
-					"collectionID": "devcon",
-					"image": "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
-					"onChain": false,
-					"title": "Devcon",
-					"tokenOrigin": "http://localhost:3002/",
-					"unEndPoint": "https://crypto-verify.herokuapp.com/use-devcon-ticket",
-				},
-			},
-			selectedTokens: {}
+		const store = tokenNegotiatorClient.getTokenStore();
+
+		expect(store.getCurrentTokens(false)).toEqual({
+			"devcon": []
 		});
+
+		expect(store.getCurrentTokens(true)).toEqual({});
+
+		expect(store.getCurrentIssuers()).toEqual({
+			"devcon": {
+				"attestationOrigin": "https://stage.attestation.id/",
+				"base64attestorPubKey": "",
+				"base64senderPublicKey": "",
+				"collectionID": "devcon",
+				"image": "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
+				"onChain": false,
+				"title": "Devcon",
+				"tokenOrigin": "http://localhost:3002/",
+				"unEndPoint": "https://crypto-verify.herokuapp.com/use-devcon-ticket",
+			}
+		});
+
+		expect(store.getSelectedTokens()).toEqual({});
 	});
 
 	test('tokenNegotiatorClient with valid contract and chain', () => {
@@ -79,7 +75,7 @@ describe('client spec', () => {
 			],
 			options: {}
 		});
-		expect(tokenNegotiatorClient.issuers[0].chain).toEqual('rinkeby');
+		expect(tokenNegotiatorClient.getTokenStore().getCurrentIssuers()["bayc"].chain).toEqual('rinkeby');
 	});
 
 	test('tokenNegotiatorClient duplicate collectionID is ignored', () => {
@@ -91,29 +87,20 @@ describe('client spec', () => {
 			],
 			options: {}
 		});
-		expect(tokenNegotiatorClient.issuers[0].chain).toEqual('rinkeby');
-		expect(tokenNegotiatorClient.onChainTokens.tokenKeys.length).toBe(1);
+		expect(tokenNegotiatorClient.getTokenStore().getCurrentIssuers()["bayc"].chain).toEqual('rinkeby');
+		expect(Object.keys(tokenNegotiatorClient.getTokenStore().getCurrentTokens()).length).toBe(1);
 	});
 
 	test('tokenNegotiatorClient a failed new instance of client - missing issuers', () => {
-		expect(() => {
-			new Client({
-				type: 'passive',
-				options: {}
-			})
-		}).toThrow('issuers are missing.');
-	});
 
-	test('tokenNegotiatorClient a failed new instance of client - missing type', () => {
-		expect(() => {
-			new Client({
-				type: undefined,
-				issuers: [
-					"devcon"
-				],
-				options: {}
-			})
-		}).toThrow('type is required.');
+		let client = new Client({
+			type: 'passive',
+			options: {}
+		});
+
+		return client.negotiate().catch((e) => {
+			expect(e).toEqual(new Error('issuers are missing.'));
+		});
 	});
 
 	test('tokenNegotiatorClient on callback with event type tokens-selected ', () => {
@@ -152,10 +139,10 @@ describe('client spec', () => {
 		tokenNegotiatorClient.eventSender.emitProofToClient('test', 'devcon');
 	});
   
-	test('tokenNegotiatorClient method getOffChainConfigClient', async () => {
+	test('tokenNegotiatorClient method connectTokenIssuer with unknown issuer', async () => {
 		const tokenNegotiatorClient = getOffChainConfigClient();
-		return tokenNegotiatorClient.connectOnChainTokenIssuer('bayc').catch(err => {
-			expect(err).toEqual(new Error("wallet address is missing."));
+		return tokenNegotiatorClient.connectTokenIssuer('bayc').catch(err => {
+			expect(err).toEqual(new Error("Undefined token issuer"));
 		});
 	});
   
@@ -172,8 +159,8 @@ describe('client spec', () => {
 			],
 			options: {}
 		});
-		expect((tokenNegotiatorClient.onChainTokens["b-a-y-c"]) ? true : false).toEqual(true);
-		expect(tokenNegotiatorClient.tokenLookup["b-a-y-c"].chain).toEqual("rinkeby");
+		expect(!!(tokenNegotiatorClient.getTokenStore().getCurrentTokens()["b-a-y-c"])).toEqual(true);
+		expect(tokenNegotiatorClient.getTokenStore().getCurrentIssuers()["b-a-y-c"].chain).toEqual("rinkeby");
 	});
 	
 	test('tokenNegotiatorClient method formatCollectionChain chain with uppercase chars', async () => {
@@ -184,7 +171,7 @@ describe('client spec', () => {
 			],
 			options: {}
 		});
-		expect(tokenNegotiatorClient.tokenLookup["bayc"].chain).toEqual("rinkeby");
+		expect(tokenNegotiatorClient.getTokenStore().getCurrentIssuers()["bayc"].chain).toEqual("rinkeby");
 	});
 
 	// TOOD Mock response from window

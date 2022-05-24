@@ -575,6 +575,20 @@
   }
 }
 
+.lds-ellipsis-sm {
+  display: inline-block;
+  position: relative;
+  width: 65px;
+  height: 11px;
+  transform: scale(0.5);
+  margin-left: -8px;
+}
+
+.lds-ellipsis-sm div {
+  background: #000;
+  top: 0;
+}
+
 li.issuer-connect-banner-tn {
   list-style-type:none;
   display: flex;

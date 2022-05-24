@@ -1,24 +1,15 @@
 // @ts-nocheck
 import { Messaging, MessageAction, MessageResponseAction } from "./messaging";
-import { Popup, PopupOptionsInterface } from "./popup";
+import { Popup } from "./popup";
 import { asyncHandle, logger, requiredParams } from "../utils";
 import {connectMetamaskAndGetAddress, getChallengeSigned, validateUseEthKey } from "../core";
-import { OffChainTokenConfig, OnChainTokenConfig, tokenLookup } from "../tokenLookup";
+import { OffChainTokenConfig, OnChainTokenConfig } from "../tokenLookup";
 import OnChainTokenModule from "./../onChainTokenModule";
 import Web3WalletProvider from "./../utils/Web3WalletProvider";
 import "./../vendor/keyShape";
 import { Authenticator } from "@tokenscript/attestation";
-
-interface NegotiationInterface {
-	type: string;
-	issuers: (OnChainTokenConfig | OffChainTokenConfig)[];
-	options: {
-		overlay: PopupOptionsInterface;
-		filters: {};
-	};
-	onChainKeys?: { [apiName: string]: string };
-	ipfsBaseUrl?: string;
-}
+import {TokenStore} from "./tokenStore";
+import {AuthenticateInterface, NegotiationInterface} from "./interface";
 
 declare global {
 	interface Window {
@@ -28,143 +19,70 @@ declare global {
 	}
 }
 
-// TODO: Implement tokenId - each issuer token should have a unique ID (tokenId for instance).
-// webster should not be required to pass the whole object as it can lead to hard to solve errors for webster.
-interface AuthenticateInterface {
-	issuer: any;
-	tokenId?: number | string;
-	unsignedToken: any;
+const defaultConfig: NegotiationInterface = {
+	type: "active",
+	issuers: [],
+	options: {
+		overlay: {
+			openingHeading: "Validate your token ownership for access",
+			issuerHeading: "Detected tokens"
+		},
+		filter: {}
+	},
+	autoLoadTokens: true,
+	autoEnableTokens: true,
+	autoPopup: true
 }
 
 export class Client {
-	private issuers: OnChainTokenConfig | OffChainTokenConfig[];
+
 	private negotiateAlreadyFired: boolean;
-	private type: string;
-	private filter: {};
-	private options: any;
-	private offChainTokens: any;
-	private onChainTokens: any;
-	private tokenLookup: any;
-	private selectedTokens: any;
-	private web3WalletProvider: any;
+	private config: NegotiationInterface;
+	private web3WalletProvider: Web3WalletProvider;
 	private messaging: Messaging;
 	private popup: Popup;
-	private clientCallBackEvents: {};
+	private clientCallBackEvents: {} = {};
 	private onChainTokenModule: OnChainTokenModule;
+	private tokenStore: TokenStore;
+	private uiUpdateCallbacks: {[id: string]: Function} = {}
 
 	static getKey(file: string){
 		return  Authenticator.decodePublicKey(file);
 	}
 
 	constructor(config: NegotiationInterface) {
-		const { type, issuers, options, filter } = config;
 
-		requiredParams(type, "type is required.");
-
-		requiredParams(issuers, "issuers are missing.");
-
-		this.tokenLookup = tokenLookup;
-
-		this.type = type;
-
-		this.options = options;
-
-		this.issuers = issuers;
-
-		this.filter = filter ? filter : {};
-
-		this.offChainTokens = { tokenKeys: [] };
-
-		this.onChainTokens = { tokenKeys: [] };
-
-		this.selectedTokens = {};
-
-		this.clientCallBackEvents = {};
+		this.config = Object.assign(defaultConfig, config);
 
 		this.negotiateAlreadyFired = false;
 
-		this.prePopulateTokenLookupStore(issuers);
+		this.tokenStore = new TokenStore(this.config.autoEnableTokens);
+
+		if (this.config.issuers?.length > 0)
+			this.tokenStore.updateIssuers(this.config.issuers);
 
 		this.web3WalletProvider = new Web3WalletProvider();
 
 		this.onChainTokenModule = new OnChainTokenModule(
-			config.onChainKeys,
-			config.ipfsBaseUrl
+			this.config.onChainKeys,
+			this.config.ipfsBaseUrl
 		);
 
 		this.messaging = new Messaging();
 	}
 
-	formatCollectionID(collectionID: string) {
-		let formatedCollectionID = collectionID;
+	getTokenStore() {
+		return this.tokenStore;
+	}
 
-		if (/[A-Z]+/g.test(collectionID) || /\s+/g.test(collectionID)) {
-			formatedCollectionID = collectionID.replace(/\s+/g, "-").toLowerCase();
-
-			console.warn(
-				`Token Negotiator: Spaces or capital letters found in collectionID definition ${collectionID}, this has been re-formatted to ${formatedCollectionID}`
-			);
-
-			collectionID = formatedCollectionID;
+	triggerUiUpdateCallbacks(){
+		for (let i in this.uiUpdateCallbacks){
+			this.uiUpdateCallbacks[i]();
 		}
-
-		return collectionID;
 	}
 
-	formatCollectionChain(chain: string) {
-		return chain.toLowerCase();
-	}
-
-	prePopulateTokenLookupStore = (issuers: any) => {
-		issuers.forEach((issuer: any) => {
-			if (!issuer.collectionID) return;
-
-			issuer.collectionID = this.formatCollectionID(issuer.collectionID);
-
-			const isOnChainToken = issuer.contract && issuer.chain;
-
-			if (isOnChainToken) {
-				issuer.chain = this.formatCollectionChain(issuer.chain);
-
-				if (this.onChainTokens[issuer.collectionID]) {
-					console.warn(
-						`duplicate collectionID key ${issuer.collectionID}, use unique keys per collection.`
-					);
-					return;
-				}
-
-				this.onChainTokens.tokenKeys.push(issuer.collectionID);
-
-				this.onChainTokens[issuer.collectionID] = { tokens: [] };
-			} else {
-				this.offChainTokens.tokenKeys.push(issuer.collectionID);
-
-				this.offChainTokens[issuer.collectionID] = { tokens: [] };
-			}
-
-			this.updateTokenLookupStore(issuer.collectionID, issuer);
-		});
-
-		return issuers;
-	};
-
-	getTokenData() {
-		return {
-			offChainTokens: this.offChainTokens,
-			onChainTokens: this.onChainTokens,
-			tokenLookup: this.tokenLookup,
-			selectedTokens: this.selectedTokens,
-		};
-	}
-
-	// To enrich the token lookup store with data.
-	// for on chain tokens that are not using token script this is
-	// required, for off chain this is most likely not required because the configurations
-	// are already pre-defined e.g. title, issuer image image etc.
-	updateTokenLookupStore(tokenKey, data) {
-		if (!this.tokenLookup[tokenKey]) this.tokenLookup[tokenKey] = {};
-
-		this.tokenLookup[tokenKey] = { ...this.tokenLookup[tokenKey], ...data };
+	public registerUiUpdateCallback(id: string, callback: Function){
+		this.uiUpdateCallbacks[id] = callback;
 	}
 
 	async negotiatorConnectToWallet(walletType: string) {
@@ -175,90 +93,157 @@ export class Client {
 		return walletAddress;
 	}
 
-	async setPassiveNegotiationWebTokens(offChainTokens: any) {
-		await Promise.all(
-			// TODO load all on chain tokens logic needed here.
+	async setPassiveNegotiationWebTokens() {
 
-			offChainTokens.tokenKeys.map(async (issuer: string): Promise<any> => {
-				let data;
+		let issuers = this.tokenStore.getCurrentIssuers(false);
 
-				const tokensOrigin = this.tokenLookup[issuer].tokenOrigin;
+		for (let issuer in issuers){
 
-				try {
-					data = await this.messaging.sendMessage({
-						issuer: issuer,
-						action: MessageAction.GET_ISSUER_TOKENS,
-						filter: this.filter,
-						origin: tokensOrigin,
-					});
-				} catch (err) {
-					logger(2,err);
-					return;
-				}
+			let data;
 
-				logger(2,"tokens:");
-				logger(2,data.tokens);
+			const tokensOrigin = this.tokenStore.getCurrentIssuers()[issuer].tokenOrigin;
 
-				this.offChainTokens[issuer].tokens = data.tokens;
-
+			try {
+				data = await this.messaging.sendMessage({
+					issuer: issuer,
+					action: MessageAction.GET_ISSUER_TOKENS,
+					filter: this.config.options.filters,
+					origin: tokensOrigin,
+				});
+			} catch (err) {
+				logger(2,err);
 				return;
-			})
-		);
+			}
+
+			logger(2,"tokens:");
+			logger(2,data.tokens);
+
+			this.tokenStore.setTokens(issuer, data.tokens);
+
+			return;
+		}
 	}
 
-	async enrichTokenLookupDataOnChainTokens(onChainTokens: any) {
-		await Promise.all(
-			onChainTokens.tokenKeys.map(async (issuerKey: string): Promise<any> => {
-				let lookupData =
-					await this.onChainTokenModule.getInitialContractAddressMetaData(
-						this.tokenLookup[issuerKey]
-					);
+	async enrichTokenLookupDataOnChainTokens() {
 
-				if (lookupData) {
-					lookupData.onChain = true;
+		let issuers = this.tokenStore.getCurrentIssuers(true);
 
-					// enrich the tokenLookup store with contract meta data
-					this.updateTokenLookupStore(issuerKey, lookupData);
-				}
-			})
-		);
+		for (let issuer in issuers){
+
+			let tokenData = issuers[issuer];
+
+			// Issuer contract data already loaded
+			if (tokenData.title)
+				continue;
+
+			let lookupData = await this.onChainTokenModule.getInitialContractAddressMetaData(tokenData);
+
+			if (lookupData) {
+				// TODO: this might be redundant
+				lookupData.onChain = true;
+
+				// enrich the tokenLookup store with contract meta data
+				this.tokenStore.updateTokenLookupStore(issuer, lookupData);
+			}
+		}
 	}
 
-	async negotiate() {
-		await this.enrichTokenLookupDataOnChainTokens(this.onChainTokens);
+	async negotiate(issuers?: OnChainTokenConfig | OffChainTokenConfig[], openPopup = false) {
 
-		if (this.type === "active") {
-			this.activeNegotiationStrategy();
+		if (issuers) this.tokenStore.updateIssuers(issuers);
+
+		requiredParams(Object.keys(this.tokenStore.getCurrentIssuers()).length, "issuers are missing.");
+
+		await this.enrichTokenLookupDataOnChainTokens();
+
+		if (this.config.type === "active") {
+			this.activeNegotiationStrategy(openPopup);
 		} else {
 			// TODO build logic to allow to connect with wallectConnect, Torus etc.
 			// Logic to ask user to connect to wallet when they have provided web3 tokens to negotiate with.
 			// See other TODO's in this flow.
-			// if (window.ethereum && this.onChainTokens.tokenKeys.length > 0) await this.web3WalletProvider.connectWith('MetaMask');
+			// if (window.ethereum && onChainTokens.tokenKeys.length > 0) await this.web3WalletProvider.connectWith('MetaMask');
 
 			this.passiveNegotiationStrategy();
 		}
 	}
 
-	async activeNegotiationStrategy() {
-		setTimeout(() => {
-			this.popup = new Popup(this.options?.overlay, this);
+	async activeNegotiationStrategy(openPopup: boolean) {
+
+		let autoOpenPopup;
+
+		if (this.popup) {
+			autoOpenPopup = this.tokenStore.hasUnloadedTokens();
+			this.triggerUiUpdateCallbacks();
+		} else {
+			this.popup = new Popup(this.config.options?.overlay, this);
 			this.popup.initialize();
-		}, 0);
+			autoOpenPopup = true;
+		}
+
+		// emit existing cached tokens
+		if (this.config.autoEnableTokens && Object.keys(this.tokenStore.getSelectedTokens()).length)
+			this.eventSender.emitSelectedTokensToClient(this.tokenStore.getSelectedTokens())
+
+		if (openPopup || (this.config.autoPopup === true && autoOpenPopup))
+			this.popup.openOverlay();
 	}
 
-	async setPassiveNegotiationOnChainTokens(onChainTokens: any) {
-		await Promise.all(
-			onChainTokens.tokenKeys.map(async (issuerKey: string): Promise<any> => {
-				const issuer = this.tokenLookup[issuerKey];
+	private cancelAutoload = true;
 
-				const tokens = await this.onChainTokenModule.connectOnChainToken(
-					issuer,
-					this.web3WalletProvider.getConnectedWalletData()[0].address
-				);
+	async tokenAutoLoad(onLoading: (issuer: string) => void, onComplete: (issuer: string, tokens: any[]) => void) {
 
-				this.onChainTokens[issuerKey].tokens = tokens;
-			})
-		);
+		if (this.config.autoLoadTokens === false)
+			return;
+
+		this.cancelAutoload = false;
+
+		let count = 1;
+
+		for (let issuerKey in this.tokenStore.getCurrentIssuers()){
+
+			let tokens = this.tokenStore.getIssuerTokens(issuerKey)
+
+			if (tokens?.length > 0)
+				continue;
+
+			onLoading(issuerKey);
+
+			try {
+				let tokens = await this.connectTokenIssuer(issuerKey);
+
+				onComplete(issuerKey, tokens)
+			} catch (e){
+				console.log("Failed to load " + issuerKey + ": " + e);
+				onComplete(issuerKey, null);
+			}
+
+			count++;
+
+			if (this.cancelAutoload || (this.config.autoLoadTokens !== true && count > this.config.autoLoadTokens))
+				break;
+		}
+	}
+
+	cancelTokenAutoload(){
+		this.cancelAutoload = true;
+	}
+
+	async setPassiveNegotiationOnChainTokens() {
+
+		let issuers = this.tokenStore.getCurrentIssuers(true);
+
+		for (let issuerKey in issuers){
+
+			let issuer = issuers[issuerKey];
+
+			const tokens = await this.onChainTokenModule.connectOnChainToken(
+				issuer,
+				this.web3WalletProvider.getConnectedWalletData()[0].address
+			);
+
+			this.tokenStore.setTokens(issuerKey, tokens);
+		}
 	}
 
 	async passiveNegotiationStrategy() {
@@ -269,35 +254,33 @@ export class Client {
 
 		let canUsePassive = false;
 
-		if (this.offChainTokens.tokenKeys.length) {
+		let offChainIssuers = this.tokenStore.getCurrentIssuers(false);
+
+		if (Object.keys(offChainIssuers).length) {
+
 			canUsePassive = await this.messaging.getCookieSupport(
-				this.tokenLookup[this.offChainTokens.tokenKeys[0]]?.tokenOrigin
+				offChainIssuers[Object.keys(offChainIssuers)[0]]?.tokenOrigin
 			);
 		}
 
 		if (canUsePassive) {
 			await asyncHandle(
-				this.setPassiveNegotiationWebTokens(this.offChainTokens)
+				this.setPassiveNegotiationWebTokens()
 			);
 			await asyncHandle(
-				this.setPassiveNegotiationOnChainTokens(this.onChainTokens)
+				this.setPassiveNegotiationOnChainTokens()
 			);
 
-			let outputOnChain = JSON.parse(JSON.stringify(this.onChainTokens));
-
-			delete outputOnChain.tokenKeys;
-
-			let outputOffChain = JSON.parse(JSON.stringify(this.offChainTokens));
-
-			delete outputOffChain.tokenKeys;
+			let tokens = this.tokenStore.getCurrentTokens();
 
 			logger(2, "Emit tokens");
-			logger(2, outputOffChain);
+			logger(2, tokens);
 
-			this.eventSender.emitAllTokensToClient({
-				...outputOffChain,
-				...outputOnChain,
-			});
+			for (let issuer in tokens){
+				tokens[issuer] = {tokens: tokens[issuer]};
+			}
+
+			this.eventSender.emitAllTokensToClient(tokens);
 		} else {
 			logger(2, 
 				"Enable 3rd party cookies via your browser settings to use this negotiation type."
@@ -306,45 +289,48 @@ export class Client {
 	}
 
 	async connectTokenIssuer(issuer: string): Promise<any[]> {
-		const filter = this.filter ? this.filter : {};
-		const tokensOrigin = this.tokenLookup[issuer].tokenOrigin;
 
-		if (this.tokenLookup[issuer].onChain) {
-			return this.connectOnChainTokenIssuer(this.tokenLookup[issuer]);
+		const config = this.tokenStore.getCurrentIssuers()[issuer];
+
+		if (!config)
+			throw new Error("Undefined token issuer")
+
+		let tokens;
+
+		if (config.onChain) {
+
+			const walletAddress = this.web3WalletProvider.getConnectedWalletData()[0]?.address;
+
+			requiredParams(issuer, "issuer is required.");
+			requiredParams(walletAddress, "wallet address is missing.");
+
+			tokens = await this.onChainTokenModule.connectOnChainToken(config, walletAddress);
+
+			this.tokenStore.setTokens(issuer,  tokens);
+
+		} else {
+
+			let data = await this.messaging.sendMessage({
+				issuer: issuer,
+				action: MessageAction.GET_ISSUER_TOKENS,
+				origin: config.tokenOrigin,
+				filter: this.config.options.filters,
+			});
+
+			tokens = data.tokens;
+
+			this.tokenStore.setTokens(issuer, data.tokens);
 		}
 
-		let data = await this.messaging.sendMessage({
-			issuer: issuer,
-			action: MessageAction.GET_ISSUER_TOKENS,
-			origin: tokensOrigin,
-			filter: filter,
-		});
-
-		this.offChainTokens[issuer].tokens = data.tokens;
-
-		return data.tokens;
-	}
-
-	async connectOnChainTokenIssuer(issuer: any) {
-		const walletAddress =
-			this.web3WalletProvider.getConnectedWalletData()[0]?.address;
-
-		requiredParams(issuer, "issuer is required.");
-		requiredParams(walletAddress, "wallet address is missing.");
-
-		const tokens = await this.onChainTokenModule.connectOnChainToken(
-			issuer,
-			this.web3WalletProvider.getConnectedWalletData()[0].address
-		);
-
-		this.onChainTokens[issuer.collectionID].tokens = tokens;
+		if (this.config.autoEnableTokens)
+			this.eventSender.emitSelectedTokensToClient(this.tokenStore.getSelectedTokens())
 
 		return tokens;
 	}
 
 	updateSelectedTokens(selectedTokens) {
-		this.selectedTokens = selectedTokens;
-		this.eventSender.emitSelectedTokensToClient();
+		this.tokenStore.setSelectedTokens(selectedTokens);
+		this.eventSender.emitSelectedTokensToClient(selectedTokens);
 	}
 
 	createSignature() {
@@ -365,7 +351,7 @@ export class Client {
 
 	async authenticateOffChain(authRequest: AuthenticateInterface) {
 		const { issuer, unsignedToken } = authRequest;
-		const tokenConfig = this.tokenLookup[issuer];
+		const tokenConfig = this.tokenStore.getCurrentIssuers()[issuer];
 
 		let useEthKey = null;
 
@@ -390,8 +376,8 @@ export class Client {
 		if (useEthKey)
 			Authenticator.validateUseTicket(
 				data.proof,
-				this.tokenLookup[issuer].base64attestorPubKey,
-				this.tokenLookup[issuer].base64senderPublicKeys,
+				tokenConfig.base64attestorPubKey,
+				tokenConfig.base64senderPublicKeys,
 				useEthKey.address
 			);
 
@@ -406,7 +392,9 @@ export class Client {
 			"Issuer and signed token required."
 		);
 
-		if (!this.tokenLookup[issuer])
+		const config = this.tokenStore.getCurrentIssuers()[issuer];
+
+		if (!config)
 			throw new Error("Provided issuer was not found.");
 
 		// TODO: How to handle error display in passive negotiation? Use optional UI or emit errors to listener?
@@ -425,7 +413,7 @@ export class Client {
 		try {
 			let data;
 
-			if (this.tokenLookup[issuer].onChain) {
+			if (config.onChain) {
 				data = await this.authenticateOnChain(authRequest);
 			} else {
 				data = await this.authenticateOffChain(authRequest);
@@ -455,7 +443,7 @@ export class Client {
 	}
 
 	async checkPublicAddressMatch(issuer: string, unsignedToken: any) {
-		let config: any = tokenLookup[issuer];
+		let config: any = this.tokenStore.getCurrentIssuers()[issuer];
 
 		// TODO: Remove once fully implemented for on-chain tokens
 		if (!config.unEndPoint) {
@@ -485,20 +473,15 @@ export class Client {
 			throw new Error("useEthKey validation failed.");
 
 		return useEthKey;
-
-		// } catch (e) {
-
-		// requiredParams(null, "Could not authenticate token: " + e.message);
-
-		// }
 	}
 
 	eventSender = {
+		// TODO: consolidate these events
 		emitAllTokensToClient: (tokens: any) => {
 			this.on("tokens", null, tokens);
 		},
-		emitSelectedTokensToClient: () => {
-			this.on("tokens-selected", null, { selectedTokens: this.selectedTokens });
+		emitSelectedTokensToClient: (tokens: any) => {
+			this.on("tokens-selected", null, { selectedTokens: tokens });
 		},
 		emitProofToClient: (proof: any, issuer: any, error = "") => {
 			this.on("token-proof", null, { proof, issuer, error });
