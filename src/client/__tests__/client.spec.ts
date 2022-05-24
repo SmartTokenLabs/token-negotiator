@@ -88,7 +88,7 @@ describe('client spec', () => {
 			options: {}
 		});
 		expect(tokenNegotiatorClient.getTokenStore().getCurrentIssuers()["bayc"].chain).toEqual('rinkeby');
-		expect(Object.keys(tokenNegotiatorClient.getTokenStore().getCurrentTokens(true)).length).toBe(1);
+		expect(Object.keys(tokenNegotiatorClient.getTokenStore().getCurrentTokens()).length).toBe(1);
 	});
 
 	test('tokenNegotiatorClient a failed new instance of client - missing issuers', () => {
@@ -159,7 +159,7 @@ describe('client spec', () => {
 			],
 			options: {}
 		});
-		expect(!!(tokenNegotiatorClient.getTokenStore().getCurrentTokens(true)["b-a-y-c"])).toEqual(true);
+		expect(!!(tokenNegotiatorClient.getTokenStore().getCurrentTokens()["b-a-y-c"])).toEqual(true);
 		expect(tokenNegotiatorClient.getTokenStore().getCurrentIssuers()["b-a-y-c"].chain).toEqual("rinkeby");
 	});
 	
