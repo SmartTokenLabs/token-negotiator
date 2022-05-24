@@ -34,6 +34,8 @@ interface AuthenticateInterface {
 	issuer: any;
 	tokenId?: number | string;
 	unsignedToken: any;
+	address?: string,
+	wallet?: string
 }
 
 export class Client {
@@ -378,12 +380,14 @@ export class Client {
 				throw new Error("Address does not match");
 			}
 		}
-
+		
 		let data = await this.messaging.sendMessage({
 			issuer: issuer,
 			action: MessageAction.GET_PROOF,
 			origin: tokenConfig.tokenOrigin,
 			token: unsignedToken,
+			address: authRequest.address ? authRequest.address : "",
+			wallet: authRequest.wallet ? authRequest.wallet : "",
 			timeout: 0, // Don't time out on this event as it needs active input from the user
 		});
 

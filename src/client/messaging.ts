@@ -9,7 +9,9 @@ export interface MessageRequestInterface {
     timeout?: number,
     filter?: {},
     token?: string,
-    urlParams?: string
+    urlParams?: string,
+	address: string,
+	wallet: string,
 }
 
 export enum MessageAction {
@@ -49,6 +51,7 @@ export class Messaging {
 
 	iframeStorageSupport: null|boolean = null;
 	requestQueue = {};
+	rejectHandler = (e)=>{};
 
 	constructor() {
 		// Should we just check cookie support on initialisation or when requested?
@@ -127,6 +130,7 @@ export class Messaging {
 
 		let received = false;
 		let timer: any = null;
+		this.rejectHandler = reject;
 
 		let listener = (event: any) => {
 
@@ -216,6 +220,10 @@ export class Messaging {
 				if (content) {
 					content.innerHTML = "";
 				}
+				
+				this.rejectHandler("Popup closed by user");
+				
+				this.rejectHandler = (e)=>{};
 			}
 		});
 
@@ -269,6 +277,12 @@ export class Messaging {
 
 		if (request.token)
 			url += `&token=${JSON.stringify(request.token)}`;
+		
+		if (request.address)
+			url += `&address=${request.address}`;
+
+		if (request.wallet)
+			url += `&wallet=${request.wallet}`;
 
 		if (request.urlParams)
 			url += `&${request.urlParams}`;
