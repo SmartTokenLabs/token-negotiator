@@ -10,7 +10,6 @@ import "./../vendor/keyShape";
 import { Authenticator } from "@tokenscript/attestation";
 import {TokenStore} from "./tokenStore";
 import {AuthenticateInterface, NegotiationInterface} from "./interface";
-import {SelectIssuers} from "./views/select-issuers";
 
 declare global {
 	interface Window {
@@ -98,11 +97,9 @@ export class Client {
 
 		let issuers = this.tokenStore.getCurrentIssuers(false);
 
-		for (let issuerKey in issuers){
+		for (let issuer in issuers){
 
 			let data;
-
-			let issuer = issuers[issuerKey];
 
 			const tokensOrigin = this.tokenStore.getCurrentIssuers()[issuer].tokenOrigin;
 
@@ -278,6 +275,10 @@ export class Client {
 
 			logger(2, "Emit tokens");
 			logger(2, tokens);
+
+			for (let issuer in tokens){
+				tokens[issuer] = {tokens: tokens[issuer]};
+			}
 
 			this.eventSender.emitAllTokensToClient(tokens);
 		} else {
