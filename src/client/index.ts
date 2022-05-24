@@ -1,6 +1,7 @@
 // @ts-nocheck
-import { Messaging, MessageAction, MessageResponseAction } from "./messaging";
-import { Popup } from "./popup";
+import { OutletAction } from "./messaging";
+import { Messaging } from "../core/messaging";
+import { Popup, PopupOptionsInterface } from "./popup";
 import { asyncHandle, logger, requiredParams } from "../utils";
 import {connectMetamaskAndGetAddress, getChallengeSigned, validateUseEthKey } from "../core";
 import { OffChainTokenConfig, OnChainTokenConfig } from "../tokenLookup";
@@ -105,10 +106,12 @@ export class Client {
 
 			try {
 				data = await this.messaging.sendMessage({
-					issuer: issuer,
-					action: MessageAction.GET_ISSUER_TOKENS,
-					filter: this.config.options.filters,
+					action: OutletAction.GET_ISSUER_TOKENS,
 					origin: tokensOrigin,
+					data: {
+						issuer: issuer,
+						filter: this.config.options.filters
+					}
 				});
 			} catch (err) {
 				logger(2,err);
@@ -249,10 +252,6 @@ export class Client {
 	async passiveNegotiationStrategy() {
 		// Feature not supported when an end users third party cookies are disabled
 		// because the use of a tab requires a user gesture.
-		// TODO: this check should be skipped if there is no offchain tokens
-		//       if there are offchain tokens, but there are also onchain tokens, show loaded tokens along with an error/warning message?
-
-		let canUsePassive = false;
 
 		let offChainIssuers = this.tokenStore.getCurrentIssuers(false);
 
@@ -263,29 +262,28 @@ export class Client {
 			);
 		}
 
-		if (canUsePassive) {
-			await asyncHandle(
-				this.setPassiveNegotiationWebTokens()
-			);
-			await asyncHandle(
-				this.setPassiveNegotiationOnChainTokens()
-			);
+		await asyncHandle(
+			this.setPassiveNegotiationWebTokens()
+		);
+		await asyncHandle(
+			this.setPassiveNegotiationOnChainTokens()
+		);
 
-			let tokens = this.tokenStore.getCurrentTokens();
+		let tokens = this.tokenStore.getCurrentTokens();
 
-			logger(2, "Emit tokens");
-			logger(2, tokens);
+		logger(2, "Emit tokens");
+		logger(2, tokens);
 
-			for (let issuer in tokens){
-				tokens[issuer] = {tokens: tokens[issuer]};
-			}
-
-			this.eventSender.emitAllTokensToClient(tokens);
-		} else {
-			logger(2, 
-				"Enable 3rd party cookies via your browser settings to use this negotiation type."
-			);
+		for (let issuer in tokens){
+			tokens[issuer] = {tokens: tokens[issuer]};
 		}
+
+		this.eventSender.emitAllTokensToClient(tokens);
+
+		if (this.messaging.iframeStorageSupport === false && Object.keys(this.tokenStore.getCurrentTokens(false)).length === 0)
+			logger(2,
+				"iFrame storage support not detected: Enable popups via your browser to access off-chain tokens with this negotiation type."
+			);
 	}
 
 	async connectTokenIssuer(issuer: string): Promise<any[]> {
@@ -311,10 +309,12 @@ export class Client {
 		} else {
 
 			let data = await this.messaging.sendMessage({
-				issuer: issuer,
-				action: MessageAction.GET_ISSUER_TOKENS,
-				origin: config.tokenOrigin,
-				filter: this.config.options.filters,
+				action: OutletAction.GET_ISSUER_TOKENS,
+				origin: tokensOrigin,
+				data : {
+					issuer: issuer,
+					filter: this.config.options.filters
+				},
 			});
 
 			tokens = data.tokens;
@@ -366,11 +366,13 @@ export class Client {
 		}
 
 		let data = await this.messaging.sendMessage({
-			issuer: issuer,
-			action: MessageAction.GET_PROOF,
+			action: OutletAction.GET_PROOF,
 			origin: tokenConfig.tokenOrigin,
-			token: unsignedToken,
 			timeout: 0, // Don't time out on this event as it needs active input from the user
+			data: {
+				issuer: issuer,
+				token: unsignedToken
+			}
 		});
 
 		if (useEthKey)
@@ -494,9 +496,11 @@ export class Client {
 			url.hash.length > 1 ? url.hash.substring(1) : url.search.substring(1);
 
 		let data = await this.messaging.sendMessage({
-			action: MessageAction.MAGIC_URL,
-			urlParams: params,
+			action: OutletAction.MAGIC_URL,
 			origin: url.origin + url.pathname,
+			data: {
+				urlParams: params
+			}
 		});
 
 		if (data.evt === MessageResponseAction.ISSUER_TOKENS) return data.tokens;

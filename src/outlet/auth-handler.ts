@@ -1,10 +1,10 @@
 // @ts-nocheck
 
 import { Item } from "../tokenLookup";
-import { MessageResponseAction } from "../client/messaging";
+import { ResponseActionBase } from "../core/messaging";
 import { Outlet } from "./index";
 import { Authenticator } from "@tokenscript/attestation";
-import { logger } from "../utils/index";
+import { logger } from "../utils";
 
 export interface DevconToken {
 	ticketBlob: string;
@@ -135,7 +135,7 @@ export class AuthHandler {
 
 				this.outlet.sendMessageResponse({
 					evtid: this.evtid,
-					evt: MessageResponseAction.SHOW_FRAME,
+					evt: ResponseActionBase.SHOW_FRAME,
 				});
 			} else {
 
