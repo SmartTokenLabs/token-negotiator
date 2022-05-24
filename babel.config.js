@@ -3,6 +3,6 @@ module.exports = {
         '@babel/preset-env'
     ],
     plugins: [
-        ["@babel/transform-runtime"]
+        ["@babel/transform-runtime", '@babel/plugin-syntax-dynamic-import']
     ]
 }

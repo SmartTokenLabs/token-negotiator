@@ -5,7 +5,6 @@ import { Popup } from "./popup";
 import { asyncHandle, logger, requiredParams } from "../utils";
 import {connectMetamaskAndGetAddress, getChallengeSigned, validateUseEthKey } from "../core";
 import OnChainTokenModule from "./../onChainTokenModule";
-import Web3WalletProvider from "./../utils/Web3WalletProvider";
 import "./../vendor/keyShape";
 import { Authenticator } from "@tokenscript/attestation";
 import {TokenConfig, TokenStore} from "./tokenStore";
@@ -61,8 +60,6 @@ export class Client {
 		if (this.config.issuers?.length > 0)
 			this.tokenStore.updateIssuers(this.config.issuers);
 
-		this.web3WalletProvider = new Web3WalletProvider();
-
 		this.onChainTokenModule = new OnChainTokenModule(
 			this.config.onChainKeys,
 			this.config.ipfsBaseUrl
@@ -86,6 +83,11 @@ export class Client {
 	}
 
 	async negotiatorConnectToWallet(walletType: string) {
+
+		const Web3WalletProvider = await import("./../wallet/Web3WalletProvider");
+
+		this.web3WalletProvider = new Web3WalletProvider.default();
+
 		let walletAddress = await this.web3WalletProvider.connectWith(walletType);
 
 		logger(2, "wallet address found: " + walletAddress);
