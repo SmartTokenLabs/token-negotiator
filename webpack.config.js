@@ -12,7 +12,7 @@ const TerserPlugin = require('terser-webpack-plugin')
 module.exports = {
     mode: "production",
     target: 'web',
-    entry: './src/client/index.ts',
+    entry: './src/index.ts',
     plugins: [
         new webpack.ProvidePlugin({
             Buffer: ['buffer', 'Buffer'],
