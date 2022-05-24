@@ -42,6 +42,7 @@ export interface NegotiationInterface {
     ipfsBaseUrl?: string;
     autoLoadTokens?: number | boolean;
     autoEnableTokens?: boolean;
+    autoPopup?: boolean;
 }
 
 // TODO: Implement tokenId - each issuer token should have a unique ID (tokenId for instance).

@@ -44,12 +44,20 @@ export class TokenStore {
 	}
 
 	public getCurrentTokens(onChainFilter?: boolean){
-		let current: {[issuer: string]: {}} = {};
+		let current: {[issuer: string]: []} = {};
 		for (let collectionId in this.currentIssuers){
 			if (onChainFilter === undefined || onChainFilter === this.currentIssuers[collectionId])
 				current[collectionId] = this.tokens[collectionId];
 		}
 		return current;
+	}
+
+	public hasUnloadedTokens(){
+		for (let tokens of Object.values(this.getCurrentTokens())){
+			if (tokens.length === 0)
+				return true;
+		}
+		return false;
 	}
 
 	public getIssuerTokens(issuer: string){

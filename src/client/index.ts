@@ -10,6 +10,7 @@ import "./../vendor/keyShape";
 import { Authenticator } from "@tokenscript/attestation";
 import {TokenStore} from "./tokenStore";
 import {AuthenticateInterface, NegotiationInterface} from "./interface";
+import {SelectIssuers} from "./views/select-issuers";
 
 declare global {
 	interface Window {
@@ -31,6 +32,7 @@ const defaultConfig: NegotiationInterface = {
 	},
 	autoLoadTokens: true,
 	autoEnableTokens: true,
+	autoPopup: true
 }
 
 export class Client {
@@ -171,19 +173,23 @@ export class Client {
 
 	async activeNegotiationStrategy(openPopup: boolean) {
 
+		let autoOpenPopup;
+
 		if (this.popup) {
+			autoOpenPopup = this.tokenStore.hasUnloadedTokens();
 			this.triggerUiUpdateCallbacks();
 		} else {
 			this.popup = new Popup(this.config.options?.overlay, this);
 			this.popup.initialize();
+			autoOpenPopup = true;
 		}
 
 		// emit existing cached tokens
 		if (this.config.autoEnableTokens && Object.keys(this.tokenStore.getSelectedTokens()).length)
 			this.eventSender.emitSelectedTokensToClient(this.tokenStore.getSelectedTokens())
 
-		// TODO: Add option to only open when loading new tokens
-		if (openPopup) this.popup.openOverlay();
+		if (openPopup || (this.config.autoPopup === true && autoOpenPopup))
+			this.popup.openOverlay();
 	}
 
 	private cancelAutoload = true;
