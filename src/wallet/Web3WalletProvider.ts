@@ -110,45 +110,20 @@ class Web3WalletProvider {
 
 		logger(2, 'connect Wallet Connect');
 
-		return new Promise(async (resolve, reject) => {
+		const walletConnectProvider = await import("./WalletConnectProvider");
 
-			try {
+		const walletConnect = await walletConnectProvider.getWalletConnectProviderInstance();
 
-				const walletConnectProvider = await import("./WalletConnectProvider");
+		await walletConnect.enable();
 
-				const walletConnect = await walletConnectProvider.getWalletConnectProviderInstance();
+		const provider = new ethers.providers.Web3Provider(walletConnect);
+		const accounts = await provider.listAccounts();
 
-				walletConnect.on("accountsChanged", (accounts: string[]) => {
+		if (accounts.length === 0){
+			throw new Error("No accounts found via wallet-connect.");
+		}
 
-					logger(2, accounts);
-
-					const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], '1', walletConnectProvider);
-
-					resolve(registeredWalletAddress);
-
-				});
-
-				walletConnect.on("chainChanged", (chainId: number) => {
-
-					logger(2, chainId);
-
-				});
-
-				walletConnect.on("disconnect", (code: number, reason: string) => {
-
-					logger(2, code, reason);
-
-				});
-
-				walletConnect.enable().catch((e: any) => {
-					reject(e);
-				});
-
-			} catch (e){
-				reject(e);
-			}
-
-		});
+		return this.registerNewWalletAddress(accounts[0], '1',  walletConnect);
 
 	}
 
