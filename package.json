@@ -6,9 +6,10 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "npm run clean && tsc --outDir dist && npm run copy-assets",
-    "build-umd": "npm run clean && webpack && npm run copy-assets",
-    "clean": "shx rm -rf _bundles dist",
+    "build-umd": "shx rm -rf bundles && webpack && npm run copy-assets-umd",
+    "clean": "shx rm -rf dist",
     "copy-assets": "copyfiles ./src/theme/*.css dist/theme -V --flat && copyfiles ./src/vendor/*.js dist/vendor -V --flat",
+    "copy-assets-umd": "copyfiles ./src/theme/*.css bundles/theme -V --flat && copyfiles ./src/vendor/*.js bundles/vendor -V --flat",
     "prepublishOnly": "npm run build",
     "lint": "eslint . --quiet",
     "test": "jest",

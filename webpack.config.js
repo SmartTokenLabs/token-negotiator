@@ -77,7 +77,7 @@ module.exports = {
         library: 'negotiator',
         filename: 'negotiator.js',
         libraryTarget: 'umd',
-        path: path.resolve(__dirname, 'dist'),
+        path: path.resolve(__dirname, 'bundles'),
     },
     optimization: {
         minimize: true,
