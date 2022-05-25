@@ -82,13 +82,21 @@ export class Client {
 		this.uiUpdateCallbacks[id] = callback;
 	}
 
+	private async getWalletProvider(){
+
+		if (!this.web3WalletProvider){
+			const Web3WalletProvider = await import("./../wallet/Web3WalletProvider");
+			this.web3WalletProvider = new Web3WalletProvider.default();
+		}
+
+		return this.web3WalletProvider;
+	}
+
 	async negotiatorConnectToWallet(walletType: string) {
 
-		const Web3WalletProvider = await import("./../wallet/Web3WalletProvider");
+		let walletProvider = await this.getWalletProvider();
 
-		this.web3WalletProvider = new Web3WalletProvider.default();
-
-		let walletAddress = await this.web3WalletProvider.connectWith(walletType);
+		let walletAddress = await walletProvider.connectWith(walletType);
 
 		logger(2, "wallet address found: " + walletAddress);
 
@@ -236,6 +244,7 @@ export class Client {
 	async setPassiveNegotiationOnChainTokens() {
 
 		let issuers = this.tokenStore.getCurrentIssuers(true);
+		let walletProvider = await this.getWalletProvider();
 
 		for (let issuerKey in issuers){
 
@@ -243,7 +252,7 @@ export class Client {
 
 			const tokens = await this.onChainTokenModule.connectOnChainToken(
 				issuer,
-				this.web3WalletProvider.getConnectedWalletData()[0].address
+				walletProvider.getConnectedWalletData()[0].address
 			);
 
 			this.tokenStore.setTokens(issuerKey, tokens);
@@ -298,7 +307,9 @@ export class Client {
 
 		if (config.onChain) {
 
-			const walletAddress = this.web3WalletProvider.getConnectedWalletData()[0]?.address;
+			let walletProvider = await this.getWalletProvider();
+
+			const walletAddress = walletProvider.getConnectedWalletData()[0]?.address;
 
 			requiredParams(issuer, "issuer is required.");
 			requiredParams(walletAddress, "wallet address is missing.");
@@ -461,11 +472,13 @@ export class Client {
 		if (!unsignedToken) return { status: false, useEthKey: null, proof: null };
 
 		// try {
-		if (!this.web3WalletProvider.getConnectedWalletData().length) {
-			await this.web3WalletProvider.connectWith("MetaMask");
+		let walletProvider = await this.getWalletProvider();
+
+		if (!walletProvider.getConnectedWalletData().length) {
+			await walletProvider.connectWith("MetaMask");
 		}
 
-		let useEthKey = await getChallengeSigned(config, this.web3WalletProvider);
+		let useEthKey = await getChallengeSigned(config, this.getWalletProvider());
 
 		const attestedAddress = await validateUseEthKey(
 			config.unEndPoint,
