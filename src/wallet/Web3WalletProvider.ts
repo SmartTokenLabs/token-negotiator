@@ -1,6 +1,6 @@
 import Web3 from "web3";
 import { ethers } from "ethers";
-import { logger } from ".";
+import { logger } from "../utils";
 
 class Web3WalletProvider {
 
@@ -140,7 +140,7 @@ class Web3WalletProvider {
 
 				});
 
-				walletConnect.enable().catch((e:any) => {
+				walletConnect.enable().catch((e: any) => {
 					reject(e);
 				});
 
