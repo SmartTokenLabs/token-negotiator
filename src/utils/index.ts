@@ -12,14 +12,14 @@ let testsDisplayDebugLevel: number;
 // process.env.DISPLAY_DEBUG_LEVEL used to set LOG level for NODE.JS
 // window.DISPLAY_DEBUG_LEVEL used to set LOG level for browser
 if (process && process.env && process.env.DISPLAY_DEBUG_LEVEL) {
-    displayDebugLevel = parseInt(process.env.DISPLAY_DEBUG_LEVEL);
+	displayDebugLevel = parseInt(process.env.DISPLAY_DEBUG_LEVEL);
 } else if (window && window.DISPLAY_DEBUG_LEVEL) {
-    displayDebugLevel = parseInt(window.DISPLAY_DEBUG_LEVEL);
-} 
+	displayDebugLevel = parseInt(window.DISPLAY_DEBUG_LEVEL);
+}
 
 export function logger(level:number, ...args: any[]){
-    if (!displayDebugLevel || level > displayDebugLevel) return;
-    console.log(...args);
+	if (!displayDebugLevel || level > displayDebugLevel) return;
+	console.log(...args);
 }
 
 export const requiredParams = (item: any, msg: string) => {

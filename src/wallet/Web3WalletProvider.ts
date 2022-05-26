@@ -1,8 +1,6 @@
-import WalletConnectProvider from "@walletconnect/web3-provider";
-import Torus from "@toruslabs/torus-embed";
 import Web3 from "web3";
 import { ethers } from "ethers";
-import { logger } from ".";
+import { logger } from "../utils";
 
 class Web3WalletProvider {
 
@@ -112,53 +110,28 @@ class Web3WalletProvider {
 
 		logger(2, 'connect Wallet Connect');
 
-		return new Promise((resolve, reject) => {
+		const walletConnectProvider = await import("./WalletConnectProvider");
 
-			try {
+		const walletConnect = await walletConnectProvider.getWalletConnectProviderInstance();
 
-				const walletConnectProvider = new WalletConnectProvider({
-					infuraId: "7753fa7b79d2469f97c156780fce37ac",
-				});
+		await walletConnect.enable();
 
-				walletConnectProvider.on("accountsChanged", (accounts: string[]) => {
+		const provider = new ethers.providers.Web3Provider(walletConnect);
+		const accounts = await provider.listAccounts();
 
-					logger(2, accounts);
+		if (accounts.length === 0){
+			throw new Error("No accounts found via wallet-connect.");
+		}
 
-					const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], '1', walletConnectProvider);
-
-					resolve(registeredWalletAddress);
-
-				});
-
-				walletConnectProvider.on("chainChanged", (chainId: number) => {
-
-					logger(2, chainId);
-
-				});
-
-				walletConnectProvider.on("disconnect", (code: number, reason: string) => {
-
-					logger(2, code, reason);
-
-				});
-
-				walletConnectProvider.enable().catch(e => {
-					reject(e);
-				});
-
-			} catch (e){
-				reject(e);
-			}
-
-		});
+		return this.registerNewWalletAddress(accounts[0], '1',  walletConnect);
 
 	}
 
 	async Torus () {
 
-		logger(2, 'connect Torus');
+		const TorusProvider = await import("./TorusProvider");
 
-		const torus = new Torus();
+		const torus = await TorusProvider.getTorusProviderInstance();
         
 		await torus.init();
 
