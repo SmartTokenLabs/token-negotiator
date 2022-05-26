@@ -144,6 +144,23 @@ export class Web3WalletProvider {
 
 	}
 
+	async SafeConnect(){
+
+		logger(2, 'connect SafeConnect');
+
+		const {SafeConnectProvider} = await import("./SafeConnectProvider");
+
+		const provider = new SafeConnectProvider();
+
+		const address = await provider.initSafeConnect();
+
+		console.log(address);
+
+		this.registerNewWalletAddress(address, "1", provider);
+
+		return address;
+	}
+
 	// async Fortmatic () {
 
 	//     logger(2, 'connect Fortmatic');

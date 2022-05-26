@@ -43,7 +43,7 @@ export class Messaging {
 		// Should we just check cookie support on initialisation or when requested?
 	}
 
-	async sendMessage(request: RequestInterfaceBase, forceTab = false){
+	async sendMessage(request: RequestInterfaceBase, forceTab = false): Promise<ResponseInterfaceBase> {
 
 		if (!forceTab && this.iframeStorageSupport === null) {
 			if (window.safari)
@@ -70,7 +70,7 @@ export class Messaging {
 		}
 	}
 
-	private sendIframe(request: RequestInterfaceBase){
+	private sendIframe(request: RequestInterfaceBase): Promise<ResponseInterfaceBase>{
 
 		return new Promise((resolve, reject) => {
 
@@ -97,7 +97,7 @@ export class Messaging {
 		});
 	}
 
-	private sendPopup(request: RequestInterfaceBase){
+	private sendPopup(request: RequestInterfaceBase): Promise<ResponseInterfaceBase>{
 
 		return new Promise((resolve, reject) => {
 
@@ -159,7 +159,7 @@ export class Messaging {
 
 						return;
 					} else {
-						resolve({evt: response.evt, ...response.data});
+						resolve(response);
 					}
 
 					afterResolveOrError();
