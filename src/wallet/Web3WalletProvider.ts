@@ -1,5 +1,6 @@
 import { ethers } from "ethers";
 import { logger } from "../utils";
+import {SafeConnectProvider} from "./SafeConnectProvider";
 
 export class Web3WalletProvider {
 
@@ -32,6 +33,9 @@ export class Web3WalletProvider {
 	}
 
 	async signWith ( message: string, walletData: any ) {
+
+		if (walletData.provider instanceof SafeConnectProvider)
+			return walletData.provider.getSignedChallenge();
 
 		let provider = new ethers.providers.Web3Provider(walletData.provider);
 

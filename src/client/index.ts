@@ -9,6 +9,7 @@ import "./../vendor/keyShape";
 import { Authenticator } from "@tokenscript/attestation";
 import {TokenConfig, TokenStore} from "./tokenStore";
 import {OffChainTokenConfig, OnChainTokenConfig, AuthenticateInterface, NegotiationInterface} from "./interface";
+import {SafeConnectProvider} from "../wallet/SafeConnectProvider";
 
 declare global {
 	interface Window {
@@ -338,11 +339,21 @@ export class Client {
 
 	async authenticateOnChain(authRequest: AuthenticateInterface) {
 		const { issuer, unsignedToken } = authRequest;
+		let useEthKey;
 
-		let useEthKey = await this.checkPublicAddressMatch(issuer, unsignedToken);
+		// TODO: Temp workaround to skip UN fetching for safe connect
+		let provider = await this.getWalletProvider();
 
-		if (!useEthKey) {
-			throw new Error("Address does not match");
+		if (provider.getConnectedWalletData()[0].provider instanceof SafeConnectProvider){
+
+			useEthKey = await provider.getConnectedWalletData()[0].provider.getSignedChallenge();
+		} else {
+
+			let useEthKey = await this.checkPublicAddressMatch(issuer, unsignedToken);
+
+			if (!useEthKey) {
+				throw new Error("Address does not match");
+			}
 		}
 
 		return { issuer: issuer, proof: useEthKey };

@@ -8,8 +8,7 @@ export enum SafeConnectAction {
 export class SafeConnectProvider {
 
 	private messaging = new Messaging();
-	private connectedAddress = null;
-	private challenge = null;
+	private challengeData?: {};
 
 	// Connect and return address
 	public async initSafeConnect(){
@@ -24,10 +23,17 @@ export class SafeConnectProvider {
 
 		console.log(res);
 
-		this.connectedAddress = res.data?.address;
-		this.challenge = res.data?.challenge;
+		this.challengeData = res.data;
 
 		return res.data?.address;
+	}
+
+	public async getSignedChallenge(){
+
+		if (this.challengeData)
+			return this.challengeData;
+
+		return await this.initSafeConnect();
 	}
 
 }
