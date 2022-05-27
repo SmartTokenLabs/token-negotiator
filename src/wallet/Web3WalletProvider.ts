@@ -94,9 +94,7 @@ class Web3WalletProvider {
 			const accountAddress = accounts[0];
 
 			// @ts-ignore
-			const registeredWalletAddress = this.registerNewWalletAddress(accountAddress, parseInt(hexChainId, 16), ethereum);
-
-			return registeredWalletAddress;
+			return this.registerNewWalletAddress(accountAddress, parseInt(hexChainId, 16), ethereum);
 
 		} else {
 

@@ -132,7 +132,6 @@ export class Client {
 
 			this.tokenStore.setTokens(issuer, data.tokens);
 
-			return;
 		}
 	}
 
@@ -343,10 +342,6 @@ export class Client {
 	updateSelectedTokens(selectedTokens) {
 		this.tokenStore.setSelectedTokens(selectedTokens);
 		this.eventSender.emitSelectedTokensToClient(selectedTokens);
-	}
-
-	createSignature() {
-		// TODO msg to include window.location.host
 	}
 
 	async authenticateOnChain(authRequest: AuthenticateInterface) {
