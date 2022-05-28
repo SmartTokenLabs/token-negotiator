@@ -85,8 +85,8 @@ export class Client {
 	private async getWalletProvider(){
 
 		if (!this.web3WalletProvider){
-			const Web3WalletProvider = await import("./../wallet/Web3WalletProvider");
-			this.web3WalletProvider = new Web3WalletProvider.default();
+			const {Web3WalletProvider} = await import("./../wallet/Web3WalletProvider");
+			this.web3WalletProvider = new Web3WalletProvider();
 		}
 
 		return this.web3WalletProvider;
@@ -467,7 +467,7 @@ export class Client {
 			await walletProvider.connectWith("MetaMask");
 		}
 
-		let useEthKey = await getChallengeSigned(config, this.getWalletProvider());
+		let useEthKey = await getChallengeSigned(config, walletProvider);
 
 		const attestedAddress = await validateUseEthKey(
 			config.unEndPoint,

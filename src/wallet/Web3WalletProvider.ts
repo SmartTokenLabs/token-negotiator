@@ -2,7 +2,7 @@ import Web3 from "web3";
 import { ethers } from "ethers";
 import { logger } from "../utils";
 
-class Web3WalletProvider {
+export class Web3WalletProvider {
 
 	state: any;
 
