@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { OutletAction } from "./messaging";
+import {OutletAction, OutletResponseAction} from "./messaging";
 import { Messaging } from "../core/messaging";
 import { Popup } from "./popup";
 import { asyncHandle, logger, requiredParams } from "../utils";
@@ -124,15 +124,13 @@ export class Client {
 				});
 			} catch (err) {
 				logger(2,err);
-				return;
+				continue;
 			}
 
 			logger(2,"tokens:");
 			logger(2,data.tokens);
 
 			this.tokenStore.setTokens(issuer, data.tokens);
-
-			return;
 		}
 	}
 
@@ -260,17 +258,6 @@ export class Client {
 	}
 
 	async passiveNegotiationStrategy() {
-		// Feature not supported when an end users third party cookies are disabled
-		// because the use of a tab requires a user gesture.
-
-		let offChainIssuers = this.tokenStore.getCurrentIssuers(false);
-
-		if (Object.keys(offChainIssuers).length) {
-
-			canUsePassive = await this.messaging.getCookieSupport(
-				offChainIssuers[Object.keys(offChainIssuers)[0]]?.tokenOrigin
-			);
-		}
 
 		await asyncHandle(
 			this.setPassiveNegotiationWebTokens()
@@ -290,6 +277,8 @@ export class Client {
 
 		this.eventSender.emitAllTokensToClient(tokens);
 
+		// Feature not supported when an end users third party cookies are disabled
+		// because the use of a tab requires a user gesture.
 		if (this.messaging.iframeStorageSupport === false && Object.keys(this.tokenStore.getCurrentTokens(false)).length === 0)
 			logger(2,
 				"iFrame storage support not detected: Enable popups via your browser to access off-chain tokens with this negotiation type."
@@ -519,7 +508,7 @@ export class Client {
 			}
 		});
 
-		if (data.evt === MessageResponseAction.ISSUER_TOKENS) return data.tokens;
+		if (data.evt === OutletResponseAction.ISSUER_TOKENS) return data.tokens;
 
 		throw new Error(data.errors.join("\n"));
 	}
