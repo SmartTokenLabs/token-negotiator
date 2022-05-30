@@ -112,6 +112,16 @@ export class Messaging {
 
 			tabRef = this.openTab(this.constructUrl(id, request));
 
+			let tabCloseCheck = setInterval(()=>{
+				if (tabRef.closed) {
+					clearInterval(tabCloseCheck);
+					if (this.rejectHandler) {
+						this.rejectHandler("Popup closed by user");
+						this.rejectHandler = null;
+					}
+				}
+			}, 500);
+
 		});
 
 	}
@@ -120,7 +130,10 @@ export class Messaging {
 
 		let received = false;
 		let timer: any = null;
-		this.rejectHandler = reject;
+		this.rejectHandler = (msg: string) => {
+			reject(msg);
+			afterResolveOrError();
+		};
 
 		let listener = (event: any) => {
 
@@ -260,8 +273,7 @@ export class Messaging {
 	public openTab(url: string){
 		return window.open(
 			url,
-			"win1",
-			"left=0,top=0,width=320,height=320"
+			"_blank"
 		);
 	}
 
