@@ -19,7 +19,7 @@ export class SafeConnectProvider {
 			data: {
 				// TODO: include UN here?
 			}
-		});
+		}, true);
 
 		console.log(res);
 
