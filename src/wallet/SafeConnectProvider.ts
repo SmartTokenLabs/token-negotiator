@@ -15,7 +15,7 @@ export class SafeConnectProvider {
 
 		let res: ResponseInterfaceBase = await this.messaging.sendMessage({
 			action: SafeConnectAction.CONNECT,
-			origin: "http://localhost:8081",
+			origin: document.location.host === "localhost:8082" ? "http://localhost:8081" : "https://safeconnect.tk/",
 			timeout: 0,
 			data: {
 				// TODO: include UN here?
