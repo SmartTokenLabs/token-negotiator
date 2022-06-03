@@ -17,7 +17,7 @@ export class Challenge {
 	public static STORAGE_KEY = "tn-challenges";
 	public static DEFAULT_ENDPOINT = "https://crypto-verify.herokuapp.com/use-devcon-ticket";
 
-	public async getSignedChallenge(address: string, web3WalletProvider: web3WalletProvider, unEndpoint: string = Challenge.DEFAULT_ENDPOINT){
+	public async getSignedChallenge(address: string, web3WalletProvider: web3WalletProvider, unEndpoint: string){
 
 		let walletConnection = web3WalletProvider.getConnectedWalletData()[0].provider;
 
@@ -36,9 +36,9 @@ export class Challenge {
 
 				const challenge = await this.getNewUN(unEndpoint);
 
-				const signature = await walletConnection.signWith(
+				const signature = await web3WalletProvider.signWith(
 					challenge.messageToSign,
-					web3WalletProvider.getConnectedWalletData()[0]
+					walletConnection
 				);
 
 				signedChallenge = challenge;
@@ -102,7 +102,7 @@ export class Challenge {
 	private async getNewUN(endPoint: string): Promise<UNInterface> {
 
 		try {
-			const response = await fetch(Challenge.DEFAULT_ENDPOINT);
+			const response = await fetch(endPoint);
 
 			return await response.json();
 
@@ -121,25 +121,19 @@ export class Challenge {
 		return ethers.utils.recoverAddress(msgHashBytes, un.signature).toLowerCase();
 	}
 
-	private async validateChallenge(endPoint: string, data: any) {
-		try {
-			const response = await fetch(endPoint, {
-				method: "POST",
-				cache: "no-cache",
-				headers: { "Content-Type": "application/json" },
-				redirect: "follow",
-				referrerPolicy: "no-referrer",
-				body: JSON.stringify(data),
-			});
+	public static async validateChallenge(endPoint: string, data: any) {
 
-			const json = await response.json();
+		const response = await fetch(endPoint, {
+			method: "POST",
+			cache: "no-cache",
+			headers: { "Content-Type": "application/json" },
+			redirect: "follow",
+			referrerPolicy: "no-referrer",
+			body: JSON.stringify(data),
+		});
 
-			return json.address;
-		} catch (e) {
-			return {
-				success: false,
-				message: "validate ethkey request failed",
-			};
-		}
+		const json = await response.json();
+
+		return json.address;
 	}
 }

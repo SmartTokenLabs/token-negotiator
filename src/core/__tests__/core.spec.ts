@@ -60,12 +60,6 @@ describe('core Spec', () => {
 	test('expect to read tokens but none are there', () => {
 		expect(readTokens('testing')).toEqual({"noTokens": true, "success": true, "tokens": []});
 	});
-	test('expect token ethKey to not have expired', () => {
-		const d = new Date();
-		d.setFullYear(d.getFullYear()+1);
-		let ethKey = { expiry: d };
-		expect(ethKeyIsValid(ethKey)).toEqual(true);
-	});
 	test('expect to decode missing params', () => {
 		const rawTokens = '[]';
 		const tokenParser = {};

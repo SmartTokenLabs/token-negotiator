@@ -32,9 +32,9 @@ export class Web3WalletProvider {
 
 	}
 
-	async signWith ( message: string, walletData: any ) {
+	async signWith ( message: string, walletProvider: any ) {
 
-		let provider = new ethers.providers.Web3Provider(walletData.provider);
+		let provider = new ethers.providers.Web3Provider(walletProvider);
 
 		let signer = provider.getSigner();
   

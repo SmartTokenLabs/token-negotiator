@@ -3,13 +3,11 @@ import {OutletAction, OutletResponseAction} from "./messaging";
 import { Messaging } from "../core/messaging";
 import { Popup } from "./popup";
 import { asyncHandle, logger, requiredParams } from "../utils";
-import {connectMetamaskAndGetAddress, getChallengeSigned, validateUseEthKey } from "../core";
 import OnChainTokenModule from "./../onChainTokenModule";
 import "./../vendor/keyShape";
 import { Authenticator } from "@tokenscript/attestation";
 import {TokenConfig, TokenStore} from "./tokenStore";
 import {OffChainTokenConfig, OnChainTokenConfig, AuthenticateInterface, NegotiationInterface} from "./interface";
-import {SafeConnectProvider} from "../wallet/SafeConnectProvider";
 import {Challenge} from "./challenge";
 
 declare global {
@@ -455,40 +453,12 @@ export class Client {
 
 		let address = walletProvider.getConnectedWalletData()[0].address;
 
-		return this.challenge.getSignedChallenge(address, walletProvider, unEndpoint);
-	}
+		let useEthKey = await this.challenge.getSignedChallenge(address, walletProvider, unEndpoint);
 
-	async checkPublicAddressMatch(issuer: string, unsignedToken: any) {
-		let config: any = this.tokenStore.getCurrentIssuers()[issuer];
-
-		// TODO: Remove once fully implemented for on-chain tokens
-		if (!config.unEndPoint) {
-			config = {
-				unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
-				ethKeyitemStorageKey: "dcEthKeys",
-			};
-		}
-
-		if (!unsignedToken) return { status: false, useEthKey: null, proof: null };
-
-		// try {
-		let walletProvider = await this.getWalletProvider();
-
-		if (!walletProvider.getConnectedWalletData().length) {
-			await walletProvider.connectWith("MetaMask");
-		}
-
-		let useEthKey = await getChallengeSigned(config, walletProvider);
-
-		const attestedAddress = await validateUseEthKey(
-			config.unEndPoint,
+		await Challenge.validateChallenge(
+			unEndpoint,
 			useEthKey
 		);
-
-		const walletAddress = await connectMetamaskAndGetAddress();
-
-		if (walletAddress.toLowerCase() !== attestedAddress.toLowerCase())
-			throw new Error("useEthKey validation failed.");
 
 		return useEthKey;
 	}
