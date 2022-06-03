@@ -16,7 +16,7 @@ export enum MessageActionBase {
 export interface ResponseInterfaceBase {
     evtid: any,
     evt: ResponseActionBase | string,
-    data?: {[key: string]: any},
+    data?: any,
 	errors?: string[]
 }
 
@@ -113,10 +113,10 @@ export class Messaging {
 			tabRef = this.openTab(this.constructUrl(id, request));
 
 			let tabCloseCheck = setInterval(()=>{
-				if (tabRef.closed) {
+				if (!tabRef || tabRef.closed) {
 					clearInterval(tabCloseCheck);
 					if (this.rejectHandler) {
-						this.rejectHandler("Popup closed by user");
+						this.rejectHandler("Popup closed or blocked");
 						this.rejectHandler = null;
 					}
 				}

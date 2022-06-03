@@ -10,6 +10,7 @@ import { Authenticator } from "@tokenscript/attestation";
 import {TokenConfig, TokenStore} from "./tokenStore";
 import {OffChainTokenConfig, OnChainTokenConfig, AuthenticateInterface, NegotiationInterface} from "./interface";
 import {SafeConnectProvider} from "../wallet/SafeConnectProvider";
+import {Challenge} from "./challenge";
 
 declare global {
 	interface Window {
@@ -45,6 +46,7 @@ export class Client {
 	private clientCallBackEvents: {} = {};
 	private onChainTokenModule: OnChainTokenModule;
 	private tokenStore: TokenStore;
+	private challenge: Challenge = new Challenge();
 	private uiUpdateCallbacks: {[id: string]: Function} = {}
 
 	static getKey(file: string){
@@ -338,23 +340,9 @@ export class Client {
 	}
 
 	async authenticateOnChain(authRequest: AuthenticateInterface) {
-		const { issuer, unsignedToken } = authRequest;
-		let useEthKey;
+		const { issuer } = authRequest;
 
-		// TODO: Temp workaround to skip UN fetching for safe connect
-		let provider = await this.getWalletProvider();
-
-		if (provider.getConnectedWalletData()[0].provider instanceof SafeConnectProvider){
-
-			useEthKey = await provider.getConnectedWalletData()[0].provider.getSignedChallenge();
-		} else {
-
-			let useEthKey = await this.checkPublicAddressMatch(issuer, unsignedToken);
-
-			if (!useEthKey) {
-				throw new Error("Address does not match");
-			}
-		}
+		let useEthKey = await this.getAddressChallenge();
 
 		return { issuer: issuer, proof: useEthKey };
 	}
@@ -368,11 +356,7 @@ export class Client {
 		// useEthKey is not required when using the proof in a smart contract - UN endpoint config can be removed to prevent this check
 		// TODO: Make this an explicit setting passed to the authenticate function
 		if (tokenConfig.unEndPoint) {
-			useEthKey = await this.checkPublicAddressMatch(issuer, unsignedToken);
-
-			if (!useEthKey) {
-				throw new Error("Address does not match");
-			}
+			useEthKey = await this.getAddressChallenge(tokenConfig.unEndPoint);
 		}
 
 		let data = await this.messaging.sendMessage({
@@ -387,13 +371,16 @@ export class Client {
 			}
 		}, this.config.messagingForceTab);
 
-		if (useEthKey)
+		if (useEthKey) {
 			Authenticator.validateUseTicket(
 				data.proof,
 				tokenConfig.base64attestorPubKey,
 				tokenConfig.base64senderPublicKeys,
 				useEthKey.address
 			);
+
+			res.data.useEthKey = useEthKey;
+		}
 
 		// TODO: Provide object that include useEthKey object
 		return data;
@@ -449,11 +436,26 @@ export class Client {
 			this.popup.dismissLoader();
 			this.popup.closeOverlay();
 		}
+
+		return data;
 	}
 
 	private handleProofError(err, issuer) {
 		if (this.popup) this.popup.showError(err);
 		this.eventSender.emitProofToClient(null, issuer, err);
+	}
+
+	async getAddressChallenge(unEndpoint: string = Challenge.DEFAULT_ENDPOINT){
+
+		let walletProvider = await this.getWalletProvider();
+
+		if (!walletProvider.getConnectedWalletData().length) {
+			await walletProvider.connectWith("MetaMask");
+		}
+
+		let address = walletProvider.getConnectedWalletData()[0].address;
+
+		return this.challenge.getSignedChallenge(address, walletProvider, unEndpoint);
 	}
 
 	async checkPublicAddressMatch(issuer: string, unsignedToken: any) {

@@ -1,4 +1,5 @@
 import {Messaging, ResponseInterfaceBase} from "../core/messaging";
+import {UNInterface} from "../client/challenge";
 
 export enum SafeConnectAction {
 	CONNECT = "connect",
@@ -8,21 +9,20 @@ export enum SafeConnectAction {
 export class SafeConnectProvider {
 
 	private messaging = new Messaging();
-	private challengeData?: {};
 
-	// Connect and return address
+	private challengeData: UNInterface|null = null;
+
 	public async initSafeConnect(){
 
 		let res: ResponseInterfaceBase = await this.messaging.sendMessage({
 			action: SafeConnectAction.CONNECT,
-			origin: document.location.host === "localhost:8082" ? "http://localhost:8081" : "https://safeconnect.tk/",
+			origin: document.location.host === "localhost:8080" ? "http://localhost:8081" : "https://safeconnect.tk/",
 			timeout: 0,
-			data: {
-				// TODO: include UN here?
-			}
+			data: {}
 		}, true);
 
 		console.log(res);
+		// TODO: Check challenge here or during getSignedChallenge?
 
 		this.challengeData = res.data;
 
@@ -31,10 +31,18 @@ export class SafeConnectProvider {
 
 	public async getSignedChallenge(){
 
-		if (this.challengeData)
-			return this.challengeData;
+		if (this.challengeData){
 
-		return await this.initSafeConnect();
+			if (this.challengeData?.expiration > Date.now()){
+				return this.challengeData;
+			}
+
+			this.challengeData = null;
+		}
+
+		await this.initSafeConnect();
+
+		return this.challengeData;
 	}
 
 }
