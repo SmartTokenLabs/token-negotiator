@@ -20,6 +20,11 @@ interface PostMessageData {
 	magicLink?: string;
 }
 
+interface WalletData {
+	address?:string,
+	providerName?: string
+}
+
 export class AuthHandler {
 	private outlet: Outlet;
 	private evtid: any;
@@ -39,12 +44,16 @@ export class AuthHandler {
 	private base64attestorPubKey: string | undefined;
 	private base64senderPublicKeys: { [key: string]: string };
 
+	private walletData: WalletData;
+
 	constructor(
 		outlet: Outlet,
 		evtid: any,
 		tokenDef: Item,
-		tokenObj: DevconToken | any
+		tokenObj: DevconToken | any,
+		walletData: WalletData = {}
 	) {
+		this.walletData = walletData;
 		this.outlet = outlet;
 		this.evtid = evtid;
 		this.base64senderPublicKeys = tokenDef.base64senderPublicKeys;
@@ -123,6 +132,10 @@ export class AuthHandler {
 			//         sendData.magicLink = sendData.magicLink.replace("#", "?");
 			// }
 			if (this.email) sendData.email = this.email;
+
+			// pass wallet data to make sure attestation.id sign object using correct wallet
+			if (this.walletData && this.walletData.address) sendData.address = this.walletData.address;
+			if (this.walletData && this.walletData.providerName) sendData.providerName = this.walletData.providerName;
 
 			this.iframe.contentWindow.postMessage(sendData, this.attestationOrigin);
 			return;

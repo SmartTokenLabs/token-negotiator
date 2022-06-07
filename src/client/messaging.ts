@@ -9,7 +9,9 @@ export interface MessageRequestInterface {
     timeout?: number,
     filter?: {},
     token?: string,
-    urlParams?: string
+    urlParams?: string,
+	address?:string,
+	providerName?: string
 }
 
 export enum MessageAction {
@@ -269,6 +271,12 @@ export class Messaging {
 
 		if (request.token)
 			url += `&token=${JSON.stringify(request.token)}`;
+
+		if (request.address)
+			url += `&address=${JSON.stringify(request.address)}`;
+
+		if (request.providerName)
+			url += `&providerName=${JSON.stringify(request.providerName)}`;
 
 		if (request.urlParams)
 			url += `&${request.urlParams}`;

@@ -156,11 +156,27 @@ export class Outlet {
 			// check if token issuer
 			let tokenObj = await rawTokenCheck(unsignedToken, this.tokenConfig);
 
+			let walletData = {
+				address: "",
+				providerName: "",
+			};
+
+			let address = this.getDataFromQuery("address");
+			if (address){
+				walletData.address = address;
+			}
+			
+			let providerName = this.getDataFromQuery("providerName");
+			if (providerName){
+				walletData.providerName = providerName;
+			}
+
 			let authHandler = new AuthHandler(
 				this,
 				evtid,
 				this.tokenConfig,
-				tokenObj
+				tokenObj,
+				walletData
 			);
 
 			let tokenProof = await authHandler.authenticate();

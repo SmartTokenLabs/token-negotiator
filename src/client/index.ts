@@ -34,6 +34,8 @@ interface AuthenticateInterface {
 	issuer: any;
 	tokenId?: number | string;
 	unsignedToken: any;
+	address?: string;
+	providerName?: string;
 }
 
 export class Client {
@@ -379,13 +381,24 @@ export class Client {
 			}
 		}
 
-		let data = await this.messaging.sendMessage({
+		let sendRequest = {
 			issuer: issuer,
 			action: MessageAction.GET_PROOF,
 			origin: tokenConfig.tokenOrigin,
 			token: unsignedToken,
 			timeout: 0, // Don't time out on this event as it needs active input from the user
-		});
+		}
+
+		// pass provider info to the attestation iframe through Outlet
+		if(authRequest.address){
+			sendRequest.address = authRequest.address;
+		}
+
+		if(authRequest.providerName){
+			sendRequest.providerName = authRequest.providerName;
+		}
+
+		let data = await this.messaging.sendMessage(sendRequest);
 
 		if (useEthKey)
 			Authenticator.validateUseTicket(
