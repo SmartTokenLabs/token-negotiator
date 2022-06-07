@@ -85,12 +85,10 @@ export class Outlet {
 		}
 		case OutletAction.GET_PROOF: {
 			const token: string = this.getDataFromQuery("token");
-			const wallet: string = this.getDataFromQuery("wallet");
-			const address: string = this.getDataFromQuery("address");
 
 			requiredParams(token, "unsigned token is missing");
 
-			this.sendTokenProof(evtid, token, address, wallet);
+			this.sendTokenProof(evtid, token);
 
 			break;
 		}
@@ -154,7 +152,7 @@ export class Outlet {
 		return filterTokens(decodedTokens, filter);
 	}
 
-	async sendTokenProof(evtid: any, token: any, address: string, wallet: string) {
+	async sendTokenProof(evtid: any, token: any) {
 		if (!token) return "error";
 
 		const unsignedToken = JSON.parse(token);
@@ -163,13 +161,27 @@ export class Outlet {
 			// check if token issuer
 			let tokenObj = await rawTokenCheck(unsignedToken, this.tokenConfig);
 
+			let walletData = {
+				address: "",
+				providerName: "",
+			};
+
+			let address = this.getDataFromQuery("address");
+			if (address){
+				walletData.address = address;
+			}
+
+			let providerName = this.getDataFromQuery("providerName");
+			if (providerName){
+				walletData.providerName = providerName;
+			}
+
 			let authHandler = new AuthHandler(
 				this,
 				evtid,
 				this.tokenConfig,
 				tokenObj,
-				address,
-				wallet
+				walletData
 			);
 
 			let tokenProof = await authHandler.authenticate();

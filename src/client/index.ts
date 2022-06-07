@@ -363,16 +363,26 @@ export class Client {
 			}
 		}
 
+		let requestData = {
+			issuer: issuer,
+			token: unsignedToken
+		}
+
+		// TODO: get this info from wallet connector rather than params
+		// pass provider info to the attestation iframe through Outlet
+		if(authRequest.address){
+			sendRequest.address = authRequest.address;
+		}
+
+		if(authRequest.providerName){
+			sendRequest.providerName = authRequest.providerName;
+		}
+
 		let data = await this.messaging.sendMessage({
 			action: OutletAction.GET_PROOF,
 			origin: tokenConfig.tokenOrigin,
 			timeout: 0, // Don't time out on this event as it needs active input from the user
-			data: {
-				issuer: issuer,
-				token: unsignedToken,
-				address: authRequest.address ? authRequest.address : "",
-				wallet: authRequest.wallet ? authRequest.wallet : ""
-			}
+			data: requestData
 		});
 
 		if (useEthKey)

@@ -124,7 +124,8 @@ export const readMagicUrl = (
 
 	const secretFromQuery = urlParams.get(tokenSecretName);
 
-	const idFromQuery = urlParams.get(tokenIdName);
+	let tmp = urlParams.get(tokenIdName)
+	const idFromQuery = tmp ? tmp: "";
 
 	if (!(tokenFromQuery && secretFromQuery))
 		throw new Error("Incomplete token params in URL.");
@@ -146,7 +147,7 @@ export const readMagicUrl = (
 		tokens.push({
 			token: tokenFromQuery,
 			secret: secretFromQuery,
-			id: idFromQuery,
+			id: decodeURIComponent(idFromQuery),
 			magic_link: window.location.href,
 		});
 		return tokens;
