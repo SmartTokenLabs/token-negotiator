@@ -137,6 +137,8 @@ export class AuthHandler {
 			if (this.walletData && this.walletData.address) sendData.address = this.walletData.address;
 			if (this.walletData && this.walletData.providerName) sendData.providerName = this.walletData.providerName;
 
+			logger(2, "Auth Handler sendData:", sendData);
+
 			this.iframe.contentWindow.postMessage(sendData, this.attestationOrigin);
 			return;
 		}
