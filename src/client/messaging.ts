@@ -273,10 +273,10 @@ export class Messaging {
 			url += `&token=${JSON.stringify(request.token)}`;
 
 		if (request.address)
-			url += `&address=${JSON.stringify(request.address)}`;
+			url += `&address=${request.address}`;
 
 		if (request.providerName)
-			url += `&providerName=${JSON.stringify(request.providerName)}`;
+			url += `&providerName=${request.providerName}`;
 
 		if (request.urlParams)
 			url += `&${request.urlParams}`;
