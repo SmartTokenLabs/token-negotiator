@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { OutletAction } from "./messaging";
+import {OutletAction, OutletResponseAction} from "./messaging";
 import { Messaging } from "../core/messaging";
 import { Popup } from "./popup";
 import { asyncHandle, logger, requiredParams } from "../utils";
@@ -85,8 +85,8 @@ export class Client {
 	private async getWalletProvider(){
 
 		if (!this.web3WalletProvider){
-			const Web3WalletProvider = await import("./../wallet/Web3WalletProvider");
-			this.web3WalletProvider = new Web3WalletProvider.default();
+			const {Web3WalletProvider} = await import("./../wallet/Web3WalletProvider");
+			this.web3WalletProvider = new Web3WalletProvider();
 		}
 
 		return this.web3WalletProvider;
@@ -124,7 +124,7 @@ export class Client {
 				});
 			} catch (err) {
 				logger(2,err);
-				return;
+				continue;
 			}
 
 			logger(2,"tokens:");
@@ -259,17 +259,6 @@ export class Client {
 	}
 
 	async passiveNegotiationStrategy() {
-		// Feature not supported when an end users third party cookies are disabled
-		// because the use of a tab requires a user gesture.
-
-		let offChainIssuers = this.tokenStore.getCurrentIssuers(false);
-
-		if (Object.keys(offChainIssuers).length) {
-
-			canUsePassive = await this.messaging.getCookieSupport(
-				offChainIssuers[Object.keys(offChainIssuers)[0]]?.tokenOrigin
-			);
-		}
 
 		await asyncHandle(
 			this.setPassiveNegotiationWebTokens()
@@ -289,6 +278,8 @@ export class Client {
 
 		this.eventSender.emitAllTokensToClient(tokens);
 
+		// Feature not supported when an end users third party cookies are disabled
+		// because the use of a tab requires a user gesture.
 		if (this.messaging.iframeStorageSupport === false && Object.keys(this.tokenStore.getCurrentTokens(false)).length === 0)
 			logger(2,
 				"iFrame storage support not detected: Enable popups via your browser to access off-chain tokens with this negotiation type."
@@ -473,7 +464,7 @@ export class Client {
 			await walletProvider.connectWith("MetaMask");
 		}
 
-		let useEthKey = await getChallengeSigned(config, this.getWalletProvider());
+		let useEthKey = await getChallengeSigned(config, walletProvider);
 
 		const attestedAddress = await validateUseEthKey(
 			config.unEndPoint,
@@ -514,7 +505,7 @@ export class Client {
 			}
 		});
 
-		if (data.evt === MessageResponseAction.ISSUER_TOKENS) return data.tokens;
+		if (data.evt === OutletResponseAction.ISSUER_TOKENS) return data.tokens;
 
 		throw new Error(data.errors.join("\n"));
 	}

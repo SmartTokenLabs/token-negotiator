@@ -240,10 +240,17 @@ export class Messaging {
 		for (let i in request.data){
 			let value = request.data[i];
 
+			if (!value)
+				continue;
+
 			if (value instanceof Array || value instanceof Object){
 				url += `&${i}=${JSON.stringify(value)}`;
 			} else {
-				url += `&${i}=${value}`;
+				if (i === "urlParams"){
+					url += `&${value}`;
+				} else {
+					url += `&${i}=${value}`;
+				}
 			}
 		}
 

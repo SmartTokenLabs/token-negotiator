@@ -72,13 +72,10 @@ export class Outlet {
 
 		// TODO: should issuer be validated against requested issuer?
 
-		this.sendMessageResponse({
-			evtid: evtid,
-			evt: ResponseActionBase.COOKIE_CHECK,
-			data: {
-				thirdPartyCookies: localStorage.getItem("cookie-support-check"),
-			}
-		});
+		// Wait until cookie is set for magic URL action
+		if (action !== OutletAction.MAGIC_URL){
+			this.sendCookieCheck(evtid);
+		}
 
 		switch (action) {
 		case OutletAction.GET_ISSUER_TOKENS: {
@@ -101,6 +98,7 @@ export class Outlet {
 			// store local storage item that can be later used to check if third party cookies are allowed.
 			// Note: This test can only be performed when the localstorage / cookie is assigned, then later requested.
 			localStorage.setItem("cookie-support-check", "test");
+			this.sendCookieCheck(evtid);
 
 			const { tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey } =
 				this.tokenConfig;
@@ -130,6 +128,16 @@ export class Outlet {
 			break;
 		}
 		}
+	}
+
+	sendCookieCheck(evtid: string){
+		this.sendMessageResponse({
+			evtid: evtid,
+			evt: ResponseActionBase.COOKIE_CHECK,
+			data: {
+				thirdPartyCookies: localStorage.getItem("cookie-support-check"),
+			}
+		});
 	}
 
 	prepareTokenOutput(filter: any) {
