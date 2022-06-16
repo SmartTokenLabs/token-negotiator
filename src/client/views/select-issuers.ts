@@ -257,7 +257,7 @@ export class SelectIssuers extends AbstractView {
 				tokens.push(<TokenListItemInterface>{
 					data: t,
 					tokenIssuerKey: issuer,
-					index: t.ticketIdNumber ?? t.ticketIdString,
+					index: t.tiketIdNumber ?? i,
 					title: title,
 					image: image,
 					toggleState: isSelected
