@@ -1,6 +1,5 @@
 import {AbstractView} from "./view-interface";
-import {TokenList} from "./token-list";
-import {TokenListItemInterface} from "./token-list";
+import {TokenListItemInterface, TokenList} from "./token-list";
 import {IconView} from "./icon-view";
 import { logger } from "../../utils";
 
@@ -76,7 +75,6 @@ export class SelectIssuers extends AbstractView {
 
 		this.issuerListContainer.innerHTML = html;
 
-		// Init images
 		for(let elem of this.issuerListContainer.getElementsByClassName('img-container-tn')){
 
 			let params = {
@@ -246,7 +244,7 @@ export class SelectIssuers extends AbstractView {
 			let isSelected = false;
 
 			// TODO Define a constant value that can be checked regardless of which issuer token to speed up this check.
-			tokenStore.getSelectedTokens()[issuer]?.tokens.map((st: any, si: any) => {
+			tokenStore.getSelectedTokens()[issuer]?.tokens.map((st: any) => {
 
 				if (JSON.stringify(t) === JSON.stringify(st)) isSelected = true;
 

@@ -86,7 +86,7 @@ export class TokenList extends AbstractView {
 		this.renderIcons();
 
 		if (this.interceptObs) {
-			let loadMoreElem = this.viewContainer.querySelector('.load-more-tn');
+			loadMoreElem = this.viewContainer.querySelector('.load-more-tn');
 			if (loadMoreElem)
 				this.interceptObs.observe(loadMoreElem);
 		}
