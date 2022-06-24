@@ -377,10 +377,9 @@ export class Client {
 				useEthKey.address
 			);
 
-			res.data.useEthKey = useEthKey;
+			data.useEthKey = useEthKey;
 		}
 
-		// TODO: Provide object that include useEthKey object
 		return data;
 	}
 

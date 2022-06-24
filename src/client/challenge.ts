@@ -121,7 +121,7 @@ export class Challenge {
 		return ethers.utils.recoverAddress(msgHashBytes, un.signature).toLowerCase();
 	}
 
-	public static async validateChallenge(endPoint: string, data: any) {
+	public static async validateChallenge(endPoint: string, data: UNInterface) {
 
 		const response = await fetch(endPoint, {
 			method: "POST",
