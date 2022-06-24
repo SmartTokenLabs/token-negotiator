@@ -1,7 +1,8 @@
 import {Messaging, ResponseInterfaceBase} from "../core/messaging";
-import {UNInterface} from "../client/challenge";
 import {uint8tohex} from "@tokenscript/attestation/dist/libs/utils";
 import {KeyStore} from "../client/auth/util/KeyStore";
+import {AuthenticationResult} from "../client/auth/abstractAuthentication";
+import {AttestedAddress} from "../client/auth/attestedAddress";
 
 export enum SafeConnectAction {
 	CONNECT = "connect",
@@ -13,9 +14,7 @@ export class SafeConnectProvider {
 	private messaging = new Messaging();
 	private keyStore = new KeyStore();
 
-	private challengeData: UNInterface|null = null;
-
-	private static HOLDING_KEY_ALGORITHM = "RSASSA-PKCS1-v1_5";
+	public static HOLDING_KEY_ALGORITHM = "RSASSA-PKCS1-v1_5";
 
 	public async initSafeConnect(){
 
@@ -32,27 +31,27 @@ export class SafeConnectProvider {
 		}, true);
 
 		console.log(res);
-		// TODO: Check challenge here or during getSignedChallenge?
 
-		this.challengeData = res.data;
+		let attestedAddress = new AttestedAddress();
+
+		let proofData: AuthenticationResult = {
+			type: attestedAddress.TYPE,
+			data: {
+				attestation: res.data.attestation
+			},
+			target: {
+				address: res.data.address
+			}
+		};
+
+		attestedAddress.saveProof(res.data.address, proofData);
 
 		return res.data?.address;
 	}
 
-	public async getSignedChallenge(){
-
-		if (this.challengeData){
-
-			if (this.challengeData?.expiration > Date.now()){
-				return this.challengeData;
-			}
-
-			this.challengeData = null;
-		}
-
-		await this.initSafeConnect();
-
-		return this.challengeData;
+	public async getLinkSigningKey(){
+		let keys = await this.keyStore.getOrCreateKey(SafeConnectProvider.HOLDING_KEY_ALGORITHM);
+		return keys.attestHoldingKey.privateKey;
 	}
 
 }

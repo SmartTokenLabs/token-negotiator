@@ -1,5 +1,14 @@
 import {ethers} from "ethers";
-import {UNInterface} from "../../challenge";
+
+export interface UNInterface {
+	expiration: number;
+	domain: string;
+	randomness: string;
+	UN: string;
+	messageToSign: string;
+	address?: string;
+	signature?: string;
+}
 
 export class UN {
 

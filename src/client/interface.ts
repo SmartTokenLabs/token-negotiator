@@ -1,4 +1,5 @@
 import { PopupOptionsInterface } from "./popup";
+import {AuthenticationMethod} from "./auth/abstractAuthentication";
 
 export interface OffChainTokenConfig extends IssuerConfigInterface {
     onChain: false,
@@ -28,7 +29,6 @@ export interface OnChainTokenConfig extends IssuerConfigInterface {
 
 export interface IssuerConfigInterface {
     collectionID: string;
-    onChain: boolean;
     title?: string;
     image?: string;
 }
@@ -56,5 +56,6 @@ export interface AuthenticateInterface {
     unsignedToken: any;
     address?: string;
     wallet?: string;
-    context?: string;
+    type?: AuthenticationMethod;
+    options?: any;
 }

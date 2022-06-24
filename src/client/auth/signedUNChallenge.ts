@@ -2,20 +2,27 @@ import {AbstractAuthentication, AuthenticationMethod, AuthenticationResult} from
 import {AuthenticateInterface, OffChainTokenConfig, OnChainTokenConfig} from "../interface";
 import Web3WalletProvider from "../../wallet/Web3WalletProvider";
 import {SafeConnectProvider} from "../../wallet/SafeConnectProvider";
-import {UN} from "./util/UN";
+import {UN, UNInterface} from "./util/UN";
 
 export class SignedUNChallenge extends AbstractAuthentication implements AuthenticationMethod {
 
 	TYPE = "signedUN";
 	private static DEFAULT_ENDPOINT = "https://crypto-verify.herokuapp.com/use-devcon-ticket";
 
-	async getTokenProof(issuerConfig: OnChainTokenConfig | OffChainTokenConfig, tokens: Array<any>, web3WalletProvider: Web3WalletProvider, request: AuthenticateInterface, options?: any): Promise<AuthenticationResult> {
+	async getTokenProof(issuerConfig: OnChainTokenConfig | OffChainTokenConfig, tokens: Array<any>, web3WalletProvider: Web3WalletProvider, request: AuthenticateInterface): Promise<AuthenticationResult> {
 
 		let address = web3WalletProvider.getConnectedWalletData()[0].address;
 
 		let currentProof: AuthenticationResult|null = this.getSavedProof(address);
 
-		// TODO: Check expiry;
+		let unChallenge = currentProof?.data as UNInterface;
+
+		if (unChallenge.expiration < Date.now() ||
+			UN.recoverAddress(unChallenge) !== address.toLowerCase()) {
+
+			this.deleteProof(address);
+			currentProof = null;
+		}
 
 		if (!currentProof){
 
@@ -35,7 +42,7 @@ export class SignedUNChallenge extends AbstractAuthentication implements Authent
 
 			} else {
 
-				let endpoint = options?.unEndpoint ?? SignedUNChallenge.DEFAULT_ENDPOINT;
+				let endpoint = request.options?.unEndpoint ?? SignedUNChallenge.DEFAULT_ENDPOINT;
 
 				const challenge = await UN.getNewUN(endpoint);
 
@@ -63,7 +70,4 @@ export class SignedUNChallenge extends AbstractAuthentication implements Authent
 		return currentProof;
 	}
 
-	/*private isProofValid(){
-
-	}*/
 }

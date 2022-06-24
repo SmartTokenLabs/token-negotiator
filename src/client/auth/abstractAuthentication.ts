@@ -12,7 +12,7 @@ export interface AuthenticationResult {
 
 export interface AuthenticationMethod {
 	TYPE: string;
-	getTokenProof(issuerConfig: OnChainTokenConfig | OffChainTokenConfig, tokens: Array<any>, web3WalletProvider: Web3WalletProvider, request: AuthenticateInterface, options?: {}): Promise<AuthenticationResult>;
+	getTokenProof(issuerConfig: OnChainTokenConfig | OffChainTokenConfig, tokens: Array<any>, web3WalletProvider: Web3WalletProvider, request: AuthenticateInterface): Promise<AuthenticationResult>;
 }
 
 export abstract class AbstractAuthentication {
@@ -21,7 +21,7 @@ export abstract class AbstractAuthentication {
 
 	public static STORAGE_KEY = "tn-proof";
 
-	protected saveProof(key: string, proof: AuthenticationResult){
+	public saveProof(key: string, proof: AuthenticationResult){
 
 		const challenges = this.getProofs();
 

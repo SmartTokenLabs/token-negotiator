@@ -8,7 +8,8 @@ import "./../vendor/keyShape";
 import { Authenticator } from "@tokenscript/attestation";
 import {TokenConfig, TokenStore} from "./tokenStore";
 import {OffChainTokenConfig, OnChainTokenConfig, AuthenticateInterface, NegotiationInterface} from "./interface";
-import {Challenge} from "./challenge";
+import {SignedUNChallenge} from "./auth/signedUNChallenge";
+import {TicketZKProof} from "./auth/ticketZKProof";
 
 declare global {
 	interface Window {
@@ -44,7 +45,6 @@ export class Client {
 	private clientCallBackEvents: {} = {};
 	private onChainTokenModule: OnChainTokenModule;
 	private tokenStore: TokenStore;
-	private challenge: Challenge = new Challenge();
 	private uiUpdateCallbacks: {[id: string]: Function} = {}
 
 	static getKey(file: string){
@@ -337,52 +337,6 @@ export class Client {
 		this.eventSender.emitSelectedTokensToClient(selectedTokens);
 	}
 
-	async authenticateOnChain(authRequest: AuthenticateInterface) {
-		const { issuer } = authRequest;
-
-		let useEthKey = await this.getAddressChallenge();
-
-		return { issuer: issuer, proof: useEthKey };
-	}
-
-	async authenticateOffChain(authRequest: AuthenticateInterface) {
-		const { issuer, unsignedToken } = authRequest;
-		const tokenConfig = this.tokenStore.getCurrentIssuers()[issuer];
-
-		let useEthKey = null;
-
-		// useEthKey is not required when using the proof in a smart contract - UN endpoint config can be removed to prevent this check
-		// TODO: Make this an explicit setting passed to the authenticate function
-		if (tokenConfig.unEndPoint) {
-			useEthKey = await this.getAddressChallenge(tokenConfig.unEndPoint);
-		}
-
-		let data = await this.messaging.sendMessage({
-			action: OutletAction.GET_PROOF,
-			origin: tokenConfig.tokenOrigin,
-			timeout: 0, // Don't time out on this event as it needs active input from the user
-			data: {
-				issuer: issuer,
-				token: unsignedToken,
-				address: authRequest.address ? authRequest.address : "",
-				wallet: authRequest.wallet ? authRequest.wallet : ""
-			}
-		}, this.config.messagingForceTab);
-
-		if (useEthKey) {
-			Authenticator.validateUseTicket(
-				data.proof,
-				tokenConfig.base64attestorPubKey,
-				tokenConfig.base64senderPublicKeys,
-				useEthKey.address
-			);
-
-			data.useEthKey = useEthKey;
-		}
-
-		return data;
-	}
-
 	async authenticate(authRequest: AuthenticateInterface) {
 		const { issuer, unsignedToken } = authRequest;
 		requiredParams(
@@ -408,14 +362,18 @@ export class Client {
 			}, 1000);
 		}
 
-		try {
-			let data;
+		let AuthType;
 
-			if (config.onChain) {
-				data = await this.authenticateOnChain(authRequest);
-			} else {
-				data = await this.authenticateOffChain(authRequest);
-			}
+		if (authRequest.type){
+			AuthType = authRequest = AuthType;
+		} else {
+			AuthType = config.onChain ? SignedUNChallenge : TicketZKProof;
+		}
+
+		let authenticator = new AuthType();
+
+		try {
+			let data = await authenticator.getTokenProof(config, [authRequest.unsignedToken], this.web3WalletProvider, authRequest);
 
 			if (!data.proof)
 				return this.handleProofError("Failed to get proof from the outlet.");
@@ -440,26 +398,6 @@ export class Client {
 	private handleProofError(err, issuer) {
 		if (this.popup) this.popup.showError(err);
 		this.eventSender.emitProofToClient(null, issuer, err);
-	}
-
-	async getAddressChallenge(unEndpoint: string = Challenge.DEFAULT_ENDPOINT){
-
-		let walletProvider = await this.getWalletProvider();
-
-		if (!walletProvider.getConnectedWalletData().length) {
-			await walletProvider.connectWith("MetaMask");
-		}
-
-		let address = walletProvider.getConnectedWalletData()[0].address;
-
-		let useEthKey = await this.challenge.getSignedChallenge(address, walletProvider, unEndpoint);
-
-		await Challenge.validateChallenge(
-			unEndpoint,
-			useEthKey
-		);
-
-		return useEthKey;
 	}
 
 	eventSender = {

@@ -120,12 +120,12 @@ describe('client spec', () => {
 		}).toThrow('Event type is not defined');
 	});
   
-	test('tokenNegotiatorClient method checkPublicAddressMatch to throw error', async () => {
+	/* test('tokenNegotiatorClient method checkPublicAddressMatch to throw error', async () => {
 		const tokenNegotiatorClient = getOffChainConfigClient();
 		return tokenNegotiatorClient.getAddressChallenge(Challenge.DEFAULT_ENDPOINT).catch(err => {
 			expect(err).toEqual(new Error("MetaMask is not available. Please check the extension is supported and active."));
 		});
-	});
+	});*/
 
 	test('tokenNegotiatorClient method eventSender event hook functions', async () => {
 		const tokenNegotiatorClient = getOffChainConfigClient();
