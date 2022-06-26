@@ -316,7 +316,7 @@ export const signMessageWithBrowserWallet = async (
 	//     devconId: "6", ticketClass: 0, ticketId: "417541561854"
 	//   }});
 
-	return await web3WalletProvider.signWith(
+	return web3WalletProvider.signWith(
 		message,
 		web3WalletProvider.getConnectedWalletData()[0]
 	);

@@ -1,6 +1,5 @@
 import {AbstractView} from "./view-interface";
-import {TokenList} from "./token-list";
-import {TokenListItemInterface} from "./token-list";
+import {TokenListItemInterface, TokenList} from "./token-list";
 import {IconView} from "./icon-view";
 import { logger } from "../../utils";
 
@@ -54,29 +53,28 @@ export class SelectIssuers extends AbstractView {
 
 		this.tokenListView = new TokenList(this.client, this.popup, tokensListElem, {});
 
+		this.autoLoadTokens();
+
 	}
 
 	// TODO: back to wallet selection?
 
 	populateIssuers(){
 
-		let data = this.client.getTokenData();
-
 		let html = "";
 
-		data.offChainTokens.tokenKeys.map((issuer: string) => {
-			if (data.tokenLookup[issuer].title)
-				html += this.issuerConnectMarkup(data.tokenLookup[issuer].title, data.tokenLookup[issuer].image, issuer);
-		});
+		let issuers = this.client.getTokenStore().getCurrentIssuers();
 
-		data.onChainTokens.tokenKeys.map((issuer: string) => {
-			if (data.tokenLookup[issuer].title)
-				html += this.issuerConnectMarkup(data.tokenLookup[issuer].title, data.tokenLookup[issuer].image, issuer);
-		});
+		for (let issuerKey in issuers){
+			let data = issuers[issuerKey];
+			let tokens = this.client.getTokenStore().getIssuerTokens(issuerKey);
+
+			if (data.title)
+				html += this.issuerConnectMarkup(data.title, data.image, issuerKey, tokens);
+		}
 
 		this.issuerListContainer.innerHTML = html;
 
-		// Init images
 		for(let elem of this.issuerListContainer.getElementsByClassName('img-container-tn')){
 
 			let params = {
@@ -95,17 +93,24 @@ export class SelectIssuers extends AbstractView {
 				this.navigateToTokensView(issuer);
 			}
 		});
+
+		this.client.registerUiUpdateCallback("select-issuers", ()=> {
+			this.client.cancelTokenAutoload();
+			this.render();
+		});
 	}
 
-	issuerConnectMarkup(title: string, image: string, issuer: string){
+	issuerConnectMarkup(title: string, image: string|undefined, issuer: string, tokens: []|null){
 		return `
             <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
               <div style="display: flex; align-items: center;">
                 <div class="img-container-tn issuer-icon-tn shimmer-tn" data-image-src="${image}" data-token-title="${title}"></div>
                 <p class="issuer-connect-title">${title}</p>
               </div>
-              <button aria-label="connect with the token issuer ${issuer}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="connect-btn-tn" data-issuer="${issuer}">Load</button>
-              <button aria-label="tokens available from token issuer ${issuer}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" class="tokens-btn-tn" data-issuer="${issuer}">Tokens Available</button>
+              <button aria-label="connect with the token issuer ${issuer}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" 
+              			class="connect-btn-tn" style="${(tokens?.length ? "display: none;" : "")}" data-issuer="${issuer}">Load</button>
+              <button aria-label="tokens available from token issuer ${issuer}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" 
+              			class="tokens-btn-tn" style="${(tokens?.length ? "display: block;" : "")}" data-issuer="${issuer}">${tokens?.length} token${(tokens?.length ? "s" : "")} available</button>
             </li>
         `;
 	}
@@ -137,6 +142,23 @@ export class SelectIssuers extends AbstractView {
 
 	}
 
+	async autoLoadTokens(){
+
+		await this.client.tokenAutoLoad(this.issuerLoading.bind(this), (issuer: string, tokens: any[]) => {
+
+			if (!tokens?.length){
+				const connectBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`);
+
+				if (connectBtn)
+					connectBtn.innerText = "Load";
+
+				return;
+			}
+
+			this.issuerConnected(issuer, tokens, false);
+		});
+	}
+
 	async connectTokenIssuer(event: any) {
 
 		const data = event.target.dataset;
@@ -165,7 +187,14 @@ export class SelectIssuers extends AbstractView {
 		this.issuerConnected(issuer, tokens);
 	}
 
-	issuerConnected(issuer: string, tokens: any[]) {
+	issuerLoading(issuer: string){
+		const connectBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`);
+
+		if (connectBtn)
+			connectBtn.innerHTML = '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>';
+	}
+
+	issuerConnected(issuer: string, tokens: any[], showTokens = true) {
 
 		const connectBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`);
 		const tokenBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .tokens-btn-tn`);
@@ -178,13 +207,14 @@ export class SelectIssuers extends AbstractView {
 		connectBtn.setAttribute('tabIndex', -1);
 
 		tokenBtn.style.display = "block";
-		tokenBtn.innerHTML = `${tokens.length} token/s available`;
+		tokenBtn.innerHTML = `${tokens.length} token${(tokens.length > 1 ? "s" : "")} available`;
 		tokenBtn.setAttribute('aria-label', `Navigate to select from ${tokens.length} of your ${issuer} tokens`);
 		tokenBtn.setAttribute('tabIndex', 1);
 
-		setTimeout(() => {
-			this.navigateToTokensView(issuer);
-		}, 250); // Timeout just makes it a bit of a smoother transition
+		if (showTokens)
+			setTimeout(() => {
+				this.navigateToTokensView(issuer);
+			}, 250); // Timeout just makes it a bit of a smoother transition
 	}
 
 	navigateToTokensView(issuer: string) {
@@ -200,33 +230,34 @@ export class SelectIssuers extends AbstractView {
 
 		this.tokensContainer.scrollTo(0, 0);
 
-		const tokenData = this.client.getTokenData();
-		const config = this.client.getTokenData().tokenLookup[issuer];
-		const location = config.onChain === false ? 'offChainTokens' : 'onChainTokens';
+		const tokenStore = this.client.getTokenStore();
+		const config = tokenStore.getCurrentIssuers()[issuer];
+		const tokenData = tokenStore.getIssuerTokens(issuer);
 
-		document.getElementsByClassName("headline-tn token-name")[0].innerHTML = config.title;
+		if (config.title)
+			document.getElementsByClassName("headline-tn token-name")[0].innerHTML = config.title;
 
 		let tokens: TokenListItemInterface[] = [];
 
-		tokenData[location][issuer].tokens.map((t: any, i: any) => {
+		tokenData?.map((t: any, i: any) => {
 
 			let isSelected = false;
 
 			// TODO Define a constant value that can be checked regardless of which issuer token to speed up this check.
-			tokenData.selectedTokens[issuer]?.tokens.map((st: any, si: any) => {
+			tokenStore.getSelectedTokens()[issuer]?.tokens.map((st: any) => {
 
 				if (JSON.stringify(t) === JSON.stringify(st)) isSelected = true;
 
 			});
 
-			if(location === "offChainTokens") {
+			if(!config.onChain) {
 
 				const { title, image } = config;
 
-				tokens.push({
+				tokens.push(<TokenListItemInterface>{
 					data: t,
 					tokenIssuerKey: issuer,
-					index: t.ticketId,
+					index: t.tiketIdNumber ?? i,
 					title: title,
 					image: image,
 					toggleState: isSelected

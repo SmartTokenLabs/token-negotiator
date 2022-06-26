@@ -1,10 +1,10 @@
 // @ts-nocheck
 
 import { Item } from "../tokenLookup";
-import { MessageResponseAction } from "../client/messaging";
+import { ResponseActionBase } from "../core/messaging";
 import { Outlet } from "./index";
 import { Authenticator } from "@tokenscript/attestation";
-import { logger } from "../utils/index";
+import { logger } from "../utils";
 
 export interface DevconToken {
 	ticketBlob: string;
@@ -43,7 +43,9 @@ export class AuthHandler {
 		outlet: Outlet,
 		evtid: any,
 		tokenDef: Item,
-		tokenObj: DevconToken | any
+		tokenObj: DevconToken | any,
+		address: string, 
+		wallet: string
 	) {
 		this.outlet = outlet;
 		this.evtid = evtid;
@@ -55,6 +57,9 @@ export class AuthHandler {
 		this.email = tokenObj.email;
 		this.signedTokenSecret = tokenObj.ticketSecret;
 		this.attestationOrigin = tokenObj.attestationOrigin;
+
+		this.address = address;
+		this.wallet = wallet;
 	}
 
 	// TODO: combine functionality with messaging to enable tab support? Changes required in attestation.id code
@@ -109,7 +114,7 @@ export class AuthHandler {
 		resolve: Function,
 		reject: Function
 	) {
-		logger(2,'postMessageAttestationListener event (Authenticator)', event.data);
+		logger(2,'postMessageAttestationListener event (auth-handler)', event.data);
     
 		if (typeof event.data.ready !== "undefined" && event.data.ready === true) {
 			let sendData: PostMessageData = { force: false };
@@ -123,6 +128,8 @@ export class AuthHandler {
 			//         sendData.magicLink = sendData.magicLink.replace("#", "?");
 			// }
 			if (this.email) sendData.email = this.email;
+			if (this.wallet) sendData.wallet = this.wallet;
+			if (this.address) sendData.address = this.address;
 
 			this.iframe.contentWindow.postMessage(sendData, this.attestationOrigin);
 			return;
@@ -135,7 +142,7 @@ export class AuthHandler {
 
 				this.outlet.sendMessageResponse({
 					evtid: this.evtid,
-					evt: MessageResponseAction.SHOW_FRAME,
+					evt: ResponseActionBase.SHOW_FRAME,
 				});
 			} else {
 

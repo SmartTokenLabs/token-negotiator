@@ -1,5 +1,5 @@
 import { logger, requiredParams } from "../utils";
-import { OnChainTokenConfig } from "../tokenLookup";
+import { OnChainTokenConfig } from "../client/interface";
 
 interface OnChainApiConfig {
   [apiName: string]: {
@@ -13,12 +13,13 @@ interface OnChainApiConfig {
   };
 }
 
-interface ContractData {
+export interface ContractData {
   api: string;
   chain: string;
   contract: string;
   image?: string;
   title?: string;
+  onChain?: boolean;
 }
 
 export interface TokenData {

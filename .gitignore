@@ -3,6 +3,6 @@ node_modules
 reports/coverage
 junit.xml
 dist-common-js
-_bundles
+bundles
 .idea
 dist

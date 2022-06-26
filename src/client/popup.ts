@@ -82,12 +82,14 @@ export class Popup {
 	}
 
 	openOverlay(){
+		// Prevent out-of-popup click from closing the popup straight away
+		setTimeout(()=> {
+			this.popupContainer.classList.add("open");
 
-		this.popupContainer.classList.add("open");
+			window.KeyshapeJS.timelines()[0].time(0);
 
-		window.KeyshapeJS.timelines()[0].time(0);
-
-		window.KeyshapeJS.globalPlay();
+			window.KeyshapeJS.globalPlay();
+		}, 10);
 	}
 
 	togglePopup() {

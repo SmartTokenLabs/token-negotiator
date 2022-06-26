@@ -1,17 +1,14 @@
 import { rawTokenCheck, readMagicUrl, storeMagicURL } from "../core";
-import { logger, requiredParams } from "../utils/index";
-import { decodeTokens, filterTokens } from "./../core/index";
-import {
-	MessageAction,
-	MessageResponseInterface,
-	MessageResponseAction,
-} from "../client/messaging";
+import { logger, requiredParams } from "../utils";
+import { decodeTokens, filterTokens } from "../core";
+import { OutletAction, OutletResponseAction } from "../client/messaging";
 import { AuthHandler } from "./auth-handler";
 
 // requred for default TicketDecoder
 import { SignedDevconTicket } from "@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket";
 import { AsnParser } from "@peculiar/asn1-schema";
-import { uint8toBuffer } from "./../utils/index";
+import { uint8toBuffer } from "../utils";
+import { ResponseActionBase, ResponseInterfaceBase } from "../core/messaging";
 
 interface OutletInterface {
 	config: any;
@@ -46,8 +43,9 @@ export class Outlet {
 		this.pageOnLoadEventHandler();
 	}
 
-	getDataFromQuery(itemKey: any) {
-		return this.urlParams ? this.urlParams.get(itemKey) : undefined;
+	getDataFromQuery(itemKey: any): string {
+		const val = this.urlParams ? this.urlParams.get(itemKey) : "";
+		return val ? val : "";
 	}
 
 	getFilter() {
@@ -74,27 +72,25 @@ export class Outlet {
 
 		// TODO: should issuer be validated against requested issuer?
 
+		// Wait until cookie is set for magic URL action
+		if (action !== OutletAction.MAGIC_URL){
+			this.sendCookieCheck(evtid);
+		}
+
 		switch (action) {
-		case MessageAction.GET_ISSUER_TOKENS: {
+		case OutletAction.GET_ISSUER_TOKENS: {
 			this.sendTokens(evtid);
 
 			break;
 		}
-		case MessageAction.GET_PROOF: {
-			const token = this.getDataFromQuery("token");
+		case OutletAction.GET_PROOF: {
+			const token: string = this.getDataFromQuery("token");
+			const wallet: string = this.getDataFromQuery("wallet");
+			const address: string = this.getDataFromQuery("address");
 
 			requiredParams(token, "unsigned token is missing");
 
-			this.sendTokenProof(evtid, token);
-
-			break;
-		}
-		case MessageAction.COOKIE_CHECK: {
-			this.sendMessageResponse({
-				evtid: evtid,
-				evt: MessageResponseAction.COOKIE_CHECK,
-				thirdPartyCookies: localStorage.getItem("cookie-support-check"),
-			});
+			this.sendTokenProof(evtid, token, address, wallet);
 
 			break;
 		}
@@ -102,6 +98,7 @@ export class Outlet {
 			// store local storage item that can be later used to check if third party cookies are allowed.
 			// Note: This test can only be performed when the localstorage / cookie is assigned, then later requested.
 			localStorage.setItem("cookie-support-check", "test");
+			this.sendCookieCheck(evtid);
 
 			const { tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey } =
 				this.tokenConfig;
@@ -133,6 +130,16 @@ export class Outlet {
 		}
 	}
 
+	sendCookieCheck(evtid: string){
+		this.sendMessageResponse({
+			evtid: evtid,
+			evt: ResponseActionBase.COOKIE_CHECK,
+			data: {
+				thirdPartyCookies: localStorage.getItem("cookie-support-check"),
+			}
+		});
+	}
+
 	prepareTokenOutput(filter: any) {
 		const storageTokens = localStorage.getItem(this.tokenConfig.itemStorageKey);
 
@@ -147,7 +154,7 @@ export class Outlet {
 		return filterTokens(decodedTokens, filter);
 	}
 
-	async sendTokenProof(evtid: any, token: any) {
+	async sendTokenProof(evtid: any, token: any, address: string, wallet: string) {
 		if (!token) return "error";
 
 		const unsignedToken = JSON.parse(token);
@@ -160,16 +167,20 @@ export class Outlet {
 				this,
 				evtid,
 				this.tokenConfig,
-				tokenObj
+				tokenObj,
+				address,
+				wallet
 			);
 
 			let tokenProof = await authHandler.authenticate();
 
 			this.sendMessageResponse({
 				evtid: evtid,
-				evt: MessageResponseAction.PROOF,
-				issuer: this.tokenConfig.tokenName,
-				proof: tokenProof,
+				evt: OutletResponseAction.PROOF,
+				data: {
+					issuer: this.tokenConfig.tokenName,
+					proof: tokenProof
+				}
 			});
 		} catch (e: any) {
 			logger(2,e);
@@ -183,21 +194,23 @@ export class Outlet {
 
 		this.sendMessageResponse({
 			evtid: evtid,
-			evt: MessageResponseAction.ISSUER_TOKENS,
-			issuer: this.tokenConfig.tokenName,
-			tokens: issuerTokens,
+			evt: OutletResponseAction.ISSUER_TOKENS,
+			data: {
+				issuer: this.tokenConfig.tokenName,
+				tokens: issuerTokens
+			}
 		});
 	}
 
 	public sendErrorResponse(evtid: any, error: string) {
 		this.sendMessageResponse({
 			evtid: evtid,
-			evt: MessageResponseAction.ERROR,
+			evt: ResponseActionBase.ERROR,
 			errors: [error],
 		});
 	}
 
-	public sendMessageResponse(response: MessageResponseInterface) {
+	public sendMessageResponse(response: ResponseInterfaceBase) {
 		// dont send Message if no referrer defined
 		if (!document.referrer) {
 			return;

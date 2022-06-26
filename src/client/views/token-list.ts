@@ -86,7 +86,7 @@ export class TokenList extends AbstractView {
 		this.renderIcons();
 
 		if (this.interceptObs) {
-			let loadMoreElem = this.viewContainer.querySelector('.load-more-tn');
+			loadMoreElem = this.viewContainer.querySelector('.load-more-tn');
 			if (loadMoreElem)
 				this.interceptObs.observe(loadMoreElem);
 		}
@@ -112,7 +112,7 @@ export class TokenList extends AbstractView {
 	// TODO: probably don't need to iterate all inputs.
 	tokenToggleSelection() {
 
-		let selectedTokens = this.client.getTokenData().selectedTokens;
+		let selectedTokens = this.client.getTokenStore().getSelectedTokens();
 
 		this.viewContainer.querySelectorAll('.mobileToggle-tn').forEach((token: any, index: number) => {
 

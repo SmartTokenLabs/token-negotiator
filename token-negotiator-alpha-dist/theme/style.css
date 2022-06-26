@@ -12,7 +12,7 @@
 }
 
 .overlay-tn.light .overlay-content-tn .toggle-tn input.mobileToggle-tn+label:after {
-  background: #037fed;
+  background: #f1f1f1;
   box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.1), 0 4px 0px 0 hsla(0, 0%, 0%, 0.04), 0 4px 9px hsla(0, 0%, 0%, 0.13), 0 3px 3px hsla(0, 0%, 0%, 0.05);
 }
 
@@ -54,9 +54,6 @@
   border-bottom-right-radius: 4px;
   border-top-left-radius: 3px;
   overflow: hidden;
-}
-
-.overlay-tn.light .overlay-content-tn {
   border-top: 4px solid black;
 }
 
@@ -90,10 +87,6 @@
 .overlay-tn.light .overlay-content-tn .toggle-tn input.mobileToggle-tn+label {
   border: 3px solid #c6c5c5;
   background: #c6c5c5;
-}
-
-.overlay-tn.light .overlay-content-tn .toggle-tn input.mobileToggle-tn+label:after {
-  background: #f1f1f1;
 }
 
 .overlay-tn.light .overlay-content-tn .toggle-tn input.mobileToggle-tn:checked+label {
@@ -176,9 +169,6 @@
 .overlay-tn.dark .overlay-content-tn {
   box-shadow: 0 2px 4px 0 rgba(103, 103, 103, 0.5);
   background-color: black;
-}
-
-.overlay-tn.dark .overlay-content-tn {
   border-top: 4px solid white;
 }
 
@@ -269,10 +259,6 @@
   transition: all 0.25s;
 }
 
-.overlay-tn .wallet-button-tn {
-  opacity: .8;
-}
-
 .overlay-tn .wallet-button-tn:hover, .overlay-tn .wallet-button-tn:focus {
   opacity: 1;
 }
@@ -327,6 +313,7 @@
 }
 
 .overlay-tn .overlay-content-tn {
+  overflow: scroll;
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
@@ -575,6 +562,20 @@
   }
 }
 
+.lds-ellipsis-sm {
+  display: inline-block;
+  position: relative;
+  width: 65px;
+  height: 11px;
+  transform: scale(0.5);
+  margin-left: -8px;
+}
+
+.lds-ellipsis-sm div {
+  background: #000;
+  top: 0;
+}
+
 li.issuer-connect-banner-tn {
   list-style-type:none;
   display: flex;
@@ -582,11 +583,6 @@ li.issuer-connect-banner-tn {
   align-items: center;
   padding: 12px;
   /* height: 2.7rem; */
-}
-
-.opening-btn-tn, li.issuer-connect-banner-tn .connect-btn-tn, li.issuer-connect-banner-tn .tokens-btn-tn, .btn-tn {
-  color: white;
-  background: #101010;
 }
 
 li.token-tn, .load-more-tn {
@@ -615,6 +611,8 @@ li.token-tn, .load-more-tn {
     padding: 7px 15px 7px 15px;
     border-radius: 23px;
     cursor: pointer;
+    color: white;
+    background: #101010;
 }
 
 .dismiss-error-tn {
@@ -748,10 +746,6 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
   width: 100%; 
 }
 
-.overlay-tn .overlay-content-tn  {
-  overflow: scroll;
-}
-
 .view-content-tn  {
   height: 100%;
 }
@@ -788,6 +782,7 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
 	cursor: pointer;
 	outline: inherit;
   width: 132px;
+  opacity: .8;
 }
 
 .overlay-tn .skeleton-box {
@@ -912,7 +907,7 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
 
 .modal-body-tn iframe {
   width: 100%;
-  min-height: 400px;
+  min-height: 600px;
   background-color: #fff;
   border: 6px solid #696969;
   border-radius: 3px;
@@ -925,7 +920,7 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
   margin: auto;
   padding: 0;
 
-  width: 50%;
+  max-width: 500px;
 
   -webkit-animation-name: animatetop;
   -webkit-animation-duration: 0.4s;
