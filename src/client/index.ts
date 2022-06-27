@@ -112,12 +112,12 @@ export class Client {
 
 		for (let issuer in issuers){
 
-			let data;
+			let res;
 
 			const tokensOrigin = this.tokenStore.getCurrentIssuers()[issuer].tokenOrigin;
 
 			try {
-				data = await this.messaging.sendMessage({
+				res = await this.messaging.sendMessage({
 					action: OutletAction.GET_ISSUER_TOKENS,
 					origin: tokensOrigin,
 					data: {
@@ -131,9 +131,9 @@ export class Client {
 			}
 
 			logger(2,"tokens:");
-			logger(2,data.tokens);
+			logger(2,res.data.tokens);
 
-			this.tokenStore.setTokens(issuer, data.tokens);
+			this.tokenStore.setTokens(issuer, res.data.tokens);
 
 		}
 	}
@@ -419,7 +419,7 @@ export class Client {
 		let params =
 			url.hash.length > 1 ? url.hash.substring(1) : url.search.substring(1);
 
-		let data = await this.messaging.sendMessage({
+		let res = await this.messaging.sendMessage({
 			action: OutletAction.MAGIC_URL,
 			origin: url.origin + url.pathname,
 			data: {
@@ -427,9 +427,9 @@ export class Client {
 			}
 		}, this.config.messagingForceTab);
 
-		if (data.evt === OutletResponseAction.ISSUER_TOKENS) return data.tokens;
+		if (res.evt === OutletResponseAction.ISSUER_TOKENS) return res.data.tokens;
 
-		throw new Error(data.errors.join("\n"));
+		throw new Error(res.errors.join("\n"));
 	}
 
 	on(type: string, callback?: any, data?: any) {
