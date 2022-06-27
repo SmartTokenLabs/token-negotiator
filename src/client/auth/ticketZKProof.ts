@@ -23,7 +23,10 @@ export class TicketZKProof extends AbstractAuthentication {
 
 		if (issuerConfig.unEndPoint) {
 			let unChallenge = new SignedUNChallenge();
-			request.options.unEndPoint = issuerConfig.unEndPoint;
+			request.options = {
+				...request.options,
+				unEndPoint: issuerConfig.unEndPoint
+			};
 			let res = await unChallenge.getTokenProof(issuerConfig, tokens, web3WalletProvider, request);
 			useEthKey = res.data as UNInterface;
 		}

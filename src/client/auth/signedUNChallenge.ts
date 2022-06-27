@@ -54,13 +54,13 @@ export class SignedUNChallenge extends AbstractAuthentication implements Authent
 				);
 
 				// Check that recovered address matches the signature of the requested address
+				challenge.signature = signature;
 				let recoveredAddr = UN.recoverAddress(challenge);
 
 				if (recoveredAddr !== address.toLowerCase()){
 					throw new Error("Address signature is invalid");
 				}
 
-				challenge.signature = signature;
 				challenge.address = recoveredAddr;
 
 				currentProof.data = challenge;

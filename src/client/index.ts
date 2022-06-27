@@ -313,7 +313,7 @@ export class Client {
 
 		} else {
 
-			let data = await this.messaging.sendMessage({
+			let res = await this.messaging.sendMessage({
 				action: OutletAction.GET_ISSUER_TOKENS,
 				origin: config.tokenOrigin,
 				data : {
@@ -322,9 +322,9 @@ export class Client {
 				},
 			}, this.config.messagingForceTab);
 
-			tokens = data.tokens;
+			tokens = res.data.tokens;
 
-			this.tokenStore.setTokens(issuer, data.tokens);
+			this.tokenStore.setTokens(issuer, res.data.tokens);
 		}
 
 		if (this.config.autoEnableTokens)
@@ -373,15 +373,15 @@ export class Client {
 
 		let authenticator: AuthenticationMethod = new AuthType();
 
-		let data;
+		let res;
 
 		try {
 
-			data = await authenticator.getTokenProof(config, [authRequest.unsignedToken], this.web3WalletProvider, authRequest);
+			res = await authenticator.getTokenProof(config, [authRequest.unsignedToken], this.web3WalletProvider, authRequest);
 
 			logger(2,"Ticket proof successfully validated.");
 
-			this.eventSender.emitProofToClient(data.proof, data.issuer);
+			this.eventSender.emitProofToClient(res.data.proof, res.data.issuer);
 		} catch (err) {
 			logger(2,err);
 			this.handleProofError(err, issuer);
@@ -393,7 +393,7 @@ export class Client {
 			this.popup.closeOverlay();
 		}
 
-		return data;
+		return res;
 	}
 
 	private handleProofError(err, issuer) {

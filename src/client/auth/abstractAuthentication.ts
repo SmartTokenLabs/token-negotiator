@@ -60,7 +60,7 @@ export abstract class AbstractAuthentication {
 		return this.TYPE + "-" + key;
 	}
 
-	private getProofs(): {[address: string]: AuthenticationResult}{
+	private getProofs(): {[key: string]: AuthenticationResult}{
 		const data = localStorage.getItem(AbstractAuthentication.STORAGE_KEY);
 
 		return data && data.length ? JSON.parse(data) : {};
