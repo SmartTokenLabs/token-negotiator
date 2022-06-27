@@ -10,6 +10,7 @@ import {TokenConfig, TokenStore} from "./tokenStore";
 import {OffChainTokenConfig, OnChainTokenConfig, AuthenticateInterface, NegotiationInterface} from "./interface";
 import {SignedUNChallenge} from "./auth/signedUNChallenge";
 import {TicketZKProof} from "./auth/ticketZKProof";
+import {AuthenticationMethod, AuthenticationResult} from "./auth/abstractAuthentication";
 
 declare global {
 	interface Window {
@@ -337,7 +338,7 @@ export class Client {
 		this.eventSender.emitSelectedTokensToClient(selectedTokens);
 	}
 
-	async authenticate(authRequest: AuthenticateInterface) {
+	async authenticate(authRequest: AuthenticateInterface): AuthenticationResult {
 		const { issuer, unsignedToken } = authRequest;
 		requiredParams(
 			issuer && unsignedToken,
@@ -365,18 +366,18 @@ export class Client {
 		let AuthType;
 
 		if (authRequest.type){
-			AuthType = authRequest = AuthType;
+			AuthType = authRequest.type;
 		} else {
 			AuthType = config.onChain ? SignedUNChallenge : TicketZKProof;
 		}
 
-		let authenticator = new AuthType();
+		let authenticator: AuthenticationMethod = new AuthType();
+
+		let data;
 
 		try {
-			let data = await authenticator.getTokenProof(config, [authRequest.unsignedToken], this.web3WalletProvider, authRequest);
 
-			if (!data.proof)
-				return this.handleProofError("Failed to get proof from the outlet.");
+			data = await authenticator.getTokenProof(config, [authRequest.unsignedToken], this.web3WalletProvider, authRequest);
 
 			logger(2,"Ticket proof successfully validated.");
 

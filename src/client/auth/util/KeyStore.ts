@@ -14,9 +14,9 @@ export class KeyStore {
 	private static DB_NAME = "SCKeyStore";
 	private static TABLE_NAME = "Keys";
 
-	async getOrCreateKey(algorithm: string, id?: string): Promise<{attestHoldingKey: CryptoKeyPair, holdingPubKey: Uint8Array, holdingPubKeyJwk: any}>{
+	async getOrCreateKey(algorithm: string, id?: string): Promise<{attestHoldingKey: CryptoKeyPair, holdingPubKey: Uint8Array}>{
 
-		let attestHoldingKey, holdingPubKey, holdingPubKeyJwk;
+		let attestHoldingKey, holdingPubKey;
 
 		let fullId = algorithm + (id ? "-" + id : "");
 
@@ -47,11 +47,9 @@ export class KeyStore {
 				await this.saveKey(fullId, attestHoldingKey.privateKey, attestHoldingKey.publicKey, uint8tohex(holdingPubKey));
 			}
 
-			holdingPubKeyJwk = await window.crypto.subtle.exportKey("jwk", attestHoldingKey.publicKey);
-
 			console.log("Holding public: " + uint8tohex(holdingPubKey));
 
-			return {attestHoldingKey, holdingPubKey, holdingPubKeyJwk};
+			return {attestHoldingKey, holdingPubKey};
 		} catch (e: any){
 			console.log("Failed to create attestor keypair: " + e.message);
 			throw e;
@@ -64,7 +62,7 @@ export class KeyStore {
 			try {
 				this.getDb().then((db) => {
 
-					let transaction = db.transaction(KeyStore.TABLE_NAME, "readwrite");
+					let transaction = db.transaction(KeyStore.TABLE_NAME, "readonly");
 
 					let store = transaction.objectStore(KeyStore.TABLE_NAME);
 

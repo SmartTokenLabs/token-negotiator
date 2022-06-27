@@ -15,13 +15,15 @@ export class SignedUNChallenge extends AbstractAuthentication implements Authent
 
 		let currentProof: AuthenticationResult|null = this.getSavedProof(address);
 
-		let unChallenge = currentProof?.data as UNInterface;
+		if (currentProof) {
+			let unChallenge = currentProof?.data as UNInterface;
 
-		if (unChallenge.expiration < Date.now() ||
-			UN.recoverAddress(unChallenge) !== address.toLowerCase()) {
+			if (unChallenge.expiration < Date.now() ||
+				UN.recoverAddress(unChallenge) !== address.toLowerCase()) {
 
-			this.deleteProof(address);
-			currentProof = null;
+				this.deleteProof(address);
+				currentProof = null;
+			}
 		}
 
 		if (!currentProof){

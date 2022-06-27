@@ -2,7 +2,12 @@ import {AbstractAuthentication, AuthenticationResult} from "./abstractAuthentica
 import {AuthenticateInterface, OffChainTokenConfig, OnChainTokenConfig} from "../interface";
 import Web3WalletProvider from "../../wallet/Web3WalletProvider";
 import {AsnParser, AsnSerializer} from "@peculiar/asn1-schema";
-import {base64ToUint8array, hexStringToUint8, uint8tohex} from "@tokenscript/attestation/dist/libs/utils";
+import {
+	base64ToUint8array,
+	hexStringToUint8,
+	uint8arrayToBase64,
+	uint8tohex
+} from "@tokenscript/attestation/dist/libs/utils";
 import {SignedLinkedAttestation} from "./tempSchemas/SignedLinkedAttestation";
 import {
 	EthereumKeyLinkingAttestation,
@@ -21,6 +26,9 @@ export class AttestedAddress extends AbstractAuthentication {
 
 		if (!issuerConfig.onChain)
 			throw new Error(this.TYPE + " is not available for off-chain tokens.");
+
+		if (!request.options?.address)
+			throw new Error("Address attestation requires a secondary address.");
 
 		let address = web3WalletProvider.getConnectedWalletData()[0].address;
 
@@ -47,14 +55,14 @@ export class AttestedAddress extends AbstractAuthentication {
 
 		let addrAttest = currentProof?.data.attestation;
 
-		let linkAttestation = this.createAndSignLinkAttestation(addrAttest, request.options.address, await safeConnect.getLinkSigningKey());
+		let linkAttestation = await AttestedAddress.createAndSignLinkAttestation(addrAttest, request.options.address, await safeConnect.getLinkSigningKey());
 
 		currentProof.data.attestation = linkAttestation;
 
 		return currentProof;
 	}
 
-	private async createAndSignLinkAttestation(addressAttest: string, linkedEthAddress: string, holdingPrivKey: CryptoKey){
+	private static async createAndSignLinkAttestation(addressAttest: string, linkedEthAddress: string, holdingPrivKey: CryptoKey){
 
 		let addressAttestObj = AsnParser.parse(base64ToUint8array(addressAttest), SignedLinkedAttestation);
 
@@ -90,7 +98,7 @@ export class AttestedAddress extends AbstractAuthentication {
 		console.log("Constructed link attestation: ");
 		console.log(linkAttest);
 
-		return encodedLinkAttest;
+		return uint8arrayToBase64(encodedLinkAttest);
 	}
 
 }

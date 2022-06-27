@@ -29,6 +29,7 @@ export interface OnChainTokenConfig extends IssuerConfigInterface {
 
 export interface IssuerConfigInterface {
     collectionID: string;
+    onChain: boolean;
     title?: string;
     image?: string;
 }
