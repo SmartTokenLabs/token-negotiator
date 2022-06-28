@@ -1,5 +1,5 @@
 import {AsnProp, AsnPropTypes, IAsnConverter} from "@peculiar/asn1-schema";
-import * as asn1 from "@peculiar/asn1-schema/node_modules/asn1js";
+import * as asn1 from "asn1js";
 
 const EpochIntegerConverter: IAsnConverter = {
 	fromASN: (value) => {

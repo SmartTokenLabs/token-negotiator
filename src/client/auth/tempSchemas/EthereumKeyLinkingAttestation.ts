@@ -1,6 +1,6 @@
 import {AsnProp, AsnPropTypes} from "@peculiar/asn1-schema";
 import {EpochTimeValidity} from "./EpochTimeValidity";
-import {AlgorithmIdentifierASN} from "@tokenscript/attestation/dist/asn1/shemas/AuthenticationFramework";
+import {AlgorithmIdentifierASN} from "./AlgoritmIdentifierASN";
 import {SignedLinkedAttestation} from "./SignedLinkedAttestation";
 
 export class EthereumKeyLinkingAttestation {

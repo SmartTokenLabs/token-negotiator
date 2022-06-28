@@ -381,16 +381,17 @@ export class Client {
 
 			logger(2,"Ticket proof successfully validated.");
 
-			this.eventSender.emitProofToClient(res.data.proof, res.data.issuer);
+			this.eventSender.emitProofToClient(res.data, issuer);
 		} catch (err) {
 			logger(2,err);
 			this.handleProofError(err, issuer);
-		}
-
-		if (this.popup) {
-			if (timer) clearTimeout(timer);
-			this.popup.dismissLoader();
-			this.popup.closeOverlay();
+			throw err;
+		} finally {
+			if (this.popup) {
+				if (timer) clearTimeout(timer);
+				this.popup.dismissLoader();
+				this.popup.closeOverlay();
+			}
 		}
 
 		return res;

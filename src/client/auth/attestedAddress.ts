@@ -15,8 +15,7 @@ import {
 } from "./tempSchemas/EthereumKeyLinkingAttestation";
 import {EpochTimeValidity} from "./tempSchemas/EpochTimeValidity";
 import {SafeConnectProvider} from "../../wallet/SafeConnectProvider";
-import {AlgorithmIdentifierASN} from "@tokenscript/attestation/dist/asn1/shemas/AuthenticationFramework";
-import {KeyStore} from "./util/KeyStore";
+import {AlgorithmIdentifierASN} from "./tempSchemas/AlgoritmIdentifierASN";
 
 export class AttestedAddress extends AbstractAuthentication {
 
@@ -53,7 +52,7 @@ export class AttestedAddress extends AbstractAuthentication {
 				throw new Error("Could not get address attestation from safe connect");
 		}
 
-		let addrAttest = currentProof?.data.attestation;
+		let addrAttest = currentProof.data.attestation;
 
 		let linkAttestation = await AttestedAddress.createAndSignLinkAttestation(addrAttest, request.options.address, await safeConnect.getLinkSigningKey());
 

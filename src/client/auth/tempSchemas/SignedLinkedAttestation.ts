@@ -1,5 +1,5 @@
 import {AsnProp, AsnPropTypes, AsnType, AsnTypeTypes} from "@peculiar/asn1-schema";
-import {AlgorithmIdentifierASN} from "@tokenscript/attestation/dist/asn1/shemas/AuthenticationFramework";
+import {AlgorithmIdentifierASN} from "./AlgoritmIdentifierASN";
 import {EthereumAddressAttestation} from "./EthereumAddressAttestation";
 
 @AsnType({ type: AsnTypeTypes.Choice })
