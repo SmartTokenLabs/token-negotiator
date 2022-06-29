@@ -40,6 +40,7 @@
     "@babel/plugin-syntax-dynamic-import": "^7.8.3",
     "@babel/preset-env": "^7.15.8",
     "@types/create-hash": "^1.2.2",
+    "@types/elliptic": "^6.4.14",
     "@types/jest": "^27.0.2",
     "@types/keccak": "^3.0.1",
     "@types/readable-stream": "^2.3.13",
