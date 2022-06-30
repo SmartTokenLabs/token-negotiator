@@ -8,14 +8,14 @@ import {
 	uint8arrayToBase64,
 	uint8tohex
 } from "@tokenscript/attestation/dist/libs/utils";
-import {SignedLinkedAttestation} from "./tempSchemas/SignedLinkedAttestation";
+import {SignedLinkedAttestation} from "@tokenscript/attestation/dist/asn1/shemas/SignedLinkedAttestation";
 import {
 	EthereumKeyLinkingAttestation,
 	SignedEthereumKeyLinkingAttestation
-} from "./tempSchemas/EthereumKeyLinkingAttestation";
-import {EpochTimeValidity} from "./tempSchemas/EpochTimeValidity";
+} from "@tokenscript/attestation/dist/asn1/shemas/EthereumKeyLinkingAttestation";
+import {EpochTimeValidity} from "@tokenscript/attestation/dist/asn1/shemas/EpochTimeValidity";
 import {SafeConnectProvider} from "../../wallet/SafeConnectProvider";
-import {AlgorithmIdentifierASN} from "./tempSchemas/AlgoritmIdentifierASN";
+import {AlgorithmIdentifierASN} from "@tokenscript/attestation/dist/asn1/shemas/AuthenticationFramework";
 
 export class AttestedAddress extends AbstractAuthentication {
 
