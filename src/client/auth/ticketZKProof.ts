@@ -13,7 +13,6 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 
 	private messaging = new Messaging();
 
-	// TODO: Saving of proof to local storage, requires validity testing of attestation
 	async getTokenProof(issuerConfig: OnChainTokenConfig | OffChainTokenConfig, tokens: Array<any>, web3WalletProvider: Web3WalletProvider, request: AuthenticateInterface): Promise<AuthenticationResult> {
 
 		if (issuerConfig.onChain === true)
@@ -27,8 +26,8 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 				...request.options,
 				unEndPoint: issuerConfig.unEndPoint
 			};
-			let res = await unChallenge.getTokenProof(issuerConfig, tokens, web3WalletProvider, request);
-			useEthKey = res.data as UNInterface;
+			let unRes = await unChallenge.getTokenProof(issuerConfig, tokens, web3WalletProvider, request);
+			useEthKey = unRes.data as UNInterface;
 		}
 
 		let res = await this.messaging.sendMessage({

@@ -1,6 +1,5 @@
 import { ethers } from "ethers";
 import { logger } from "../utils";
-import {SafeConnectProvider} from "./SafeConnectProvider";
 
 export class Web3WalletProvider {
 

@@ -59,29 +59,27 @@ export class KeyStore {
 	async getKey(id: string): Promise<StoredKey>{
 
 		return new Promise((resolve, reject) => {
-			try {
-				this.getDb().then((db) => {
 
-					let transaction = db.transaction(KeyStore.TABLE_NAME, "readonly");
+			this.getDb().then((db) => {
 
-					let store = transaction.objectStore(KeyStore.TABLE_NAME);
+				let transaction = db.transaction(KeyStore.TABLE_NAME, "readonly");
 
-					let data = store.get(id);
+				let store = transaction.objectStore(KeyStore.TABLE_NAME);
 
-					data.onsuccess = () => {
-						resolve(data.result as StoredKey);
-						db.close();
-					};
+				let data = store.get(id);
 
-					data.onerror = (e) => {
-						reject(e);
-					};
-				});
+				data.onsuccess = () => {
+					resolve(data.result as StoredKey);
+					db.close();
+				};
 
-			} catch (e: any) {
+				data.onerror = (e) => {
+					reject(e);
+				};
+			}).catch((e: any) => {
 				console.log(e);
 				reject(e.message);
-			}
+			});
 		});
 	}
 

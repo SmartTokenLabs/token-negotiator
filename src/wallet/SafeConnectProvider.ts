@@ -3,7 +3,7 @@ import {uint8tohex} from "@tokenscript/attestation/dist/libs/utils";
 import {KeyStore} from "../client/auth/util/KeyStore";
 import {AuthenticationResult} from "../client/auth/abstractAuthentication";
 import {AttestedAddress} from "../client/auth/attestedAddress";
-import {SafeConnectChallenge} from "../client/auth/safeConnectChallenge";
+// import {SafeConnectChallenge} from "../client/auth/safeConnectChallenge";
 
 export enum SafeConnectAction {
 	CONNECT = "connect",

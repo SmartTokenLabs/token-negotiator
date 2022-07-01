@@ -16,7 +16,7 @@ export class AttestedAddress extends AbstractAuthentication implements Authentic
 
 	TYPE = "attestedAddress";
 
-	async getTokenProof(issuerConfig: OnChainTokenConfig | OffChainTokenConfig, tokens: Array<any>, web3WalletProvider: Web3WalletProvider, request: AuthenticateInterface): Promise<AuthenticationResult> {
+	async getTokenProof(issuerConfig: OnChainTokenConfig | OffChainTokenConfig, _tokens: Array<any>, web3WalletProvider: Web3WalletProvider, request: AuthenticateInterface): Promise<AuthenticationResult> {
 
 		if (!issuerConfig.onChain)
 			throw new Error(this.TYPE + " is not available for off-chain tokens.");
