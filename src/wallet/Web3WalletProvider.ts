@@ -1,4 +1,3 @@
-import Web3 from "web3";
 import { ethers } from "ethers";
 import { logger } from "../utils";
 
@@ -134,9 +133,8 @@ export class Web3WalletProvider {
 		await torus.init();
 
 		await torus.login();
-        
-		// @ts-ignore
-		const web3 = new Web3(torus.provider);
+
+		const web3 = new ethers.providers.Web3Provider(torus.provider);
 
 		const { accounts, chainId } = await this.getWeb3ChainIdAndAccounts( web3 );
 
