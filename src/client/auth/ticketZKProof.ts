@@ -1,4 +1,4 @@
-import {AbstractAuthentication, AuthenticationResult} from "./abstractAuthentication";
+import {AbstractAuthentication, AuthenticationMethod, AuthenticationResult} from "./abstractAuthentication";
 import {AuthenticateInterface, OffChainTokenConfig, OnChainTokenConfig} from "../interface";
 import Web3WalletProvider from "../../wallet/Web3WalletProvider";
 import {OutletAction} from "../messaging";
@@ -7,7 +7,7 @@ import {Messaging} from "../../core/messaging";
 import {SignedUNChallenge} from "./signedUNChallenge";
 import {UNInterface} from "./util/UN";
 
-export class TicketZKProof extends AbstractAuthentication {
+export class TicketZKProof extends AbstractAuthentication implements AuthenticationMethod {
 
 	TYPE = "ticketZKProof";
 

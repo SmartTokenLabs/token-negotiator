@@ -1,13 +1,8 @@
-import {AbstractAuthentication, AuthenticationResult} from "./abstractAuthentication";
+import {AbstractAuthentication, AuthenticationMethod, AuthenticationResult} from "./abstractAuthentication";
 import {AuthenticateInterface, OffChainTokenConfig, OnChainTokenConfig} from "../interface";
 import Web3WalletProvider from "../../wallet/Web3WalletProvider";
 import {AsnParser, AsnSerializer} from "@peculiar/asn1-schema";
-import {
-	base64ToUint8array,
-	hexStringToUint8,
-	uint8arrayToBase64,
-	uint8tohex
-} from "@tokenscript/attestation/dist/libs/utils";
+import {base64ToUint8array, hexStringToUint8, uint8arrayToBase64} from "@tokenscript/attestation/dist/libs/utils";
 import {SignedLinkedAttestation} from "@tokenscript/attestation/dist/asn1/shemas/SignedLinkedAttestation";
 import {
 	EthereumKeyLinkingAttestation,
@@ -17,7 +12,7 @@ import {EpochTimeValidity} from "@tokenscript/attestation/dist/asn1/shemas/Epoch
 import {SafeConnectProvider} from "../../wallet/SafeConnectProvider";
 import {AlgorithmIdentifierASN} from "@tokenscript/attestation/dist/asn1/shemas/AuthenticationFramework";
 
-export class AttestedAddress extends AbstractAuthentication {
+export class AttestedAddress extends AbstractAuthentication implements AuthenticationMethod {
 
 	TYPE = "attestedAddress";
 
@@ -33,12 +28,10 @@ export class AttestedAddress extends AbstractAuthentication {
 
 		let currentProof: AuthenticationResult|null = this.getSavedProof(address);
 
-		// TODO: Proof validation
-		/* if (currentProof.data.expiration < Date.now()) {
-
+		if (currentProof.data.expiry < Date.now()) {
 			this.deleteProof(address);
 			currentProof = null;
-		}*/
+		}
 
 		let safeConnect = new SafeConnectProvider();
 
@@ -54,9 +47,7 @@ export class AttestedAddress extends AbstractAuthentication {
 
 		let addrAttest = currentProof.data.attestation;
 
-		let linkAttestation = await AttestedAddress.createAndSignLinkAttestation(addrAttest, request.options.address, await safeConnect.getLinkSigningKey());
-
-		currentProof.data.attestation = linkAttestation;
+		currentProof.data.attestation = await AttestedAddress.createAndSignLinkAttestation(addrAttest, request.options.address, await safeConnect.getLinkSigningKey());
 
 		return currentProof;
 	}
