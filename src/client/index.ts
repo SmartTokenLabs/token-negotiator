@@ -30,7 +30,8 @@ const defaultConfig: NegotiationInterface = {
 	},
 	autoLoadTokens: true,
 	autoEnableTokens: true,
-	autoPopup: true
+	autoPopup: true,
+	messagingForceTab: false
 }
 
 export class Client {
@@ -121,7 +122,7 @@ export class Client {
 						issuer: issuer,
 						filter: this.config.options.filters
 					}
-				});
+				}, this.config.messagingForceTab);
 			} catch (err) {
 				logger(2,err);
 				continue;
@@ -317,7 +318,7 @@ export class Client {
 					issuer: issuer,
 					filter: this.config.options.filters
 				},
-			});
+			}, this.config.messagingForceTab);
 
 			tokens = data.tokens;
 
@@ -373,7 +374,7 @@ export class Client {
 				address: authRequest.address ? authRequest.address : "",
 				wallet: authRequest.wallet ? authRequest.wallet : ""
 			}
-		});
+		}, this.config.messagingForceTab);
 
 		if (useEthKey)
 			Authenticator.validateUseTicket(
@@ -503,7 +504,7 @@ export class Client {
 			data: {
 				urlParams: params
 			}
-		});
+		}, this.config.messagingForceTab);
 
 		if (data.evt === OutletResponseAction.ISSUER_TOKENS) return data.tokens;
 
