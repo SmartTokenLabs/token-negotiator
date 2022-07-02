@@ -24,9 +24,9 @@ export const getNftTokens = async (
 export const tokenRequest = async (query:string) => {
 	try {
 		const response = await fetch(query);
-		if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-		return response.json();  
+		if (response.status.toString() !== "200") throw new Error(`HTTP error! status: ${response.status}`);
+		return response.json();
 	} catch (msg:any) {
-		throw new Error(`HTTP error!`);
+		throw new Error(`HTTP error.`);
 	}
 }
