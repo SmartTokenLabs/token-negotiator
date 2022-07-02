@@ -6,10 +6,10 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "npm run clean && tsc --outDir dist && npm run copy-assets",
-    "build-umd": "shx rm -rf token-negotiator-alpha-dist && webpack && npm run copy-assets-umd",
+    "build-umd": "shx rm -rf token-negotiator-dist && webpack && npm run copy-assets-umd",
     "clean": "shx rm -rf dist",
     "copy-assets": "copyfiles ./src/theme/*.css dist/theme -V --flat && copyfiles ./src/vendor/*.js dist/vendor -V --flat",
-    "copy-assets-umd": "copyfiles ./src/theme/*.css token-negotiator-alpha-dist/theme -V --flat && copyfiles ./src/vendor/*.js token-negotiator-alpha-dist/vendor -V --flat",
+    "copy-assets-umd": "copyfiles ./src/theme/*.css token-negotiator-dist/theme -V --flat && copyfiles ./src/vendor/*.js token-negotiator-dist/vendor -V --flat",
     "prepublishOnly": "npm run build",
     "lint": "eslint . --quiet",
     "test": "jest",

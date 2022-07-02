@@ -4,7 +4,7 @@ import { Messaging } from "../core/messaging";
 import { Popup } from "./popup";
 import { asyncHandle, logger, requiredParams } from "../utils";
 import {connectMetamaskAndGetAddress, getChallengeSigned, validateUseEthKey } from "../core";
-import OnChainTokenModule from "./../onChainTokenModule";
+import {getNftCollection, getNftTokens} from "../utils/token/nftProvider";
 import "./../vendor/keyShape";
 import { Authenticator } from "@tokenscript/attestation";
 import {TokenConfig, TokenStore} from "./tokenStore";
@@ -41,7 +41,6 @@ export class Client {
 	private messaging: Messaging;
 	private popup: Popup;
 	private clientCallBackEvents: {} = {};
-	private onChainTokenModule: OnChainTokenModule;
 	private tokenStore: TokenStore;
 	private uiUpdateCallbacks: {[id: string]: Function} = {}
 
@@ -59,11 +58,6 @@ export class Client {
 
 		if (this.config.issuers?.length > 0)
 			this.tokenStore.updateIssuers(this.config.issuers);
-
-		this.onChainTokenModule = new OnChainTokenModule(
-			this.config.onChainKeys,
-			this.config.ipfsBaseUrl
-		);
 
 		this.messaging = new Messaging();
 	}
@@ -147,7 +141,7 @@ export class Client {
 			if (tokenData.title)
 				continue;
 
-			let lookupData = await this.onChainTokenModule.getInitialContractAddressMetaData(tokenData);
+			let lookupData = await getNftCollection(tokenData);
 
 			if (lookupData) {
 				// TODO: this might be redundant
@@ -249,7 +243,7 @@ export class Client {
 
 			let issuer = issuers[issuerKey];
 
-			const tokens = await this.onChainTokenModule.connectOnChainToken(
+			const tokens = await getNftTokens(
 				issuer,
 				walletProvider.getConnectedWalletData()[0].address
 			);
@@ -304,7 +298,7 @@ export class Client {
 			requiredParams(issuer, "issuer is required.");
 			requiredParams(walletAddress, "wallet address is missing.");
 
-			tokens = await this.onChainTokenModule.connectOnChainToken(config, walletAddress);
+			tokens = await getNftTokens(config, walletAddress);
 
 			this.tokenStore.setTokens(issuer,  tokens);
 
