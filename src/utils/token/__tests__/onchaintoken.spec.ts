@@ -71,10 +71,26 @@ it("get nft collection meta from zed run", async () => {
 
 it("directly test tokenRequest() to fetch success", async () => {
   global.fetch = jest.fn(() => Promise.resolve({ status: 200, json: () => Promise.resolve(mockZedRunCollection) }));
-  const reqStr = await tokenRequest("https://api.token-discovery.tokenscript.org/get-token-collection?smartcontract=0x123&chain=eth");
+  const reqStr = await tokenRequest("https://api.token-discovery.tokenscript.org/get-token-collection?smartcontract=0x123&chain=eth", true);
   global.fetch.mockClear();
   delete global.fetch;
   expect(reqStr).toEqual(mockZedRunCollection);
+});
+
+it("directly test tokenRequest() to fetch silently fail", async () => {
+  global.fetch = jest.fn(() => Promise.resolve({ status: 500, json: () => Promise.resolve(mockZedRunCollection) }));
+  global.fetch.mockClear();
+  delete global.fetch;
+  expect(() => {
+    tokenRequest("https://api.token-discovery.tokenscript.org/get-token-collection?smartcontract=0x123&chain=eth", true);
+  }).toEqual(expect.any(Function));
+});
+
+it("get nft collection meta from zed run to silently fail", async () => {
+  global.fetch = jest.fn(() => Promise.resolve({ status: 500, json: () => Promise.resolve(mockZedRunCollection) }));
+  expect(async () => {
+    await getNftCollection({ contract: "0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656", chain: "rinkeby", openSeaSlug: "stl-rnd-zed" });
+  }).toEqual(expect.any(Function));
 });
 
 it("get nft collection token meta from punks", async () => {
@@ -84,5 +100,17 @@ it("get nft collection token meta from punks", async () => {
   delete global.fetch;
   expect(meta).toEqual(mockPunkTokens);
 });
+
+it("get nft collection token meta from punks to fail", async () => {
+  global.fetch = jest.fn(() => Promise.resolve({ status: 500, json: () => Promise.resolve(mockPunkTokens) }));
+  global.fetch.mockClear();
+  delete global.fetch;
+  let test = null;
+  try {
+    test = await getNftTokens({ contract: "0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656", chain: "rinkeby", openSeaSlug: "stl-rnd-zed" })
+    expect(test).toThrow(expect.any(Function));
+  } catch (e:any) {};
+});
+
 
 
