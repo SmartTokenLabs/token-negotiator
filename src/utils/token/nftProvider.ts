@@ -6,7 +6,7 @@ export const getNftCollection = async (
   issuer: OnChainTokenConfig
 ) => {
 	const { contract, chain, openSeaSlug } = issuer;
-	let query = `${baseURL}/get-token-collections?smartContract=${contract}&chain=${chain}`;
+	let query = `${baseURL}/get-token-collection?smartContract=${contract}&chain=${chain}`;
 	if(openSeaSlug) query += `&openSeaSlug=${openSeaSlug}`;
 	return tokenRequest(query, true);
 };
@@ -16,7 +16,7 @@ export const getNftTokens = async (
   owner: string
 ) => {
 	const { contract, chain, openSeaSlug } = issuer;
-	let query = `${baseURL}/get-owner-tokenss?smartContract=${contract}&chain=${chain}&owner=${owner}`;
+	let query = `${baseURL}/get-owner-tokens?smartContract=${contract}&chain=${chain}&owner=${owner}`;
 	if(openSeaSlug) query += `&openSeaSlug=${openSeaSlug}`;
 	return tokenRequest(query, false);
 };
