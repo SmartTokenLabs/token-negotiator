@@ -38,11 +38,11 @@ export class IconView {
 
 	}
 
-	onLoad(e: Event){
+	onLoad(_e: Event){
 		this.viewContainer.classList.remove('shimmer-tn');
 	}
 
-	onError(e: Event){
+	onError(_e: Event){
 		this.viewContainer.innerHTML = "";
 		this.viewContainer.appendChild(this.createAvatar());
 		this.viewContainer.classList.remove('shimmer-tn');
@@ -67,11 +67,8 @@ export class IconView {
 		if (!context)
 			return "";
 
-		// Draw background
 		context.fillStyle = this.getRandomBackgroundColor();
 		context.fillRect(0, 0, canvas.width, canvas.height);
-
-		// Draw text
 		context.font = "bold 100px 'Arial', sans-serif";
 		context.fillStyle = "#fff";
 		context.textAlign = "center";
@@ -92,7 +89,6 @@ export class IconView {
 	}
 
 	private getRandomBackgroundColor(){
-		// TODO: Add background colors
 		return "#0029a7";
 	}
 }
