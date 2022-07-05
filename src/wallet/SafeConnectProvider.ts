@@ -50,7 +50,7 @@ export class SafeConnectProvider {
 		return attest.data?.address;
 	}
 	
-	private processProofResult(attest){
+	private processProofResult(attest: any){
 
 		let proofModel: AbstractAuthentication;
 		let proofData: AuthenticationResult;

@@ -34,7 +34,7 @@ export class KeyStore {
 				attestHoldingKey = await subtle.generateKey(
 					{
 						name: algorithm,
-						modulusLength: 2048, // Unless this is 2048 for RSA-PSS, signing causes an error in firefox. Maybe the salt is too big for 1024?
+						modulusLength: 1024, // Unless this is 2048 for RSA-PSS, signing causes an error in firefox. Maybe the salt is too big for 1024?
 						publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
 						hash: {name: "SHA-256"}
 					},

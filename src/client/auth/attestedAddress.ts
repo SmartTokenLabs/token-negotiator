@@ -83,7 +83,7 @@ export class AttestedAddress extends AbstractAuthentication implements Authentic
 		);
 
 		linkAttest.signingAlgorithm = new AlgorithmIdentifierASN();
-		linkAttest.signingAlgorithm.algorithm = "2.16.840.1.101.3.4.3.14"; // RSASSA pkcs1 v1.5 with SHA 256
+		linkAttest.signingAlgorithm.algorithm = "1.2.840.113549.1.1.11"; // RSASSA pkcs1 v1.5 with SHA-256
 		linkAttest.signatureValue = new Uint8Array(linkSig);
 
 		const encodedLinkAttest = new Uint8Array(AsnSerializer.serialize(linkAttest));
