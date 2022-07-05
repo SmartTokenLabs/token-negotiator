@@ -40,7 +40,7 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 				address: request.address ? request.address : "",
 				wallet: request.wallet ? request.wallet : ""
 			}
-		});
+		}, request.options.messagingForceTab);
 
 		if (!res.data.proof)
 			throw new Error("Failed to get proof from the outlet.");
