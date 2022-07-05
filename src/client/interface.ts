@@ -1,6 +1,9 @@
 import { PopupOptionsInterface } from "./popup";
+import {AuthenticationMethod} from "./auth/abstractAuthentication";
+import {SafeConnectOptions} from "../wallet/SafeConnectProvider";
 
 export interface OffChainTokenConfig extends IssuerConfigInterface {
+    onChain: false,
     tokenName?: any;
     attestationOrigin?: any;
     tokenOrigin?: any;
@@ -14,19 +17,20 @@ export interface OffChainTokenConfig extends IssuerConfigInterface {
     tokenParser?: any;
     smartContractAddress?: any;
     symbol?: any;
-    base64senderPublicKeys?: {[key: string]: string};
-    base64attestorPubKey?: string;
+    base64senderPublicKeys: {[key: string]: string};
+    base64attestorPubKey: string;
 }
 
 export interface OnChainTokenConfig extends IssuerConfigInterface {
-    contract: string,
-    chain: string,
-    openSeaSlug?: string
+    onChain: true;
+    contract: string;
+    chain: string;
+    openSeaSlug?: string;
 }
 
 export interface IssuerConfigInterface {
-    collectionID: string,
-    onChain: boolean
+    collectionID: string;
+    onChain: boolean;
     title?: string;
     image?: string;
 }
@@ -44,6 +48,7 @@ export interface NegotiationInterface {
     autoEnableTokens?: boolean;
     autoPopup?: boolean;
     messagingForceTab?: boolean;
+    safeConnectOptions?: SafeConnectOptions;
 }
 
 // TODO: Implement tokenId - each issuer token should have a unique ID (tokenId for instance).
@@ -54,4 +59,6 @@ export interface AuthenticateInterface {
     unsignedToken: any;
     address?: string;
     wallet?: string;
+    type?: AuthenticationMethod;
+    options?: any;
 }

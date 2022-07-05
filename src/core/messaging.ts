@@ -16,7 +16,7 @@ export enum MessageActionBase {
 export interface ResponseInterfaceBase {
     evtid: any,
     evt: ResponseActionBase | string,
-    data?: {[key: string]: any},
+    data?: any,
 	errors?: string[]
 }
 
@@ -43,7 +43,7 @@ export class Messaging {
 		// Should we just check cookie support on initialisation or when requested?
 	}
 
-	async sendMessage(request: RequestInterfaceBase, forceTab = false){
+	async sendMessage(request: RequestInterfaceBase, forceTab = false): Promise<ResponseInterfaceBase> {
 
 		if (!forceTab && this.iframeStorageSupport === null) {
 			if (window.safari)
@@ -70,7 +70,7 @@ export class Messaging {
 		}
 	}
 
-	private sendIframe(request: RequestInterfaceBase){
+	private sendIframe(request: RequestInterfaceBase): Promise<ResponseInterfaceBase>{
 
 		return new Promise((resolve, reject) => {
 
@@ -97,7 +97,7 @@ export class Messaging {
 		});
 	}
 
-	private sendPopup(request: RequestInterfaceBase){
+	private sendPopup(request: RequestInterfaceBase): Promise<ResponseInterfaceBase>{
 
 		return new Promise((resolve, reject) => {
 
@@ -112,6 +112,16 @@ export class Messaging {
 
 			tabRef = this.openTab(this.constructUrl(id, request));
 
+			let tabCloseCheck = setInterval(()=>{
+				if (!tabRef || tabRef.closed) {
+					clearInterval(tabCloseCheck);
+					if (this.rejectHandler) {
+						this.rejectHandler("Popup closed or blocked");
+						this.rejectHandler = null;
+					}
+				}
+			}, 500);
+
 		});
 
 	}
@@ -120,7 +130,10 @@ export class Messaging {
 
 		let received = false;
 		let timer: any = null;
-		this.rejectHandler = reject;
+		this.rejectHandler = (msg: string) => {
+			reject(msg);
+			afterResolveOrError();
+		};
 
 		let listener = (event: any) => {
 
@@ -159,7 +172,7 @@ export class Messaging {
 
 						return;
 					} else {
-						resolve({evt: response.evt, ...response.data});
+						resolve(response);
 					}
 
 					afterResolveOrError();
@@ -260,8 +273,7 @@ export class Messaging {
 	public openTab(url: string){
 		return window.open(
 			url,
-			"win1",
-			"left=0,top=0,width=320,height=320"
+			"_blank"
 		);
 	}
 
