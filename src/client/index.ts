@@ -380,7 +380,10 @@ export class Client {
 		let res;
 
 		try {
-			authRequest.options.messagingForceTab = this.config.messagingForceTab;
+			if (!authRequest.options)
+				authRequest.options = {};
+
+			authRequest.options?.messagingForceTab = this.config.messagingForceTab;
 
 			res = await authenticator.getTokenProof(config, [authRequest.unsignedToken], this.web3WalletProvider, authRequest);
 
