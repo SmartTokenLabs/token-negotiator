@@ -1,6 +1,5 @@
 // @ts-nocheck
-import { Client } from "./../index";
-import {Challenge} from "../challenge";
+import { Client } from "../index";
 
 function getOffChainConfigClient() {
 	return new Client({

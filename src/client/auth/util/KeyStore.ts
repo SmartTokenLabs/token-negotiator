@@ -1,6 +1,6 @@
 import {hexStringToUint8, uint8tohex} from "@tokenscript/attestation/dist/libs/utils";
 
-let subtle: SubtleCrypto = crypto.subtle;
+let subtle: SubtleCrypto = window.crypto.subtle;
 
 export interface StoredKey {
 	id: string;
