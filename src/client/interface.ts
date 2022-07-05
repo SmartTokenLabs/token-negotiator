@@ -1,5 +1,6 @@
 import { PopupOptionsInterface } from "./popup";
 import {AuthenticationMethod} from "./auth/abstractAuthentication";
+import {SafeConnectOptions} from "../wallet/SafeConnectProvider";
 
 export interface OffChainTokenConfig extends IssuerConfigInterface {
     onChain: false,
@@ -47,7 +48,7 @@ export interface NegotiationInterface {
     autoEnableTokens?: boolean;
     autoPopup?: boolean;
     messagingForceTab?: boolean;
-    safeConnectUrl?: string;
+    safeConnectOptions?: SafeConnectOptions;
 }
 
 // TODO: Implement tokenId - each issuer token should have a unique ID (tokenId for instance).

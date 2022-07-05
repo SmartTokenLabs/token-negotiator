@@ -17,7 +17,7 @@ export interface AuthenticationMethod {
 
 export abstract class AbstractAuthentication {
 
-	protected abstract TYPE: string;
+	public abstract TYPE: string;
 
 	public static STORAGE_KEY = "tn-proof";
 
@@ -57,7 +57,7 @@ export abstract class AbstractAuthentication {
 	}
 
 	private getFullKey(key: string){
-		return this.TYPE + "-" + key;
+		return this.TYPE + "-" + key.toLowerCase();
 	}
 
 	private getProofs(): {[key: string]: AuthenticationResult}{
