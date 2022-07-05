@@ -85,11 +85,15 @@ export class Client {
 		this.uiUpdateCallbacks[id] = callback;
 	}
 
+	public safeConnectAvailable(){
+		return !!this.config.safeConnectUrl;
+	}
+
 	private async getWalletProvider(){
 
 		if (!this.web3WalletProvider){
 			const {Web3WalletProvider} = await import("./../wallet/Web3WalletProvider");
-			this.web3WalletProvider = new Web3WalletProvider();
+			this.web3WalletProvider = new Web3WalletProvider(this.config.safeConnectUrl);
 		}
 
 		return this.web3WalletProvider;

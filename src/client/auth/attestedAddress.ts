@@ -18,6 +18,9 @@ export class AttestedAddress extends AbstractAuthentication implements Authentic
 
 	async getTokenProof(issuerConfig: OnChainTokenConfig | OffChainTokenConfig, _tokens: Array<any>, web3WalletProvider: Web3WalletProvider, request: AuthenticateInterface): Promise<AuthenticationResult> {
 
+		if (!web3WalletProvider.safeConnectAvailable())
+			throw new Error("Safe connect is not available");
+
 		if (!issuerConfig.onChain)
 			throw new Error(this.TYPE + " is not available for off-chain tokens.");
 
@@ -33,7 +36,7 @@ export class AttestedAddress extends AbstractAuthentication implements Authentic
 			currentProof = null;
 		}
 
-		let safeConnect = new SafeConnectProvider();
+		let safeConnect = await web3WalletProvider.getSafeConnectProvider();
 
 		if (!currentProof){
 

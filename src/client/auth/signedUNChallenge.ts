@@ -38,33 +38,34 @@ export class SignedUNChallenge extends AbstractAuthentication implements Authent
 				}
 			};
 
+			let endpoint = request.options?.unEndpoint ?? SignedUNChallenge.DEFAULT_ENDPOINT;
+
+			const challenge = await UN.getNewUN(endpoint);
+			let signature;
+
 			if (walletConnection instanceof SafeConnectProvider){
 
-				throw new Error("Safe connect does not support this authentication type.");
+				signature = await walletConnection.signUNChallenge(challenge);
 
 			} else {
 
-				let endpoint = request.options?.unEndpoint ?? SignedUNChallenge.DEFAULT_ENDPOINT;
-
-				const challenge = await UN.getNewUN(endpoint);
-
-				const signature = await web3WalletProvider.signWith(
+				signature = await web3WalletProvider.signWith(
 					challenge.messageToSign,
 					walletConnection
 				);
-
-				// Check that recovered address matches the signature of the requested address
-				challenge.signature = signature;
-				let recoveredAddr = UN.recoverAddress(challenge);
-
-				if (recoveredAddr !== address.toLowerCase()){
-					throw new Error("Address signature is invalid");
-				}
-
-				challenge.address = recoveredAddr;
-
-				currentProof.data = challenge;
 			}
+
+			// Check that recovered address matches the signature of the requested address
+			challenge.signature = signature;
+			let recoveredAddr = UN.recoverAddress(challenge);
+
+			if (recoveredAddr !== address.toLowerCase()){
+				throw new Error("Address signature is invalid");
+			}
+
+			challenge.address = recoveredAddr;
+
+			currentProof.data = challenge;
 
 			this.saveProof(address, currentProof);
 		}

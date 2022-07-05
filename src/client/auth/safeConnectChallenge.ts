@@ -9,6 +9,9 @@ export class SafeConnectChallenge extends AbstractAuthentication implements Auth
 
 	async getTokenProof(issuerConfig: OnChainTokenConfig | OffChainTokenConfig, _tokens: Array<any>, web3WalletProvider: Web3WalletProvider, _request: AuthenticateInterface): Promise<AuthenticationResult> {
 
+		if (!web3WalletProvider.safeConnectAvailable())
+			throw new Error("Safe connect is not available");
+
 		if (!issuerConfig.onChain)
 			throw new Error(this.TYPE + " is not available for off-chain tokens.");
 
@@ -22,7 +25,7 @@ export class SafeConnectChallenge extends AbstractAuthentication implements Auth
 			currentProof = null;
 		}
 
-		let safeConnect = new SafeConnectProvider();
+		let safeConnect = await web3WalletProvider.getSafeConnectProvider();
 
 		if (!currentProof){
 
@@ -35,7 +38,7 @@ export class SafeConnectChallenge extends AbstractAuthentication implements Auth
 				currentProof = this.getSavedProof(address);
 
 				if (!currentProof)
-					throw new Error("Could not get address attestation from safe connect");
+					throw new Error("Could not get proof from safe connect");
 
 			} else {
 

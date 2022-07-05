@@ -47,6 +47,7 @@ export interface NegotiationInterface {
     autoEnableTokens?: boolean;
     autoPopup?: boolean;
     messagingForceTab?: boolean;
+    safeConnectUrl?: string;
 }
 
 // TODO: Implement tokenId - each issuer token should have a unique ID (tokenId for instance).
