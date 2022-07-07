@@ -1,8 +1,8 @@
 import { Client } from "../index";
-import { Popup } from "../popup";
+import { Ui } from "../ui";
 
 export interface ViewConstructor<T> {
-	new (client: Client, popup: Popup, viewContainer: any, params: any): T;
+	new (client: Client, popup: Ui, viewContainer: any, params: any): T;
 }
 
 export interface ViewInterface {
@@ -13,18 +13,19 @@ export interface ViewInterface {
 
 export abstract class AbstractView implements ViewInterface {
 	client: Client;
-	popup: Popup;
+	ui: Ui;
 	viewContainer: any;
 	params: any = {};
 
-	constructor(client: Client, popup: Popup, viewContainer: any, params: any) {
+	constructor(client: Client, popup: Ui, viewContainer: any, params: any) {
 		this.client = client;
-		this.popup = popup;
+		this.ui = popup;
 		this.viewContainer = viewContainer;
 		this.params = params;
 		this.init();
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-empty-function
 	public init(): void {}
 
 	abstract render(): void;

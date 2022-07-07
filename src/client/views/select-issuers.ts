@@ -51,7 +51,7 @@ export class SelectIssuers extends AbstractView {
 
 		let tokensListElem = this.tokensContainer.getElementsByClassName("token-list-container-tn")[0];
 
-		this.tokenListView = new TokenList(this.client, this.popup, tokensListElem, {});
+		this.tokenListView = new TokenList(this.client, this.ui, tokensListElem, {});
 
 		this.autoLoadTokens();
 
@@ -167,20 +167,20 @@ export class SelectIssuers extends AbstractView {
 
 		let tokens: any[] = [];
 
-		this.popup.showLoader("<h4>Loading tokens...</h4>");
+		this.ui.showLoader("<h4>Loading tokens...</h4>");
 
 		try {
 			tokens = await this.client.connectTokenIssuer(issuer);
 		} catch (err){
 			logger(2, err);
-			this.popup.showError((err as string));
+			this.ui.showError((err as string));
 			return;
 		}
 
-		this.popup.dismissLoader();
+		this.ui.dismissLoader();
 
 		if (!tokens?.length){
-			this.popup.showError("No tokens found!");
+			this.ui.showError("No tokens found!");
 			return;
 		}
 

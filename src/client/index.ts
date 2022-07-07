@@ -1,7 +1,7 @@
 // @ts-nocheck
 import {OutletAction, OutletResponseAction} from "./messaging";
 import { Messaging } from "../core/messaging";
-import { Popup } from "./popup";
+import { Ui } from "./ui";
 import { asyncHandle, logger, requiredParams } from "../utils";
 import {connectMetamaskAndGetAddress, getChallengeSigned, validateUseEthKey } from "../core";
 import {getNftCollection, getNftTokens} from "../utils/token/nftProvider";
@@ -27,6 +27,8 @@ const defaultConfig: NegotiationInterface = {
 	issuers: [],
 	options: {
 		overlay: {
+			uiType: "popup",
+			containerElement: ".overlay-tn",
 			openingHeading: "Validate your token ownership for access",
 			issuerHeading: "Detected tokens"
 		},
@@ -44,7 +46,7 @@ export class Client {
 	private config: NegotiationInterface;
 	private web3WalletProvider: Web3WalletProvider;
 	private messaging: Messaging;
-	private popup: Popup;
+	private ui: Ui;
 	private clientCallBackEvents: {} = {};
 	private tokenStore: TokenStore;
 	private uiUpdateCallbacks: {[id: string]: Function} = {}
@@ -54,6 +56,9 @@ export class Client {
 	}
 
 	constructor(config: NegotiationInterface) {
+
+		let overlayConfig = {...defaultConfig.options.overlay, ...config?.options?.overlay};
+		config.options = {filters: config.options.filters, overlay: overlayConfig}
 
 		this.config = Object.assign(defaultConfig, config);
 
@@ -186,12 +191,12 @@ export class Client {
 
 		let autoOpenPopup;
 
-		if (this.popup) {
+		if (this.ui) {
 			autoOpenPopup = this.tokenStore.hasUnloadedTokens();
 			this.triggerUiUpdateCallbacks();
 		} else {
-			this.popup = new Popup(this.config.options?.overlay, this);
-			this.popup.initialize();
+			this.ui = new Ui(this.config.options?.overlay, this);
+			this.ui.initialize();
 			autoOpenPopup = true;
 		}
 
@@ -200,7 +205,7 @@ export class Client {
 			this.eventSender.emitSelectedTokensToClient(this.tokenStore.getSelectedTokens())
 
 		if (openPopup || (this.config.autoPopup === true && autoOpenPopup))
-			this.popup.openOverlay();
+			this.ui.openOverlay();
 	}
 
 	private cancelAutoload = true;
@@ -360,13 +365,13 @@ export class Client {
 		// TODO: How to handle error display in passive negotiation? Use optional UI or emit errors to listener?
 		let timer;
 
-		if (this.popup) {
+		if (this.ui) {
 			timer = setTimeout(() => {
-				this.popup.showLoader(
+				this.ui.showLoader(
 					"<h4>Authenticating...</h4>",
 					"<small>You may need to sign a new challenge in your wallet</small>"
 				);
-				this.popup.openOverlay();
+				this.ui.openOverlay();
 			}, 1000);
 		}
 
@@ -398,19 +403,19 @@ export class Client {
 			logger(2,err);
 			this.handleProofError(err, issuer);
 			throw err;
-		} finally {
-			if (this.popup) {
-				if (timer) clearTimeout(timer);
-				this.popup.dismissLoader();
-				this.popup.closeOverlay();
-			}
+		}
+
+		if (this.ui) {
+			if (timer) clearTimeout(timer);
+			this.ui.dismissLoader();
+			this.ui.closeOverlay();
 		}
 
 		return res;
 	}
 
 	private handleProofError(err, issuer) {
-		if (this.popup) this.popup.showError(err);
+		if (this.ui) this.ui.showError(err.message ?? err);
 		this.eventSender.emitProofToClient(null, issuer, err);
 	}
 
