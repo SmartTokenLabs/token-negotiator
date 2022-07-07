@@ -41,6 +41,8 @@ export class Ui {
 	viewContainer: any;
 	loadContainer: any;
 	currentView: ViewInterface|undefined;
+	retryCallback?: Function;
+	retryButton: any;
 
 	constructor(options: UIOptionsInterface, client: Client) {
 		this.options = options;
@@ -61,8 +63,16 @@ export class Ui {
 
 			this.viewContainer = this.popupContainer.querySelector(".view-content-tn");
 			this.loadContainer = this.popupContainer.querySelector(".load-container-tn");
+			this.retryButton = this.loadContainer.querySelector('.dismiss-error-tn');
 
-			this.loadContainer.querySelector('.dismiss-error-tn').addEventListener('click', this.dismissLoader.bind(this));
+			this.retryButton.addEventListener('click', () => {
+				this.dismissLoader();
+				if (this.retryCallback) {
+					this.retryCallback();
+					this.retryCallback = undefined;
+					this.retryButton.innerText = "Dismiss";
+				}
+			});
 
 			this.updateUI(Start);
 
@@ -156,11 +166,16 @@ export class Ui {
 	showError(...message: string[]){
 
 		this.loadContainer.querySelector('.loader-tn').style.display = 'none';
-		this.loadContainer.querySelector('.dismiss-error-tn').style.display = 'block';
+		this.retryButton.style.display = 'block';
 
 		this.loadContainer.querySelector('.loader-msg-tn').innerHTML = message.join("\n");
 
 		this.loadContainer.style.display = 'flex';
+	}
+
+	setErrorRetryCallback(retryCallback?: Function){
+		this.retryCallback = retryCallback;
+		this.retryButton.innerText = "Retry";
 	}
 
 	showLoader(...message: string[]){

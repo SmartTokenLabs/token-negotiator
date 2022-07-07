@@ -81,6 +81,10 @@ export class Client {
 		return this.tokenStore;
 	}
 
+	getUi(){
+		return this.ui;
+	}
+
 	triggerUiUpdateCallback(type: UIUpdateEventType, data?: {}){
 		if (this.uiUpdateCallbacks[type])
 			this.uiUpdateCallbacks[type](data);
@@ -385,7 +389,7 @@ export class Client {
 					"<small>You may need to sign a new challenge in your wallet</small>"
 				);
 				this.ui.openOverlay();
-			}, 1000);
+			}, 600);
 		}
 
 		let AuthType;

@@ -319,11 +319,11 @@
   flex-direction: column;
   height: 266px;
   width: 355px;
+  overflow: hidden;
 }
 
 .overlay-tn.popup-tn .overlay-content-tn {
   pointer-events: none;
-  overflow: hidden;
   opacity: 0;
   visibility: hidden;
   position: absolute;
@@ -524,6 +524,7 @@
 }
 .lds-ellipsis div {
   position: absolute;
+  display: block;
   top: 16px;
   width: 13px;
   height: 13px;
