@@ -53,7 +53,6 @@
   border-bottom-left-radius: 10px;
   border-bottom-right-radius: 4px;
   border-top-left-radius: 3px;
-  overflow: hidden;
   border-top: 4px solid black;
 }
 
@@ -324,7 +323,8 @@
 
 .overlay-tn.popup-tn .overlay-content-tn {
   pointer-events: none;
-  overflow: scroll;
+  overflow: hidden;
+  opacity: 0;
   visibility: hidden;
   position: absolute;
   right: 0;
@@ -589,7 +589,7 @@
 li.issuer-connect-banner-tn {
   list-style-type:none;
   display: flex;
-  justify-content: space-between; 
+  justify-content: space-between;
   align-items: center;
   padding: 12px;
   /* height: 2.7rem; */
@@ -615,14 +615,14 @@ li.token-tn, .load-more-tn {
 }
 
 .opening-btn-tn, li.issuer-connect-banner-tn .connect-btn-tn, li.issuer-connect-banner-tn .tokens-btn-tn, .btn-tn {
-    font-size: 0.75em;
-    font-weight: 200;
-    border: none;
-    padding: 7px 15px 7px 15px;
-    border-radius: 23px;
-    cursor: pointer;
-    color: white;
-    background: #101010;
+  font-size: 0.75em;
+  font-weight: 200;
+  border: none;
+  padding: 7px 15px 7px 15px;
+  border-radius: 23px;
+  cursor: pointer;
+  color: white;
+  background: #101010;
 }
 
 .dismiss-error-tn {
@@ -717,10 +717,10 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
 }
 
 .overlay-tn .overlay-content-tn .wallet-selection-view-tn {
-  position: absolute; 
-  z-index: 100; 
-  height: inherit; 
-  width: 100%; 
+  position: absolute;
+  z-index: 100;
+  height: inherit;
+  width: 100%;
   background: white;
 }
 
@@ -743,17 +743,17 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
   display: flex;
   align-items: center;
   justify-content: center;
-  position: absolute; 
-  z-index: 100; 
-  height: calc(100% - 4px); 
-  width: 100%; 
+  position: absolute;
+  z-index: 100;
+  height: calc(100% - 4px);
+  width: 100%;
 }
 
 .overlay-tn .overlay-content-tn .opening-content-view-tn  {
-  position: absolute; 
-  z-index: 100; 
-  height: 100%; 
-  width: 100%; 
+  position: absolute;
+  z-index: 100;
+  height: 100%;
+  width: 100%;
 }
 
 .view-content-tn  {
@@ -785,12 +785,12 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
 .overlay-tn .wallet-button-tn {
   margin: 16px;
   background: none;
-	color: inherit;
-	border: none;
-	padding: 0;
-	font: inherit;
-	cursor: pointer;
-	outline: inherit;
+  color: inherit;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  outline: inherit;
   width: 132px;
   opacity: .8;
 }
@@ -811,7 +811,7 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
   transform: translateX(-100%);
   background-image: linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0));
   -webkit-animation: shimmer 2s infinite;
-          animation: shimmer 2s infinite;
+  animation: shimmer 2s infinite;
   content: "";
 }
 @-webkit-keyframes shimmer {
@@ -851,7 +851,7 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
   0% {
     d: path('M53,1C53,1,53,1,53,1C53,1,53,12.9,53,12.9L53,19C53,19,53,26,53,26C53,26,40.2,26,40.2,26L34.1,26C34.1,26,28,26,28,26C28,26,28,12.6,28,12.6L28,7.4C28,7.4,28,1,28,1C28,1,40.6,1,40.6,1C40.6,1,45.9,1,45.9,1Z');
     animation-timing-function: cubic-bezier(0, 0, .6, 1)
-  } 
+  }
 
   100% {
     d: path('M29,1.4C29.4,1,29.9,.8,30.4,.8C30.9,.8,31.5,1,31.8,1.4L32.8,2.4C33.2,2.7,33.4,3.3,33.4,3.8C33.4,4.3,33.2,4.8,32.8,5.2L5.2,32.8C4.8,33.2,4.3,33.4,3.8,33.4C3.3,33.4,2.8,33.2,2.4,32.8L1.4,31.8C1,31.5,.8,30.9,.8,30.4C.8,29.9,1,29.4,1.4,29C1.4,29,29,1.4,29,1.4Z')

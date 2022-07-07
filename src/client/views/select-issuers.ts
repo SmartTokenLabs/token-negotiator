@@ -2,12 +2,25 @@ import {AbstractView} from "./view-interface";
 import {TokenListItemInterface, TokenList} from "./token-list";
 import {IconView} from "./icon-view";
 import { logger } from "../../utils";
+import {UIUpdateEventType} from "../index";
 
 export class SelectIssuers extends AbstractView {
 
 	issuerListContainer: any;
 	tokensContainer: any;
 	tokenListView: TokenList|undefined;
+
+	init(){
+		this.client.registerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADING, ()=> {
+			this.issuersLoading();
+		});
+
+		this.client.registerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADED, ()=> {
+			this.ui.dismissLoader();
+			this.client.cancelTokenAutoload();
+			this.render();
+		});
+	}
 
 	render(){
 
@@ -53,8 +66,16 @@ export class SelectIssuers extends AbstractView {
 
 		this.tokenListView = new TokenList(this.client, this.ui, tokensListElem, {});
 
-		this.autoLoadTokens();
+		if (this.client.issuersLoaded) {
+			this.autoLoadTokens();
+		} else {
+			this.issuersLoading();
+		}
 
+	}
+
+	issuersLoading(){
+		this.ui.showLoader("<h4>Loading contract data...</h4>");
 	}
 
 	// TODO: back to wallet selection?
@@ -94,10 +115,6 @@ export class SelectIssuers extends AbstractView {
 			}
 		});
 
-		this.client.registerUiUpdateCallback("select-issuers", ()=> {
-			this.client.cancelTokenAutoload();
-			this.render();
-		});
 	}
 
 	issuerConnectMarkup(title: string, image: string|undefined, issuer: string, tokens: []|null){

@@ -3,7 +3,6 @@ import {OutletAction, OutletResponseAction} from "./messaging";
 import { Messaging } from "../core/messaging";
 import { Ui } from "./ui";
 import { asyncHandle, logger, requiredParams } from "../utils";
-import {connectMetamaskAndGetAddress, getChallengeSigned, validateUseEthKey } from "../core";
 import {getNftCollection, getNftTokens} from "../utils/token/nftProvider";
 import "./../vendor/keyShape";
 import { Authenticator } from "@tokenscript/attestation";
@@ -40,17 +39,23 @@ const defaultConfig: NegotiationInterface = {
 	messagingForceTab: false
 }
 
+export const enum UIUpdateEventType {
+	ISSUERS_LOADING,
+	ISSUERS_LOADED
+}
+
 export class Client {
 
 	private negotiateAlreadyFired: boolean;
+	public issuersLoaded: boolean;
 	private config: NegotiationInterface;
 	private web3WalletProvider: Web3WalletProvider;
 	private messaging: Messaging;
 	private ui: Ui;
 	private clientCallBackEvents: {} = {};
 	private tokenStore: TokenStore;
-	private uiUpdateCallbacks: {[id: string]: Function} = {}
-	
+	private uiUpdateCallbacks: {[type: UIUpdateEventType]: (data?: {}) => {}} = {}
+
 	static getKey(file: string){
 		return  Authenticator.decodePublicKey(file);
 	}
@@ -76,14 +81,13 @@ export class Client {
 		return this.tokenStore;
 	}
 
-	triggerUiUpdateCallbacks(){
-		for (let i in this.uiUpdateCallbacks){
-			this.uiUpdateCallbacks[i]();
-		}
+	triggerUiUpdateCallback(type: UIUpdateEventType, data?: {}){
+		if (this.uiUpdateCallbacks[type])
+			this.uiUpdateCallbacks[type](data);
 	}
 
-	public registerUiUpdateCallback(id: string, callback: Function){
-		this.uiUpdateCallbacks[id] = callback;
+	public registerUiUpdateCallback(type: UIUpdateEventType, callback: Function){
+		this.uiUpdateCallbacks[type] = callback;
 	}
 
 	public safeConnectAvailable(){
@@ -145,6 +149,9 @@ export class Client {
 
 	async enrichTokenLookupDataOnChainTokens() {
 
+		this.issuersLoaded = false;
+		this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADING);
+
 		let issuers = this.tokenStore.getCurrentIssuers(true);
 
 		for (let issuer in issuers){
@@ -165,6 +172,9 @@ export class Client {
 				this.tokenStore.updateTokenLookupStore(issuer, lookupData);
 			}
 		}
+
+		this.issuersLoaded = true;
+		this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADED);
 	}
 
 	async negotiate(issuers?: OnChainTokenConfig | OffChainTokenConfig[], openPopup = false) {
@@ -173,27 +183,30 @@ export class Client {
 
 		requiredParams(Object.keys(this.tokenStore.getCurrentIssuers()).length, "issuers are missing.");
 
-		await this.enrichTokenLookupDataOnChainTokens();
-
 		if (this.config.type === "active") {
+
+			this.issuersLoaded = false;
+
 			this.activeNegotiationStrategy(openPopup);
+
+			await this.enrichTokenLookupDataOnChainTokens();
 		} else {
 			// TODO build logic to allow to connect with wallectConnect, Torus etc.
 			// Logic to ask user to connect to wallet when they have provided web3 tokens to negotiate with.
 			// See other TODO's in this flow.
 			// if (window.ethereum && onChainTokens.tokenKeys.length > 0) await this.web3WalletProvider.connectWith('MetaMask');
+			await this.enrichTokenLookupDataOnChainTokens();
 
-			this.passiveNegotiationStrategy();
+			await this.passiveNegotiationStrategy();
 		}
 	}
 
-	async activeNegotiationStrategy(openPopup: boolean) {
+	activeNegotiationStrategy(openPopup: boolean) {
 
 		let autoOpenPopup;
 
 		if (this.ui) {
 			autoOpenPopup = this.tokenStore.hasUnloadedTokens();
-			this.triggerUiUpdateCallbacks();
 		} else {
 			this.ui = new Ui(this.config.options?.overlay, this);
 			this.ui.initialize();
@@ -398,7 +411,7 @@ export class Client {
 			logger(2,"Ticket proof successfully validated.");
 
 			this.eventSender.emitProofToClient(res.data, issuer);
-			
+
 		} catch (err) {
 			logger(2,err);
 			this.handleProofError(err, issuer);

@@ -87,15 +87,15 @@ export class SelectWallet extends AbstractView {
 		try {
 			await this.client.negotiatorConnectToWallet(wallet);
 
+			if (timer) clearTimeout(timer);
+			this.ui.dismissLoader();
+
 			this.ui.updateUI(SelectIssuers);
 
 		} catch (err: any){
 			this.ui.showError((err.message ? err.message : err));
 			return;
 		}
-
-		if (timer) clearTimeout(timer);
-		this.ui.dismissLoader();
 	}
 
 }
