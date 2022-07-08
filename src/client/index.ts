@@ -7,8 +7,9 @@ import {connectMetamaskAndGetAddress, getChallengeSigned, validateUseEthKey } fr
 import OnChainTokenModule from "./../onChainTokenModule";
 import "./../vendor/keyShape";
 import { Authenticator } from "@tokenscript/attestation";
-import {TokenConfig, TokenStore} from "./tokenStore";
+import {TokenStore} from "./tokenStore";
 import {OffChainTokenConfig, OnChainTokenConfig, AuthenticateInterface, NegotiationInterface} from "./interface";
+import getBrowserData from './../utils/support/getBrowserData';
 
 declare global {
 	interface Window {
@@ -44,7 +45,7 @@ export class Client {
 	private onChainTokenModule: OnChainTokenModule;
 	private tokenStore: TokenStore;
 	private uiUpdateCallbacks: {[id: string]: Function} = {}
-
+	
 	static getKey(file: string){
 		return  Authenticator.decodePublicKey(file);
 	}
@@ -388,6 +389,7 @@ export class Client {
 	}
 
 	async authenticate(authRequest: AuthenticateInterface) {
+		
 		const { issuer, unsignedToken } = authRequest;
 		requiredParams(
 			issuer && unsignedToken,
@@ -401,6 +403,7 @@ export class Client {
 
 		// TODO: How to handle error display in passive negotiation? Use optional UI or emit errors to listener?
 		let timer;
+		let error = false;
 
 		if (this.popup) {
 			timer = setTimeout(() => {
@@ -413,6 +416,7 @@ export class Client {
 		}
 
 		try {
+			
 			let data;
 
 			if (config.onChain) {
@@ -421,22 +425,34 @@ export class Client {
 				data = await this.authenticateOffChain(authRequest);
 			}
 
-			if (!data.proof)
+			if (data.proof !== undefined || data.proof !== null){
+				this.eventSender.emitProofToClient(data.proof, data.issuer);
+				logger(2,"Ticket proof successfully validated.");
+			} else {
+				// debug this, it doesn't apply this because it sits inside try/catch!?
+				error = true;
+				logger(2,"Ticket proof failed.");
+				timer = setTimeout(() => {
+					this.popup.showError(
+						"<h4>Proof failed</h4>",
+						"<small>Failed to get proof.</small>"
+					);
+					this.popup.openOverlay();
+				}, 1000);
 				return this.handleProofError("Failed to get proof from the outlet.");
-
-			logger(2,"Ticket proof successfully validated.");
-
-			this.eventSender.emitProofToClient(data.proof, data.issuer);
+			}
 		} catch (err) {
+			error = true;
 			logger(2,err);
 			this.handleProofError(err, issuer);
 		}
 
-		if (this.popup) {
+		if (this.popup && error === false) {
 			if (timer) clearTimeout(timer);
 			this.popup.dismissLoader();
 			this.popup.closeOverlay();
 		}
+		
 	}
 
 	private handleProofError(err, issuer) {
