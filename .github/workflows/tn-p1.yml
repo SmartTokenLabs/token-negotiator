@@ -1,0 +1,27 @@
+name: "tn-p1"
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - "*"
+
+jobs:
+  tn-p1:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - name: build
+        run: npm run build
+      - name: test
+        uses: ArtiomTr/jest-coverage-report-action@v2
+        with:
+          test-script: npm run test
