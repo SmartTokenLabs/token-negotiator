@@ -19,9 +19,6 @@ const isIOS = UA && /iphone|ipad|ipod|ios/.test(UA);
 const isMac = window.navigator.platform.toLowerCase().includes("mac");
 const isWindows = window.navigator.platform.toLowerCase().includes("win");
 
-// detect webview
-const isWebView = /(Version\/\d+.*\/\d+.0.0.0 Mobile|; ?wv|(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari))/i.test(navigator.userAgent);
-
 // detect if touch device
 let isTouchDevice = false;
 let isMobile = window.matchMedia;
@@ -31,13 +28,14 @@ if (isMobile) {
 }
 
 // detect wallet
-if(typeof ethereum === 'undefined') var ethereum = {};
-const isMetaMask = (isTouchDevice && ethereum.isMetaMask);
-const isAlphaWallet = (isTouchDevice && ethereum.isAlphaWallet);
-const isTrust = (isTouchDevice && ethereum.isTrust);
-const isStatusWallet = (isTouchDevice && ethereum.isStatusWallet);
-const isGoWallet = (isTouchDevice && ethereum.isGoWallet);
-const isMyEthereumWallet = (isTouchDevice && ethereum.isTrust && ethereum.isMetaMask);
+if (typeof ethereum === "undefined") var ethereum = {};
+const isMetaMask = isTouchDevice && ethereum.isMetaMask;
+const isAlphaWallet = isTouchDevice && ethereum.isAlphaWallet;
+const isTrust = isTouchDevice && ethereum.isTrust;
+const isStatusWallet = isTouchDevice && ethereum.isStatusWallet;
+const isGoWallet = isTouchDevice && ethereum.isGoWallet;
+const isMyEthereumWallet =
+  isTouchDevice && ethereum.isTrust && ethereum.isMetaMask;
 
 export const getBrowserData = () => {
   return {
@@ -49,10 +47,9 @@ export const getBrowserData = () => {
     fireFox: isFireFox,
     safari: isSafari,
     android: isAndroid,
-    iOS: isIOS,  
+    iOS: isIOS,
     mac: isMac,
     windows: isWindows,
-    webView: isWebView,
     touchDevice: isTouchDevice,
     metaMask: isMetaMask,
     alphaWallet: isAlphaWallet,
@@ -60,5 +57,5 @@ export const getBrowserData = () => {
     trust: isTrust,
     goWallet: isGoWallet,
     status: isStatusWallet,
-  }
-}
+  };
+};
