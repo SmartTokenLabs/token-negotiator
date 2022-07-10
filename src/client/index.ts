@@ -348,6 +348,7 @@ export class Client {
 		const { list, errorMessage } = this.config?.unSupportedBrowserDeviceWallet;
 		if(list && isBrowserDeviceWalletSupported(list)) {
 			this.popup.showError(errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
+			return null;
 		}
 
 		const { issuer, unsignedToken } = authRequest;
@@ -363,7 +364,6 @@ export class Client {
 
 		// TODO: How to handle error display in passive negotiation? Use optional UI or emit errors to listener?
 		let timer;
-		let error = false;
 
 		if (this.popup) {
 			timer = setTimeout(() => {
@@ -400,12 +400,11 @@ export class Client {
 			this.eventSender.emitProofToClient(res.data, issuer);
 			
 		} catch (err) {
-			error = true;
 			logger(2,err);
 			this.handleProofError(err, issuer);
 			throw err;
 		} finally {
-			if (this.popup && error === false) {
+			if (this.popup) {
 				if (timer) clearTimeout(timer);
 				this.popup.dismissLoader();
 				this.popup.closeOverlay();
