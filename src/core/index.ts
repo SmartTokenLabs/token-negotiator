@@ -124,7 +124,8 @@ export const readMagicUrl = (
 
 	const secretFromQuery = urlParams.get(tokenSecretName);
 
-	const idFromQuery = urlParams.get(tokenIdName);
+	let tmp = urlParams.get(tokenIdName)
+	const idFromQuery = tmp ? tmp: "";
 
 	if (!(tokenFromQuery && secretFromQuery))
 		throw new Error("Incomplete token params in URL.");
@@ -146,180 +147,13 @@ export const readMagicUrl = (
 		tokens.push({
 			token: tokenFromQuery,
 			secret: secretFromQuery,
-			id: idFromQuery,
+			id: decodeURIComponent(idFromQuery),
 			magic_link: window.location.href,
 		});
 		return tokens;
 	}
 
 	throw new Error("Token already added.");
-};
-
-export const ethKeyIsValid = (ethKey: any) => {
-	return ethKey.expiry >= Date.now();
-};
-
-export const validateUseEthKey = async (endPoint: string, data: any) => {
-	try {
-		const response = await fetch(endPoint, {
-			method: "POST",
-			cache: "no-cache",
-			headers: { "Content-Type": "application/json" },
-			redirect: "follow",
-			referrerPolicy: "no-referrer",
-			body: JSON.stringify(data),
-		});
-
-		const json = await response.json();
-
-		return json.address;
-	} catch (e) {
-		return {
-			success: false,
-			message: "validate ethkey request failed",
-		};
-	}
-};
-
-export const getUnpredictableNumber = async (endPoint: string) => {
-	try {
-		const response = await fetch(endPoint);
-
-		const json = await response.json();
-
-		json.success = true;
-
-		return json;
-	} catch (e) {
-		return {
-			success: false,
-			message: "UN request failed",
-		};
-	}
-};
-
-export const getChallengeSigned = async (
-	tokenIssuer: any,
-	web3WalletProvider: any
-) => {
-	const storageEthKeys = localStorage.getItem(tokenIssuer.ethKeyitemStorageKey);
-
-	let ethKeys =
-    storageEthKeys && storageEthKeys.length ? JSON.parse(storageEthKeys) : {};
-
-	// try {
-
-	let address = web3WalletProvider.getConnectedWalletData()[0].address;
-
-	if (!address) {
-		await web3WalletProvider.connect("MetaMask");
-
-		address = web3WalletProvider.getConnectedWalletData()[0].address;
-	}
-
-	// if Passive Flow ( IF PASSIVE WORKS, REMOVE THIS CODE).
-	// let address = await connectMetamaskAndGetAddress();
-
-	address = address.toLowerCase();
-
-	let useEthKey;
-
-	if (ethKeys && ethKeys[address] && !ethKeyIsValid(ethKeys[address])) {
-		delete ethKeys[address];
-	}
-
-	if (ethKeys && ethKeys[address]) {
-		useEthKey = ethKeys[address];
-	} else {
-		useEthKey = await signNewChallenge(
-			tokenIssuer.unEndPoint,
-			web3WalletProvider
-		);
-
-		if (useEthKey) {
-			ethKeys[useEthKey.address.toLowerCase()] = useEthKey;
-
-			localStorage.setItem(
-				tokenIssuer.ethKeyitemStorageKey,
-				JSON.stringify(ethKeys)
-			);
-		}
-	}
-
-	return useEthKey;
-
-	// } catch (e: any) {
-
-	// throw new Error(e);
-
-	// }
-}
-
-export const connectMetamaskAndGetAddress = async () => {
-	requiredParams(window.ethereum, "Please install metamask to continue.");
-
-	const userAddresses = await window.ethereum.request({
-		method: "eth_requestAccounts",
-	});
-
-	if (!userAddresses || !userAddresses.length)
-		throw new Error("Active Wallet required");
-
-	return userAddresses[0];
-};
-
-export const signNewChallenge = async (
-	unEndPoint: string,
-	web3WalletProvider: any
-) => {
-	logger(2,"sign new challenge");
-
-	let res = await getUnpredictableNumber(unEndPoint);
-
-	const {
-		number: UN,
-		randomness,
-		domain,
-		expiration: expiry,
-		messageToSign,
-	} = res;
-
-	let signature = await signMessageWithBrowserWallet(
-		messageToSign,
-		web3WalletProvider
-	);
-
-	const msgHash = ethers.utils.hashMessage(messageToSign);
-
-	const msgHashBytes = ethers.utils.arrayify(msgHash);
-
-	const recoveredAddress = ethers.utils.recoverAddress(msgHashBytes, signature);
-
-	return {
-		address: recoveredAddress,
-		expiry,
-		domain,
-		randomness,
-		signature,
-		UN,
-	};
-};
-
-export const signMessageWithBrowserWallet = async (
-	message: any,
-	web3WalletProvider: any
-) => {
-	// For testing paste this into the console.
-	// window.negotiator.authenticate({
-	//   issuer: "devcon",
-	//   unsignedToken: {
-	//     devconId: "6", ticketClass: 0, ticketId: "417541561854"
-	//   }});
-
-	return web3WalletProvider.signWith(
-		message,
-		web3WalletProvider.getConnectedWalletData()[0]
-	);
 };
 
 export const rawTokenCheck = async (unsignedToken: any, tokenIssuer: any) => {

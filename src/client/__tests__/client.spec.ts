@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { Client } from "./../index";
+import { Client } from "../index";
 
 function getOffChainConfigClient() {
 	return new Client({
@@ -119,18 +119,12 @@ describe('client spec', () => {
 		}).toThrow('Event type is not defined');
 	});
   
-	test('tokenNegotiatorClient method checkPublicAddressMatch to return failed check data', async () => {
+	/* test('tokenNegotiatorClient method checkPublicAddressMatch to throw error', async () => {
 		const tokenNegotiatorClient = getOffChainConfigClient();
-		const output = await tokenNegotiatorClient.checkPublicAddressMatch("devcon", null);
-		expect(output).toEqual({ status: false, useEthKey: null, proof: null });
-	});
-  
-	test('tokenNegotiatorClient method checkPublicAddressMatch to throw error', async () => {
-		const tokenNegotiatorClient = getOffChainConfigClient();
-		return tokenNegotiatorClient.checkPublicAddressMatch("devcon", { fake: "data" }).catch(err => {
+		return tokenNegotiatorClient.getAddressChallenge(Challenge.DEFAULT_ENDPOINT).catch(err => {
 			expect(err).toEqual(new Error("MetaMask is not available. Please check the extension is supported and active."));
 		});
-	});
+	});*/
 
 	test('tokenNegotiatorClient method eventSender event hook functions', async () => {
 		const tokenNegotiatorClient = getOffChainConfigClient();
