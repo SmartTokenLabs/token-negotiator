@@ -21,36 +21,18 @@
             window.negotiator = new negotiator.Client({
                 type: 'active',
                 issuers: [
-                    {    
-                        collectionID: 'devcon', 
-                        title: "Devcon",
-                        onChain: false,
-                        tokenOrigin: "http://localhost:3002/",
-                        attestationOrigin: "https://stage.attestation.id/",
-                        unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
-                        image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
-                        base64senderPublicKey: "",
-                        base64attestorPubKey: ""
-                    },
-                    { collectionID: "exp", contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth', openSeaSlug: 'expansionpunks' },
-                    { collectionID: "rink", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'rinkeby-punk' },
-                    { collectionID: "bayc", contract: '0x26472AA24D795AbcB687bddb44d733ef55Ebdf09', chain: 'Rinkeby' }
+                    { collectionID: 'demo-tokens', onChain: true, contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
                 ],
                 options: {
                     overlay: {
                     openingHeading: "Open a new world of discounts available with your tokens.",
-                    issuerHeading: "Get discount with Ticket",
+                    issuerHeading: "Discount with your tokens",
                     repeatAction: "try again",
                     theme: "light",
                     position: "bottom-right"
-                    },
-                    filters: {},
+                    }
                 },
-                // onChainModuleKeys: {
-                //     moralis: 'testing',
-                //     alchemy: 'testing',
-                //     opensea: 'testing'
-                // }
+                filter: {}
             });
 
             window.negotiator.on("tokens-selected", (tokens) => {
