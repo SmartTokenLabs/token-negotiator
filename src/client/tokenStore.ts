@@ -1,9 +1,8 @@
 import {OffChainTokenConfig, OnChainTokenConfig} from "./interface";
-import {ContractData} from "../onChainTokenModule";
 import {logger} from "../utils";
 
 interface TokenLookup {
-	[collectionID: string]: OnChainTokenConfig | OffChainTokenConfig | ContractData // TODO: Remove contract data here - put title & image in Issuer config interface
+	[collectionID: string]: OnChainTokenConfig | OffChainTokenConfig
 }
 
 type TokenConfig = OnChainTokenConfig | OffChainTokenConfig;
@@ -119,7 +118,7 @@ export class TokenStore {
 	// for on chain tokens that are not using token script this is
 	// required, for off chain this is most likely not required because the configurations
 	// are already pre-defined e.g. title, issuer image image etc.
-	public updateTokenLookupStore(tokenKey: string, data: OnChainTokenConfig | OffChainTokenConfig | ContractData) {
+	public updateTokenLookupStore(tokenKey: string, data: OnChainTokenConfig | OffChainTokenConfig) {
 
 		this.tokenLookup[tokenKey] = { ...this.tokenLookup[tokenKey], ...data };
 	}
