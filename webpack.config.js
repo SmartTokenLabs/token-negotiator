@@ -77,7 +77,7 @@ module.exports = {
         library: 'negotiator',
         filename: 'negotiator.js',
         libraryTarget: 'umd',
-        path: path.resolve(__dirname, 'token-negotiator-alpha-dist'),
+        path: path.resolve(__dirname, 'token-negotiator-dist'),
     },
     optimization: {
         minimize: true,
