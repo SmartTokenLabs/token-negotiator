@@ -25,7 +25,6 @@ describe('browser simulations', () => {
 			iOS: false,
 			mac: false,
 			windows: false,
-			webView: false,
 			touchDevice: false,
 			metaMask: false,
 			alphaWallet: false,
@@ -33,6 +32,7 @@ describe('browser simulations', () => {
 			trust: false,
 			goWallet: false,
 			status: false,
+			isImToken: false
 		});
 	});
 });

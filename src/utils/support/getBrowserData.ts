@@ -36,6 +36,7 @@ const isStatusWallet = isTouchDevice && ethereum.isStatusWallet;
 const isGoWallet = isTouchDevice && ethereum.isGoWallet;
 const isMyEthereumWallet =
   isTouchDevice && ethereum.isTrust && ethereum.isMetaMask;
+const isImToken = !!navigator.userAgent.match(/\simToken\//);
 
 export const getBrowserData = () => {
   return {
@@ -57,5 +58,6 @@ export const getBrowserData = () => {
     trust: isTrust,
     goWallet: isGoWallet,
     status: isStatusWallet,
+    isImToken: isImToken
   };
 };
