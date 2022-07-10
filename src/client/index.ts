@@ -11,6 +11,7 @@ import {OffChainTokenConfig, OnChainTokenConfig, AuthenticateInterface, Negotiat
 import {SignedUNChallenge} from "./auth/signedUNChallenge";
 import {TicketZKProof} from "./auth/ticketZKProof";
 import {AuthenticationMethod, AuthenticationResult} from "./auth/abstractAuthentication";
+import { isBrowserDeviceWalletSupported } from './../utils/support/isSupported';
 
 declare global {
 	interface Window {
@@ -343,6 +344,12 @@ export class Client {
 	}
 
 	async authenticate(authRequest: AuthenticateInterface): AuthenticationResult {
+
+		const { list, errorMessage } = this.config?.unSupportedBrowserDeviceWallet;
+		if(list && isBrowserDeviceWalletSupported(list)) {
+			this.popup.showError(errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
+		}
+
 		const { issuer, unsignedToken } = authRequest;
 		requiredParams(
 			issuer && unsignedToken,

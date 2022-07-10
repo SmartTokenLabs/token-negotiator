@@ -3,7 +3,6 @@ import { logger, requiredParams } from "../utils";
 import { decodeTokens, filterTokens } from "../core";
 import { OutletAction, OutletResponseAction } from "../client/messaging";
 import { AuthHandler } from "./auth-handler";
-import { isBrowserDeviceWalletSupported } from './../utils/support/isSupported';
 // requred for default TicketDecoder.
 import { SignedDevconTicket } from "@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket";
 import { AsnParser } from "@peculiar/asn1-schema";
@@ -84,19 +83,11 @@ export class Outlet {
 			break;
 		}
 		case OutletAction.GET_PROOF: {
-			const { list, errorMessage } = this.tokenConfig?.unSupportedBrowserDeviceWallet;
-			if(list && isBrowserDeviceWalletSupported(list)) {
-				this.sendErrorResponse(
-					evtid,
-					errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari."
-				);
-			} else {
-				const token: string = this.getDataFromQuery("token");
-				const wallet: string = this.getDataFromQuery("wallet");
-				const address: string = this.getDataFromQuery("address");
-				requiredParams(token, "unsigned token is missing");
-				this.sendTokenProof(evtid, token, address, wallet);
-			}
+			const token: string = this.getDataFromQuery("token");
+			const wallet: string = this.getDataFromQuery("wallet");
+			const address: string = this.getDataFromQuery("address");
+			requiredParams(token, "unsigned token is missing");
+			this.sendTokenProof(evtid, token, address, wallet);
 			break;
 		}
 		default: {
