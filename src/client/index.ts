@@ -9,6 +9,9 @@ import "./../vendor/keyShape";
 import { Authenticator } from "@tokenscript/attestation";
 import {TokenConfig, TokenStore} from "./tokenStore";
 import {OffChainTokenConfig, OnChainTokenConfig, AuthenticateInterface, NegotiationInterface} from "./interface";
+import {SignedUNChallenge} from "./auth/signedUNChallenge";
+import {TicketZKProof} from "./auth/ticketZKProof";
+import {AuthenticationMethod, AuthenticationResult} from "./auth/abstractAuthentication";
 
 declare global {
 	interface Window {
@@ -30,7 +33,8 @@ const defaultConfig: NegotiationInterface = {
 	},
 	autoLoadTokens: true,
 	autoEnableTokens: true,
-	autoPopup: true
+	autoPopup: true,
+	messagingForceTab: false
 }
 
 export class Client {
@@ -76,11 +80,15 @@ export class Client {
 		this.uiUpdateCallbacks[id] = callback;
 	}
 
+	public safeConnectAvailable(){
+		return this.config.safeConnectOptions !== undefined;
+	}
+
 	private async getWalletProvider(){
 
 		if (!this.web3WalletProvider){
 			const {Web3WalletProvider} = await import("./../wallet/Web3WalletProvider");
-			this.web3WalletProvider = new Web3WalletProvider();
+			this.web3WalletProvider = new Web3WalletProvider(this.config.safeConnectOptions);
 		}
 
 		return this.web3WalletProvider;
@@ -103,28 +111,28 @@ export class Client {
 
 		for (let issuer in issuers){
 
-			let data;
+			let res;
 
 			const tokensOrigin = this.tokenStore.getCurrentIssuers()[issuer].tokenOrigin;
 
 			try {
-				data = await this.messaging.sendMessage({
+				res = await this.messaging.sendMessage({
 					action: OutletAction.GET_ISSUER_TOKENS,
 					origin: tokensOrigin,
 					data: {
 						issuer: issuer,
 						filter: this.config.options.filters
 					}
-				});
+				}, this.config.messagingForceTab);
 			} catch (err) {
 				logger(2,err);
 				continue;
 			}
 
 			logger(2,"tokens:");
-			logger(2,data.tokens);
+			logger(2,res.data.tokens);
 
-			this.tokenStore.setTokens(issuer, data.tokens);
+			this.tokenStore.setTokens(issuer, res.data.tokens);
 
 		}
 	}
@@ -304,18 +312,18 @@ export class Client {
 
 		} else {
 
-			let data = await this.messaging.sendMessage({
+			let res = await this.messaging.sendMessage({
 				action: OutletAction.GET_ISSUER_TOKENS,
 				origin: config.tokenOrigin,
 				data : {
 					issuer: issuer,
 					filter: this.config.options.filters
 				},
-			});
+			}, this.config.messagingForceTab);
 
-			tokens = data.tokens;
+			tokens = res.data.tokens;
 
-			this.tokenStore.setTokens(issuer, data.tokens);
+			this.tokenStore.setTokens(issuer, res.data.tokens);
 		}
 
 		if (this.config.autoEnableTokens)
@@ -329,59 +337,7 @@ export class Client {
 		this.eventSender.emitSelectedTokensToClient(selectedTokens);
 	}
 
-	async authenticateOnChain(authRequest: AuthenticateInterface) {
-		const { issuer, unsignedToken } = authRequest;
-
-		let useEthKey = await this.checkPublicAddressMatch(issuer, unsignedToken);
-
-		if (!useEthKey) {
-			throw new Error("Address does not match");
-		}
-
-		return { issuer: issuer, proof: useEthKey };
-	}
-
-	async authenticateOffChain(authRequest: AuthenticateInterface) {
-		const { issuer, unsignedToken } = authRequest;
-		const tokenConfig = this.tokenStore.getCurrentIssuers()[issuer];
-
-		let useEthKey = null;
-
-		// useEthKey is not required when using the proof in a smart contract - UN endpoint config can be removed to prevent this check
-		// TODO: Make this an explicit setting passed to the authenticate function
-		if (tokenConfig.unEndPoint) {
-			useEthKey = await this.checkPublicAddressMatch(issuer, unsignedToken);
-
-			if (!useEthKey) {
-				throw new Error("Address does not match");
-			}
-		}
-
-		let data = await this.messaging.sendMessage({
-			action: OutletAction.GET_PROOF,
-			origin: tokenConfig.tokenOrigin,
-			timeout: 0, // Don't time out on this event as it needs active input from the user
-			data: {
-				issuer: issuer,
-				token: unsignedToken,
-				address: authRequest.address ? authRequest.address : "",
-				wallet: authRequest.wallet ? authRequest.wallet : ""
-			}
-		});
-
-		if (useEthKey)
-			Authenticator.validateUseTicket(
-				data.proof,
-				tokenConfig.base64attestorPubKey,
-				tokenConfig.base64senderPublicKeys,
-				useEthKey.address
-			);
-
-		// TODO: Provide object that include useEthKey object
-		return data;
-	}
-
-	async authenticate(authRequest: AuthenticateInterface) {
+	async authenticate(authRequest: AuthenticateInterface): AuthenticationResult {
 		const { issuer, unsignedToken } = authRequest;
 		requiredParams(
 			issuer && unsignedToken,
@@ -406,71 +362,47 @@ export class Client {
 			}, 1000);
 		}
 
+		let AuthType;
+
+		if (authRequest.type){
+			AuthType = authRequest.type;
+		} else {
+			AuthType = config.onChain ? SignedUNChallenge : TicketZKProof;
+		}
+
+		let authenticator: AuthenticationMethod = new AuthType();
+
+		let res;
+
 		try {
-			let data;
+			if (!authRequest.options)
+				authRequest.options = {};
 
-			if (config.onChain) {
-				data = await this.authenticateOnChain(authRequest);
-			} else {
-				data = await this.authenticateOffChain(authRequest);
-			}
+			authRequest.options?.messagingForceTab = this.config.messagingForceTab;
 
-			if (!data.proof)
-				return this.handleProofError("Failed to get proof from the outlet.");
+			res = await authenticator.getTokenProof(config, [authRequest.unsignedToken], this.web3WalletProvider, authRequest);
 
 			logger(2,"Ticket proof successfully validated.");
 
-			this.eventSender.emitProofToClient(data.proof, data.issuer);
+			this.eventSender.emitProofToClient(res.data, issuer);
 		} catch (err) {
 			logger(2,err);
 			this.handleProofError(err, issuer);
+			throw err;
+		} finally {
+			if (this.popup) {
+				if (timer) clearTimeout(timer);
+				this.popup.dismissLoader();
+				this.popup.closeOverlay();
+			}
 		}
 
-		if (this.popup) {
-			if (timer) clearTimeout(timer);
-			this.popup.dismissLoader();
-			this.popup.closeOverlay();
-		}
+		return res;
 	}
 
 	private handleProofError(err, issuer) {
 		if (this.popup) this.popup.showError(err);
 		this.eventSender.emitProofToClient(null, issuer, err);
-	}
-
-	async checkPublicAddressMatch(issuer: string, unsignedToken: any) {
-		let config: any = this.tokenStore.getCurrentIssuers()[issuer];
-
-		// TODO: Remove once fully implemented for on-chain tokens
-		if (!config.unEndPoint) {
-			config = {
-				unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
-				ethKeyitemStorageKey: "dcEthKeys",
-			};
-		}
-
-		if (!unsignedToken) return { status: false, useEthKey: null, proof: null };
-
-		// try {
-		let walletProvider = await this.getWalletProvider();
-
-		if (!walletProvider.getConnectedWalletData().length) {
-			await walletProvider.connectWith("MetaMask");
-		}
-
-		let useEthKey = await getChallengeSigned(config, walletProvider);
-
-		const attestedAddress = await validateUseEthKey(
-			config.unEndPoint,
-			useEthKey
-		);
-
-		const walletAddress = await connectMetamaskAndGetAddress();
-
-		if (walletAddress.toLowerCase() !== attestedAddress.toLowerCase())
-			throw new Error("useEthKey validation failed.");
-
-		return useEthKey;
 	}
 
 	eventSender = {
@@ -491,17 +423,17 @@ export class Client {
 		let params =
 			url.hash.length > 1 ? url.hash.substring(1) : url.search.substring(1);
 
-		let data = await this.messaging.sendMessage({
+		let res = await this.messaging.sendMessage({
 			action: OutletAction.MAGIC_URL,
 			origin: url.origin + url.pathname,
 			data: {
 				urlParams: params
 			}
-		});
+		}, this.config.messagingForceTab);
 
-		if (data.evt === OutletResponseAction.ISSUER_TOKENS) return data.tokens;
+		if (res.evt === OutletResponseAction.ISSUER_TOKENS) return res.data.tokens;
 
-		throw new Error(data.errors.join("\n"));
+		throw new Error(res.errors.join("\n"));
 	}
 
 	on(type: string, callback?: any, data?: any) {

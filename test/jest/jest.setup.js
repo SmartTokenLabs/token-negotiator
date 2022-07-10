@@ -4,3 +4,11 @@ jest.spyOn(global.console, 'error').mockImplementation((message) => {
 		throw new Error(`Unexpected console.error: ${message}`);
 	}
 });
+
+import crypto from "crypto";
+
+Object.defineProperty(global.self, "crypto", {
+	value: {
+		subtle: crypto.webcrypto.subtle,
+	},
+});
