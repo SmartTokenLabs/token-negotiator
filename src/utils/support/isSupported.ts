@@ -1,17 +1,6 @@
 
 import { getBrowserData } from './getBrowserData';
 
-// example use: unsupportedDeviceAndBrowserList
-//   [
-//     "metaMask",
-//     "alphaWallet",
-//     "mew",
-//     "trust",
-//     "goWallet",
-//     "status"
-//   ]
-// unsupportedWarning (optional)
-
 interface BrowserDataInterface {
   iE: boolean
   iE9: boolean
@@ -32,10 +21,21 @@ interface BrowserDataInterface {
   trust: boolean
   goWallet: boolean
   status: boolean
+  isImToken: boolean
 }
 
-export const isBrowserDeviceWalletSupported = (unsupportedDeviceAndBrowserList:string[]) => {
+export const isBrowserDeviceWalletSupported = (unsupportedDeviceAndBrowserConfig:any) => {
+  if(unsupportedDeviceAndBrowserConfig === undefined || unsupportedDeviceAndBrowserConfig === null) return true;
   const browserData = getBrowserData();
-  const unsupportedCheckArr = unsupportedDeviceAndBrowserList.filter((item) => { return (browserData[item.toLocaleLowerCase() as keyof BrowserDataInterface] === true) ? "true" : "false" });
-  return !unsupportedCheckArr.includes("true");
+  let broswerIsSupported = true;
+  const browserDeviceWalletSupportedMap =  ["iE", "iE9", "edge", "chrome", "phantomJS", "fireFox", "safari", "android", "iOS", "mac", "windows", "touchDevice", "metaMask", "alphaWallet", "mew", "trust", "goWallet", "status", "isImToken"];
+  browserDeviceWalletSupportedMap.map((item) => { 
+    if(
+      unsupportedDeviceAndBrowserConfig[item as keyof BrowserDataInterface] === true &&
+      browserData[item as keyof BrowserDataInterface] === true
+    ) {
+      broswerIsSupported = false; 
+    }
+  });
+  return broswerIsSupported;
 }

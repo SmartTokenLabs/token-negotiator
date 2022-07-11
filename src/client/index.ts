@@ -339,13 +339,13 @@ export class Client {
 	}
 
 	async authenticate(authRequest: AuthenticateInterface): AuthenticationResult {
-
-		const { list, errorMessage } = this.config?.unSupportedBrowserDeviceWallet;
-		if(list && isBrowserDeviceWalletSupported(list)) {
-			this.popup.showError(errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
+		if(isBrowserDeviceWalletSupported(this.config?.options?.unSupported?.config) === false) {
+			timer = setTimeout(() => {
+				this.popup.showError(this.config?.options?.unSupported?.errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
+				this.popup.openOverlay();
+			}, 1000);
 			return null;
 		}
-
 		const { issuer, unsignedToken } = authRequest;
 		requiredParams(
 			issuer && unsignedToken,
