@@ -338,7 +338,7 @@ export class Client {
 		this.eventSender.emitSelectedTokensToClient(selectedTokens);
 	}
 
-	async authenticate(authRequest: AuthenticateInterface): AuthenticationResult {
+	async authenticate(authRequest: AuthenticateInterface) {
 		if(isBrowserDeviceWalletSupported(this.config?.options?.unSupported?.config) === false) {
 			timer = setTimeout(() => {
 				this.popup.showError(this.config?.options?.unSupported?.errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
@@ -393,7 +393,7 @@ export class Client {
 			logger(2,"Ticket proof successfully validated.");
 
 			this.eventSender.emitProofToClient(res.data, issuer);
-			
+
 		} catch (err) {
 			logger(2,err);
 			this.handleProofError(err, issuer);
@@ -406,7 +406,7 @@ export class Client {
 			}
 		}
 
-		return res;
+		return res.data;
 	}
 
 	private handleProofError(err, issuer) {
@@ -422,8 +422,8 @@ export class Client {
 		emitSelectedTokensToClient: (tokens: any) => {
 			this.on("tokens-selected", null, { selectedTokens: tokens });
 		},
-		emitProofToClient: (proof: any, issuer: any, error = "") => {
-			this.on("token-proof", null, { proof, issuer, error });
+		emitProofToClient: (data: any, issuer: any, error = "") => {
+			this.on("token-proof", null, { data, issuer, error });
 		},
 	};
 
