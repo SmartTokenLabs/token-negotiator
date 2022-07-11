@@ -29,21 +29,23 @@ export const getBrowserData = () => {
   }
 
   // detect wallet
-  if (typeof ethereum === "undefined") var ethereum = {};
-  // @ts-ignore
+
+  if (typeof ethereum === "undefined") var ethereum = { 
+    isMetaMask: false, 
+    isAlphaWallet: false,
+    isTrust: false,
+    isStatusWallet: false,
+    isGoWallet: false,
+  };
+
   const isMetaMask = isTouchDevice && ethereum.isMetaMask;
-  // @ts-ignore
   const isAlphaWallet = isTouchDevice && ethereum.isAlphaWallet;
-  // @ts-ignore
   const isTrust = isTouchDevice && ethereum.isTrust;
-  // @ts-ignore
   const isStatusWallet = isTouchDevice && ethereum.isStatusWallet;
-  // @ts-ignore
   const isGoWallet = isTouchDevice && ethereum.isGoWallet;
-  // @ts-ignore
   const isMyEthereumWallet =isTouchDevice && ethereum.isTrust && ethereum.isMetaMask;
   const isImToken = !!navigator.userAgent.match(/\simToken\//);
-
+  
   return {
     iE: isIE,
     iE9: isIE9,
