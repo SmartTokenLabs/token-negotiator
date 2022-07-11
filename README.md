@@ -34,8 +34,15 @@ The following types of tokens are supported:
 
 Within your application install the token negotiator:
 
+NPM
 ```sh
   npm i @tokenscript/token-negotiator
+```
+
+Browser build
+```html
+  <script type="text/javascript" src="./token-negotiator-dist/negotiator.js"></script>
+  <link rel="stylesheet" href="./token-negotiator-dist/theme/style.css" />
 ```
 
 ## Reading Tokens into a website or web application.

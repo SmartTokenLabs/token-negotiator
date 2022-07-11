@@ -3,8 +3,7 @@ import { logger, requiredParams } from "../utils";
 import { decodeTokens, filterTokens } from "../core";
 import { OutletAction, OutletResponseAction } from "../client/messaging";
 import { AuthHandler } from "./auth-handler";
-
-// requred for default TicketDecoder
+// requred for default TicketDecoder.
 import { SignedDevconTicket } from "@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket";
 import { AsnParser } from "@peculiar/asn1-schema";
 import { uint8toBuffer } from "../utils";
@@ -87,11 +86,8 @@ export class Outlet {
 			const token: string = this.getDataFromQuery("token");
 			const wallet: string = this.getDataFromQuery("wallet");
 			const address: string = this.getDataFromQuery("address");
-
 			requiredParams(token, "unsigned token is missing");
-
 			this.sendTokenProof(evtid, token, address, wallet);
-
 			break;
 		}
 		default: {
@@ -155,6 +151,7 @@ export class Outlet {
 	}
 
 	async sendTokenProof(evtid: any, token: any, address: string, wallet: string) {
+		
 		if (!token) return "error";
 
 		const unsignedToken = JSON.parse(token);

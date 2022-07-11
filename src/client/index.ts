@@ -7,11 +7,12 @@ import {connectMetamaskAndGetAddress, getChallengeSigned, validateUseEthKey } fr
 import {getNftCollection, getNftTokens} from "../utils/token/nftProvider";
 import "./../vendor/keyShape";
 import { Authenticator } from "@tokenscript/attestation";
-import {TokenConfig, TokenStore} from "./tokenStore";
+import {TokenStore} from "./tokenStore";
 import {OffChainTokenConfig, OnChainTokenConfig, AuthenticateInterface, NegotiationInterface} from "./interface";
 import {SignedUNChallenge} from "./auth/signedUNChallenge";
 import {TicketZKProof} from "./auth/ticketZKProof";
 import {AuthenticationMethod, AuthenticationResult} from "./auth/abstractAuthentication";
+import { isBrowserDeviceWalletSupported } from './../utils/support/isSupported';
 
 declare global {
 	interface Window {
@@ -47,7 +48,7 @@ export class Client {
 	private clientCallBackEvents: {} = {};
 	private tokenStore: TokenStore;
 	private uiUpdateCallbacks: {[id: string]: Function} = {}
-
+	
 	static getKey(file: string){
 		return  Authenticator.decodePublicKey(file);
 	}
@@ -338,6 +339,13 @@ export class Client {
 	}
 
 	async authenticate(authRequest: AuthenticateInterface): AuthenticationResult {
+		if(isBrowserDeviceWalletSupported(this.config?.options?.unSupported?.config) === false) {
+			timer = setTimeout(() => {
+				this.popup.showError(this.config?.options?.unSupported?.errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
+				this.popup.openOverlay();
+			}, 1000);
+			throw new Error(this.config?.options?.unSupported?.errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
+		}
 		const { issuer, unsignedToken } = authRequest;
 		requiredParams(
 			issuer && unsignedToken,
@@ -385,6 +393,7 @@ export class Client {
 			logger(2,"Ticket proof successfully validated.");
 
 			this.eventSender.emitProofToClient(res.data, issuer);
+			
 		} catch (err) {
 			logger(2,err);
 			this.handleProofError(err, issuer);
