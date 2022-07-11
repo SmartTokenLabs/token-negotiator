@@ -344,7 +344,7 @@ export class Client {
 				this.popup.showError(this.config?.options?.unSupported?.errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
 				this.popup.openOverlay();
 			}, 1000);
-			return null;
+			throw new Error(this.config?.options?.unSupported?.errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
 		}
 		const { issuer, unsignedToken } = authRequest;
 		requiredParams(
