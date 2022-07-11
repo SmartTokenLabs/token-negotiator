@@ -1,4 +1,4 @@
-import { PopupOptionsInterface } from "./popup";
+import { UIOptionsInterface } from "./ui";
 import {AuthenticationMethod} from "./auth/abstractAuthentication";
 import {SafeConnectOptions} from "../wallet/SafeConnectProvider";
 
@@ -39,7 +39,7 @@ export interface NegotiationInterface {
     type: string;
     issuers?: (OnChainTokenConfig | OffChainTokenConfig)[];
     options: {
-        overlay: PopupOptionsInterface;
+        overlay: UIOptionsInterface;
         filters: {};
     };
     onChainKeys?: { [apiName: string]: string };

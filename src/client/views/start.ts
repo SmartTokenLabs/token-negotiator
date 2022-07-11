@@ -20,7 +20,7 @@ export class Start extends AbstractView {
 	}
 
 	goToWalletSelection(){
-		this.popup.updatePopup(SelectWallet);
+		this.ui.updateUI(SelectWallet);
 	}
 
 }
