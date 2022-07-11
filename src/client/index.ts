@@ -31,7 +31,7 @@ const defaultConfig: NegotiationInterface = {
 			openingHeading: "Validate your token ownership for access",
 			issuerHeading: "Detected tokens"
 		},
-		filter: {}
+		filters: {}
 	},
 	autoLoadTokens: true,
 	autoEnableTokens: true,
@@ -63,7 +63,7 @@ export class Client {
 	constructor(config: NegotiationInterface) {
 
 		let overlayConfig = {...defaultConfig.options.overlay, ...config?.options?.overlay};
-		config.options = {filters: config.options.filters, overlay: overlayConfig}
+		config.options = {filters: config.options?.filters, overlay: overlayConfig}
 
 		this.config = Object.assign(defaultConfig, config);
 
