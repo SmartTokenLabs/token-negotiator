@@ -1,6 +1,7 @@
 import { UIOptionsInterface } from "./ui";
 import {AuthenticationMethod} from "./auth/abstractAuthentication";
 import {SafeConnectOptions} from "../wallet/SafeConnectProvider";
+import {BrowserDataInterface} from "../utils/support/isSupported";
 
 export interface OffChainTokenConfig extends IssuerConfigInterface {
     onChain: false,
@@ -40,13 +41,15 @@ export interface NegotiationInterface {
     type: string;
     issuers?: (OnChainTokenConfig | OffChainTokenConfig)[];
     uiOptions: UIOptionsInterface;
-    onChainKeys?: { [apiName: string]: string };
-    ipfsBaseUrl?: string;
     autoLoadTokens?: number | boolean;
     autoEnableTokens?: boolean;
     autoPopup?: boolean;
     messagingForceTab?: boolean;
     safeConnectOptions?: SafeConnectOptions;
+    unSupported?: {
+        config: BrowserDataInterface,
+        errorMessage: string
+    }
 }
 
 // TODO: Implement tokenId - each issuer token should have a unique ID (tokenId for instance).
