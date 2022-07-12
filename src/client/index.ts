@@ -357,18 +357,18 @@ export class Client {
 	}
 
 	isCurrentDeviceSupported(): boolean{
-		return isBrowserDeviceWalletSupported(this.config?.options?.unSupported?.config) !== false;
+		return isBrowserDeviceWalletSupported(this.config?.unSupported?.config) !== false;
 	}
 
 	async authenticate(authRequest: AuthenticateInterface) {
 		if(!this.isCurrentDeviceSupported()) {
 			if (this.ui) {
 				setTimeout(() => {
-					this.ui.showError(this.config?.options?.unSupported?.errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
+					this.ui.showError(this.config?.unSupported?.errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
 					this.ui.openOverlay();
 				}, 1000);
 			}
-			throw new Error(this.config?.options?.unSupported?.errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
+			throw new Error(this.config?.unSupported?.errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
 		}
 		const { issuer, unsignedToken } = authRequest;
 		requiredParams(
