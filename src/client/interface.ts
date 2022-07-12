@@ -33,15 +33,14 @@ export interface IssuerConfigInterface {
     onChain: boolean;
     title?: string;
     image?: string;
+    filters: {};
 }
 
 export interface NegotiationInterface {
     type: string;
     issuers?: (OnChainTokenConfig | OffChainTokenConfig)[];
-    options: {
-        overlay: UIOptionsInterface;
-        filters: {};
-    };
+    uiOptions: UIOptionsInterface;
+    onChainKeys?: { [apiName: string]: string };
     ipfsBaseUrl?: string;
     autoLoadTokens?: number | boolean;
     autoEnableTokens?: boolean;

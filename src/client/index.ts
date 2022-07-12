@@ -24,14 +24,11 @@ declare global {
 const defaultConfig: NegotiationInterface = {
 	type: "active",
 	issuers: [],
-	options: {
-		overlay: {
-			uiType: "popup",
-			containerElement: ".overlay-tn",
-			openingHeading: "Validate your token ownership for access",
-			issuerHeading: "Detected tokens"
-		},
-		filters: {}
+	uiOptions: {
+		uiType: "popup",
+		containerElement: ".overlay-tn",
+		openingHeading: "Validate your token ownership for access",
+		issuerHeading: "Detected tokens"
 	},
 	autoLoadTokens: true,
 	autoEnableTokens: true,
@@ -62,8 +59,9 @@ export class Client {
 
 	constructor(config: NegotiationInterface) {
 
-		this.config = {...defaultConfig, ...config};
-		this.config.options.overlay = {...defaultConfig.options.overlay, ...config?.options?.overlay};
+		config.uiOptions = {...defaultConfig.uiOptions, ...config?.uiOptions}
+
+		this.config = Object.assign(defaultConfig, config);
 
 		this.negotiateAlreadyFired = false;
 
@@ -125,15 +123,15 @@ export class Client {
 
 			let res;
 
-			const tokensOrigin = this.tokenStore.getCurrentIssuers()[issuer].tokenOrigin;
+			const issuerConfig = this.tokenStore.getCurrentIssuers()[issuer] as OffChainTokenConfig;
 
 			try {
 				res = await this.messaging.sendMessage({
 					action: OutletAction.GET_ISSUER_TOKENS,
-					origin: tokensOrigin,
+					origin: issuerConfig.tokenOrigin,
 					data: {
 						issuer: issuer,
-						filter: this.config.options.filters
+						filter: issuerConfig.filters
 					}
 				}, this.config.messagingForceTab);
 			} catch (err) {
@@ -210,7 +208,7 @@ export class Client {
 		if (this.ui) {
 			autoOpenPopup = this.tokenStore.hasUnloadedTokens();
 		} else {
-			this.ui = new Ui(this.config.options?.overlay, this);
+			this.ui = new Ui(this.config.uiOptions, this);
 			this.ui.initialize();
 			autoOpenPopup = true;
 		}
@@ -318,7 +316,7 @@ export class Client {
 
 		let tokens;
 
-		if (config.onChain) {
+		if (config.onChain === true) {
 
 			let walletProvider = await this.getWalletProvider();
 
@@ -338,7 +336,7 @@ export class Client {
 				origin: config.tokenOrigin,
 				data : {
 					issuer: issuer,
-					filter: this.config.options.filters
+					filter: config.filters
 				},
 			}, this.config.messagingForceTab);
 
