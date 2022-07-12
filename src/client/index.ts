@@ -362,9 +362,9 @@ export class Client {
 
 	async authenticate(authRequest: AuthenticateInterface) {
 		if(isBrowserDeviceWalletSupported(this.config?.options?.unSupported?.config) === false) {
-			timer = setTimeout(() => {
-				this.popup.showError(this.config?.options?.unSupported?.errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
-				this.popup.openOverlay();
+			setTimeout(() => {
+				this.ui.showError(this.config?.options?.unSupported?.errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
+				this.ui.openOverlay();
 			}, 1000);
 			throw new Error(this.config?.options?.unSupported?.errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
 		}
