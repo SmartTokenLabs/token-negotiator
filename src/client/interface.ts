@@ -24,8 +24,9 @@ export interface OffChainTokenConfig extends IssuerConfigInterface {
 export interface OnChainTokenConfig extends IssuerConfigInterface {
     onChain: true;
     contract: string;
-    chain: string;
+    network: string;
     openSeaSlug?: string;
+    blockchain: string;
 }
 
 export interface IssuerConfigInterface {
@@ -62,3 +63,4 @@ export interface AuthenticateInterface {
     type?: AuthenticationMethod;
     options?: any;
 }
+

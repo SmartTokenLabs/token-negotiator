@@ -1,22 +1,27 @@
+// @ts-nocheck
 import { OnChainTokenConfig } from "../../client/interface";
 
 const baseURL = "https://api.token-discovery.tokenscript.org"
 
 export const getNftCollection = async (
-  issuer: OnChainTokenConfig
+  issuer: OnChainTokenConfig,
+	ipfsBaseUrl?: string
 ) => {
-	const { contract, chain, openSeaSlug } = issuer;
-	let query = `${baseURL}/get-token-collection?smartContract=${contract}&chain=${chain}`;
+	const { contract, network, openSeaSlug } = issuer;
+	const blockchain = issuer?.blockchain ?? "ethereum";
+	let query = `${baseURL}/get-token-collection?smartContract=${contract}&network=${network}blockchain=${blockchain}&ipfsBaseUrl=${ipfsBaseUrl}`;
 	if(openSeaSlug) query += `&openSeaSlug=${openSeaSlug}`;
 	return tokenRequest(query, true);
 };
 
 export const getNftTokens = async (
   issuer: OnChainTokenConfig,
-  owner: string
+  owner: string,
+	ipfsBaseUrl?: string
 ) => {
-	const { contract, chain, openSeaSlug } = issuer;
-	let query = `${baseURL}/get-owner-tokens?smartContract=${contract}&chain=${chain}&owner=${owner}`;
+	const { contract, network, openSeaSlug } = issuer;
+	const blockchain = issuer?.blockchain ?? "ethereum";
+	let query = `${baseURL}/get-owner-tokens?smartContract=${contract}&network=${network}&owner=${owner}&blockchain=${blockchain}&ipfsBaseUrl=${ipfsBaseUrl}`;
 	if(openSeaSlug) query += `&openSeaSlug=${openSeaSlug}`;
 	return tokenRequest(query, false);
 };
@@ -32,3 +37,4 @@ export const tokenRequest = async (query:string, silenceRequestError:boolean) =>
 		throw new Error(`HTTP error.`);
 	}
 }
+

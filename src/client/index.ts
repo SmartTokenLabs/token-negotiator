@@ -18,6 +18,7 @@ declare global {
 		KeyshapeJS?: any;
 		tokenToggleSelection: any;
 		ethereum: any;
+		solana;
 	}
 }
 

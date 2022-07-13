@@ -50,9 +50,9 @@ export class Web3WalletProvider {
 
 	}
 
-	registerNewWalletAddress ( address: string, chainId: string, provider: any ) {
+	registerNewWalletAddress ( address: string, chainId: string, provider: any, blockChain='evm' ) {
         
-		this.state.addresses.push({ address, chainId, provider });
+		this.state.addresses.push({ address, chainId, provider, blockChain });
 
 		return this.state.addresses;
 
@@ -145,6 +145,27 @@ export class Web3WalletProvider {
 
 		return registeredWalletAddress;
 
+	}
+
+	async Phantom () {
+
+		logger(2, 'connect Phantom');
+    
+		if (typeof window.solana !== 'undefined') {
+            
+			const connection = await window.solana.connect();
+
+			const accountAddress:string = connection.publicKey.toBase58();
+
+			// mainnet-beta, 
+			return this.registerNewWalletAddress(accountAddress, "mainnet-beta", window.solana, 'solana');
+
+		} else {
+
+			throw new Error("MetaMask is not available. Please check the extension is supported and active.");
+
+		}
+        
 	}
 
 	async SafeConnect(){
