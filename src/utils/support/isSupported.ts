@@ -1,8 +1,5 @@
 
 import { getBrowserData } from './getBrowserData';
-import { keys } from 'ts-transformer-keys';
-import { logger } from '@tokenscript/attestation/dist/libs/utils';
-
 
 interface BrowserDataInterface {
   iE: boolean
@@ -38,7 +35,6 @@ export const isBrowserDeviceWalletSupported = (unsupportedDeviceAndBrowserConfig
   let broswerIsSupported = true;
   const browserDeviceWalletSupportedMap =  ["iE", "iE9", "edge", "chrome", "phantomJS", "fireFox", "safari", "android", "iOS", "mac", "windows", "webView", "touchDevice", "metaMask", "alphaWallet", "mew", "trust", "goWallet", "status", "imToken", "metaMaskAndroid", "alphaWalletAndroid", "mewAndroid", "imTokenAndroid"];
   browserDeviceWalletSupportedMap.forEach((item) => { 
-    logger(2, item, unsupportedDeviceAndBrowserConfig[item as keyof BrowserDataInterface], browserData[item as keyof BrowserDataInterface]);
     if(
       unsupportedDeviceAndBrowserConfig[item as keyof BrowserDataInterface] &&
       unsupportedDeviceAndBrowserConfig[item as keyof BrowserDataInterface] === true &&
