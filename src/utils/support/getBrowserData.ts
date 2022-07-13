@@ -1,5 +1,5 @@
 export const getBrowserData = () => {
-
+  
   const inBrowser = typeof window !== "undefined";
   const UA = inBrowser && window.navigator.userAgent.toLowerCase();
 
@@ -30,20 +30,24 @@ export const getBrowserData = () => {
 
   // detect wallet
 
-  if (typeof ethereum === "undefined") var ethereum = { 
-    isMetaMask: false, 
-    isAlphaWallet: false,
-    isTrust: false,
-    isStatusWallet: false,
-    isGoWallet: false,
-  };
+  let windowEthereum = window.ethereum;
 
-  const isMetaMask = isTouchDevice && ethereum.isMetaMask;
-  const isAlphaWallet = isTouchDevice && ethereum.isAlphaWallet;
-  const isTrust = isTouchDevice && ethereum.isTrust;
-  const isStatusWallet = isTouchDevice && ethereum.isStatusWallet;
-  const isGoWallet = isTouchDevice && ethereum.isGoWallet;
-  const isMyEthereumWallet =isTouchDevice && ethereum.isTrust && ethereum.isMetaMask;
+  if (typeof window.ethereum === "undefined") {
+    windowEthereum = { 
+      isMetaMask: false, 
+      isAlphaWallet: false,
+      isTrust: false,
+      isStatusWallet: false,
+      isGoWallet: false,
+    };
+  }  
+
+  const isMetaMask = isTouchDevice && windowEthereum.isMetaMask;
+  const isAlphaWallet = isTouchDevice && windowEthereum.isAlphaWallet;
+  const isTrust = isTouchDevice && windowEthereum.isTrust;
+  const isStatusWallet = isTouchDevice && windowEthereum.isStatusWallet;
+  const isGoWallet = isTouchDevice && windowEthereum.isGoWallet;
+  const isMyEthereumWallet =isTouchDevice && windowEthereum.isTrust && windowEthereum.isMetaMask;
   const isImToken = !!navigator.userAgent.match(/\simToken\//);
   
   return {
@@ -65,6 +69,10 @@ export const getBrowserData = () => {
     trust: isTrust,
     goWallet: isGoWallet,
     status: isStatusWallet,
-    isImToken: isImToken
+    imToken: isImToken,
+    metaMaskAndroid: isAndroid && windowEthereum.isMetaMask,
+    alphaWalletAndroid: isAndroid && windowEthereum.isAlphaWallet,
+    mewAndroid: isAndroid && windowEthereum.isTrust && windowEthereum.isMetaMask,
+    imTokenAndroid: isAndroid && isImToken,
   };
 };
