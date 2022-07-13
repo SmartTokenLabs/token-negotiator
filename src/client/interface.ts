@@ -40,10 +40,9 @@ export interface IssuerConfigInterface {
 export interface NegotiationInterface {
     type: string;
     issuers?: (OnChainTokenConfig | OffChainTokenConfig)[];
-    uiOptions: UIOptionsInterface;
+    uiOptions?: UIOptionsInterface;
     autoLoadTokens?: number | boolean;
     autoEnableTokens?: boolean;
-    autoPopup?: boolean;
     messagingForceTab?: boolean;
     safeConnectOptions?: SafeConnectOptions;
     unSupported?: {

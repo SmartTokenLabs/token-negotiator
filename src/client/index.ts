@@ -28,11 +28,11 @@ const defaultConfig: NegotiationInterface = {
 		uiType: "popup",
 		containerElement: ".overlay-tn",
 		openingHeading: "Validate your token ownership for access",
-		issuerHeading: "Detected tokens"
+		issuerHeading: "Detected tokens",
+		autoPopup: true
 	},
 	autoLoadTokens: true,
 	autoEnableTokens: true,
-	autoPopup: true,
 	messagingForceTab: false
 }
 
@@ -217,7 +217,7 @@ export class Client {
 		if (this.config.autoEnableTokens && Object.keys(this.tokenStore.getSelectedTokens()).length)
 			this.eventSender.emitSelectedTokensToClient(this.tokenStore.getSelectedTokens())
 
-		if (openPopup || (this.config.autoPopup === true && autoOpenPopup))
+		if (openPopup || (this.config.uiOptions.autoPopup === true && autoOpenPopup))
 			this.ui.openOverlay();
 	}
 
