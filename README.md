@@ -356,18 +356,20 @@ This table lists all possible configuration options for Token Negotiator client.
 
 ### Issuer Configuration
 
-| Property Name          | Description                                                                    | On/Off Chain | Required | Type    |  
-|------------------------|--------------------------------------------------------------------------------|--------------|----------|---------|
-| collectionID           | A unique ID for the token issuer                                               | Both         | Y        | string  |
-| onChain                | Whether this is an on or off-chain token                                       | Both         | Y        | boolean |
-| title                  | Collection title: loaded from API if not specified                             | Both         | OffChain | string  |
-| image                  | Collection image URL: loaded from API if not specified                         | Both         | OffChain | string  |
-| contract               | Ethereum contract address for the collection                                   | OnChain      | Y        | string  |
-| chain                  | Ethereum chain for the collection                                              | OnChain      | Y        | string  |
-| tokenOrigin            | The origin URL for off-chain tokens                                            | OffChain     | Y        | string  |
-| unEndPoint             | URL for the unpredictable number service                                       | OffChain     | Y        | string  |
-| base64senderPublicKeys | An array of base64 encoded ticket issuer public keys, indexed by conference ID | OffChain     | Y        | object  |
-| base64attestorPubKey   | The base64 encoded public key of the identity attestation issuer               | OffChain     | Y        | string  |
+| Property Name          | Description                                                                       | On/Off Chain | Required | Type    |  
+|------------------------|-----------------------------------------------------------------------------------|--------------|----------|---------|
+| collectionID           | A unique ID for the token issuer                                                  | Both         | Y        | string  |
+| onChain                | Whether this is an on or off-chain token                                          | Both         | Y        | boolean |
+| title                  | Collection title: loaded from API if not specified                                | Both         | OffChain | string  |
+| image                  | Collection image URL: loaded from API if not specified                            | Both         | OffChain | string  |
+| contract               | Ethereum contract address for the collection                                      | OnChain      | Y        | string  |
+| chain                  | Ethereum chain for the collection                                                 | OnChain      | Y        | string  |
+| openSeaSlug            | The collection name for OpenSea listing. Improves performance for token fetching. | OnChain      | N        | string  |
+| filters                | Filters for off-chain token properties                                            | OffChain     | N        | object  |
+| tokenOrigin            | The origin URL for off-chain tokens                                               | OffChain     | Y        | string  |
+| unEndPoint             | URL for the unpredictable number service                                          | OffChain     | Y        | string  |
+| base64senderPublicKeys | An array of base64 encoded ticket issuer public keys, indexed by conference ID    | OffChain     | Y        | object  |
+| base64attestorPubKey   | The base64 encoded public key of the identity attestation issuer                  | OffChain     | Y        | string  |
 
 ### Outlet Configuration
 

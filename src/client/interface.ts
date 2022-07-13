@@ -23,7 +23,7 @@ export interface IssuerConfigInterface {
     onChain: boolean;
     title?: string;
     image?: string;
-    filters: {};
+    filters?: {};
 }
 
 export interface NegotiationInterface {
