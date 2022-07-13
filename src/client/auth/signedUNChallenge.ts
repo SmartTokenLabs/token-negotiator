@@ -11,6 +11,10 @@ export class SignedUNChallenge extends AbstractAuthentication implements Authent
 
 	async getTokenProof(_issuerConfig: OnChainTokenConfig | OffChainTokenConfig, _tokens: Array<any>, web3WalletProvider: Web3WalletProvider, request: AuthenticateInterface): Promise<AuthenticationResult> {
 
+		if (web3WalletProvider.getConnectedWalletData().length === 0){
+			await web3WalletProvider.connectWith("MetaMask");
+		}
+
 		let address = web3WalletProvider.getConnectedWalletData()[0].address;
 
 		let currentProof: AuthenticationResult|null = this.getSavedProof(address);
