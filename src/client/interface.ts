@@ -4,20 +4,9 @@ import {SafeConnectOptions} from "../wallet/SafeConnectProvider";
 import {BrowserDataInterface} from "../utils/support/isSupported";
 
 export interface OffChainTokenConfig extends IssuerConfigInterface {
-    onChain: false,
-    tokenName?: any;
-    attestationOrigin?: any;
-    tokenOrigin?: any;
-    tokenUrlName?: any;
-    tokenSecretName?: any;
-    tokenIdName?: any;
-    unsignedTokenDataName?: any;
-    itemStorageKey?: any;
-    ethKeyitemStorageKey?: any;
-    unEndPoint?: any;
-    tokenParser?: any;
-    smartContractAddress?: any;
-    symbol?: any;
+    onChain: false;
+    tokenOrigin?: string;
+    unEndPoint?: string;
     base64senderPublicKeys: {[key: string]: string};
     base64attestorPubKey: string;
 }

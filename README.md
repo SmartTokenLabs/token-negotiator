@@ -99,24 +99,21 @@ Include the following Javascript to configure the Token Negotiator with issuers 
         },
         { collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
     ],
-    options: {
-      overlay: {
-          openingHeading: "Open a new world of discounts available with your tokens.",
-          issuerHeading: "Get discount with Ticket",
-          repeatAction: "try again",
-          theme: "light",
-          position: "bottom-right"
-      },
-      filters: {},
-      unSupported: {
-          config: {
-              // options to test against : ["iE", "iE9", "edge", "chrome", "phantomJS", "fireFox", "safari", "android", "iOS", "mac", "windows", "webView", "touchDevice", "metaMask", "alphaWallet", "mew", "trust", "goWallet", "status", "imToken", "metaMaskAndroid", "alphaWalletAndroid", "mewAndroid", "imTokenAndroid"];
-              metaMaskAndroid: true,
-              alphaWalletAndroid: true,
-              mewAndroid: true,
-              imTokenAndroid: true,
-          }
-      }
+    uiOptions: {
+        openingHeading: "Open a new world of discounts available with your tokens.",
+        issuerHeading: "Get discount with Ticket",
+        repeatAction: "try again",
+        theme: "light",
+        position: "bottom-right"
+    },
+    unSupported: {
+        config: {
+            // options to test against : ["iE", "iE9", "edge", "chrome", "phantomJS", "fireFox", "safari", "android", "iOS", "mac", "windows", "webView", "touchDevice", "metaMask", "alphaWallet", "mew", "trust", "goWallet", "status", "imToken", "metaMaskAndroid", "alphaWalletAndroid", "mewAndroid", "imTokenAndroid"];
+            metaMaskAndroid: true,
+            alphaWalletAndroid: true,
+            mewAndroid: true,
+            imTokenAndroid: true,
+        }
     }
   });
 
@@ -162,8 +159,7 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
         base64attestorPubKey: ""
       },
       { collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
-    ],
-    options: {}
+    ]
   });
 
   negotiator.on('tokens', (issuerTokens) => {
@@ -217,14 +213,14 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
   * 
   */
   const offChainIssuer = { 
-    collectionID: 'devcon', 
+    collectionID: 'devcon',
+    onChain: false,  
     title: "Devcon",
-    onChain: false,
+    image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
     tokenOrigin: "http://localhost:3002/",
     attestationOrigin: "https://stage.attestation.id/",
     unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
-    image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
-    base64senderPublicKey: "",
+    base64senderPublicKeys: "",
     base64attestorPubKey: ""
   }
   
@@ -283,15 +279,12 @@ Configure the library using the following example.
                     { collectionID: "stl-rnd-bayc-derivatives", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'stl-rnd-bayc-derivatives' },
                     { collectionID: "stl-riot-racers", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'stl-rnd-riot-racers' }
                 ],
-                options: {
-                    overlay: {
+                uiOptions: {
                     openingHeading: "Open a new world of discounts available with your tokens.",
                     issuerHeading: "Get discount with Ticket",
                     repeatAction: "try again",
                     theme: "light",
                     position: "bottom-right"
-                    },
-                    filters: {},
                 }
             });
 
@@ -361,16 +354,30 @@ This table lists all possible configuration options for Token Negotiator client.
 | config                     | Browsers that are unsupported.                                                                                                                                                                                                                                 | Y        | BrowserDataInterface                          |                                          |
 | errorMessage               | Error message to show for unsupported browsers.                                                                                                                                                                                                                | Y        | string                                        |                                          |
 
-### On-Chain Configuration
+### Issuer Configuration
 
-| Property Name | Description                                            | Required | Type    |  
-|---------------|--------------------------------------------------------|----------|---------|
-| collectionID  | A unique ID for the token issuer                       | Y        | string  |
-| onChain       | Whether this is an on or off-chain token               | Y        | boolean |
-| title         | Collection title: loaded from API if not specified     | N        | string  |
-| image         | Collection image URL: loaded from API if not specified | N        | string  |
-| contract      | Ethereum contract address for the collection           | Y        | string  |
-| chain         | Ethereum chain for the collection                      | Y        | string  |
+| Property Name          | Description                                                                    | On/Off Chain | Required | Type    |  
+|------------------------|--------------------------------------------------------------------------------|--------------|----------|---------|
+| collectionID           | A unique ID for the token issuer                                               | Both         | Y        | string  |
+| onChain                | Whether this is an on or off-chain token                                       | Both         | Y        | boolean |
+| title                  | Collection title: loaded from API if not specified                             | Both         | OffChain | string  |
+| image                  | Collection image URL: loaded from API if not specified                         | Both         | OffChain | string  |
+| contract               | Ethereum contract address for the collection                                   | OnChain      | Y        | string  |
+| chain                  | Ethereum chain for the collection                                              | OnChain      | Y        | string  |
+| tokenOrigin            | The origin URL for off-chain tokens                                            | OffChain     | Y        | string  |
+| unEndPoint             | URL for the unpredictable number service                                       | OffChain     | Y        | string  |
+| base64senderPublicKeys | An array of base64 encoded ticket issuer public keys, indexed by conference ID | OffChain     | Y        | object  |
+| base64attestorPubKey   | The base64 encoded public key of the identity attestation issuer               | OffChain     | Y        | string  |
+
+### Outlet Configuration
+
+| Property Name          | Description                                                                        | Required | Type           |  
+|------------------------|------------------------------------------------------------------------------------|----------|----------------|
+| collectionID           | A unique ID for the token issuer. This should match the issuer config collectionID |          |                |
+| attestationOrigin      | The attestation origin URL for the off-chain token                                 | Y        | string         |
+| tokenParser            | A custom token parser used for decoding attestations                               | N        | decoding class |
+| base64senderPublicKeys | An array of base64 encoded ticket issuer public keys, indexed by conference ID     | Y        | object         |
+| base64attestorPubKey   | The base64 encoded public key of the identity attestation issuer                   | Y        | string         |
 
 ## New Token Issuers
 
