@@ -32,7 +32,11 @@ describe('browser simulations', () => {
 			trust: false,
 			goWallet: false,
 			status: false,
-			isImToken: false
+			imToken: false,
+			metaMaskAndroid: false,
+			alphaWalletAndroid: false,
+			mewAndroid: false,
+			imTokenAndroid: false,
 		});
 	});
 });

@@ -62,10 +62,8 @@ export class Client {
 
 	constructor(config: NegotiationInterface) {
 
-		let overlayConfig = {...defaultConfig.options.overlay, ...config?.options?.overlay};
-		config.options = {filters: config.options?.filters, overlay: overlayConfig}
-
-		this.config = Object.assign(defaultConfig, config);
+		this.config = {...defaultConfig, ...config};
+		this.config.options.overlay = {...defaultConfig.options.overlay, ...config?.options?.overlay};
 
 		this.negotiateAlreadyFired = false;
 
@@ -360,12 +358,18 @@ export class Client {
 		this.eventSender.emitSelectedTokensToClient(selectedTokens);
 	}
 
+	isCurrentDeviceSupported(): boolean{
+		return isBrowserDeviceWalletSupported(this.config?.options?.unSupported?.config) !== false;
+	}
+
 	async authenticate(authRequest: AuthenticateInterface) {
-		if(isBrowserDeviceWalletSupported(this.config?.options?.unSupported?.config) === false) {
-			setTimeout(() => {
-				this.ui.showError(this.config?.options?.unSupported?.errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
-				this.ui.openOverlay();
-			}, 1000);
+		if(!this.isCurrentDeviceSupported()) {
+			if (this.ui) {
+				setTimeout(() => {
+					this.ui.showError(this.config?.options?.unSupported?.errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
+					this.ui.openOverlay();
+				}, 1000);
+			}
 			throw new Error(this.config?.options?.unSupported?.errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
 		}
 		const { issuer, unsignedToken } = authRequest;

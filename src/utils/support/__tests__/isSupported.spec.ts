@@ -27,7 +27,11 @@ describe('browser simulations', () => {
 			trust: true,
 			goWallet: true,
 			status: true,
-			isImToken: true
+			imToken: true,
+			metaMaskAndroid: true,
+			alphaWalletAndroid: true,
+			mewAndroid: true,
+			imTokenAndroid: true,
 		})).toEqual(true);
 	});
 	test('check if browser is not supported', () => {
@@ -62,7 +66,11 @@ describe('browser simulations', () => {
 			trust: true,
 			goWallet: true,
 			status: true,
-			isImToken: true
+			imToken: true,
+			metaMaskAndroid: true,
+			alphaWalletAndroid: true,
+			mewAndroid: true,
+			imTokenAndroid: true,
 		})).toEqual(false);
 	});
 });

@@ -21,14 +21,19 @@ interface BrowserDataInterface {
   trust: boolean
   goWallet: boolean
   status: boolean
-  isImToken: boolean
+  imToken: boolean
+
+  metaMaskAndroid: boolean
+  alphaWalletAndroid: boolean
+  mewAndroid: boolean
+  imTokenAndroid: boolean
 }
 
 export const isBrowserDeviceWalletSupported = (unsupportedDeviceAndBrowserConfig:any) => {
   if(unsupportedDeviceAndBrowserConfig === undefined || unsupportedDeviceAndBrowserConfig === null) return true;
   const browserData = getBrowserData();
   let broswerIsSupported = true;
-  const browserDeviceWalletSupportedMap =  ["iE", "iE9", "edge", "chrome", "phantomJS", "fireFox", "safari", "android", "iOS", "mac", "windows", "touchDevice", "metaMask", "alphaWallet", "mew", "trust", "goWallet", "status", "isImToken"];
+  const browserDeviceWalletSupportedMap =  ["iE", "iE9", "edge", "chrome", "phantomJS", "fireFox", "safari", "android", "iOS", "mac", "windows", "webView", "touchDevice", "metaMask", "alphaWallet", "mew", "trust", "goWallet", "status", "imToken", "metaMaskAndroid", "alphaWalletAndroid", "mewAndroid", "imTokenAndroid"];
   browserDeviceWalletSupportedMap.forEach((item) => { 
     if(
       unsupportedDeviceAndBrowserConfig[item as keyof BrowserDataInterface] &&
