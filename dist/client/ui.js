@@ -7,24 +7,26 @@ var Ui = (function () {
     }
     Ui.prototype.initialize = function () {
         var _this = this;
-        this.popupContainer = document.querySelector(this.options.containerElement);
-        requiredParams(this.popupContainer, 'No entry point element with the class name of ' + this.options.containerElement + ' found.');
-        if (this.popupContainer) {
-            this.initializeUIType();
-            this.addTheme();
-            this.viewContainer = this.popupContainer.querySelector(".view-content-tn");
-            this.loadContainer = this.popupContainer.querySelector(".load-container-tn");
-            this.retryButton = this.loadContainer.querySelector('.dismiss-error-tn');
-            this.retryButton.addEventListener('click', function () {
-                _this.dismissLoader();
-                if (_this.retryCallback) {
-                    _this.retryCallback();
-                    _this.retryCallback = undefined;
-                    _this.retryButton.innerText = "Dismiss";
-                }
-            });
-            this.updateUI(Start);
-        }
+        setTimeout(function () {
+            _this.popupContainer = document.querySelector(_this.options.containerElement);
+            requiredParams(_this.popupContainer, 'No entry point element with the class name of ' + _this.options.containerElement + ' found.');
+            if (_this.popupContainer) {
+                _this.initializeUIType();
+                _this.addTheme();
+                _this.viewContainer = _this.popupContainer.querySelector(".view-content-tn");
+                _this.loadContainer = _this.popupContainer.querySelector(".load-container-tn");
+                _this.retryButton = _this.loadContainer.querySelector('.dismiss-error-tn');
+                _this.retryButton.addEventListener('click', function () {
+                    _this.dismissLoader();
+                    if (_this.retryCallback) {
+                        _this.retryCallback();
+                        _this.retryCallback = undefined;
+                        _this.retryButton.innerText = "Dismiss";
+                    }
+                });
+                _this.updateUI(Start);
+            }
+        }, 0);
     };
     Ui.prototype.initializeUIType = function () {
         var _this = this;

@@ -4,7 +4,7 @@ export var isBrowserDeviceWalletSupported = function (unsupportedDeviceAndBrowse
         return true;
     var browserData = getBrowserData();
     var broswerIsSupported = true;
-    var browserDeviceWalletSupportedMap = ["iE", "iE9", "edge", "chrome", "phantomJS", "fireFox", "safari", "android", "iOS", "mac", "windows", "touchDevice", "metaMask", "alphaWallet", "mew", "trust", "goWallet", "status", "isImToken"];
+    var browserDeviceWalletSupportedMap = ["iE", "iE9", "edge", "chrome", "phantomJS", "fireFox", "safari", "android", "iOS", "mac", "windows", "webView", "touchDevice", "metaMask", "alphaWallet", "mew", "trust", "goWallet", "status", "imToken", "metaMaskAndroid", "alphaWalletAndroid", "mewAndroid", "imTokenAndroid"];
     browserDeviceWalletSupportedMap.forEach(function (item) {
         if (unsupportedDeviceAndBrowserConfig[item] &&
             unsupportedDeviceAndBrowserConfig[item] === true &&

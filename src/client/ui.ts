@@ -51,32 +51,37 @@ export class Ui {
 
 	initialize(){
 
-		this.popupContainer = document.querySelector(this.options.containerElement);
+		setTimeout(() => {
 
-		requiredParams(this.popupContainer, 'No entry point element with the class name of ' + this.options.containerElement + ' found.');
+			this.popupContainer = document.querySelector(this.options.containerElement);
 
-		if (this.popupContainer) {
+			requiredParams(this.popupContainer, 'No entry point element with the class name of ' + this.options.containerElement + ' found.');
 
-			this.initializeUIType();
+			if (this.popupContainer) {
 
-			this.addTheme();
+				this.initializeUIType();
 
-			this.viewContainer = this.popupContainer.querySelector(".view-content-tn");
-			this.loadContainer = this.popupContainer.querySelector(".load-container-tn");
-			this.retryButton = this.loadContainer.querySelector('.dismiss-error-tn');
+				this.addTheme();
 
-			this.retryButton.addEventListener('click', () => {
-				this.dismissLoader();
-				if (this.retryCallback) {
-					this.retryCallback();
-					this.retryCallback = undefined;
-					this.retryButton.innerText = "Dismiss";
-				}
-			});
+				this.viewContainer = this.popupContainer.querySelector(".view-content-tn");
+				this.loadContainer = this.popupContainer.querySelector(".load-container-tn");
+				this.retryButton = this.loadContainer.querySelector('.dismiss-error-tn');
 
-			this.updateUI(Start);
+				this.retryButton.addEventListener('click', () => {
+					this.dismissLoader();
+					if (this.retryCallback) {
+						this.retryCallback();
+						this.retryCallback = undefined;
+						this.retryButton.innerText = "Dismiss";
+					}
+				});
 
-		}
+				this.updateUI(Start);
+
+			}
+
+		}, 0);
+
 	}
 
 	initializeUIType(){
@@ -193,10 +198,8 @@ export class Ui {
 	}
 
 	private addTheme() {
-		setTimeout(() => {
-			let refTokenSelector = document.querySelector(".overlay-tn");
-			if (refTokenSelector) refTokenSelector.classList.add((this.options?.theme ?? 'light') + "-tn");
-		}, 0);
+		let refTokenSelector = document.querySelector(".overlay-tn");
+		if (refTokenSelector) refTokenSelector.classList.add((this.options?.theme ?? 'light') + "-tn");
 	}
 
 	private assignFabButtonAnimation() {

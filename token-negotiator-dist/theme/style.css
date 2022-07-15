@@ -119,7 +119,7 @@
 }
 
 .overlay-tn.dark-tn .headline-container-tn {
-  border-bottom: 1px solid #101010;
+  border-bottom: solid 1px #1f1f1f;
 }
 
 .overlay-tn.dark-tn .wallet-selection-view-tn,
@@ -176,7 +176,7 @@
 }
 
 .overlay-tn.dark-tn .overlay-content-tn .token-tn:last-child {
-  border-bottom: solid 1px #161616;
+  border-bottom: solid 1px #1f1f1f;
 }
 
 .overlay-tn.dark-tn .overlay-content-tn .headline-tn,
@@ -186,22 +186,26 @@
   color: white;
 }
 
+.overlay-tn.dark-tn .opening-btn-tn:hover,
+.overlay-tn.dark-tn .tokens-btn-tn:hover,
+.overlay-tn.dark-tn .connect-btn-tn:hover,
+.overlay-tn.dark-tn .btn-tn:hover {
+  background: #343434 !important;
+}
+
 .overlay-tn.dark-tn .opening-btn-tn,
 .overlay-tn.dark-tn li.issuer-connect-banner-tn .connect-btn-tn, 
 .overlay-tn.dark-tn li.issuer-connect-banner-tn .tokens-btn-tn,
 .overlay-tn.dark-tn .btn-tn {
   color: white;
-  background: #101010;
-  border: 1px solid gray;
+  background: #282828;
+  border: 1px solid #303030;
   font-weight: 400;
 }
 
-.overlay-tn.dark-tn li.issuer-connect-banner-tn .connect-btn-tn, 
-.overlay-tn.dark-tn li.issuer-connect-banner-tn .tokens-btn-tn,
-.overlay-tn.dark-tn .btn-tn {
-  border: 1px solid #101010;
+.overlay-tn.dark-tn .dismiss-error-tn {
+  border: 1px solid #404040 !important;
 }
-
 
 .overlay-tn .connect-btn-tn {
   transition: all 1s;
@@ -218,8 +222,8 @@
 }
 
 .overlay-tn.dark-tn .overlay-content-tn .toggle-tn input.mobileToggle-tn+label:after {
-  background: #0e0e0e;
-  border: 1px solid gray;
+  background: #282828;
+  border: 1px solid #323232;
 }
 
 .overlay-tn.dark-tn .overlay-content-tn .toggle-tn input.mobileToggle-tn:checked+label {
@@ -495,7 +499,7 @@
   width: 100%;
   height: 100%;
   z-index: 200;
-  background-color: rgba(52, 52, 52, 0.70);
+  background-color: rgba(52, 52, 52, 0.75);
   text-align: center;
   display: flex;
   justify-content: center;
@@ -585,6 +589,10 @@
 .lds-ellipsis-sm div {
   background: #000;
   top: 0;
+}
+
+.dark-tn .lds-ellipsis-sm div {
+  background: #fff;
 }
 
 li.issuer-connect-banner-tn {
@@ -722,7 +730,6 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
   z-index: 100;
   height: inherit;
   width: 100%;
-  background: white;
 }
 
 .overlay-tn .overlay-content-tn .opening-content-view-tn .inner-content-tn .inner-content-block-tn  {

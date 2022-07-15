@@ -43,6 +43,7 @@ export declare class Client {
     passiveNegotiationStrategy(): Promise<void>;
     connectTokenIssuer(issuer: string): Promise<any>;
     updateSelectedTokens(selectedTokens: any): void;
+    isCurrentDeviceSupported(): boolean;
     authenticate(authRequest: AuthenticateInterface): Promise<any>;
     private handleProofError;
     eventSender: {
