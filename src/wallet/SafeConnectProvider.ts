@@ -8,7 +8,6 @@ import {SafeConnectChallenge} from "../client/auth/safeConnectChallenge";
 
 export enum SafeConnectAction {
 	CONNECT = "connect",
-	SIGN_UN = "sign_un",
 	NEW_CHALLENGE = "new_challenge"
 }
 
@@ -64,7 +63,8 @@ export class SafeConnectProvider {
 			proofData = {
 				type: proofModel.TYPE,
 				data: {
-					attestation: attest.data.attestation
+					attestation: attest.data.attestation,
+					address: attest.data.address
 				},
 				target: {
 					address: attest.data.address
@@ -113,10 +113,11 @@ export class SafeConnectProvider {
 	public async signUNChallenge(un: UNInterface){
 
 		let res: ResponseInterfaceBase = await this.messaging.sendMessage({
-			action: SafeConnectAction.SIGN_UN,
+			action: SafeConnectAction.CONNECT,
 			origin: this.options.url,
 			timeout: 0,
 			data: {
+				type: "signed_un",
 				un: encodeURIComponent(JSON.stringify(un))
 			}
 		}, true);
