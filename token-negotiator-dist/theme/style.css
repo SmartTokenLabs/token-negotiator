@@ -265,6 +265,15 @@
   opacity: 1;
 }
 
+.overlay-tn .opening-heading-tn, 
+.overlay-tn .wallet-button-tn p,
+.overlay-tn .issuer-connect-title,
+.overlay-tn .loader-msg-tn h4,
+.overlay-tn .headline-container-tn {
+  font-size: 1rem; 
+  font-size: max(1rem, 16px);
+}
+
 .overlay-tn .no-tokens-tn {
   padding: 0 1rem;
 }
@@ -344,10 +353,11 @@
 }
 
 .overlay-tn .overlay-content-tn .headline-tn {
-  width: 246px;
+  width: auto;
   margin: 0;
   padding: 21px 12px 13px 12px;
-  font-size: 1.2rem;
+  font-size: 1.2rem; 
+  font-size: max(1.2rem, 18px);
   font-weight: bold;
   line-height: 1.71rem;
 }
@@ -392,14 +402,17 @@
 }
 
 .overlay-tn .token-title-tn {
+  font-size: 1rem;
+  font-size: max(1rem, 16px);
   padding: 0;
   margin: 0;
   font-weight: 400;
 }
 
 .overlay-tn .overlay-content-tn .token-tn .detail-tn {
-  height: 20px;
-  font-size: 0.7rem;
+  min-height: 20px;
+  font-size: 0.7rem; 
+  font-size: max(0.7rem, 11px);
   line-height: 1.3rem;
   margin: 0;
   white-space: nowrap;
@@ -410,7 +423,8 @@
 
 .overlay-tn .overlay-content-tn .token-tn .title-tn {
   margin: 0;
-  font-size: 1.12rem;
+  font-size: 1.12rem; 
+  font-size: max(1.12rem, 18px);
   color: #000000;
 }
 
@@ -507,12 +521,12 @@
 
 .loader-msg-tn h4 {
   color: #fff;
-  font-size: 16px;
 }
 
 .loader-msg-tn small {
   color: #fff;
-  font-size: 13px;
+  font-size: 0.81rem;
+  font-size: max(0.81rem, 13px);
 }
 
 /* loader */
@@ -602,7 +616,8 @@ li.token-tn, .load-more-tn {
 }
 
 .overlay-tn .opening-btn-tn, li.issuer-connect-banner-tn .connect-btn-tn, li.issuer-connect-banner-tn .tokens-btn-tn {
-  font-size: 0.75em;
+  font-size: 0.75rem;
+  font-size: max(0.75rem, 12px);
   font-weight: 200;
   border: none;
   padding: 7px 15px 7px 15px;
@@ -616,7 +631,8 @@ li.token-tn, .load-more-tn {
 }
 
 .opening-btn-tn, li.issuer-connect-banner-tn .connect-btn-tn, li.issuer-connect-banner-tn .tokens-btn-tn, .btn-tn {
-  font-size: 0.75em;
+  font-size: 0.75rem;
+  font-size: max(0.75rem, 12px);
   font-weight: 200;
   border: none;
   padding: 7px 15px 7px 15px;
@@ -629,6 +645,8 @@ li.token-tn, .load-more-tn {
 .dismiss-error-tn {
   margin-top: 20px;
   border: 0 !important;
+  font-size: 0.75rem;
+  font-size: max(0.75rem, 12px);
 }
 
 li.issuer-connect-banner-tn .tokens-btn-tn {
@@ -738,6 +756,7 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
   cursor: pointer;
   border: none;
   font-size: 0.75rem;
+  font-size: max(0.75rem, 12px);
 }
 
 .overlay-tn .overlay-content-tn .opening-content-view-tn .inner-content-tn  {

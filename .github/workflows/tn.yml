@@ -1,0 +1,13 @@
+name: "Token Negotiator CI"
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - "*"
+
+jobs:
+  tn-p1:
+    uses: ./.github/workflows/tn-p1.yml

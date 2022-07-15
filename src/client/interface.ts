@@ -42,7 +42,6 @@ export interface NegotiationInterface {
         overlay: UIOptionsInterface;
         filters: {};
     };
-    onChainKeys?: { [apiName: string]: string };
     ipfsBaseUrl?: string;
     autoLoadTokens?: number | boolean;
     autoEnableTokens?: boolean;
