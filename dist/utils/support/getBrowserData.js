@@ -18,20 +18,22 @@ export var getBrowserData = function () {
         var match_mobile = isMobile("(pointer:coarse)");
         isTouchDevice = match_mobile.matches;
     }
-    if (typeof ethereum === "undefined")
-        var ethereum = {
+    var windowEthereum = window.ethereum;
+    if (typeof window.ethereum === "undefined") {
+        windowEthereum = {
             isMetaMask: false,
             isAlphaWallet: false,
             isTrust: false,
             isStatusWallet: false,
             isGoWallet: false,
         };
-    var isMetaMask = isTouchDevice && ethereum.isMetaMask;
-    var isAlphaWallet = isTouchDevice && ethereum.isAlphaWallet;
-    var isTrust = isTouchDevice && ethereum.isTrust;
-    var isStatusWallet = isTouchDevice && ethereum.isStatusWallet;
-    var isGoWallet = isTouchDevice && ethereum.isGoWallet;
-    var isMyEthereumWallet = isTouchDevice && ethereum.isTrust && ethereum.isMetaMask;
+    }
+    var isMetaMask = isTouchDevice && windowEthereum.isMetaMask;
+    var isAlphaWallet = isTouchDevice && windowEthereum.isAlphaWallet;
+    var isTrust = isTouchDevice && windowEthereum.isTrust;
+    var isStatusWallet = isTouchDevice && windowEthereum.isStatusWallet;
+    var isGoWallet = isTouchDevice && windowEthereum.isGoWallet;
+    var isMyEthereumWallet = isTouchDevice && windowEthereum.isTrust && windowEthereum.isMetaMask;
     var isImToken = !!navigator.userAgent.match(/\simToken\//);
     return {
         iE: isIE,
@@ -52,7 +54,11 @@ export var getBrowserData = function () {
         trust: isTrust,
         goWallet: isGoWallet,
         status: isStatusWallet,
-        isImToken: isImToken
+        imToken: isImToken,
+        metaMaskAndroid: isAndroid && windowEthereum.isMetaMask,
+        alphaWalletAndroid: isAndroid && windowEthereum.isAlphaWallet,
+        mewAndroid: isAndroid && windowEthereum.isTrust && windowEthereum.isMetaMask,
+        imTokenAndroid: isAndroid && isImToken,
     };
 };
 //# sourceMappingURL=getBrowserData.js.map
