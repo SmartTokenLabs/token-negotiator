@@ -91,7 +91,7 @@ Include the following Javascript to configure the Token Negotiator with issuers 
           title: "Devcon",
           onChain: false,
           tokenOrigin: "http://localhost:3002/",
-          attestationOrigin: "https://stage.attestation.id/",
+          attestationOrigin: "https://attestation.id/",
           unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
           image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
           base64senderPublicKey: "",
@@ -100,14 +100,23 @@ Include the following Javascript to configure the Token Negotiator with issuers 
         { collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
     ],
     options: {
-        overlay: {
-            openingHeading: "Open a new world of discounts available with your tokens.",
-            issuerHeading: "Get discount with Ticket",
-            repeatAction: "try again",
-            theme: "light",
-            position: "bottom-right"
-        },
-        filters: {},
+      overlay: {
+          openingHeading: "Open a new world of discounts available with your tokens.",
+          issuerHeading: "Get discount with Ticket",
+          repeatAction: "try again",
+          theme: "light",
+          position: "bottom-right"
+      },
+      filters: {},
+      unSupported: {
+          config: {
+              // options to test against : ["iE", "iE9", "edge", "chrome", "phantomJS", "fireFox", "safari", "android", "iOS", "mac", "windows", "webView", "touchDevice", "metaMask", "alphaWallet", "mew", "trust", "goWallet", "status", "imToken", "metaMaskAndroid", "alphaWalletAndroid", "mewAndroid", "imTokenAndroid"];
+              metaMaskAndroid: true,
+              alphaWalletAndroid: true,
+              mewAndroid: true,
+              imTokenAndroid: true,
+          }
+      }
     }
   });
 
