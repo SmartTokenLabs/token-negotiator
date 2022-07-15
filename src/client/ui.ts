@@ -193,12 +193,10 @@ export class Ui {
 	}
 
 	private addTheme() {
-
-		let refTokenSelector = document.querySelector(".overlay-tn");
-
-		if (refTokenSelector)
-			refTokenSelector.classList.add((this.options?.theme ?? 'light') + "-tn");
-
+		setTimeout(() => {
+			let refTokenSelector = document.querySelector(".overlay-tn");
+			if (refTokenSelector) refTokenSelector.classList.add((this.options?.theme ?? 'light') + "-tn");
+		}, 0);
 	}
 
 	private assignFabButtonAnimation() {
