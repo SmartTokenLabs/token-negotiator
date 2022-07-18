@@ -150,9 +150,6 @@ export class Client {
 			let lookupData = await this.onChainTokenModule.getInitialContractAddressMetaData(tokenData);
 
 			if (lookupData) {
-				// TODO: this might be redundant
-				lookupData.onChain = true;
-
 				// enrich the tokenLookup store with contract meta data
 				this.tokenStore.updateTokenLookupStore(issuer, lookupData);
 			}
