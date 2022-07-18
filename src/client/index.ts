@@ -295,7 +295,7 @@ export class Client {
 
 		let tokens;
 
-		if (config.onChain) {
+		if (config.onChain === true || config.onChain === undefined) {
 
 			let walletProvider = await this.getWalletProvider();
 
