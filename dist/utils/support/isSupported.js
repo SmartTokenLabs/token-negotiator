@@ -1,5 +1,5 @@
 import { getBrowserData } from './getBrowserData';
-export var isBrowserDeviceWalletSupported = function (unsupportedDeviceAndBrowserConfig) {
+export var isUserAgentSupported = function (unsupportedDeviceAndBrowserConfig) {
     if (unsupportedDeviceAndBrowserConfig === undefined || unsupportedDeviceAndBrowserConfig === null)
         return true;
     var browserData = getBrowserData();
