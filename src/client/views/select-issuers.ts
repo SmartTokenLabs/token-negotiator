@@ -250,7 +250,7 @@ export class SelectIssuers extends AbstractView {
 
 			});
 
-			if(!config.onChain) {
+			if(config.onChain === false) {
 
 				const { title, image } = config;
 

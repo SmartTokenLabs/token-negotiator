@@ -88,6 +88,8 @@ export class TokenStore {
 		issuers.forEach((issuer: TokenConfig, i ) => {
 			if (!issuer.collectionID) return;
 
+			if(issuer.onChain === undefined) issuer.onChain = true;
+			
 			issuer.collectionID = this.formatCollectionID(issuer.collectionID);
 
 			if (collectionIds[issuer.collectionID] !== undefined){
