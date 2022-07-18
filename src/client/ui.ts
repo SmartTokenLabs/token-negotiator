@@ -7,13 +7,14 @@ import {ViewInterface, ViewConstructor, AbstractView} from "./views/view-interfa
 export type UIType = "popup" | "inline"; // TODO: implement modal too
 
 export interface UIOptionsInterface {
-	uiType?: UIType,
-	containerElement?: string,
-    openingHeading?: string,
-    issuerHeading?: string,
-    repeatAction?: string,
-    theme?: string,
-    position?: string
+	uiType?: UIType;
+	containerElement?: string;
+    openingHeading?: string;
+    issuerHeading?: string;
+    repeatAction?: string;
+    theme?: string;
+    position?: string;
+	autoPopup?: boolean;
 }
 
 export class Ui {

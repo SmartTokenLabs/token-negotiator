@@ -94,29 +94,29 @@ Include the following Javascript to configure the Token Negotiator with issuers 
           attestationOrigin: "https://attestation.id/",
           unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
           image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
-          base64senderPublicKey: "",
-          base64attestorPubKey: ""
+          base64senderPublicKeys: 
+              { 
+                  "AttestationDAO" : 'MFYwEAYHKoZIzj0CAQYFK...'
+              },
+          base64attestorPubKey: "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ="
         },
         { collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
     ],
-    options: {
-      overlay: {
-          openingHeading: "Open a new world of discounts available with your tokens.",
-          issuerHeading: "Get discount with Ticket",
-          repeatAction: "try again",
-          theme: "light",
-          position: "bottom-right"
-      },
-      filters: {},
-      unSupported: {
-          config: {
-              // options to test against : ["iE", "iE9", "edge", "chrome", "phantomJS", "fireFox", "safari", "android", "iOS", "mac", "windows", "webView", "touchDevice", "metaMask", "alphaWallet", "mew", "trust", "goWallet", "status", "imToken", "metaMaskAndroid", "alphaWalletAndroid", "mewAndroid", "imTokenAndroid"];
-              metaMaskAndroid: true,
-              alphaWalletAndroid: true,
-              mewAndroid: true,
-              imTokenAndroid: true,
-          }
-      }
+    uiOptions: {
+        openingHeading: "Open a new world of discounts available with your tokens.",
+        issuerHeading: "Get discount with Ticket",
+        repeatAction: "try again",
+        theme: "light",
+        position: "bottom-right"
+    },
+    unSupported: {
+        config: {
+            // options to test against : ["iE", "iE9", "edge", "chrome", "phantomJS", "fireFox", "safari", "android", "iOS", "mac", "windows", "webView", "touchDevice", "metaMask", "alphaWallet", "mew", "trust", "goWallet", "status", "imToken", "metaMaskAndroid", "alphaWalletAndroid", "mewAndroid", "imTokenAndroid"];
+            metaMaskAndroid: true,
+            alphaWalletAndroid: true,
+            mewAndroid: true,
+            imTokenAndroid: true,
+        }
     }
   });
 
@@ -158,12 +158,14 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
         attestationOrigin: "https://stage.attestation.id/",
         unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
         image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
-        base64senderPublicKey: "",
-        base64attestorPubKey: ""
+        base64senderPublicKeys: 
+            { 
+                "AttestationDAO" : 'MFYwEAYHKoZIzj0CAQYFK...'
+            },
+        base64attestorPubKey: "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ="
       },
       { collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
-    ],
-    options: {}
+    ]
   });
 
   negotiator.on('tokens', (issuerTokens) => {
@@ -217,15 +219,18 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
   * 
   */
   const offChainIssuer = { 
-    collectionID: 'devcon', 
+    collectionID: 'devcon',
+    onChain: false,  
     title: "Devcon",
-    onChain: false,
+    image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
     tokenOrigin: "http://localhost:3002/",
     attestationOrigin: "https://stage.attestation.id/",
     unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
-    image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
-    base64senderPublicKey: "",
-    base64attestorPubKey: ""
+    base64senderPublicKeys: 
+        { 
+            "AttestationDAO" : 'MFYwEAYHKoZIzj0CAQYFK...'
+        },
+    base64attestorPubKey: "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ="
   }
   
 ````
@@ -283,15 +288,12 @@ Configure the library using the following example.
                     { collectionID: "stl-rnd-bayc-derivatives", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'stl-rnd-bayc-derivatives' },
                     { collectionID: "stl-riot-racers", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'stl-rnd-riot-racers' }
                 ],
-                options: {
-                    overlay: {
+                uiOptions: {
                     openingHeading: "Open a new world of discounts available with your tokens.",
                     issuerHeading: "Get discount with Ticket",
                     repeatAction: "try again",
                     theme: "light",
                     position: "bottom-right"
-                    },
-                    filters: {},
                 }
             });
 
@@ -335,6 +337,58 @@ import { client, outlet } from '@tokenscript/token-negotiator';
 For off chain token issuers, there is an additional module within the Token Negotiator named { outlet } used to safely store, decode and dispatch token meta data to the client module (in page or cross origin).
 
 A mock token implementation can be found here: https://github.com/TokenScript/token-negotiator-examples/tree/main/token-outlet-website/src
+
+## Configuration Options
+
+This table lists all possible configuration options for Token Negotiator client.
+
+| Property Name              | Description                                                                                                                                                                                                                                                    | Required | Type                                          | Default                                  |  
+|----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|-----------------------------------------------|------------------------------------------|
+| type                       | The negotiation type, either active or passive                                                                                                                                                                                                                 | Y        | string                                        |                                          |
+| issuers                    | An array of issuer configurations. This can be left empty and provided dynamically when calling negotiate.                                                                                                                                                     | N        | OnChainTokenConfig[] or OffChainTokenConfig[] |                                          |
+| **uiOptions**              | An object defining UI specific options                                                                                                                                                                                                                         | N        | UIOptionsInterface                            |                                          |
+| uiOptions.uiType           | The type of UI that should be used for active negotiation type.                                                                                                                                                                                                | N        | "popup" or "inline"                           | popup                                    |
+| uiOptions.containerElement | The query selector of the element that should contain the negotiator UI                                                                                                                                                                                        | N        | string                                        | .overlay-tn                              |
+| uiOptions.openingHeading   | Custom text to display on the start page                                                                                                                                                                                                                       | N        | string                                        | Validate your token ownership for access |
+| uiOptions.issuerHeading    | Custom heading to display on the issuer list                                                                                                                                                                                                                   | N        | string                                        | Detected tokens                          |
+| uiOptions.repeatAction     | (Deprecated) Text for retry actions                                                                                                                                                                                                                            | N        | string                                        |                                          |
+| uiOptions.theme            | The theme to use for the UI                                                                                                                                                                                                                                    | N        | "light" or "dark"                             | light                                    |
+| uiOptions.position         | (Not implemented) The position of the popup                                                                                                                                                                                                                    | N        | string                                        | bottom-left                              |
+| uiOptions.autoPopup        | When calling negotiate, this option makes the popup UI open automatically when user input is required, or when new tokens are loading.                                                                                                                         | N        | boolean                                       | true                                     |
+| autoLoadTokens             | Automatically load tokens once the user connects their wallet in active type negotiation. This can be set to true to load tokens for all issuers, or a number to limit the tokens loaded. If this is set to false the user must load each issuer individually. | N        | boolean or number                             | true                                     |
+| autoEnableTokens           | This option causes all tokens to become selected and available to the website when loaded. If this option is set to false, tokens must be selected manually by the user.                                                                                       | N        | boolean                                       | true                                     |
+| messagingForceTab          | Whether to use a tab rather than an iframe for communication with off-chain ticket issuers.                                                                                                                                                                    | N        | boolean                                       | false                                    |
+| **safeConnectOptions**     | (Experimental) Options for STL product integration                                                                                                                                                                                                             | N        | SafeConnectOptions                            |                                          |
+| **unSupported**            | (Temporary) Options to define browsers that are unsupported or blocked in negotiator                                                                                                                                                                           | N        |                                               |                                          |
+| config                     | Browsers that are unsupported.                                                                                                                                                                                                                                 | Y        | BrowserDataInterface                          |                                          |
+| errorMessage               | Error message to show for unsupported browsers.                                                                                                                                                                                                                | Y        | string                                        |                                          |
+
+### Issuer Configuration
+
+| Property Name          | Description                                                                       | On/Off Chain | Required | Type    |  
+|------------------------|-----------------------------------------------------------------------------------|--------------|----------|---------|
+| collectionID           | A unique ID for the token issuer                                                  | Both         | Y        | string  |
+| onChain                | Whether this is an on or off-chain token                                          | Both         | Y        | boolean |
+| title                  | Collection title: loaded from API if not specified                                | Both         | OffChain | string  |
+| image                  | Collection image URL: loaded from API if not specified                            | Both         | OffChain | string  |
+| contract               | Ethereum contract address for the collection                                      | OnChain      | Y        | string  |
+| chain                  | Ethereum chain for the collection                                                 | OnChain      | Y        | string  |
+| openSeaSlug            | The collection name for OpenSea listing. Improves performance for token fetching. | OnChain      | N        | string  |
+| filters                | Filters for off-chain token properties                                            | OffChain     | N        | object  |
+| tokenOrigin            | The origin URL for off-chain tokens                                               | OffChain     | Y        | string  |
+| unEndPoint             | URL for the unpredictable number service                                          | OffChain     | Y        | string  |
+| base64senderPublicKeys | An array of base64 encoded ticket issuer public keys, indexed by conference ID    | OffChain     | Y        | object  |
+| base64attestorPubKey   | The base64 encoded public key of the identity attestation issuer                  | OffChain     | Y        | string  |
+
+### Outlet Configuration
+
+| Property Name          | Description                                                                        | Required | Type           |  
+|------------------------|------------------------------------------------------------------------------------|----------|----------------|
+| collectionID           | A unique ID for the token issuer. This should match the issuer config collectionID |          |                |
+| attestationOrigin      | The attestation origin URL for the off-chain token                                 | Y        | string         |
+| tokenParser            | A custom token parser used for decoding attestations                               | N        | decoding class |
+| base64senderPublicKeys | An array of base64 encoded ticket issuer public keys, indexed by conference ID     | Y        | object         |
+| base64attestorPubKey   | The base64 encoded public key of the identity attestation issuer                   | Y        | string         |
 
 ## New Token Issuers
 

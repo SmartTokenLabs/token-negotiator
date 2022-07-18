@@ -10,8 +10,27 @@ import { uint8toBuffer } from "../utils";
 import { ResponseActionBase, ResponseInterfaceBase } from "../core/messaging";
 
 interface OutletInterface {
-	config: any;
+	collectionID: string;
+	attestationOrigin: string;
+	tokenParser?: any;
+	base64senderPublicKeys: {[key: string]: string};
+	base64attestorPubKey: string;
+
+	// Possibly deprecated parameters which have defaults
+	tokenUrlName?: string;
+	tokenSecretName?: string;
+	tokenIdName?: string;
+	unsignedTokenDataName?: string;
+	itemStorageKey?: string;
 }
+
+const defaultConfig = {
+	tokenUrlName: "ticket",
+	tokenSecretName: "secret",
+	tokenIdName: "id",
+	unsignedTokenDataName: "ticket",
+	itemStorageKey: "dcTokens"
+};
 
 export class readSignedTicket {
 	ticket: any;
@@ -32,7 +51,7 @@ export class Outlet {
 	urlParams?: URLSearchParams;
 
 	constructor(config: OutletInterface) {
-		this.tokenConfig = config;
+		this.tokenConfig = Object.assign(defaultConfig, config);
 
 		// set default tokenReader
 		if (!this.tokenConfig.tokenParser) {
@@ -175,7 +194,7 @@ export class Outlet {
 				evtid: evtid,
 				evt: OutletResponseAction.PROOF,
 				data: {
-					issuer: this.tokenConfig.tokenName,
+					issuer: this.tokenConfig.collectionID,
 					proof: tokenProof
 				}
 			});
@@ -193,7 +212,7 @@ export class Outlet {
 			evtid: evtid,
 			evt: OutletResponseAction.ISSUER_TOKENS,
 			data: {
-				issuer: this.tokenConfig.tokenName,
+				issuer: this.tokenConfig.collectionID,
 				tokens: issuerTokens
 			}
 		});

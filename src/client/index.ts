@@ -24,18 +24,15 @@ declare global {
 const defaultConfig: NegotiationInterface = {
 	type: "active",
 	issuers: [],
-	options: {
-		overlay: {
-			uiType: "popup",
-			containerElement: ".overlay-tn",
-			openingHeading: "Validate your token ownership for access",
-			issuerHeading: "Detected tokens"
-		},
-		filters: {}
+	uiOptions: {
+		uiType: "popup",
+		containerElement: ".overlay-tn",
+		openingHeading: "Validate your token ownership for access",
+		issuerHeading: "Detected tokens",
+		autoPopup: true
 	},
 	autoLoadTokens: true,
 	autoEnableTokens: true,
-	autoPopup: true,
 	messagingForceTab: false
 }
 
@@ -62,8 +59,9 @@ export class Client {
 
 	constructor(config: NegotiationInterface) {
 
-		this.config = {...defaultConfig, ...config};
-		this.config.options.overlay = {...defaultConfig.options.overlay, ...config?.options?.overlay};
+		config.uiOptions = {...defaultConfig.uiOptions, ...config?.uiOptions}
+
+		this.config = Object.assign(defaultConfig, config);
 
 		this.negotiateAlreadyFired = false;
 
@@ -125,15 +123,15 @@ export class Client {
 
 			let res;
 
-			const tokensOrigin = this.tokenStore.getCurrentIssuers()[issuer].tokenOrigin;
+			const issuerConfig = this.tokenStore.getCurrentIssuers()[issuer] as OffChainTokenConfig;
 
 			try {
 				res = await this.messaging.sendMessage({
 					action: OutletAction.GET_ISSUER_TOKENS,
-					origin: tokensOrigin,
+					origin: issuerConfig.tokenOrigin,
 					data: {
 						issuer: issuer,
-						filter: this.config.options.filters
+						filter: issuerConfig.filters
 					}
 				}, this.config.messagingForceTab);
 			} catch (err) {
@@ -210,7 +208,7 @@ export class Client {
 		if (this.ui) {
 			autoOpenPopup = this.tokenStore.hasUnloadedTokens();
 		} else {
-			this.ui = new Ui(this.config.options?.overlay, this);
+			this.ui = new Ui(this.config.uiOptions, this);
 			this.ui.initialize();
 			autoOpenPopup = true;
 		}
@@ -219,7 +217,7 @@ export class Client {
 		if (this.config.autoEnableTokens && Object.keys(this.tokenStore.getSelectedTokens()).length)
 			this.eventSender.emitSelectedTokensToClient(this.tokenStore.getSelectedTokens())
 
-		if (openPopup || (this.config.autoPopup === true && autoOpenPopup))
+		if (openPopup || (this.config.uiOptions.autoPopup === true && autoOpenPopup))
 			this.ui.openOverlay();
 	}
 
@@ -318,7 +316,7 @@ export class Client {
 
 		let tokens;
 
-		if (config.onChain) {
+		if (config.onChain === true) {
 
 			let walletProvider = await this.getWalletProvider();
 
@@ -338,7 +336,7 @@ export class Client {
 				origin: config.tokenOrigin,
 				data : {
 					issuer: issuer,
-					filter: this.config.options.filters
+					filter: config.filters
 				},
 			}, this.config.messagingForceTab);
 
@@ -359,18 +357,18 @@ export class Client {
 	}
 
 	isCurrentDeviceSupported(): boolean{
-		return isBrowserDeviceWalletSupported(this.config?.options?.unSupported?.config) !== false;
+		return isBrowserDeviceWalletSupported(this.config?.unSupported?.config) !== false;
 	}
 
 	async authenticate(authRequest: AuthenticateInterface) {
 		if(!this.isCurrentDeviceSupported()) {
 			if (this.ui) {
 				setTimeout(() => {
-					this.ui.showError(this.config?.options?.unSupported?.errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
+					this.ui.showError(this.config?.unSupported?.errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
 					this.ui.openOverlay();
 				}, 1000);
 			}
-			throw new Error(this.config?.options?.unSupported?.errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
+			throw new Error(this.config?.unSupported?.errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
 		}
 		const { issuer, unsignedToken } = authRequest;
 		requiredParams(
