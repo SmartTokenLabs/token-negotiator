@@ -55,7 +55,7 @@ import { Authenticator } from "@tokenscript/attestation";
 import { TokenStore } from "./tokenStore";
 import { SignedUNChallenge } from "./auth/signedUNChallenge";
 import { TicketZKProof } from "./auth/ticketZKProof";
-import { isBrowserDeviceWalletSupported } from './../utils/support/isSupported';
+import { isUserAgentSupported } from './../utils/support/isSupported';
 var defaultConfig = {
     type: "active",
     issuers: [],
@@ -441,7 +441,7 @@ var Client = (function () {
     };
     Client.prototype.isCurrentDeviceSupported = function () {
         var _a, _b, _c;
-        return isBrowserDeviceWalletSupported((_c = (_b = (_a = this.config) === null || _a === void 0 ? void 0 : _a.options) === null || _b === void 0 ? void 0 : _b.unSupported) === null || _c === void 0 ? void 0 : _c.config) !== false;
+        return isUserAgentSupported((_c = (_b = (_a = this.config) === null || _a === void 0 ? void 0 : _a.options) === null || _b === void 0 ? void 0 : _b.unSupportedUserAgent) === null || _c === void 0 ? void 0 : _c.config) !== false;
     };
     Client.prototype.authenticate = function (authRequest) {
         var _a, _b, _c, _d, _e;
@@ -455,11 +455,11 @@ var Client = (function () {
                             if (this.ui) {
                                 setTimeout(function () {
                                     var _a, _b, _c, _d;
-                                    _this.ui.showError((_d = (_c = (_b = (_a = _this.config) === null || _a === void 0 ? void 0 : _a.options) === null || _b === void 0 ? void 0 : _b.unSupported) === null || _c === void 0 ? void 0 : _c.errorMessage) !== null && _d !== void 0 ? _d : "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
+                                    _this.ui.showError((_d = (_c = (_b = (_a = _this.config) === null || _a === void 0 ? void 0 : _a.options) === null || _b === void 0 ? void 0 : _b.unSupportedUserAgent) === null || _c === void 0 ? void 0 : _c.errorMessage) !== null && _d !== void 0 ? _d : "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
                                     _this.ui.openOverlay();
                                 }, 1000);
                             }
-                            throw new Error((_d = (_c = (_b = (_a = this.config) === null || _a === void 0 ? void 0 : _a.options) === null || _b === void 0 ? void 0 : _b.unSupported) === null || _c === void 0 ? void 0 : _c.errorMessage) !== null && _d !== void 0 ? _d : "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
+                            throw new Error((_d = (_c = (_b = (_a = this.config) === null || _a === void 0 ? void 0 : _a.options) === null || _b === void 0 ? void 0 : _b.unSupportedUserAgent) === null || _c === void 0 ? void 0 : _c.errorMessage) !== null && _d !== void 0 ? _d : "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
                         }
                         issuer = authRequest.issuer, unsignedToken = authRequest.unsignedToken;
                         requiredParams(issuer && unsignedToken, "Issuer and signed token required.");

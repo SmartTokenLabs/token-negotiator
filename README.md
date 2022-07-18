@@ -108,7 +108,7 @@ Include the following Javascript to configure the Token Negotiator with issuers 
           position: "bottom-right"
       },
       filters: {},
-      unSupported: {
+      unSupportedUserAgent: {
           config: {
               // options to test against : ["iE", "iE9", "edge", "chrome", "phantomJS", "fireFox", "safari", "android", "iOS", "mac", "windows", "webView", "touchDevice", "metaMask", "alphaWallet", "mew", "trust", "goWallet", "status", "imToken", "metaMaskAndroid", "alphaWalletAndroid", "mewAndroid", "imTokenAndroid"];
               metaMaskAndroid: true,

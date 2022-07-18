@@ -29,7 +29,7 @@ interface BrowserDataInterface {
   imTokenAndroid: boolean
 }
 
-export const isBrowserDeviceWalletSupported = (unsupportedDeviceAndBrowserConfig:any) => {
+export const isUserAgentSupported = (unsupportedDeviceAndBrowserConfig:any) => {
   if(unsupportedDeviceAndBrowserConfig === undefined || unsupportedDeviceAndBrowserConfig === null) return true;
   const browserData = getBrowserData();
   let broswerIsSupported = true;

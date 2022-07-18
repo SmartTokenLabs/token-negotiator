@@ -42,7 +42,6 @@ import { SafeConnectChallenge } from "../client/auth/safeConnectChallenge";
 export var SafeConnectAction;
 (function (SafeConnectAction) {
     SafeConnectAction["CONNECT"] = "connect";
-    SafeConnectAction["SIGN_UN"] = "sign_un";
     SafeConnectAction["NEW_CHALLENGE"] = "new_challenge";
 })(SafeConnectAction || (SafeConnectAction = {}));
 var SafeConnectProvider = (function () {
@@ -88,7 +87,8 @@ var SafeConnectProvider = (function () {
                 proofData = {
                     type: proofModel.TYPE,
                     data: {
-                        attestation: attest.data.attestation
+                        attestation: attest.data.attestation,
+                        address: attest.data.address
                     },
                     target: {
                         address: attest.data.address
@@ -136,10 +136,11 @@ var SafeConnectProvider = (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4, this.messaging.sendMessage({
-                            action: SafeConnectAction.SIGN_UN,
+                            action: SafeConnectAction.CONNECT,
                             origin: this.options.url,
                             timeout: 0,
                             data: {
+                                type: "signed_un",
                                 un: encodeURIComponent(JSON.stringify(un))
                             }
                         }, true)];
