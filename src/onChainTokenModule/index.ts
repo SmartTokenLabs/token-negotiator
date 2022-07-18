@@ -7,7 +7,7 @@ interface OnChainApiConfig {
     config: {
       [network: string]: {
         url: string;
-        apiKey: string;
+        apiKey?: string;
       };
     };
   };
@@ -108,8 +108,7 @@ export class OnChainTokenModule {
 						apiKey: openSeaAPIKey,
 					},
 					rinkeby: {
-						url: "https://testnets-api.opensea.io/api/v1/",
-						apiKey: openSeaAPIKey,
+						url: "https://testnets-api.opensea.io/api/v1/"
 					},
 				},
 			},
@@ -515,10 +514,14 @@ export class OnChainTokenModule {
 		const options = {
 			method: "GET",
 			headers: {
-				Accept: "application/json",
-				"X-API-KEY": config.apiKey,
+				Accept: "application/json"
 			},
 		};
+
+		if(config.apiKey) {
+			// @ts-ignore
+			options.headers["X-API-KEY"] = config.apiKey;
+		}
 
 		const url = this.joinUrl(config.url, path);
 
@@ -545,10 +548,13 @@ export class OnChainTokenModule {
 
 		const options = {
 			method: "GET",
-			headers: {
-				"x-api-key": config.apiKey,
-			},
+			headers: {}
 		};
+
+		if(config.apiKey) {
+			// @ts-ignore
+			options.headers["X-API-KEY"] = config.apiKey;
+		}
 
 		const url = this.joinUrl(config.url, path);
 

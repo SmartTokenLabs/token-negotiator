@@ -2,14 +2,18 @@
 
 Summary: 
 
-This is a non breaking update to the Token Negotiator library. Providing a fix to the OpenSea API and an update of the API key to Moralis towards a future migration. Please upgrade from 1.0.0 to 1.0.1.
+This is a non breaking update to the Token Negotiator library. Providing fixes to the OpenSea API and an update of the API key to Moralis towards a future migration. Please upgrade from 1.0.0 to 1.0.1.
 
-Updated API Keys:
+API Keys Updated:
 
 - OpenSea
 - Moralis
 
-ReadMe:
+OpenSea Config Updated:
+
+- Remove the sending of API key to OpenSea when pointing to TestNet service
+
+ReadMe Updated:
 
 - Correction to README for onChain API
  

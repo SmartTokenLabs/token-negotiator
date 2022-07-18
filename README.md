@@ -174,6 +174,7 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
 ````javascript
 
   /**
+  * @param {Boolean} onChain boolean if this token is on / off chain 
   * @param {String} collectionID your own reference key to identify the collection by.
   * @param {String} contract smart contract address
   * @param {String} chain smart contract address chain 
