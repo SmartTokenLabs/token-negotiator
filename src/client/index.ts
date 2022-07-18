@@ -150,9 +150,6 @@ export class Client {
 			let lookupData = await this.onChainTokenModule.getInitialContractAddressMetaData(tokenData);
 
 			if (lookupData) {
-				// TODO: this might be redundant
-				lookupData.onChain = true;
-
 				// enrich the tokenLookup store with contract meta data
 				this.tokenStore.updateTokenLookupStore(issuer, lookupData);
 			}
@@ -295,7 +292,7 @@ export class Client {
 
 		let tokens;
 
-		if (config.onChain) {
+		if (config.onChain === true) {
 
 			let walletProvider = await this.getWalletProvider();
 
@@ -415,7 +412,7 @@ export class Client {
 		try {
 			let data;
 
-			if (config.onChain) {
+			if (config.onChain === true) {
 				data = await this.authenticateOnChain(authRequest);
 			} else {
 				data = await this.authenticateOffChain(authRequest);

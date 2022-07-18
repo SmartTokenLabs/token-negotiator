@@ -7,7 +7,7 @@ interface OnChainApiConfig {
     config: {
       [network: string]: {
         url: string;
-        apiKey: string;
+        apiKey?: string;
       };
     };
   };
@@ -40,11 +40,11 @@ export class OnChainTokenModule {
 	constructor(onChainModuleKeys?: { [apiName: string]: string }, ipfsBaseUrl?: string) {
 		const moralisAPIKey =
       onChainModuleKeys?.moralis ??
-      "WMrMeZLy2pajBLmwf1AUccxFzQy98OEMeDQPaTK8BcTI8XK2f9WZrVpjGYQcujSF";
+      "fvPB0g6SCkF3ncJSip9afJPzdGxPs7oznJkOVLWn8VU4yzprUKhrpag0fhElxflJ";
 		const alchemyAPIKey =
       onChainModuleKeys?.alchemy ?? "CWaS4PkRjFi3dAzrRD6lsrQ7vAyPYsnU";
 		const openSeaAPIKey =
-      onChainModuleKeys?.opensea ?? "99687116fafa4daebc766eeedccce201";
+      onChainModuleKeys?.opensea ?? "6d967684497b46ed926277e95782946b";
 
 		this.onChainApiConfig = {
 			moralis: {
@@ -108,8 +108,7 @@ export class OnChainTokenModule {
 						apiKey: openSeaAPIKey,
 					},
 					rinkeby: {
-						url: "https://testnets-api.opensea.io/api/v1/",
-						apiKey: openSeaAPIKey,
+						url: "https://testnets-api.opensea.io/api/v1/"
 					},
 				},
 			},
@@ -515,10 +514,14 @@ export class OnChainTokenModule {
 		const options = {
 			method: "GET",
 			headers: {
-				Accept: "application/json",
-				"X-API-KEY": config.apiKey,
+				Accept: "application/json"
 			},
 		};
+
+		if(config.apiKey) {
+			// @ts-ignore
+			options.headers["X-API-KEY"] = config.apiKey;
+		}
 
 		const url = this.joinUrl(config.url, path);
 
@@ -545,10 +548,13 @@ export class OnChainTokenModule {
 
 		const options = {
 			method: "GET",
-			headers: {
-				"x-api-key": config.apiKey,
-			},
+			headers: {}
 		};
+
+		if(config.apiKey) {
+			// @ts-ignore
+			options.headers["X-API-KEY"] = config.apiKey;
+		}
 
 		const url = this.joinUrl(config.url, path);
 
