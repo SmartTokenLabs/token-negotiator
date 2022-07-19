@@ -6,7 +6,7 @@ export const getBrowserData = () => {
   // detect browser
   const isIE = UA && /msie|trident/.test(UA);
   const isIE9 = UA && UA.indexOf("msie 9.0") > 0;
-  const isEdge = UA && UA.indexOf("edge/") > 0;
+  const isEdge = UA && UA.indexOf("edg/") > 0;
   const isChrome = UA && /chrome\/\d+/.test(UA) && !isEdge;
   const isPhantomJS = UA && /phantomjs/.test(UA);
   const isFireFox = UA && /firefox\/\d+/.test(UA);
