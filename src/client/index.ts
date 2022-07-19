@@ -11,7 +11,7 @@ import {OffChainTokenConfig, OnChainTokenConfig, AuthenticateInterface, Negotiat
 import {SignedUNChallenge} from "./auth/signedUNChallenge";
 import {TicketZKProof} from "./auth/ticketZKProof";
 import {AuthenticationMethod, AuthenticationResult} from "./auth/abstractAuthentication";
-import { isBrowserDeviceWalletSupported } from './../utils/support/isSupported';
+import { isUserAgentSupported } from './../utils/support/isSupported';
 
 declare global {
 	interface Window {
@@ -165,6 +165,9 @@ export class Client {
 			let lookupData = await getNftCollection(tokenData);
 
 			if (lookupData) {
+				// TODO: this might be redundant
+				lookupData.onChain = true;
+
 				// enrich the tokenLookup store with contract meta data
 				this.tokenStore.updateTokenLookupStore(issuer, lookupData);
 			}
@@ -354,18 +357,18 @@ export class Client {
 	}
 
 	isCurrentDeviceSupported(): boolean{
-		return isBrowserDeviceWalletSupported(this.config?.unSupported?.config) !== false;
+		return isUserAgentSupported(this.config?.unSupportedUserAgent?.config) !== false;
 	}
 
 	async authenticate(authRequest: AuthenticateInterface) {
 		if(!this.isCurrentDeviceSupported()) {
 			if (this.ui) {
 				setTimeout(() => {
-					this.ui.showError(this.config?.unSupported?.errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
+					this.ui.showError(this.config?.unSupportedUserAgent?.errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
 					this.ui.openOverlay();
 				}, 1000);
 			}
-			throw new Error(this.config?.unSupported?.errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
+			throw new Error(this.config?.unSupportedUserAgent?.errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
 		}
 		const { issuer, unsignedToken } = authRequest;
 		requiredParams(
@@ -408,12 +411,6 @@ export class Client {
 				authRequest.options = {};
 
 			authRequest.options?.messagingForceTab = this.config.messagingForceTab;
-			
-			if (config.onChain === true) {
-				data = await this.authenticateOnChain(authRequest);
-			} else {
-				data = await this.authenticateOffChain(authRequest);
-			}
 
 			res = await authenticator.getTokenProof(config, [authRequest.unsignedToken], this.web3WalletProvider, authRequest);
 
