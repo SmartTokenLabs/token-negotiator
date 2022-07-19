@@ -165,9 +165,6 @@ export class Client {
 			let lookupData = await getNftCollection(tokenData);
 
 			if (lookupData) {
-				// TODO: this might be redundant
-				lookupData.onChain = true;
-
 				// enrich the tokenLookup store with contract meta data
 				this.tokenStore.updateTokenLookupStore(issuer, lookupData);
 			}
@@ -411,6 +408,12 @@ export class Client {
 				authRequest.options = {};
 
 			authRequest.options?.messagingForceTab = this.config.messagingForceTab;
+			
+			if (config.onChain === true) {
+				data = await this.authenticateOnChain(authRequest);
+			} else {
+				data = await this.authenticateOffChain(authRequest);
+			}
 
 			res = await authenticator.getTokenProof(config, [authRequest.unsignedToken], this.web3WalletProvider, authRequest);
 

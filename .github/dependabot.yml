@@ -12,4 +12,4 @@ updates:
     directory: '/'
     target-branch: "staging"
     schedule:
-      interval: 'daily'
+      interval: 'weekly'
