@@ -66,6 +66,12 @@ var SignedUNChallenge = (function (_super) {
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
+                        if (!(web3WalletProvider.getConnectedWalletData().length === 0)) return [3, 2];
+                        return [4, web3WalletProvider.connectWith("MetaMask")];
+                    case 1:
+                        _c.sent();
+                        _c.label = 2;
+                    case 2:
                         address = web3WalletProvider.getConnectedWalletData()[0].address;
                         currentProof = this.getSavedProof(address);
                         if (currentProof) {
@@ -76,7 +82,7 @@ var SignedUNChallenge = (function (_super) {
                                 currentProof = null;
                             }
                         }
-                        if (!!currentProof) return [3, 6];
+                        if (!!currentProof) return [3, 8];
                         walletConnection = web3WalletProvider.getConnectedWalletData()[0].provider;
                         currentProof = {
                             type: this.TYPE,
@@ -87,19 +93,19 @@ var SignedUNChallenge = (function (_super) {
                         };
                         endpoint = (_b = (_a = request.options) === null || _a === void 0 ? void 0 : _a.unEndpoint) !== null && _b !== void 0 ? _b : SignedUNChallenge.DEFAULT_ENDPOINT;
                         return [4, UN.getNewUN(endpoint)];
-                    case 1:
+                    case 3:
                         challenge = _c.sent();
                         signature = void 0;
-                        if (!(walletConnection instanceof SafeConnectProvider)) return [3, 3];
+                        if (!(walletConnection instanceof SafeConnectProvider)) return [3, 5];
                         return [4, walletConnection.signUNChallenge(challenge)];
-                    case 2:
-                        signature = _c.sent();
-                        return [3, 5];
-                    case 3: return [4, web3WalletProvider.signWith(challenge.messageToSign, walletConnection)];
                     case 4:
                         signature = _c.sent();
-                        _c.label = 5;
-                    case 5:
+                        return [3, 7];
+                    case 5: return [4, web3WalletProvider.signWith(challenge.messageToSign, walletConnection)];
+                    case 6:
+                        signature = _c.sent();
+                        _c.label = 7;
+                    case 7:
                         challenge.signature = signature;
                         recoveredAddr = UN.recoverAddress(challenge);
                         if (recoveredAddr !== address.toLowerCase()) {
@@ -108,8 +114,8 @@ var SignedUNChallenge = (function (_super) {
                         challenge.address = recoveredAddr;
                         currentProof.data = challenge;
                         this.saveProof(address, currentProof);
-                        _c.label = 6;
-                    case 6: return [2, currentProof];
+                        _c.label = 8;
+                    case 8: return [2, currentProof];
                 }
             });
         });

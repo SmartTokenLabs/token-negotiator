@@ -248,7 +248,7 @@ var SelectIssuers = (function (_super) {
                 if (JSON.stringify(t) === JSON.stringify(st))
                     isSelected = true;
             });
-            if (!config.onChain) {
+            if (config.onChain === false) {
                 var title = config.title, image = config.image;
                 tokens.push({
                     data: t,

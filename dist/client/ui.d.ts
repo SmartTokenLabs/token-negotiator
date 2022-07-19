@@ -9,6 +9,7 @@ export interface UIOptionsInterface {
     repeatAction?: string;
     theme?: string;
     position?: string;
+    autoPopup?: boolean;
 }
 export declare class Ui {
     private static UI_CONTAINER_HTML;

@@ -13,6 +13,9 @@ import {TicketZKProof} from "./auth/ticketZKProof";
 import {AuthenticationMethod, AuthenticationResult} from "./auth/abstractAuthentication";
 import { isUserAgentSupported } from './../utils/support/isSupported';
 
+// @ts-ignore
+if(typeof window !== "undefined") window.tn = { version: "2.0.0" };
+
 declare global {
 	interface Window {
 		KeyshapeJS?: any;

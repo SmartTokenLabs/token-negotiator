@@ -1,6 +1,17 @@
 import { ResponseInterfaceBase } from "../core/messaging";
 interface OutletInterface {
-    config: any;
+    collectionID: string;
+    attestationOrigin: string;
+    tokenParser?: any;
+    base64senderPublicKeys: {
+        [key: string]: string;
+    };
+    base64attestorPubKey: string;
+    tokenUrlName?: string;
+    tokenSecretName?: string;
+    tokenIdName?: string;
+    unsignedTokenDataName?: string;
+    itemStorageKey?: string;
 }
 export declare class readSignedTicket {
     ticket: any;

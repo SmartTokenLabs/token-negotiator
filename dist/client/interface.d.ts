@@ -1,21 +1,11 @@
 import { UIOptionsInterface } from "./ui";
 import { AuthenticationMethod } from "./auth/abstractAuthentication";
 import { SafeConnectOptions } from "../wallet/SafeConnectProvider";
+import { BrowserDataInterface } from "../utils/support/isSupported";
 export interface OffChainTokenConfig extends IssuerConfigInterface {
     onChain: false;
-    tokenName?: any;
-    attestationOrigin?: any;
-    tokenOrigin?: any;
-    tokenUrlName?: any;
-    tokenSecretName?: any;
-    tokenIdName?: any;
-    unsignedTokenDataName?: any;
-    itemStorageKey?: any;
-    ethKeyitemStorageKey?: any;
-    unEndPoint?: any;
-    tokenParser?: any;
-    smartContractAddress?: any;
-    symbol?: any;
+    tokenOrigin?: string;
+    unEndPoint?: string;
     base64senderPublicKeys: {
         [key: string]: string;
     };
@@ -32,20 +22,20 @@ export interface IssuerConfigInterface {
     onChain: boolean;
     title?: string;
     image?: string;
+    filters?: {};
 }
 export interface NegotiationInterface {
     type: string;
     issuers?: (OnChainTokenConfig | OffChainTokenConfig)[];
-    options: {
-        overlay: UIOptionsInterface;
-        filters: {};
-    };
-    ipfsBaseUrl?: string;
+    uiOptions?: UIOptionsInterface;
     autoLoadTokens?: number | boolean;
     autoEnableTokens?: boolean;
-    autoPopup?: boolean;
     messagingForceTab?: boolean;
     safeConnectOptions?: SafeConnectOptions;
+    unSupported?: {
+        config: BrowserDataInterface;
+        errorMessage: string;
+    };
 }
 export interface AuthenticateInterface {
     issuer: any;
