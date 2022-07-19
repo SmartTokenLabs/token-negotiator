@@ -1,1 +1,1 @@
-export declare const isBrowserDeviceWalletSupported: (unsupportedDeviceAndBrowserConfig: any) => boolean;
+export declare const isUserAgentSupported: (unsupportedDeviceAndBrowserConfig: any) => boolean;

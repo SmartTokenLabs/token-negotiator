@@ -1,13 +1,13 @@
 // @ts-nocheck
 
-import { isBrowserDeviceWalletSupported } from '../isSupported';
+import { isUserAgentSupported } from '../isSupported';
 
 describe('browser simulations', () => {
 	test('check if browser is supported', () => {
-		expect(isBrowserDeviceWalletSupported()).toEqual(true);
+		expect(isUserAgentSupported()).toEqual(true);
 	});
 	test('check if browser is supported', () => {
-		expect(isBrowserDeviceWalletSupported({
+		expect(isUserAgentSupported({
 			iE: true,
 			iE9: true,
 			edge: true,
@@ -46,7 +46,7 @@ describe('browser simulations', () => {
 			},
 		);
 
-		expect(isBrowserDeviceWalletSupported({
+		expect(isUserAgentSupported({
 			iE: true,
 			iE9: true,
 			edge: true,
