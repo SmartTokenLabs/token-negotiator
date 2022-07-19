@@ -1,7 +1,7 @@
 
 import { getBrowserData } from './getBrowserData';
 
-interface BrowserDataInterface {
+export interface BrowserDataInterface {
   iE: boolean
   iE9: boolean
   edge: boolean
