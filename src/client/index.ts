@@ -10,8 +10,10 @@ import {TokenStore} from "./tokenStore";
 import {OffChainTokenConfig, OnChainTokenConfig, AuthenticateInterface, NegotiationInterface} from "./interface";
 import {SignedUNChallenge} from "./auth/signedUNChallenge";
 import {TicketZKProof} from "./auth/ticketZKProof";
-import {AuthenticationMethod, AuthenticationResult} from "./auth/abstractAuthentication";
+import {AuthenticationMethod} from "./auth/abstractAuthentication";
 import { isUserAgentSupported } from './../utils/support/isSupported';
+import {SelectWallet} from "./views/select-wallet";
+import {SelectIssuers} from "./views/select-issuers";
 
 declare global {
 	interface Window {
@@ -94,7 +96,7 @@ export class Client {
 		return this.config.safeConnectOptions !== undefined;
 	}
 
-	private async getWalletProvider(){
+	public async getWalletProvider(){
 
 		if (!this.web3WalletProvider){
 			const {Web3WalletProvider} = await import("./../wallet/Web3WalletProvider");
@@ -402,7 +404,7 @@ export class Client {
 			AuthType = config.onChain ? SignedUNChallenge : TicketZKProof;
 		}
 
-		let authenticator: AuthenticationMethod = new AuthType();
+		let authenticator: AuthenticationMethod = new AuthType(this);
 
 		let res;
 
@@ -412,7 +414,7 @@ export class Client {
 
 			authRequest.options?.messagingForceTab = this.config.messagingForceTab;
 
-			res = await authenticator.getTokenProof(config, [authRequest.unsignedToken], this.web3WalletProvider, authRequest);
+			res = await authenticator.getTokenProof(config, [authRequest.unsignedToken], authRequest);
 
 			logger(2,"Ticket proof successfully validated.");
 
@@ -420,6 +422,15 @@ export class Client {
 
 		} catch (err) {
 			logger(2,err);
+
+			console.log(err);
+
+			if (err.message === "WALLET_REQUIRED"){
+				console.log("Wallet required!");
+				if (timer) clearTimeout(timer);
+				return this.handleWalletRequired(authRequest);
+			}
+
 			this.handleProofError(err, issuer);
 			throw err;
 		}
@@ -431,6 +442,23 @@ export class Client {
 		}
 
 		return res.data;
+	}
+
+	private async handleWalletRequired(authRequest){
+
+		if (this.ui) {
+			this.ui.dismissLoader();
+			this.ui.openOverlay();
+		}
+
+		return new Promise((resolve) => {
+			this.ui.updateUI(SelectWallet, {connectCallback: async () => {
+				console.log("Connect callback");
+				this.ui.updateUI(SelectIssuers);
+				let res = await this.authenticate(authRequest);
+				resolve(res);
+			}});
+		});
 	}
 
 	private handleProofError(err, issuer) {

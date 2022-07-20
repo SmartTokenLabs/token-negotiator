@@ -90,7 +90,11 @@ export class SelectWallet extends AbstractView {
 			if (timer) clearTimeout(timer);
 			this.ui.dismissLoader();
 
-			this.ui.updateUI(SelectIssuers);
+			if (this.params?.data?.connectCallback){
+				this.params?.data?.connectCallback();
+			} else {
+				this.ui.updateUI(SelectIssuers);
+			}
 
 		} catch (err: any){
 			this.ui.showError((err.message ? err.message : err));
