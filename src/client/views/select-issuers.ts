@@ -190,7 +190,7 @@ export class SelectIssuers extends AbstractView {
 			tokens = await this.client.connectTokenIssuer(issuer);
 		} catch (err){
 			logger(2, err);
-			this.ui.showError((err as string));
+			this.ui.showError(err);
 			return;
 		}
 

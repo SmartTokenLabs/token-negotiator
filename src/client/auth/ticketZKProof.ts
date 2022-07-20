@@ -1,9 +1,7 @@
 import {AbstractAuthentication, AuthenticationMethod, AuthenticationResult} from "./abstractAuthentication";
 import {AuthenticateInterface, OffChainTokenConfig, OnChainTokenConfig} from "../interface";
-import Web3WalletProvider from "../../wallet/Web3WalletProvider";
-import {OutletAction} from "../messaging";
+import {OutletAction, Messaging} from "../messaging";
 import {Authenticator} from "@tokenscript/attestation";
-import {Messaging} from "../../core/messaging";
 import {SignedUNChallenge} from "./signedUNChallenge";
 import {UNInterface} from "./util/UN";
 
@@ -42,7 +40,7 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 				address: request.address ? request.address : "",
 				wallet: request.wallet ? request.wallet : ""
 			}
-		}, request.options.messagingForceTab);
+		}, request.options.messagingForceTab, this.client.getUi());
 
 		if (!res.data.proof)
 			throw new Error("Failed to get proof from the outlet.");
