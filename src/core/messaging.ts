@@ -70,7 +70,7 @@ export class Messaging {
 
 			let iframe = this.createIframe(() => {
 				this.removeModal();
-				reject("USER_CLOSED");
+				reject("USER_ABORT");
 			});
 
 			this.setResponseListener(id, request.origin, request.timeout, resolve, reject,
@@ -100,10 +100,15 @@ export class Messaging {
 
 			tabRef = this.openTab(this.constructUrl(id, request));
 
+			if (!tabRef || tabRef.closed || typeof tabRef.closed == "undefined"){
+				reject("POPUP_BLOCKED");
+				return;
+			}
+
 			let tabCloseCheck = setInterval(()=>{
 				if (!tabRef || tabRef.closed) {
 					clearInterval(tabCloseCheck);
-					reject("USER_CLOSED");
+					reject("USER_ABORT");
 				}
 			}, 500);
 

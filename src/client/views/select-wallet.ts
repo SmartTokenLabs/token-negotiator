@@ -97,7 +97,7 @@ export class SelectWallet extends AbstractView {
 			}
 
 		} catch (err: any){
-			this.ui.showError((err.message ? err.message : err));
+			this.ui.showError(err);
 			return;
 		}
 	}

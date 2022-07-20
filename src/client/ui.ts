@@ -169,12 +169,19 @@ export class Ui {
 
 	}
 
-	showError(...message: string[]){
+	showError(error: string | Error){
+
+		if (error instanceof Error){
+			if (error.name === "USER_ABORT"){
+				return this.dismissLoader();
+			}
+			error = error.message;
+		}
 
 		this.loadContainer.querySelector('.loader-tn').style.display = 'none';
 		this.retryButton.style.display = 'block';
 
-		this.loadContainer.querySelector('.loader-msg-tn').innerHTML = message.join("\n");
+		this.loadContainer.querySelector('.loader-msg-tn').innerHTML = error;
 
 		this.loadContainer.style.display = 'flex';
 	}
