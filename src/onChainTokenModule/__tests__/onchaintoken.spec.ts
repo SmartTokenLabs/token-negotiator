@@ -161,6 +161,31 @@ describe('On-chain token module', () => {
 		}
 		expect(onChainMod.validateTokenMetadata(mockMoralisResponse)).toBe(true);
 	});
+	
+	test('validateTokenMetadata is false when token holds a missing image path', async () => {
+		const onChainMod = new OnChainTokenModule();
+		const mockMoralisResponse = {
+			"16461": {
+        "api": "moralis",
+        "tokenId": "16461",
+        "title": "",
+			}
+		}
+		expect(onChainMod.validateTokenMetadata(mockMoralisResponse)).toBe(false);
+	});
+	
+	test('validateTokenMetadata is false when token holds an empty image path', async () => {
+		const onChainMod = new OnChainTokenModule();
+		const mockMoralisResponse = {
+			"16461": {
+        "api": "moralis",
+        "tokenId": "16461",
+        "title": "",
+        "image": "",
+			}
+		}
+		expect(onChainMod.validateTokenMetadata(mockMoralisResponse)).toBe(false);
+	});
 
 
 });
