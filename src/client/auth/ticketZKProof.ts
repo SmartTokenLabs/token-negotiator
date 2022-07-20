@@ -13,7 +13,7 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 
 	private messaging = new Messaging();
 
-	async getTokenProof(issuerConfig: OnChainTokenConfig | OffChainTokenConfig, tokens: Array<any>, web3WalletProvider: Web3WalletProvider, request: AuthenticateInterface): Promise<AuthenticationResult> {
+	async getTokenProof(issuerConfig: OnChainTokenConfig | OffChainTokenConfig, tokens: Array<any>, request: AuthenticateInterface): Promise<AuthenticationResult> {
 
 		if (issuerConfig.onChain === true)
 			throw new Error(this.TYPE + " is not available for off-chain tokens.");
@@ -21,14 +21,16 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 		let useEthKey: UNInterface|null = null;
 
 		if (issuerConfig.unEndPoint) {
-			let unChallenge = new SignedUNChallenge();
+			let unChallenge = new SignedUNChallenge(this.client);
 			request.options = {
 				...request.options,
 				unEndPoint: issuerConfig.unEndPoint
 			};
-			let unRes = await unChallenge.getTokenProof(issuerConfig, tokens, web3WalletProvider, request);
+			let unRes = await unChallenge.getTokenProof(issuerConfig, tokens, request);
 			useEthKey = unRes.data as UNInterface;
 		}
+
+		console.log("Sending attestation.id");
 
 		let res = await this.messaging.sendMessage({
 			action: OutletAction.GET_PROOF,

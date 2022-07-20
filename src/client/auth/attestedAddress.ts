@@ -16,7 +16,9 @@ export class AttestedAddress extends AbstractAuthentication implements Authentic
 
 	TYPE = "attestedAddress";
 
-	async getTokenProof(issuerConfig: OnChainTokenConfig | OffChainTokenConfig, _tokens: Array<any>, web3WalletProvider: Web3WalletProvider, request: AuthenticateInterface): Promise<AuthenticationResult> {
+	async getTokenProof(issuerConfig: OnChainTokenConfig | OffChainTokenConfig, _tokens: Array<any>, request: AuthenticateInterface): Promise<AuthenticationResult> {
+
+		let web3WalletProvider = await this.client.getWalletProvider();
 
 		if (!web3WalletProvider.safeConnectAvailable())
 			throw new Error("Safe connect is not available");
