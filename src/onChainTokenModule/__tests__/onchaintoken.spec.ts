@@ -162,7 +162,7 @@ describe('On-chain token module', () => {
 		expect(onChainMod.validateTokenMetadata(mockMoralisResponse)).toBe(true);
 	});
 	
-	test('validateTokenMetadata is false when token holds a missing image path', async () => {
+	test('validateTokenMetadata is false when token holds a missing image field', async () => {
 		const onChainMod = new OnChainTokenModule();
 		const mockMoralisResponse = {
 			"16461": {
