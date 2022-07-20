@@ -378,16 +378,13 @@ export class OnChainTokenModule {
 		return curTokens;
 	}
 
-	private validateTokenMetadata(tokens:  {[tokenId: string]: TokenData}): boolean {
-
-		if (!Object.keys(tokens).length)
-			return false;
-
+	public validateTokenMetadata(tokens:  {[tokenId: string]: TokenData}): boolean {
+		if (!Object.keys(tokens).length) return false;
 		for (let tokenId in tokens){
-			if (!tokens[tokenId].image || !tokens[tokenId].title)
-				return false;
+			const titleIsOfTypeStr = (typeof tokens[tokenId].title === 'string');
+			const ImageHasLength = tokens[tokenId].image?.length ? true : false;
+			if (!titleIsOfTypeStr || !ImageHasLength) return false;
 		}
-
 		return true;
 	}
 
@@ -465,10 +462,12 @@ export class OnChainTokenModule {
 					parsedMeta = JSON.parse(item.metadata);
 				}
 
+				let title = parsedMeta?.title || parsedMeta?.name || "";
+
 				return {
 					api: "moralis",
 					tokenId: item.token_id,
-					title: parsedMeta?.title ? parsedMeta?.title : "",
+					title: title,
 					image: parsedMeta?.image ? this.transformImageUrl(parsedMeta?.image) : "",
 					data: parsedMeta,
 				};

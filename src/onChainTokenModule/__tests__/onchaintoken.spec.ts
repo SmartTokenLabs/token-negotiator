@@ -99,5 +99,68 @@ describe('On-chain token module', () => {
       { collectionID: "c", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'nosuchchain', openSeaSlug: 'stl-rnd-zed' }
 		expect(await token.getInitialContractAddressMetaData(issuer)).toBe(null);
 	});
+	
+	test('validateTokenMetadata is true when token holds all required data', async () => {
+		const onChainMod = new OnChainTokenModule();
+		const mockMoralisResponse = {
+    	"16461": {
+        "api": "moralis",
+        "tokenId": "16461",
+        "title": "ExpansionPunk #16461",
+        "image": "https://expansionpunks.mypinata.cloud/ipfs/QmaopicL9xSveFUTeuxj4iQDVBKgdg5k3b2iGkHaMzsK6b/punk16461.png",
+        "data": {
+            "name": "ExpansionPunk #16461",
+            "attributes": [
+                {
+                    "trait_type": "Type",
+                    "value": "Male"
+                },
+                {
+                    "trait_type": "Skin Tone",
+                    "value": "Medium"
+                },
+                {
+                    "trait_type": "Attribute Count",
+                    "value": "3 Attributes"
+                },
+                {
+                    "trait_type": "Hair",
+                    "value": "Shaved Head"
+                },
+                {
+                    "trait_type": "Facial Hair",
+                    "value": "Shadow Beard"
+                },
+                {
+                    "trait_type": "Mouth Prop",
+                    "value": "Pipe"
+                },
+                {
+                    "trait_type": "Name",
+                    "value": "ExpansionPunk #16461"
+                }
+            ],
+            "description": "ExpansionPunk #16461 has arrived to expand the Punkverse to be more diverse and inclusive, while respecting the ethos of the CryptoPunks collection.",
+            "external_url": "https://expansionpunks.com/punk/16461",
+            "image": "https://expansionpunks.mypinata.cloud/ipfs/QmaopicL9xSveFUTeuxj4iQDVBKgdg5k3b2iGkHaMzsK6b/punk16461.png"
+					}
+        }
+			}
+		expect(onChainMod.validateTokenMetadata(mockMoralisResponse)).toBe(true);
+	});
+
+	test('validateTokenMetadata is true when token holds empty title and image path', async () => {
+		const onChainMod = new OnChainTokenModule();
+		const mockMoralisResponse = {
+			"16461": {
+        "api": "moralis",
+        "tokenId": "16461",
+        "title": "",
+        "image": "https://expansionpunks.mypinata.cloud/ipfs/QmaopicL9xSveFUTeuxj4iQDVBKgdg5k3b2iGkHaMzsK6b/punk16461.png"
+			}
+		}
+		expect(onChainMod.validateTokenMetadata(mockMoralisResponse)).toBe(true);
+	});
+
 
 });
