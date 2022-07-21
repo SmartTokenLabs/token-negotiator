@@ -1,4 +1,5 @@
 import {attachPostMessageListener, logger, removePostMessageListener} from "../utils";
+import {ClientError} from "../client";
 
 // TODO move Message related interfaces/enum in to shared location /core 
 
@@ -70,7 +71,7 @@ export class Messaging {
 
 			let iframe = this.createIframe(() => {
 				this.removeModal();
-				reject("USER_ABORT");
+				reject(ClientError.USER_ABORT);
 			});
 
 			this.setResponseListener(id, request.origin, request.timeout, resolve, reject,
@@ -101,14 +102,14 @@ export class Messaging {
 			tabRef = this.openTab(this.constructUrl(id, request));
 
 			if (!tabRef || tabRef.closed || typeof tabRef.closed == "undefined"){
-				reject("POPUP_BLOCKED");
+				reject(ClientError.POPUP_BLOCKED);
 				return;
 			}
 
 			let tabCloseCheck = setInterval(()=>{
 				if (!tabRef || tabRef.closed) {
 					clearInterval(tabCloseCheck);
-					reject("USER_ABORT");
+					reject(ClientError.USER_ABORT);
 				}
 			}, 500);
 
