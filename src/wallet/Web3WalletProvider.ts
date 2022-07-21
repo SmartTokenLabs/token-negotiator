@@ -155,8 +155,6 @@ export class Web3WalletProvider {
 
 		const address = await provider.initSafeConnect();
 
-		console.log(address);
-
 		this.registerNewWalletAddress(address, "1", provider);
 
 		return address;

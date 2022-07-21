@@ -426,10 +426,7 @@ export class Client {
 		} catch (err) {
 			logger(2,err);
 
-			console.log(err);
-
 			if (err.message === "WALLET_REQUIRED"){
-				console.log("Wallet required!");
 				if (timer) clearTimeout(timer);
 				return this.handleWalletRequired(authRequest);
 			}

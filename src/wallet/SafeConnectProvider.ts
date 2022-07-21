@@ -122,8 +122,6 @@ export class SafeConnectProvider {
 			}
 		}, true);
 
-		console.log(res);
-
 		return res.data.signature;
 	}
 
