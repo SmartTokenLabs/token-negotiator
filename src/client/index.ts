@@ -219,7 +219,9 @@ export class Client {
 
 				onComplete(issuerKey, tokens)
 			} catch (e){
-				console.log("Failed to load " + issuerKey + ": " + e);
+				e.message = "Failed to load " + issuerKey + ": " + e.message;
+				logger(2, e.message);
+				this.eventSender.emitErrorToClient(e, issuerKey);
 				onComplete(issuerKey, null);
 			}
 

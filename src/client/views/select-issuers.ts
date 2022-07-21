@@ -191,6 +191,7 @@ export class SelectIssuers extends AbstractView {
 		} catch (err){
 			logger(2, err);
 			this.ui.showError(err);
+			this.client.eventSender.emitErrorToClient(err, issuer);
 			return;
 		}
 
