@@ -1,8 +1,7 @@
 // @ts-nocheck
-import {OutletAction, OutletResponseAction} from "./messaging";
-import { Messaging } from "./messaging";
+import {OutletAction, OutletResponseAction, Messaging} from "./messaging";
 import { Ui } from "./ui";
-import { asyncHandle, logger, requiredParams } from "../utils";
+import { logger, requiredParams } from "../utils";
 import {getNftCollection, getNftTokens} from "../utils/token/nftProvider";
 import "./../vendor/keyShape";
 import { Authenticator } from "@tokenscript/attestation";
