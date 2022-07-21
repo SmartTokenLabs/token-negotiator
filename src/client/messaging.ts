@@ -1,5 +1,6 @@
 import {Messaging as CoreMessaging, RequestInterfaceBase, ResponseInterfaceBase} from "../core/messaging";
 import {Ui} from "./ui";
+import {ClientError, ClientErrorMessage} from "./index";
 
 export enum OutletAction {
 	MAGIC_URL = "magic-url",
@@ -22,13 +23,18 @@ export class Messaging {
 			return await this.core.sendMessage(request, forceTab);
 		} catch (e) {
 
-			if (e === "POPUP_BLOCKED" && ui){
-				return this.handleUserClose(request, ui, forceTab);
+			if (e === ClientError.POPUP_BLOCKED){
+				if (ui){
+					return this.handleUserClose(request, ui, forceTab);
+				} else {
+					// eslint-disable-next-line no-ex-assign
+					e = this.createNamedError(e, ClientErrorMessage.POPUP_BLOCKED);
+				}
 			}
 
-			if (e === "USER_ABORT"){
+			if (e === ClientError.USER_ABORT){
 				// eslint-disable-next-line no-ex-assign
-				e = this.createNamedError(e,"The user aborted the process.");
+				e = this.createNamedError(e,ClientErrorMessage.USER_ABORT);
 			}
 
 			throw e;
@@ -45,8 +51,8 @@ export class Messaging {
 				this.core.sendMessage(request, forceTab).then((res) => {
 					resolve(res);
 				}).catch((e) => {
-					if (e === "POPUP_BLOCKED"){
-						e = this.createNamedError(e,"Please add an exception to your popup blocker before continuing.");
+					if (e === ClientError.POPUP_BLOCKED){
+						e = this.createNamedError(e, ClientErrorMessage.POPUP_BLOCKED);
 					}
 					reject(e);
 				});

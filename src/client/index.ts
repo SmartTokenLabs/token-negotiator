@@ -46,6 +46,16 @@ export const enum UIUpdateEventType {
 	ISSUERS_LOADED
 }
 
+export enum ClientError {
+	POPUP_BLOCKED = "POPUP_BLOCKED",
+	USER_ABORT = "USER_ABORT"
+}
+
+export enum ClientErrorMessage {
+	POPUP_BLOCKED = "Please add an exception to your popup blocker before continuing.",
+	USER_ABORT = "The user aborted the process."
+}
+
 export class Client {
 
 	private negotiateAlreadyFired: boolean;
@@ -257,6 +267,7 @@ export class Client {
 				}, this.config.messagingForceTab);
 			} catch (err) {
 				logger(2,err);
+				console.log("popup error");
 				this.eventSender.emitErrorToClient(err, issuer);
 				continue;
 			}
