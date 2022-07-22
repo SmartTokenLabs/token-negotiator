@@ -53,6 +53,8 @@ export class Messaging {
 				}).catch((e) => {
 					if (e === ClientError.POPUP_BLOCKED){
 						e = this.createNamedError(e, ClientErrorMessage.POPUP_BLOCKED);
+					} else if (e === ClientError.USER_ABORT){
+						e = this.createNamedError(e, ClientErrorMessage.USER_ABORT);
 					}
 					reject(e);
 				});
