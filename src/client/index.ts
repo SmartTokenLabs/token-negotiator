@@ -13,6 +13,7 @@ import {AuthenticationMethod} from "./auth/abstractAuthentication";
 import { isUserAgentSupported } from './../utils/support/isSupported';
 import {SelectWallet} from "./views/select-wallet";
 import {SelectIssuers} from "./views/select-issuers";
+import web3WalletProvider from "../wallet/Web3WalletProvider";
 
 // @ts-ignore
 if(typeof window !== "undefined") window.tn = { version: "2.0.0" };
@@ -464,14 +465,23 @@ export class Client {
 		if (this.ui) {
 			this.ui.dismissLoader();
 			this.ui.openOverlay();
+		} else {
+			// TODO: Show wallet selection modal for passive mode or emit event instead of connecting metamask automatically
+			let walletProvider = await this.getWalletProvider();
+			await walletProvider.connectWith("MetaMask");
+			return await this.authenticate(authRequest);
 		}
 
-		return new Promise((resolve) => {
+		return new Promise((resolve, reject) => {
 			this.ui.updateUI(SelectWallet, {connectCallback: async () => {
 				console.log("Connect callback");
 				this.ui.updateUI(SelectIssuers);
-				let res = await this.authenticate(authRequest);
-				resolve(res);
+				try {
+					let res = await this.authenticate(authRequest);
+					resolve(res);
+				} catch (e){
+					reject(e);
+				}
 			}});
 		});
 	}
