@@ -122,9 +122,7 @@ export class SafeConnectProvider {
 			}
 		}, true);
 
-		console.log(res);
-
-		return res.data.signature;
+		return res.data.data.signature;
 	}
 
 	public async getLinkSigningKey(){
