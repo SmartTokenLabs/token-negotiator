@@ -474,7 +474,6 @@ export class Client {
 
 		return new Promise((resolve, reject) => {
 			this.ui.updateUI(SelectWallet, {connectCallback: async () => {
-				console.log("Connect callback");
 				this.ui.updateUI(SelectIssuers);
 				try {
 					let res = await this.authenticate(authRequest);

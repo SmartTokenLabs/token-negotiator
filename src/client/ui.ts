@@ -171,11 +171,11 @@ export class Ui {
 
 	showError(error: string | Error){
 
-		if (error instanceof Error){
+		if (typeof error !== "string"){
 			if (error.name === ClientError.USER_ABORT){
 				return this.dismissLoader();
 			}
-			error = error.message;
+			error = error.message ? error.message : error.toString();
 		}
 
 		this.loadContainer.querySelector('.loader-tn').style.display = 'none';
