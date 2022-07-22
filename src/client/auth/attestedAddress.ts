@@ -1,6 +1,5 @@
 import {AbstractAuthentication, AuthenticationMethod, AuthenticationResult} from "./abstractAuthentication";
 import {AuthenticateInterface, OffChainTokenConfig, OnChainTokenConfig} from "../interface";
-import Web3WalletProvider from "../../wallet/Web3WalletProvider";
 import {EthereumKeyLinkingAttestation} from "@tokenscript/attestation/dist/safe-connect/EthereumKeyLinkingAttestation";
 
 export class AttestedAddress extends AbstractAuthentication implements AuthenticationMethod {
