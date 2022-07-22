@@ -58,28 +58,6 @@ export class Web3WalletProvider {
 
 	}
 
-	async getWeb3ChainId ( web3: any) {
-
-		return web3.eth.getChainId();
-
-	}
-
-	async getWeb3Accounts( web3: any ) {
-
-		return web3.eth.getAccounts();
-
-	}
-
-	async getWeb3ChainIdAndAccounts( web3: any ) {
-
-		const chainId = await this.getWeb3ChainId( web3 );
-        
-		const accounts = await this.getWeb3Accounts( web3 );
-
-		return { chainId, accounts };
-
-	}
-
 	async MetaMask () {
 
 		logger(2, 'connect MetaMask');
@@ -137,13 +115,14 @@ export class Web3WalletProvider {
 
 		await torus.login();
 
-		const web3 = new ethers.providers.Web3Provider(torus.provider);
+		const provider = new ethers.providers.Web3Provider(torus.provider);
+		const accounts = await provider.listAccounts();
 
-		const { accounts, chainId } = await this.getWeb3ChainIdAndAccounts( web3 );
+		if (accounts.length === 0){
+			throw new Error("No accounts found via wallet-connect.");
+		}
 
-		const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], chainId, torus.provider);
-
-		return registeredWalletAddress;
+		return this.registerNewWalletAddress(accounts[0], '1',  torus.provider);
 
 	}
 
