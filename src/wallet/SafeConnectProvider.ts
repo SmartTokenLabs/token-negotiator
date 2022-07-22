@@ -124,7 +124,7 @@ export class SafeConnectProvider {
 				type: "signed_un",
 				un: encodeURIComponent(JSON.stringify(un))
 			}
-		}, true);
+		}, true, this.ui);
 
 		return res.data.data.signature;
 	}
