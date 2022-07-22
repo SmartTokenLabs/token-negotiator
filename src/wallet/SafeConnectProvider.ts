@@ -1,7 +1,7 @@
 import {ResponseInterfaceBase} from "../core/messaging";
 import {Messaging} from "../client/messaging";
 import {uint8tohex} from "@tokenscript/attestation/dist/libs/utils";
-import {KeyStore} from "../client/auth/util/KeyStore";
+import {KeyStore} from "@tokenscript/attestation/dist/safe-connect/KeyStore";
 import {AbstractAuthentication, AuthenticationResult} from "../client/auth/abstractAuthentication";
 import {AttestedAddress} from "../client/auth/attestedAddress";
 import {UNInterface} from "../client/auth/util/UN";
