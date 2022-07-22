@@ -3,7 +3,7 @@ import {OutletAction, OutletResponseAction} from "./messaging";
 import { Messaging } from "../core/messaging";
 import { Popup } from "./popup";
 import { asyncHandle, logger, requiredParams } from "../utils";
-import {connectMetamaskAndGetAddress, getChallengeSigned, validateUseEthKey } from "../core";
+import {getChallengeSigned, validateUseEthKey } from "../core";
 import OnChainTokenModule from "./../onChainTokenModule";
 import "./../vendor/keyShape";
 import { Authenticator } from "@tokenscript/attestation";
@@ -468,7 +468,7 @@ export class Client {
 			useEthKey
 		);
 
-		const walletAddress = await connectMetamaskAndGetAddress();
+		const walletAddress = walletProvider.getConnectedWalletData()[0].address;
 
 		if (walletAddress.toLowerCase() !== attestedAddress.toLowerCase())
 			throw new Error("useEthKey validation failed.");

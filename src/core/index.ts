@@ -255,19 +255,6 @@ export const getChallengeSigned = async (
 	// }
 }
 
-export const connectMetamaskAndGetAddress = async () => {
-	requiredParams(window.ethereum, "Please install metamask to continue.");
-
-	const userAddresses = await window.ethereum.request({
-		method: "eth_requestAccounts",
-	});
-
-	if (!userAddresses || !userAddresses.length)
-		throw new Error("Active Wallet required");
-
-	return userAddresses[0];
-};
-
 export const signNewChallenge = async (
 	unEndPoint: string,
 	web3WalletProvider: any
