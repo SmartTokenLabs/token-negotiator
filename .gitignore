@@ -5,4 +5,4 @@ junit.xml
 dist-common-js
 bundles
 .idea
-dist
+#dist
