@@ -97,6 +97,7 @@ export class SelectWallet extends AbstractView {
 			}
 
 		} catch (err: any){
+			if (timer) clearTimeout(timer);
 			this.ui.showError(err);
 			return;
 		}

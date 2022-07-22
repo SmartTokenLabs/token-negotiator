@@ -149,7 +149,7 @@ export class Messaging {
 					}
 
 					if (response.evt === ResponseActionBase.ERROR) {
-						reject(response.errors);
+						reject(new Error(response.errors.join(". ")));
 					} else if (response.evt === ResponseActionBase.SHOW_FRAME){
 
 						if (iframe) {
