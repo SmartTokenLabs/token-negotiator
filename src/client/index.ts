@@ -10,9 +10,8 @@ import {TokenStore} from "./tokenStore";
 import {OffChainTokenConfig, OnChainTokenConfig, AuthenticateInterface, NegotiationInterface} from "./interface";
 import {SignedUNChallenge} from "./auth/signedUNChallenge";
 import {TicketZKProof} from "./auth/ticketZKProof";
-import {AuthenticationMethod, AuthenticationResult} from "./auth/abstractAuthentication";
-import { isUserAgentSupported, unSupportedUserAgents } from './../utils/support/isSupported';
-import { getBrowserData } from "../utils/support/getBrowserData";
+import {AuthenticationMethod} from "./auth/abstractAuthentication";
+import { isUserAgentSupported } from './../utils/support/isSupported';
 
 // @ts-ignore
 if(typeof window !== "undefined") window.tn = { version: "2.0.0" };
@@ -183,9 +182,7 @@ export class Client {
 
 	async negotiate(issuers?: OnChainTokenConfig | OffChainTokenConfig[], openPopup = false) {
 
-		const isBrowserSupported = await this.checkBrowserSupport();
-
-		if (!isBrowserSupported) {
+		if (!isUserAgentSupported()) {
 
 			this.ui = new Ui(this.config.uiOptions, this);
 			this.ui.initialize();
@@ -219,19 +216,6 @@ export class Client {
 
 			await this.passiveNegotiationStrategy();
 		}
-	}
-
-	checkBrowserSupport(): boolean {
-		let supported = true;
-		const browserData = getBrowserData()
-
-		for (const browser in browserData) {
-			if (browserData[browser] && unSupportedUserAgents.includes(browser)) {
-				supported = false;
-			}
-		}
-	
-		return supported; 
 	}
 
 	activeNegotiationStrategy(openPopup: boolean) {
@@ -389,12 +373,8 @@ export class Client {
 		this.eventSender.emitSelectedTokensToClient(selectedTokens);
 	}
 
-	isCurrentDeviceSupported(): boolean{
-		return isUserAgentSupported(this.config?.unSupportedUserAgent?.config) !== false;
-	}
-
 	async authenticate(authRequest: AuthenticateInterface) {
-		if(!this.isCurrentDeviceSupported()) {
+		if(!isUserAgentSupported()) {
 			if (this.ui) {
 				setTimeout(() => {
 					this.ui.showError(this.config?.unSupportedUserAgent?.errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");

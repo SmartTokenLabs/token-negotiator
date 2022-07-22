@@ -29,22 +29,16 @@ export interface BrowserDataInterface {
   imTokenAndroid: boolean
 }
 
-export const isUserAgentSupported = (unsupportedDeviceAndBrowserConfig:any) => {
-  if(unsupportedDeviceAndBrowserConfig === undefined || unsupportedDeviceAndBrowserConfig === null) return true;
-  const browserData = getBrowserData();
-  let broswerIsSupported = true;
-  const browserDeviceWalletSupportedMap =  ["iE", "iE9", "edge", "chrome", "phantomJS", "fireFox", "safari", "android", "iOS", "mac", "windows", "webView", "touchDevice", "metaMask", "alphaWallet", "mew", "trust", "goWallet", "status", "imToken", "metaMaskAndroid", "alphaWalletAndroid", "mewAndroid", "imTokenAndroid"];
-  browserDeviceWalletSupportedMap.forEach((item) => { 
-    if(
-      unsupportedDeviceAndBrowserConfig[item as keyof BrowserDataInterface] &&
-      unsupportedDeviceAndBrowserConfig[item as keyof BrowserDataInterface] === true &&
-      browserData[item as keyof BrowserDataInterface] === true
-    ) {
-      broswerIsSupported = false; 
-    }
-  });
-  return broswerIsSupported;
-}
-
 // List of known browsers/platforms that are not supported.
-export  const unSupportedUserAgents: string [] = ["iE", "iE9"];
+const unSupportedUserAgents: string[] = ["iE", "iE9"];
+
+export const isUserAgentSupported = (): boolean => {
+	let supported = true;
+	const browserData = getBrowserData();
+	for (const browser in browserData) {
+		if (browserData[browser] && unSupportedUserAgents.includes(browser)) {
+			supported = false;
+		}
+	}
+	return supported; 
+}
