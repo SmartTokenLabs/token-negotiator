@@ -37,7 +37,7 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 			data: {
 				issuer: issuerConfig.collectionID,
 				token: tokens[0],
-				address: request.address ? request.address : "",
+				address: request.address ? request.address : (useEthKey ? useEthKey.address : ""),
 				wallet: request.wallet ? request.wallet : ""
 			}
 		}, request.options.messagingForceTab);
