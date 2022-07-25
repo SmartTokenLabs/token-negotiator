@@ -12,7 +12,6 @@ babel.config.js
 jest.config.js                                
 junit.xml                                     
 mock-images
-package.json                                  
 tsconfig.build.json                           
 tsconfig.json                                 
 tslint.json                                   
