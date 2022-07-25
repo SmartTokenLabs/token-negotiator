@@ -437,27 +437,27 @@ var Client = (function () {
         this.tokenStore.setSelectedTokens(selectedTokens);
         this.eventSender.emitSelectedTokensToClient(selectedTokens);
     };
-    Client.prototype.isCurrentDeviceSupported = function () {
-        var _a, _b;
-        return isUserAgentSupported((_b = (_a = this.config) === null || _a === void 0 ? void 0 : _a.unSupportedUserAgent) === null || _b === void 0 ? void 0 : _b.config) !== false;
+    Client.prototype.isCurrentDeviceSupported = function (supportType) {
+        var _a, _b, _c;
+        return isUserAgentSupported((_c = (_b = (_a = this.config) === null || _a === void 0 ? void 0 : _a.unSupportedUserAgent) === null || _b === void 0 ? void 0 : _b[supportType]) === null || _c === void 0 ? void 0 : _c.config) !== false;
     };
     Client.prototype.authenticate = function (authRequest) {
-        var _a, _b, _c, _d;
+        var _a, _b, _c, _d, _e;
         return __awaiter(this, void 0, void 0, function () {
             var issuer, unsignedToken, config, timer, AuthType, authenticator, res, err_2;
             var _this = this;
-            return __generator(this, function (_e) {
-                switch (_e.label) {
+            return __generator(this, function (_f) {
+                switch (_f.label) {
                     case 0:
-                        if (!this.isCurrentDeviceSupported()) {
+                        if (!this.isCurrentDeviceSupported('authentication')) {
                             if (this.ui) {
                                 setTimeout(function () {
-                                    var _a, _b, _c;
-                                    _this.ui.showError((_c = (_b = (_a = _this.config) === null || _a === void 0 ? void 0 : _a.unSupportedUserAgent) === null || _b === void 0 ? void 0 : _b.errorMessage) !== null && _c !== void 0 ? _c : "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
+                                    var _a, _b, _c, _d;
+                                    _this.ui.showError((_d = (_c = (_b = (_a = _this.config) === null || _a === void 0 ? void 0 : _a.unSupportedUserAgent) === null || _b === void 0 ? void 0 : _b.authentication) === null || _c === void 0 ? void 0 : _c.errorMessage) !== null && _d !== void 0 ? _d : "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
                                     _this.ui.openOverlay();
                                 }, 1000);
                             }
-                            throw new Error((_c = (_b = (_a = this.config) === null || _a === void 0 ? void 0 : _a.unSupportedUserAgent) === null || _b === void 0 ? void 0 : _b.errorMessage) !== null && _c !== void 0 ? _c : "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
+                            throw new Error((_d = (_c = (_b = (_a = this.config) === null || _a === void 0 ? void 0 : _a.unSupportedUserAgent) === null || _b === void 0 ? void 0 : _b.authentication) === null || _c === void 0 ? void 0 : _c.errorMessage) !== null && _d !== void 0 ? _d : "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
                         }
                         issuer = authRequest.issuer, unsignedToken = authRequest.unsignedToken;
                         requiredParams(issuer && unsignedToken, "Issuer and signed token required.");
@@ -477,20 +477,20 @@ var Client = (function () {
                             AuthType = config.onChain ? SignedUNChallenge : TicketZKProof;
                         }
                         authenticator = new AuthType();
-                        _e.label = 1;
+                        _f.label = 1;
                     case 1:
-                        _e.trys.push([1, 3, , 4]);
+                        _f.trys.push([1, 3, , 4]);
                         if (!authRequest.options)
                             authRequest.options = {};
-                        (_d = authRequest.options) === null || _d === void 0 ? void 0 : _d.messagingForceTab = this.config.messagingForceTab;
+                        (_e = authRequest.options) === null || _e === void 0 ? void 0 : _e.messagingForceTab = this.config.messagingForceTab;
                         return [4, authenticator.getTokenProof(config, [authRequest.unsignedToken], this.web3WalletProvider, authRequest)];
                     case 2:
-                        res = _e.sent();
+                        res = _f.sent();
                         logger(2, "Ticket proof successfully validated.");
                         this.eventSender.emitProofToClient(res.data, issuer);
                         return [3, 4];
                     case 3:
-                        err_2 = _e.sent();
+                        err_2 = _f.sent();
                         logger(2, err_2);
                         this.handleProofError(err_2, issuer);
                         throw err_2;

@@ -103,6 +103,8 @@ var Outlet = (function () {
                 localStorage.setItem("cookie-support-check", "test");
                 this.sendCookieCheck(evtid);
                 var _a = this.tokenConfig, tokenUrlName = _a.tokenUrlName, tokenSecretName = _a.tokenSecretName, tokenIdName = _a.tokenIdName, itemStorageKey = _a.itemStorageKey;
+                console.log("Token config: ");
+                console.log(this.tokenConfig);
                 try {
                     var tokens = readMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey, this.urlParams);
                     storeMagicURL(tokens, itemStorageKey);
