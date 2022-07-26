@@ -10,7 +10,7 @@ import {OffChainTokenConfig, OnChainTokenConfig, AuthenticateInterface, Negotiat
 import {SignedUNChallenge} from "./auth/signedUNChallenge";
 import {TicketZKProof} from "./auth/ticketZKProof";
 import {AuthenticationMethod} from "./auth/abstractAuthentication";
-import { isUserAgentSupported } from './../utils/support/isSupported';
+import { isUserAgentSupported } from '../utils/support/isSupported';
 import {SelectWallet} from "./views/select-wallet";
 import {SelectIssuers} from "./views/select-issuers";
 
@@ -25,6 +25,8 @@ declare global {
 	}
 }
 
+const NOT_SUPPORTED_ERROR = "This browser is not supported. Please try using Chrome, Edge, FireFox or Safari.";
+
 const defaultConfig: NegotiationInterface = {
 	type: "active",
 	issuers: [],
@@ -37,7 +39,25 @@ const defaultConfig: NegotiationInterface = {
 	},
 	autoLoadTokens: true,
 	autoEnableTokens: true,
-	messagingForceTab: false
+	messagingForceTab: false,
+	unSupportedUserAgent: {
+		authentication: {
+			config: {
+				metaMaskAndroid: true,
+				alphaWalletAndroid: true,
+				mewAndroid: true,
+				imTokenAndroid: true,
+			},
+			errorMessage: NOT_SUPPORTED_ERROR
+		},
+		full: {
+			config: {
+				iE: true,
+				iE9: true,
+			},
+			errorMessage: NOT_SUPPORTED_ERROR
+		}
+	}
 }
 
 export const enum UIUpdateEventType {
@@ -159,23 +179,31 @@ export class Client {
 		this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADED);
 	}
 
-	async negotiate(issuers?: OnChainTokenConfig | OffChainTokenConfig[], openPopup = false) {
+	private checkUserAgentSupport(type: string){
 
-		if (!isUserAgentSupported()) {
+		if (!isUserAgentSupported(this.config.unSupportedUserAgent[type].config)){
+
+			let err = this.config.unSupportedUserAgent[type].errorMessage;
 
 			if (this.config.type === 'active') {
 				this.ui = new Ui(this.config.uiOptions, this);
 				this.ui.initialize();
 				this.ui.openOverlay();
-	
+
 				setTimeout(() => {
-					this.ui.showError("This browser is not supported. Please try using Chrome, Edge, FireFox or Safari.", false);
+					this.ui.showError(err, false);
 					this.ui.viewContainer.style.display = 'none';
 				}, 1000);
 			}
-	
-			throw new Error("This browser is not supported. Please try using Chrome, Edge, FireFox or Safari.");
+
+			throw new Error(err);
+
 		}
+	}
+
+	async negotiate(issuers?: OnChainTokenConfig | OffChainTokenConfig[], openPopup = false) {
+
+		this.checkUserAgentSupport("full");
 
 		if (issuers) this.tokenStore.updateIssuers(issuers);
 
@@ -394,21 +422,7 @@ export class Client {
 
 	async authenticate(authRequest: AuthenticateInterface) {
 
-		if (!isUserAgentSupported()) {
-
-			if (this.config.type === 'active') {
-				this.ui = new Ui(this.config.uiOptions, this);
-				this.ui.initialize();
-				this.ui.openOverlay();
-	
-				setTimeout(() => {
-					this.ui.showError("This browser is not supported. Please try using Chrome, Edge, FireFox or Safari.", false);
-					this.ui.viewContainer.style.display = 'none';
-				}, 1000);
-			}
-	
-			throw new Error("This browser is not supported. Please try using Chrome, Edge, FireFox or Safari.");
-		}
+		this.checkUserAgentSupport("authentication")
 
 		const { issuer, unsignedToken } = authRequest;
 		requiredParams(

@@ -9,29 +9,7 @@ describe('browser simulations', () => {
 	test('check if browser is supported', () => {
 		expect(isUserAgentSupported({
 			iE: true,
-			iE9: true,
-			edge: true,
-			chrome: true,
-			phantomJS: true,
-			fireFox: true,
-			safari: true,
-			android: true,
-			iOS: true,
-			mac: true,
-			windows: true,
-			webView: true,
-			touchDevice: true,
-			metaMask: true,
-			alphaWallet: true,
-			mew: true,
-			trust: true,
-			goWallet: true,
-			status: true,
-			imToken: true,
-			metaMaskAndroid: true,
-			alphaWalletAndroid: true,
-			mewAndroid: true,
-			imTokenAndroid: true,
+			iE9: true
 		})).toEqual(true);
 	});
 	test('check if browser is not supported', () => {
@@ -47,30 +25,7 @@ describe('browser simulations', () => {
 		);
 
 		expect(isUserAgentSupported({
-			iE: true,
-			iE9: true,
-			edge: true,
-			chrome: true,
-			phantomJS: true,
-			fireFox: true,
-			safari: true,
-			android: true,
-			iOS: true,
-			mac: false,
-			windows: true,
-			webView: true,
-			touchDevice: true,
-			metaMask: true,
-			alphaWallet: true,
-			mew: true,
-			trust: true,
-			goWallet: true,
-			status: true,
-			imToken: true,
-			metaMaskAndroid: true,
-			alphaWalletAndroid: true,
-			mewAndroid: true,
-			imTokenAndroid: true,
+			mac: true
 		})).toEqual(false);
 	});
 });

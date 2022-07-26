@@ -17,8 +17,8 @@ export const getBrowserData = () => {
 	const isIOS = UA && /iphone|ipad|ipod|ios/.test(UA);
 
 	// detect device
-	const isMac = window.navigator.platform.toLowerCase().includes("mac");
-	const isWindows = window.navigator.platform.toLowerCase().includes("win");
+	const isMac = window.navigator.platform.toLowerCase().includes("mac") || window.navigator.userAgent.toLowerCase().includes("mac");
+	const isWindows = window.navigator.platform.toLowerCase().includes("win") || window.navigator.userAgent.toLowerCase().includes("win");
 
 	// detect if touch device
 	let isTouchDevice = false;
