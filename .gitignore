@@ -5,6 +5,6 @@ junit.xml
 dist-common-js
 token-negotiator-alpha-dist/
 token-negotiator-dist/
-dist/
+#dist/
 bundles
 .idea
