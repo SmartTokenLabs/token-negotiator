@@ -1,7 +1,7 @@
 import {Start} from './views/start';
 
 import {logger, requiredParams} from "../utils";
-import {Client} from "./index";
+import {Client, ClientError} from "./index";
 import {ViewInterface, ViewConstructor, AbstractView} from "./views/view-interface";
 
 export type UIType = "popup" | "inline"; // TODO: implement modal too
