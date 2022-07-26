@@ -41,6 +41,7 @@ export declare class Client {
     getWalletProvider(): Promise<Web3WalletProvider>;
     negotiatorConnectToWallet(walletType: string): Promise<any>;
     enrichTokenLookupDataOnChainTokens(): Promise<void>;
+    private checkUserAgentSupport;
     negotiate(issuers?: OnChainTokenConfig | OffChainTokenConfig[], openPopup?: boolean): Promise<void>;
     activeNegotiationStrategy(openPopup: boolean): void;
     private cancelAutoload;
