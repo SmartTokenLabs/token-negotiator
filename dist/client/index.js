@@ -45,10 +45,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-import { OutletAction, OutletResponseAction } from "./messaging";
-import { Messaging } from "../core/messaging";
+import { OutletAction, OutletResponseAction, Messaging } from "./messaging";
 import { Ui } from "./ui";
-import { asyncHandle, logger, requiredParams } from "../utils";
+import { logger, requiredParams } from "../utils";
 import { getNftCollection, getNftTokens } from "../utils/token/nftProvider";
 import "./../vendor/keyShape";
 import { Authenticator } from "@tokenscript/attestation";
@@ -56,6 +55,8 @@ import { TokenStore } from "./tokenStore";
 import { SignedUNChallenge } from "./auth/signedUNChallenge";
 import { TicketZKProof } from "./auth/ticketZKProof";
 import { isUserAgentSupported } from './../utils/support/isSupported';
+import { SelectWallet } from "./views/select-wallet";
+import { SelectIssuers } from "./views/select-issuers";
 if (typeof window !== "undefined")
     window.tn = { version: "2.0.0" };
 var defaultConfig = {
@@ -72,6 +73,16 @@ var defaultConfig = {
     autoEnableTokens: true,
     messagingForceTab: false
 };
+export var ClientError;
+(function (ClientError) {
+    ClientError["POPUP_BLOCKED"] = "POPUP_BLOCKED";
+    ClientError["USER_ABORT"] = "USER_ABORT";
+})(ClientError || (ClientError = {}));
+export var ClientErrorMessage;
+(function (ClientErrorMessage) {
+    ClientErrorMessage["POPUP_BLOCKED"] = "Please add an exception to your popup blocker before continuing.";
+    ClientErrorMessage["USER_ABORT"] = "The user aborted the process.";
+})(ClientErrorMessage || (ClientErrorMessage = {}));
 var Client = (function () {
     function Client(config) {
         var _this = this;
@@ -90,6 +101,10 @@ var Client = (function () {
                 if (error === void 0) { error = ""; }
                 _this.on("token-proof", null, { data: data, issuer: issuer, error: error });
             },
+            emitErrorToClient: function (error, issuer) {
+                if (issuer === void 0) { issuer = "none"; }
+                _this.on("error", null, { error: error, issuer: issuer });
+            }
         };
         config.uiOptions = __assign(__assign({}, defaultConfig.uiOptions), config === null || config === void 0 ? void 0 : config.uiOptions);
         this.config = Object.assign(defaultConfig, config);
@@ -128,7 +143,7 @@ var Client = (function () {
                         return [4, import("./../wallet/Web3WalletProvider")];
                     case 1:
                         Web3WalletProvider = (_a.sent()).Web3WalletProvider;
-                        this.web3WalletProvider = new Web3WalletProvider(this.config.safeConnectOptions);
+                        this.web3WalletProvider = new Web3WalletProvider(this, this.config.safeConnectOptions);
                         _a.label = 2;
                     case 2: return [2, this.web3WalletProvider];
                 }
@@ -148,54 +163,6 @@ var Client = (function () {
                         walletAddress = _a.sent();
                         logger(2, "wallet address found: " + walletAddress);
                         return [2, walletAddress];
-                }
-            });
-        });
-    };
-    Client.prototype.setPassiveNegotiationWebTokens = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var issuers, _a, _b, _i, issuer, res, issuerConfig, err_1;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
-                    case 0:
-                        issuers = this.tokenStore.getCurrentIssuers(false);
-                        _a = [];
-                        for (_b in issuers)
-                            _a.push(_b);
-                        _i = 0;
-                        _c.label = 1;
-                    case 1:
-                        if (!(_i < _a.length)) return [3, 7];
-                        issuer = _a[_i];
-                        res = void 0;
-                        issuerConfig = this.tokenStore.getCurrentIssuers()[issuer];
-                        _c.label = 2;
-                    case 2:
-                        _c.trys.push([2, 4, , 5]);
-                        return [4, this.messaging.sendMessage({
-                                action: OutletAction.GET_ISSUER_TOKENS,
-                                origin: issuerConfig.tokenOrigin,
-                                data: {
-                                    issuer: issuer,
-                                    filter: issuerConfig.filters
-                                }
-                            }, this.config.messagingForceTab)];
-                    case 3:
-                        res = _c.sent();
-                        return [3, 5];
-                    case 4:
-                        err_1 = _c.sent();
-                        logger(2, err_1);
-                        return [3, 6];
-                    case 5:
-                        logger(2, "tokens:");
-                        logger(2, res.data.tokens);
-                        this.tokenStore.setTokens(issuer, res.data.tokens);
-                        _c.label = 6;
-                    case 6:
-                        _i++;
-                        return [3, 1];
-                    case 7: return [2];
                 }
             });
         });
@@ -242,9 +209,20 @@ var Client = (function () {
     Client.prototype.negotiate = function (issuers, openPopup) {
         if (openPopup === void 0) { openPopup = false; }
         return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        if (!isUserAgentSupported()) {
+                            this.ui = new Ui(this.config.uiOptions, this);
+                            this.ui.initialize();
+                            this.ui.openOverlay();
+                            setTimeout(function () {
+                                _this.ui.showError("This browser is not supported. Please try using Chrome, Edge, FireFox or Safari.", false);
+                                _this.ui.viewContainer.style.display = 'none';
+                            }, 1000);
+                            return [2];
+                        }
                         if (issuers)
                             this.tokenStore.updateIssuers(issuers);
                         requiredParams(Object.keys(this.tokenStore.getCurrentIssuers()).length, "issuers are missing.");
@@ -314,7 +292,9 @@ var Client = (function () {
                         return [3, 5];
                     case 4:
                         e_1 = _c.sent();
-                        console.log("Failed to load " + issuerKey + ": " + e_1);
+                        e_1.message = "Failed to load " + issuerKey + ": " + e_1.message;
+                        logger(2, e_1.message);
+                        this.eventSender.emitErrorToClient(e_1, issuerKey);
                         onComplete(issuerKey, null);
                         return [3, 5];
                     case 5:
@@ -333,9 +313,59 @@ var Client = (function () {
     Client.prototype.cancelTokenAutoload = function () {
         this.cancelAutoload = true;
     };
+    Client.prototype.setPassiveNegotiationWebTokens = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var issuers, _a, _b, _i, issuer, res, issuerConfig, err_1;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        issuers = this.tokenStore.getCurrentIssuers(false);
+                        _a = [];
+                        for (_b in issuers)
+                            _a.push(_b);
+                        _i = 0;
+                        _c.label = 1;
+                    case 1:
+                        if (!(_i < _a.length)) return [3, 7];
+                        issuer = _a[_i];
+                        res = void 0;
+                        issuerConfig = this.tokenStore.getCurrentIssuers()[issuer];
+                        _c.label = 2;
+                    case 2:
+                        _c.trys.push([2, 4, , 5]);
+                        return [4, this.messaging.sendMessage({
+                                action: OutletAction.GET_ISSUER_TOKENS,
+                                origin: issuerConfig.tokenOrigin,
+                                data: {
+                                    issuer: issuer,
+                                    filter: issuerConfig.filters
+                                }
+                            }, this.config.messagingForceTab)];
+                    case 3:
+                        res = _c.sent();
+                        return [3, 5];
+                    case 4:
+                        err_1 = _c.sent();
+                        logger(2, err_1);
+                        console.log("popup error");
+                        this.eventSender.emitErrorToClient(err_1, issuer);
+                        return [3, 6];
+                    case 5:
+                        logger(2, "tokens:");
+                        logger(2, res.data.tokens);
+                        this.tokenStore.setTokens(issuer, res.data.tokens);
+                        _c.label = 6;
+                    case 6:
+                        _i++;
+                        return [3, 1];
+                    case 7: return [2];
+                }
+            });
+        });
+    };
     Client.prototype.setPassiveNegotiationOnChainTokens = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var issuers, walletProvider, _a, _b, _i, issuerKey, issuer, tokens;
+            var issuers, walletProvider, _a, _b, _i, issuerKey, issuer, tokens, e_2;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -349,18 +379,26 @@ var Client = (function () {
                         _i = 0;
                         _c.label = 2;
                     case 2:
-                        if (!(_i < _a.length)) return [3, 5];
+                        if (!(_i < _a.length)) return [3, 7];
                         issuerKey = _a[_i];
                         issuer = issuers[issuerKey];
-                        return [4, getNftTokens(issuer, walletProvider.getConnectedWalletData()[0].address)];
+                        _c.label = 3;
                     case 3:
+                        _c.trys.push([3, 5, , 6]);
+                        return [4, getNftTokens(issuer, walletProvider.getConnectedWalletData()[0].address)];
+                    case 4:
                         tokens = _c.sent();
                         this.tokenStore.setTokens(issuerKey, tokens);
-                        _c.label = 4;
-                    case 4:
+                        return [3, 6];
+                    case 5:
+                        e_2 = _c.sent();
+                        logger(2, err);
+                        this.eventSender.emitErrorToClient(err, issuerKey);
+                        return [3, 6];
+                    case 6:
                         _i++;
                         return [3, 2];
-                    case 5: return [2];
+                    case 7: return [2];
                 }
             });
         });
@@ -370,10 +408,10 @@ var Client = (function () {
             var tokens, issuer;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, asyncHandle(this.setPassiveNegotiationWebTokens())];
+                    case 0: return [4, this.setPassiveNegotiationWebTokens()];
                     case 1:
                         _a.sent();
-                        return [4, asyncHandle(this.setPassiveNegotiationOnChainTokens())];
+                        return [4, this.setPassiveNegotiationOnChainTokens()];
                     case 2:
                         _a.sent();
                         tokens = this.tokenStore.getCurrentTokens();
@@ -383,7 +421,7 @@ var Client = (function () {
                             tokens[issuer] = { tokens: tokens[issuer] };
                         }
                         this.eventSender.emitAllTokensToClient(tokens);
-                        if (this.messaging.iframeStorageSupport === false && Object.keys(this.tokenStore.getCurrentTokens(false)).length === 0)
+                        if (this.messaging.core.iframeStorageSupport === false && Object.keys(this.tokenStore.getCurrentTokens(false)).length === 0)
                             logger(2, "iFrame storage support not detected: Enable popups via your browser to access off-chain tokens with this negotiation type.");
                         return [2];
                 }
@@ -419,7 +457,7 @@ var Client = (function () {
                                 issuer: issuer,
                                 filter: config.filters
                             },
-                        }, this.config.messagingForceTab)];
+                        }, this.config.messagingForceTab, this.ui)];
                     case 4:
                         res = _b.sent();
                         tokens = res.data.tokens;
@@ -437,10 +475,6 @@ var Client = (function () {
         this.tokenStore.setSelectedTokens(selectedTokens);
         this.eventSender.emitSelectedTokensToClient(selectedTokens);
     };
-    Client.prototype.isCurrentDeviceSupported = function (supportType) {
-        var _a, _b, _c;
-        return isUserAgentSupported((_c = (_b = (_a = this.config) === null || _a === void 0 ? void 0 : _a.unSupportedUserAgent) === null || _b === void 0 ? void 0 : _b[supportType]) === null || _c === void 0 ? void 0 : _c.config) !== false;
-    };
     Client.prototype.authenticate = function (authRequest) {
         var _a, _b, _c, _d, _e;
         return __awaiter(this, void 0, void 0, function () {
@@ -449,7 +483,7 @@ var Client = (function () {
             return __generator(this, function (_f) {
                 switch (_f.label) {
                     case 0:
-                        if (!this.isCurrentDeviceSupported('authentication')) {
+                        if (!isUserAgentSupported()) {
                             if (this.ui) {
                                 setTimeout(function () {
                                     var _a, _b, _c, _d;
@@ -476,14 +510,14 @@ var Client = (function () {
                         else {
                             AuthType = config.onChain ? SignedUNChallenge : TicketZKProof;
                         }
-                        authenticator = new AuthType();
+                        authenticator = new AuthType(this);
                         _f.label = 1;
                     case 1:
                         _f.trys.push([1, 3, , 4]);
                         if (!authRequest.options)
                             authRequest.options = {};
                         (_e = authRequest.options) === null || _e === void 0 ? void 0 : _e.messagingForceTab = this.config.messagingForceTab;
-                        return [4, authenticator.getTokenProof(config, [authRequest.unsignedToken], this.web3WalletProvider, authRequest)];
+                        return [4, authenticator.getTokenProof(config, [authRequest.unsignedToken], authRequest)];
                     case 2:
                         res = _f.sent();
                         logger(2, "Ticket proof successfully validated.");
@@ -492,6 +526,11 @@ var Client = (function () {
                     case 3:
                         err_2 = _f.sent();
                         logger(2, err_2);
+                        if (err_2.message === "WALLET_REQUIRED") {
+                            if (timer)
+                                clearTimeout(timer);
+                            return [2, this.handleWalletRequired(authRequest)];
+                        }
                         this.handleProofError(err_2, issuer);
                         throw err_2;
                     case 4:
@@ -506,10 +545,55 @@ var Client = (function () {
             });
         });
     };
+    Client.prototype.handleWalletRequired = function (authRequest) {
+        return __awaiter(this, void 0, void 0, function () {
+            var walletProvider;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!this.ui) return [3, 1];
+                        this.ui.dismissLoader();
+                        this.ui.openOverlay();
+                        return [3, 4];
+                    case 1: return [4, this.getWalletProvider()];
+                    case 2:
+                        walletProvider = _a.sent();
+                        return [4, walletProvider.connectWith("MetaMask")];
+                    case 3:
+                        _a.sent();
+                        return [2, this.authenticate(authRequest)];
+                    case 4: return [2, new Promise(function (resolve, reject) {
+                            _this.ui.updateUI(SelectWallet, { connectCallback: function () { return __awaiter(_this, void 0, void 0, function () {
+                                    var res, e_3;
+                                    return __generator(this, function (_a) {
+                                        switch (_a.label) {
+                                            case 0:
+                                                this.ui.updateUI(SelectIssuers);
+                                                _a.label = 1;
+                                            case 1:
+                                                _a.trys.push([1, 3, , 4]);
+                                                return [4, this.authenticate(authRequest)];
+                                            case 2:
+                                                res = _a.sent();
+                                                resolve(res);
+                                                return [3, 4];
+                                            case 3:
+                                                e_3 = _a.sent();
+                                                reject(e_3);
+                                                return [3, 4];
+                                            case 4: return [2];
+                                        }
+                                    });
+                                }); } });
+                        })];
+                }
+            });
+        });
+    };
     Client.prototype.handleProofError = function (err, issuer) {
-        var _a;
         if (this.ui)
-            this.ui.showError((_a = err.message) !== null && _a !== void 0 ? _a : err);
+            this.ui.showError(err);
         this.eventSender.emitProofToClient(null, issuer, err);
     };
     Client.prototype.addTokenViaMagicLink = function (magicLink) {

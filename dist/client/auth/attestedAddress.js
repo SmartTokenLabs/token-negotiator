@@ -58,13 +58,15 @@ var AttestedAddress = (function (_super) {
         _this.TYPE = "attestedAddress";
         return _this;
     }
-    AttestedAddress.prototype.getTokenProof = function (issuerConfig, _tokens, web3WalletProvider, request) {
+    AttestedAddress.prototype.getTokenProof = function (issuerConfig, _tokens, request) {
         var _a;
         return __awaiter(this, void 0, void 0, function () {
-            var address, currentProof, safeConnect, addrAttest, _b, _c, _d, _e;
+            var web3WalletProvider, address, currentProof, safeConnect, addrAttest, _b, _c, _d, _e;
             return __generator(this, function (_f) {
                 switch (_f.label) {
-                    case 0:
+                    case 0: return [4, this.client.getWalletProvider()];
+                    case 1:
+                        web3WalletProvider = _f.sent();
                         if (!web3WalletProvider.safeConnectAvailable())
                             throw new Error("Safe connect is not available");
                         if (!issuerConfig.onChain)
@@ -78,24 +80,24 @@ var AttestedAddress = (function (_super) {
                             currentProof = null;
                         }
                         return [4, web3WalletProvider.getSafeConnectProvider()];
-                    case 1:
-                        safeConnect = _f.sent();
-                        if (!!currentProof) return [3, 3];
-                        return [4, safeConnect.initSafeConnect()];
                     case 2:
+                        safeConnect = _f.sent();
+                        if (!!currentProof) return [3, 4];
+                        return [4, safeConnect.initSafeConnect()];
+                    case 3:
                         _f.sent();
                         currentProof = this.getSavedProof(address);
                         if (!currentProof)
                             throw new Error("Could not get address attestation from safe connect");
-                        _f.label = 3;
-                    case 3:
+                        _f.label = 4;
+                    case 4:
                         addrAttest = currentProof.data.attestation;
                         _b = currentProof.data;
                         _d = (_c = AttestedAddress).createAndSignLinkAttestation;
                         _e = [addrAttest, request.options.address];
                         return [4, safeConnect.getLinkSigningKey()];
-                    case 4: return [4, _d.apply(_c, _e.concat([_f.sent()]))];
-                    case 5:
+                    case 5: return [4, _d.apply(_c, _e.concat([_f.sent()]))];
+                    case 6:
                         _b.attestation = _f.sent();
                         return [2, currentProof];
                 }

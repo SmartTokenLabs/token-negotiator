@@ -13,6 +13,14 @@ export declare const enum UIUpdateEventType {
     ISSUERS_LOADING = 0,
     ISSUERS_LOADED = 1
 }
+export declare enum ClientError {
+    POPUP_BLOCKED = "POPUP_BLOCKED",
+    USER_ABORT = "USER_ABORT"
+}
+export declare enum ClientErrorMessage {
+    POPUP_BLOCKED = "Please add an exception to your popup blocker before continuing.",
+    USER_ABORT = "The user aborted the process."
+}
 export declare class Client {
     private negotiateAlreadyFired;
     issuersLoaded: boolean;
@@ -30,26 +38,27 @@ export declare class Client {
     triggerUiUpdateCallback(type: UIUpdateEventType, data?: {}): void;
     registerUiUpdateCallback(type: UIUpdateEventType, callback: Function): void;
     safeConnectAvailable(): boolean;
-    private getWalletProvider;
+    getWalletProvider(): Promise<Web3WalletProvider>;
     negotiatorConnectToWallet(walletType: string): Promise<any>;
-    setPassiveNegotiationWebTokens(): Promise<void>;
     enrichTokenLookupDataOnChainTokens(): Promise<void>;
     negotiate(issuers?: OnChainTokenConfig | OffChainTokenConfig[], openPopup?: boolean): Promise<void>;
     activeNegotiationStrategy(openPopup: boolean): void;
     private cancelAutoload;
     tokenAutoLoad(onLoading: (issuer: string) => void, onComplete: (issuer: string, tokens: any[]) => void): Promise<void>;
     cancelTokenAutoload(): void;
+    setPassiveNegotiationWebTokens(): Promise<void>;
     setPassiveNegotiationOnChainTokens(): Promise<void>;
     passiveNegotiationStrategy(): Promise<void>;
     connectTokenIssuer(issuer: string): Promise<any>;
     updateSelectedTokens(selectedTokens: any): void;
-    isCurrentDeviceSupported(supportType: string): boolean;
-    authenticate(authRequest: AuthenticateInterface): Promise<any>;
+    authenticate(authRequest: AuthenticateInterface): any;
+    private handleWalletRequired;
     private handleProofError;
     eventSender: {
         emitAllTokensToClient: (tokens: any) => void;
         emitSelectedTokensToClient: (tokens: any) => void;
         emitProofToClient: (data: any, issuer: any, error?: string) => void;
+        emitErrorToClient: (error: Error, issuer?: string) => void;
     };
     addTokenViaMagicLink(magicLink: any): Promise<any>;
     on(type: string, callback?: any, data?: any): any;

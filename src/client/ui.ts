@@ -169,21 +169,19 @@ export class Ui {
 
 	}
 
-	showError(error: string | Error){
-
-		if (typeof error !== "string"){
-			if (error.name === ClientError.USER_ABORT){
-				return this.dismissLoader();
-			}
-			error = error.message ? error.message : error.toString();
-		}
+	showError(message: string, canDismiss = true){
 
 		this.loadContainer.querySelector('.loader-tn').style.display = 'none';
 		this.retryButton.style.display = 'block';
 
-		this.loadContainer.querySelector('.loader-msg-tn').innerHTML = error;
+		this.loadContainer.querySelector('.loader-msg-tn').innerHTML = message;
 
 		this.loadContainer.style.display = 'flex';
+	
+		if (!canDismiss) {
+			this.loadContainer.querySelector('.dismiss-error-tn').style.display = 'none';
+		}
+
 	}
 
 	setErrorRetryCallback(retryCallback?: Function){

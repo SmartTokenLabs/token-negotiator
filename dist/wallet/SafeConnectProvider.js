@@ -34,7 +34,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-import { Messaging } from "../core/messaging";
+import { Messaging } from "../client/messaging";
 import { uint8tohex } from "@tokenscript/attestation/dist/libs/utils";
 import { KeyStore } from "@tokenscript/attestation/dist/safe-connect/KeyStore";
 import { AttestedAddress } from "../client/auth/attestedAddress";
@@ -45,9 +45,10 @@ export var SafeConnectAction;
     SafeConnectAction["NEW_CHALLENGE"] = "new_challenge";
 })(SafeConnectAction || (SafeConnectAction = {}));
 var SafeConnectProvider = (function () {
-    function SafeConnectProvider(options) {
-        this.messaging = new Messaging();
+    function SafeConnectProvider(ui, options) {
         this.keyStore = new KeyStore();
+        this.messaging = new Messaging();
+        this.ui = ui;
         this.options = options;
     }
     SafeConnectProvider.prototype.initSafeConnect = function () {
@@ -66,7 +67,7 @@ var SafeConnectProvider = (function () {
                         };
                         return [4, this.getInitialProofRequest()];
                     case 1: return [4, _c.apply(_b, [(_d.data = (_e.sent()),
-                                _d), true])];
+                                _d), true, this.ui])];
                     case 2:
                         res = _e.sent();
                         if (!this.options.initialProof)
@@ -143,7 +144,7 @@ var SafeConnectProvider = (function () {
                                 type: "signed_un",
                                 un: encodeURIComponent(JSON.stringify(un))
                             }
-                        }, true)];
+                        }, true, this.ui)];
                     case 1:
                         res = _a.sent();
                         return [2, res.data.data.signature];

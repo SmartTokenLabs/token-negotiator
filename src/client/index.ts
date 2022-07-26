@@ -25,6 +25,8 @@ declare global {
 	}
 }
 
+const NOT_SUPPORTED_ERROR = "This browser is not supported. Please try using Chrome, Edge, FireFox or Safari.";
+
 const defaultConfig: NegotiationInterface = {
 	type: "active",
 	issuers: [],
@@ -37,7 +39,25 @@ const defaultConfig: NegotiationInterface = {
 	},
 	autoLoadTokens: true,
 	autoEnableTokens: true,
-	messagingForceTab: false
+	messagingForceTab: false,
+	unSupportedUserAgent: {
+		authentication: {
+			config: {
+				metaMaskAndroid: true,
+				alphaWalletAndroid: true,
+				mewAndroid: true,
+				imTokenAndroid: true,
+			},
+			errorMessage: NOT_SUPPORTED_ERROR
+		},
+		full: {
+			config: {
+				iE: true,
+				iE9: true,
+			},
+			errorMessage: NOT_SUPPORTED_ERROR
+		}
+	}
 }
 
 export const enum UIUpdateEventType {
@@ -159,7 +179,31 @@ export class Client {
 		this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADED);
 	}
 
+	private checkUserAgentSupport(type: string){
+
+		if (!isUserAgentSupported(this.config.unSupportedUserAgent[type].config)){
+
+			let err = this.config.unSupportedUserAgent[type].errorMessage;
+
+			if (this.config.type === 'active') {
+				this.ui = new Ui(this.config.uiOptions, this);
+				this.ui.initialize();
+				this.ui.openOverlay();
+
+				setTimeout(() => {
+					this.ui.showError(err, false);
+					this.ui.viewContainer.style.display = 'none';
+				}, 1000);
+			}
+
+			throw new Error(err);
+
+		}
+	}
+
 	async negotiate(issuers?: OnChainTokenConfig | OffChainTokenConfig[], openPopup = false) {
+
+		this.checkUserAgentSupport("full");
 
 		if (issuers) this.tokenStore.updateIssuers(issuers);
 
@@ -376,20 +420,10 @@ export class Client {
 		this.eventSender.emitSelectedTokensToClient(selectedTokens);
 	}
 
-	isCurrentDeviceSupported(supportType:string): boolean{
-		return isUserAgentSupported(this.config?.unSupportedUserAgent?.[supportType]?.config) !== false;
-	}
-
 	async authenticate(authRequest: AuthenticateInterface) {
-		if(!this.isCurrentDeviceSupported('authentication')) {
-			if (this.ui) {
-				setTimeout(() => {
-					this.ui.showError(this.config?.unSupportedUserAgent?.authentication?.errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
-					this.ui.openOverlay();
-				}, 1000);
-			}
-			throw new Error(this.config?.unSupportedUserAgent?.authentication?.errorMessage ?? "This browser cannot yet support full token authentication. Please try using Chrome, FireFox or Safari.");
-		}
+
+		this.checkUserAgentSupport("authentication")
+
 		const { issuer, unsignedToken } = authRequest;
 		requiredParams(
 			issuer && unsignedToken,

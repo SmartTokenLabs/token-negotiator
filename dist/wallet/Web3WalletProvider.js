@@ -37,9 +37,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 import { ethers } from "ethers";
 import { logger } from "../utils";
 var Web3WalletProvider = (function () {
-    function Web3WalletProvider(safeConnectUrl) {
+    function Web3WalletProvider(client, safeConnectOptions) {
         this.state = { addresses: [] };
-        this.safeConnectOptions = safeConnectUrl;
+        this.client = client;
+        this.safeConnectOptions = safeConnectOptions;
     }
     Web3WalletProvider.prototype.connectWith = function (walletType) {
         return __awaiter(this, void 0, void 0, function () {
@@ -172,7 +173,6 @@ var Web3WalletProvider = (function () {
                         return [4, provider.initSafeConnect()];
                     case 2:
                         address = _a.sent();
-                        console.log(address);
                         this.registerNewWalletAddress(address, "1", provider);
                         return [2, address];
                 }
@@ -190,7 +190,7 @@ var Web3WalletProvider = (function () {
                     case 0: return [4, import("./SafeConnectProvider")];
                     case 1:
                         SafeConnectProvider = (_a.sent()).SafeConnectProvider;
-                        return [2, new SafeConnectProvider(this.safeConnectOptions)];
+                        return [2, new SafeConnectProvider(this.client.getUi(), this.safeConnectOptions)];
                 }
             });
         });

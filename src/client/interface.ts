@@ -34,9 +34,15 @@ export interface NegotiationInterface {
     autoEnableTokens?: boolean;
     messagingForceTab?: boolean;
     safeConnectOptions?: SafeConnectOptions;
-    unSupported?: {
-        config: BrowserDataInterface,
-        errorMessage: string
+    unSupportedUserAgent?: {
+        authentication: {
+            config: BrowserDataInterface,
+            errorMessage: string
+        },
+        full: {
+            config: BrowserDataInterface,
+            errorMessage: string
+        }
     }
 }
 
