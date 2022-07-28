@@ -4,6 +4,7 @@ import {OutletAction, Messaging} from "../messaging";
 import {Authenticator} from "@tokenscript/attestation";
 import {SignedUNChallenge} from "./signedUNChallenge";
 import {UNInterface} from "./util/UN";
+import { logger } from "src/utils";
 
 export class TicketZKProof extends AbstractAuthentication implements AuthenticationMethod {
 
@@ -28,7 +29,7 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 			useEthKey = unRes.data as UNInterface;
 		}
 
-		console.log("Sending attestation.id");
+		logger(2, "Sending attestation.id");
 
 		let res = await this.messaging.sendMessage({
 			action: OutletAction.GET_PROOF,
