@@ -47,15 +47,21 @@
                 unSupportedUserAgent: {
                     authentication: {
                         config: {
-                            // options to test against : ["iE", "iE9", "edge", "chrome", "phantomJS", "fireFox", "safari", "android", "iOS", "mac", "windows", "webView", "touchDevice", "metaMask", "alphaWallet", "mew", "trust", "goWallet", "status", "imToken", "metaMaskAndroid", "alphaWalletAndroid", "mewAndroid", "imTokenAndroid"];
-                            // metaMaskAndroid: true,
-                            // alphaWalletAndroid: true,
-                            // mewAndroid: true,
-                            // imTokenAndroid: true,
+                            metaMaskAndroid: true,
+                            alphaWalletAndroid: true,
+                            mewAndroid: true,
+                            imTokenAndroid: true,
                         },
-                        warningMessage: "No Support for Authentication with this user agent. Try Chrome, Safari or Edge instead."
+                        errorMessage: "No Support for Authentication with this user agent. Try Chrome, Safari or Edge instead."
+                    },
+                    full: {
+                        config: {
+                            iE: true,
+                            iE9: true,
+                        },
+                        errorMessage: "This browser is not supported. Please try using Chrome, Edge, FireFox or Safari."
                     }
-                }
+                },
             });
 
             window.negotiator.on("tokens-selected", (tokens) => {

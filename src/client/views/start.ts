@@ -20,7 +20,8 @@ export class Start extends AbstractView {
 		this.viewContainer.querySelector('.opening-btn-tn').addEventListener('click', this.goToWalletSelection.bind(this));
 	}
 
-	goToWalletSelection(){
+	goToWalletSelection() {
+		this.client.checkInternetConnectivity();
 		this.ui.updateUI(this.client.getTokenStore().hasOnChainTokens() ? SelectWallet : SelectIssuers);
 	}
 
