@@ -136,7 +136,7 @@ export class SelectIssuers extends AbstractView {
 
 		this.tokensContainer.style.display = 'none';
 
-		this.viewContainer.classList.toggle("open");
+		this.viewContainer.querySelector(".issuer-slider-tn").classList.toggle("open");
 
 		// TODO - Review and uplift this logic. Its not working as expected from tests.
 
@@ -303,7 +303,7 @@ export class SelectIssuers extends AbstractView {
 
 	showTokenView(issuer: string) {
 
-		this.viewContainer.classList.toggle("open");
+		this.viewContainer.querySelector(".issuer-slider-tn").classList.toggle("open");
 
 		// TODO review and uplift this code, its not working as expected.
 
