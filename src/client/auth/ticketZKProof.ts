@@ -4,7 +4,7 @@ import {OutletAction, Messaging} from "../messaging";
 import {Authenticator} from "@tokenscript/attestation";
 import {SignedUNChallenge} from "./signedUNChallenge";
 import {UNInterface} from "./util/UN";
-import { logger } from "src/utils";
+import { logger } from "../../utils";
 
 export class TicketZKProof extends AbstractAuthentication implements AuthenticationMethod {
 
