@@ -164,14 +164,17 @@ export class Client {
 			if (tokenData.title)
 				continue;
 
-			let lookupData = await getNftCollection(tokenData);
+			try {
+				let lookupData = await getNftCollection(tokenData);
+				if (lookupData) {
+					// TODO: this might be redundant
+					lookupData.onChain = true;
 
-			if (lookupData) {
-				// TODO: this might be redundant
-				lookupData.onChain = true;
-
-				// enrich the tokenLookup store with contract meta data
-				this.tokenStore.updateTokenLookupStore(issuer, lookupData);
+					// enrich the tokenLookup store with contract meta data
+					this.tokenStore.updateTokenLookupStore(issuer, lookupData);
+				}
+			} catch (e){
+				logger(2, "Failed to load contract data for " + issuer + ": " + e.message);
 			}
 		}
 

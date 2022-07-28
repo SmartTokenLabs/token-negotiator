@@ -188,7 +188,7 @@ var Client = (function () {
     };
     Client.prototype.enrichTokenLookupDataOnChainTokens = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var issuers, _a, _b, _i, issuer, tokenData, lookupData;
+            var issuers, _a, _b, _i, issuer, tokenData, lookupData, e_1;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -201,23 +201,30 @@ var Client = (function () {
                         _i = 0;
                         _c.label = 1;
                     case 1:
-                        if (!(_i < _a.length)) return [3, 4];
+                        if (!(_i < _a.length)) return [3, 6];
                         issuer = _a[_i];
                         tokenData = issuers[issuer];
                         if (tokenData.title)
-                            return [3, 3];
-                        return [4, getNftCollection(tokenData)];
+                            return [3, 5];
+                        _c.label = 2;
                     case 2:
+                        _c.trys.push([2, 4, , 5]);
+                        return [4, getNftCollection(tokenData)];
+                    case 3:
                         lookupData = _c.sent();
                         if (lookupData) {
                             lookupData.onChain = true;
                             this.tokenStore.updateTokenLookupStore(issuer, lookupData);
                         }
-                        _c.label = 3;
-                    case 3:
+                        return [3, 5];
+                    case 4:
+                        e_1 = _c.sent();
+                        logger(2, "Failed to load contract data for " + issuer + ": " + e_1.message);
+                        return [3, 5];
+                    case 5:
                         _i++;
                         return [3, 1];
-                    case 4:
+                    case 6:
                         this.issuersLoaded = true;
                         this.triggerUiUpdateCallback(1);
                         return [2];
@@ -287,7 +294,7 @@ var Client = (function () {
     };
     Client.prototype.tokenAutoLoad = function (onLoading, onComplete) {
         return __awaiter(this, void 0, void 0, function () {
-            var count, _a, _b, _i, issuerKey, tokens, tokens_1, e_1;
+            var count, _a, _b, _i, issuerKey, tokens, tokens_1, e_2;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -316,10 +323,10 @@ var Client = (function () {
                         onComplete(issuerKey, tokens_1);
                         return [3, 5];
                     case 4:
-                        e_1 = _c.sent();
-                        e_1.message = "Failed to load " + issuerKey + ": " + e_1.message;
-                        logger(2, e_1.message);
-                        this.eventSender.emitErrorToClient(e_1, issuerKey);
+                        e_2 = _c.sent();
+                        e_2.message = "Failed to load " + issuerKey + ": " + e_2.message;
+                        logger(2, e_2.message);
+                        this.eventSender.emitErrorToClient(e_2, issuerKey);
                         onComplete(issuerKey, null);
                         return [3, 5];
                     case 5:
@@ -390,7 +397,7 @@ var Client = (function () {
     };
     Client.prototype.setPassiveNegotiationOnChainTokens = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var issuers, walletProvider, _a, _b, _i, issuerKey, issuer, tokens, e_2;
+            var issuers, walletProvider, _a, _b, _i, issuerKey, issuer, tokens, e_3;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -416,7 +423,7 @@ var Client = (function () {
                         this.tokenStore.setTokens(issuerKey, tokens);
                         return [3, 6];
                     case 5:
-                        e_2 = _c.sent();
+                        e_3 = _c.sent();
                         logger(2, err);
                         this.eventSender.emitErrorToClient(err, issuerKey);
                         return [3, 6];
@@ -581,7 +588,7 @@ var Client = (function () {
                         return [2, this.authenticate(authRequest)];
                     case 4: return [2, new Promise(function (resolve, reject) {
                             _this.ui.updateUI(SelectWallet, { connectCallback: function () { return __awaiter(_this, void 0, void 0, function () {
-                                    var res, e_3;
+                                    var res, e_4;
                                     return __generator(this, function (_a) {
                                         switch (_a.label) {
                                             case 0:
@@ -595,8 +602,8 @@ var Client = (function () {
                                                 resolve(res);
                                                 return [3, 4];
                                             case 3:
-                                                e_3 = _a.sent();
-                                                reject(e_3);
+                                                e_4 = _a.sent();
+                                                reject(e_4);
                                                 return [3, 4];
                                             case 4: return [2];
                                         }

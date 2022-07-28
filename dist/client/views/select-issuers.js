@@ -110,8 +110,9 @@ var SelectIssuers = (function (_super) {
         for (var issuerKey in issuers) {
             var data = issuers[issuerKey];
             var tokens = this.client.getTokenStore().getIssuerTokens(issuerKey);
-            if (data.title)
-                html += this.issuerConnectMarkup(data.title, data.image, issuerKey, tokens);
+            if (!data.title)
+                data.title = data.collectionID.replace(/[-,_]+/g, " ");
+            html += this.issuerConnectMarkup(data.title, data.image, issuerKey, tokens);
         }
         this.issuerListContainer.innerHTML = html;
         try {

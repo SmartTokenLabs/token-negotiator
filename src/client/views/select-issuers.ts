@@ -90,8 +90,10 @@ export class SelectIssuers extends AbstractView {
 			let data = issuers[issuerKey];
 			let tokens = this.client.getTokenStore().getIssuerTokens(issuerKey);
 
-			if (data.title)
-				html += this.issuerConnectMarkup(data.title, data.image, issuerKey, tokens);
+			if (!data.title)
+				data.title = data.collectionID.replace(/[-,_]+/g, " ");
+
+			html += this.issuerConnectMarkup(data.title, data.image, issuerKey, tokens);
 		}
 
 		this.issuerListContainer.innerHTML = html;
