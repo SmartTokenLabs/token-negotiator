@@ -1,7 +1,7 @@
 // @ts-nocheck
 import {OutletAction, OutletResponseAction, Messaging} from "./messaging";
 import { Ui } from "./ui";
-import { logger, requiredParams } from "../utils";
+import { logger, requiredParams, mergeDeep } from "../utils";
 import {getNftCollection, getNftTokens} from "../utils/token/nftProvider";
 import "./../vendor/keyShape";
 import { Authenticator } from "@tokenscript/attestation";
@@ -93,9 +93,7 @@ export class Client {
 
 	constructor(config: NegotiationInterface) {
 
-		config.uiOptions = {...defaultConfig.uiOptions, ...config?.uiOptions}
-
-		this.config = Object.assign(defaultConfig, config);
+		this.config = mergeDeep({}, defaultConfig, config);
 
 		this.negotiateAlreadyFired = false;
 
@@ -179,7 +177,7 @@ export class Client {
 		this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADED);
 	}
 
-	private checkUserAgentSupport(type: string){
+	public checkUserAgentSupport(type: string){
 
 		if (!isUserAgentSupported(this.config.unSupportedUserAgent[type].config)){
 
@@ -202,9 +200,16 @@ export class Client {
 	}
 
 	async negotiate(issuers?: OnChainTokenConfig | OffChainTokenConfig[], openPopup = false) {
-
-		this.checkUserAgentSupport("full");
-
+		try {
+			this.checkUserAgentSupport("full");
+		} catch (err) {
+			logger(2,err);
+			err.name = "NOT_SUPPORTED_ERROR";
+			console.log("browser not supported");
+			this.eventSender.emitErrorToClient(err);
+			return;
+		}
+		
 		if (issuers) this.tokenStore.updateIssuers(issuers);
 
 		requiredParams(Object.keys(this.tokenStore.getCurrentIssuers()).length, "issuers are missing.");
