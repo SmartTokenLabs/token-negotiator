@@ -146,7 +146,7 @@ var SelectIssuers = (function (_super) {
     };
     SelectIssuers.prototype.backToIssuers = function () {
         this.tokensContainer.style.display = 'none';
-        this.viewContainer.classList.toggle("open");
+        this.viewContainer.querySelector(".issuer-slider-tn").classList.toggle("open");
     };
     SelectIssuers.prototype.autoLoadTokens = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -275,7 +275,7 @@ var SelectIssuers = (function (_super) {
         (_a = this.tokenListView) === null || _a === void 0 ? void 0 : _a.update({ issuer: issuer, tokens: tokens });
     };
     SelectIssuers.prototype.showTokenView = function (issuer) {
-        this.viewContainer.classList.toggle("open");
+        this.viewContainer.querySelector(".issuer-slider-tn").classList.toggle("open");
     };
     return SelectIssuers;
 }(AbstractView));

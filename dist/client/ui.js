@@ -1,5 +1,6 @@
 import { Start } from './views/start';
 import { logger, requiredParams } from "../utils";
+import { ClientError } from "./index";
 var Ui = (function () {
     function Ui(options, client) {
         this.options = options;
@@ -83,11 +84,17 @@ var Ui = (function () {
         this.currentView = new ViewClass(this.client, this, this.viewContainer, { options: this.options, data: data });
         this.currentView.render();
     };
-    Ui.prototype.showError = function (message, canDismiss) {
+    Ui.prototype.showError = function (error, canDismiss) {
         if (canDismiss === void 0) { canDismiss = true; }
+        if (typeof error !== "string") {
+            if (error.name === ClientError.USER_ABORT) {
+                return this.dismissLoader();
+            }
+            error = error.message ? error.message : error.toString();
+        }
         this.loadContainer.querySelector('.loader-tn').style.display = 'none';
         this.retryButton.style.display = 'block';
-        this.loadContainer.querySelector('.loader-msg-tn').innerHTML = message;
+        this.loadContainer.querySelector('.loader-msg-tn').innerHTML = error;
         this.loadContainer.style.display = 'flex';
         if (!canDismiss) {
             this.loadContainer.querySelector('.dismiss-error-tn').style.display = 'none';

@@ -172,7 +172,7 @@ var Messaging = (function () {
         if (timeout > 0)
             timer = setTimeout(function () {
                 if (!received)
-                    reject("Failed to receive response from window/iframe");
+                    reject(new Error("Failed to receive response from window/iframe"));
                 afterResolveOrError();
             }, timeout);
     };
