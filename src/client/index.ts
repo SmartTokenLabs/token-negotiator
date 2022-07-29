@@ -367,8 +367,8 @@ export class Client {
 				);
 
 				this.tokenStore.setTokens(issuerKey, tokens);
-			} catch (e){
-				logger(2,err);
+			} catch (err) {
+				logger(2, err);
 				this.eventSender.emitErrorToClient(err, issuerKey);
 			}
 		}
