@@ -1,54 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
 
-    <script type="text/javascript" src="./token-negotiator-dist/negotiator.js"></script>
+    <script
+      type="text/javascript"
+      src="./token-negotiator-dist/negotiator.js"
+    ></script>
     <link rel="stylesheet" href="./token-negotiator-dist/theme/style.css" />
-    
-</head>
-<body onload="init()">
-
+  </head>
+  <body onload="init()">
     <div class="overlay-tn"></div>
-    
+
+
     <script>
+      function init() {
+        window.negotiator = new negotiator.Client({
+          type: "active",
+          issuers: [
+            {
+              collectionID: "penthouse-panther-club",
+              collectionId: "ff846ef2eed57e5367cf8826e63f4d53fe28d28aa67417accb6e4b48cbd19136",
+              onChain: true,
+              collectionSymbol: "PPC",
+              chain: "mainnet",
+              blockchain: "solana",
+            },
+            {
+              collectionID: "pixel",
+              collectionId: "166424b16c4c7f40eb852f9eb2d0d6869a9ed7ac54a8e6afbd516676bfbbeb19",
+              onChain: true,
+              collectionSymbol: "PIXEL",
+              chain: "mainnet",
+              blockchain: "solana",
+            },
+            // { onChain: true, collectionID: "exp", contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' },
+            // { collectionID: "rink", contract: '0x77187e35640a67f37814706f32425687ff527544', chain: 'rinkeby' },
+            // { collectionID: "bayc", contract: '0x26472AA24D795AbcB687bddb44d733ef55Ebdf09', chain: 'Rinkeby' }
+          ],
+          options: {
+            overlay: {
+              openingHeading:
+                "Open a new world of discounts available with your tokens.",
+              issuerHeading: "Discount with your tokens",
+              repeatAction: "try again",
+              theme: "light",
+              position: "bottom-right",
+            },
+          },
+          filter: {},
+        });
 
-        function init() {
+        window.negotiator.on("tokens-selected", (tokens) => {
+          console.log(tokens);
+        });
 
-            window.negotiator = new negotiator.Client({
-                type: 'active',
-                issuers: [
-                    // { collectionID: 'demo-tokens', onChain: true, contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', network: 'eth', blockchain: 'evm' },
-                    { collectionID: 'demo-tokens', onChain: true, contract: '', network: 'mainnet-beta', blockchain: 'solana' }
-                ],
-                options: {
-                    overlay: {
-                    openingHeading: "Open a new world of discounts available with your tokens.",
-                    issuerHeading: "Discount with your tokens",
-                    repeatAction: "try again",
-                    theme: "light",
-                    position: "bottom-right"
-                    }
-                },
-                filter: {}
-            });
+        window.negotiator.on("token-proof", (proof) => {
+          console.log(proof);
+        });
 
-            window.negotiator.on("tokens-selected", (tokens) => {
-                console.log(tokens);
-            });
-
-            window.negotiator.on("token-proof", (proof) => {
-                console.log(proof);
-            });
-
-            window.negotiator.negotiate();
-
-        }
-
+        window.negotiator.negotiate();
+      }
     </script>
-
-</body>
+  </body>
 </html>
