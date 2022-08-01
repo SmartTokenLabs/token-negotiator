@@ -94,6 +94,7 @@ export class TokenStore {
 				return;
 			}
 
+			// TODO review this
 			// if ("chain" in issuer)
 				// issuer.chain = this.formatCollectionChain(issuer.chain);
 

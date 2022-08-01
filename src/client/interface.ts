@@ -24,7 +24,7 @@ export interface OffChainTokenConfig extends IssuerConfigInterface {
 export interface OnChainTokenConfig extends IssuerConfigInterface {
     onChain: true;
     contract: string;
-    network: string;
+    chain: string;
     openSeaSlug?: string;
     blockchain: string;
 }
