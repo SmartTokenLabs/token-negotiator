@@ -105,6 +105,8 @@ var TokenStore = (function () {
                 logger(1, "duplicate collectionID key ".concat(issuer.collectionID, ", use unique keys per collection."));
                 return;
             }
+            if ("chain" in issuer)
+                issuer.chain = _this.formatCollectionChain(issuer.chain);
             if (_this.tokens[issuer.collectionID] !== undefined) {
                 if (_this.autoEnableTokens && _this.tokens[issuer.collectionID].length)
                     _this.selectedTokens[issuer.collectionID] = { tokens: _this.tokens[issuer.collectionID] };

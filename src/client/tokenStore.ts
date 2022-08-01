@@ -106,9 +106,8 @@ export class TokenStore {
 				return;
 			}
 
-			// TODO review this
-			// if ("chain" in issuer)
-				// issuer.chain = this.formatCollectionChain(issuer.chain);
+			if ("chain" in issuer)
+				issuer.chain = this.formatCollectionChain(issuer.chain);
 
 			if (this.tokens[issuer.collectionID] !== undefined){
 				if (this.autoEnableTokens && this.tokens[issuer.collectionID].length)
