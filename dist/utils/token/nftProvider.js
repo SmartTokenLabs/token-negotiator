@@ -39,7 +39,7 @@ export var getNftCollection = function (issuer, ipfsBaseUrl) { return __awaiter(
     var blockchain, query;
     var _a;
     return __generator(this, function (_b) {
-        blockchain = (_a = issuer === null || issuer === void 0 ? void 0 : issuer.blockchain) !== null && _a !== void 0 ? _a : "evm";
+        blockchain = (_a = issuer === null || issuer === void 0 ? void 0 : issuer.blockchain) !== null && _a !== void 0 ? _a : "ethereum";
         if (blockchain === "solana") {
             query = getSolanaNftCollectionUrl(issuer, ipfsBaseUrl);
         }
@@ -67,7 +67,7 @@ var getSolanaNftCollectionUrl = function (issuer, ipfsBaseUrl) {
 };
 export var getNftTokens = function (issuer, owner, ipfsBaseUrl) {
     var _a;
-    var blockchain = (_a = issuer === null || issuer === void 0 ? void 0 : issuer.blockchain) !== null && _a !== void 0 ? _a : "evm";
+    var blockchain = (_a = issuer === null || issuer === void 0 ? void 0 : issuer.blockchain) !== null && _a !== void 0 ? _a : "ethereum";
     var query;
     if (blockchain === "solana") {
         query = getSolanaNftTokensUrl(issuer, owner, ipfsBaseUrl);
@@ -80,7 +80,7 @@ export var getNftTokens = function (issuer, owner, ipfsBaseUrl) {
 var getEvmNftTokensUrl = function (issuer, owner, ipfsBaseUrl) {
     var _a;
     var contract = issuer.contract, chain = issuer.chain, openSeaSlug = issuer.openSeaSlug;
-    var blockchain = (_a = issuer === null || issuer === void 0 ? void 0 : issuer.blockchain) !== null && _a !== void 0 ? _a : "evm";
+    var blockchain = (_a = issuer === null || issuer === void 0 ? void 0 : issuer.blockchain) !== null && _a !== void 0 ? _a : "ethereum";
     var query = "".concat(baseURL, "/get-owner-tokens?smartContract=").concat(contract, "&chain=").concat(chain, "&owner=").concat(owner, "&blockchain=").concat(blockchain);
     if (openSeaSlug)
         query += "&openSeaSlug=".concat(openSeaSlug);
@@ -91,7 +91,7 @@ var getEvmNftTokensUrl = function (issuer, owner, ipfsBaseUrl) {
 var getSolanaNftTokensUrl = function (issuer, owner, ipfsBaseUrl) {
     var _a;
     var chain = issuer.chain, collectionSymbol = issuer.collectionSymbol;
-    var blockchain = (_a = issuer === null || issuer === void 0 ? void 0 : issuer.blockchain) !== null && _a !== void 0 ? _a : "evm";
+    var blockchain = (_a = issuer === null || issuer === void 0 ? void 0 : issuer.blockchain) !== null && _a !== void 0 ? _a : "ethereum";
     var query = "".concat(baseURL, "/get-owner-tokens?chain=").concat(chain, "&owner=").concat(owner, "&blockchain=").concat(blockchain);
     if (collectionSymbol)
         query += "&collectionSymbol=".concat(collectionSymbol);
