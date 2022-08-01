@@ -16,49 +16,71 @@
     <div class="overlay-tn"></div>
     <script>
       function init() {
-        window.negotiator = new negotiator.Client({
-          type: "active",
-          issuers: [
-            {
-              collectionID: "penthouse-panther-club",
-              collectionAddress: "ff846ef2eed57e5367cf8826e63f4d53fe28d28aa67417accb6e4b48cbd19136",
-              onChain: true,
-              collectionSymbol: "PPC",
-              chain: "mainnet",
-              blockchain: "solana",
-            },
-            {
-              collectionID: "pixel",
-              collectionAddress: "166424b16c4c7f40eb852f9eb2d0d6869a9ed7ac54a8e6afbd516676bfbbeb19",
-              onChain: true,
-              collectionSymbol: "PIXEL",
-              chain: "mainnet",
-              blockchain: "solana",
-            },
-            {
-              onChain: true, 
-              collectionID: "expansion-punks", 
-              contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', 
-              chain: 'mainnet',
-              blockchain: "ethereum",
-            }
-          ],
-          options: {
-            overlay: {
-              openingHeading:
-                "Open a new world of discounts available with your tokens.",
-              issuerHeading: "Discount with your tokens",
-              repeatAction: "try again",
-              theme: "light",
-              position: "bottom-right",
-            },
-          },
-          filter: {},
-        });
+            window.negotiator = new negotiator.Client({
+                type: 'active',
+                issuers: [
+                    // {
+                    // collectionID: 'devcon', 
+                    // title: "Devcon",
+                    // onChain: false,
+                    // tokenOrigin: "http://localhost:3002/",
+                    // attestationOrigin: "https://attestation.id/",
+                    // unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
+                    // image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
+                    // base64senderPublicKeys: 
+                    //     { 
+                    //         "AttestationDAO" : 'MFYwEAYHKoZIzj0CAQYFK...'
+                    //     },
+                    // base64attestorPubKey: "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ="
+                    // },
+                    {
+                    collectionID: "penthouse-panther-club",
+                    collectionAddress: "ff846ef2eed57e5367cf8826e63f4d53fe28d28aa67417accb6e4b48cbd19136",
+                    onChain: true,
+                    collectionSymbol: "PPC",
+                    chain: "mainnet",
+                    blockchain: "solana",
+                  },
+                  {
+                    collectionID: "pixel",
+                    collectionAddress: "166424b16c4c7f40eb852f9eb2d0d6869a9ed7ac54a8e6afbd516676bfbbeb19",
+                    onChain: true,
+                    collectionSymbol: "PIXEL",
+                    chain: "mainnet",
+                    blockchain: "solana",
+                  },
+                  {
+                    onChain: true, 
+                    collectionID: "expansion-punks", 
+                    contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', 
+                    chain: 'eth',
+                    blockchain: "ethereum",
+                  },
+                ],
+                uiOptions: {
+                    openingHeading: "Open a new world of discounts available with your tokens.",
+                    issuerHeading: "Get discount with Ticket",
+                    repeatAction: "try again",
+                    theme: "light",
+                    position: "bottom-right"
+                },
+                unSupportedUserAgent: {
+                    authentication: {
+                        config: {
+                            // options to test against : ["iE", "iE9", "edge", "chrome", "phantomJS", "fireFox", "safari", "android", "iOS", "mac", "windows", "webView", "touchDevice", "metaMask", "alphaWallet", "mew", "trust", "goWallet", "status", "imToken", "metaMaskAndroid", "alphaWalletAndroid", "mewAndroid", "imTokenAndroid"];
+                            // metaMaskAndroid: true,
+                            // alphaWalletAndroid: true,
+                            // mewAndroid: true,
+                            // imTokenAndroid: true,
+                        },
+                        warningMessage: "No Support for Authentication with this user agent. Try Chrome, Safari or Edge instead."
+                    }
+                }
+            });
 
-        window.negotiator.on("tokens-selected", (tokens) => {
-          console.log(tokens);
-        });
+            window.negotiator.on("tokens-selected", (tokens) => {
+                console.log(tokens);
+            });
 
         window.negotiator.on("token-proof", (proof) => {
           console.log(proof);

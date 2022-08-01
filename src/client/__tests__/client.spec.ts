@@ -22,6 +22,31 @@ function getOffChainConfigClient() {
 
 describe('client spec', () => {
 
+	test('tokenNegotiatorClient a failed new instance of client - missing issuers key', () => {
+
+		let client = new Client({
+			type: 'passive',
+			options: {}
+		});
+
+		return client.negotiate().catch((e) => {
+			expect(e).toEqual(new Error('issuers are missing.'));
+		});
+	});
+	
+	test('tokenNegotiatorClient a failed new instance of client - missing issuers length', () => {
+
+		let client = new Client({
+			type: 'passive',
+			issuers: [],
+			options: {}
+		});
+
+		return client.negotiate().catch((e) => {
+			expect(e).toEqual(new Error('issuers are missing.'));
+		});
+	});
+
 	test('tokenNegotiatorClient a new instance of client', () => {
 		const tokenNegotiatorClient = getOffChainConfigClient();
 
@@ -89,18 +114,6 @@ describe('client spec', () => {
 		});
 		expect(tokenNegotiatorClient.getTokenStore().getCurrentIssuers()["bayc"].chain).toEqual('rinkeby');
 		expect(Object.keys(tokenNegotiatorClient.getTokenStore().getCurrentTokens()).length).toBe(1);
-	});
-
-	test('tokenNegotiatorClient a failed new instance of client - missing issuers', () => {
-
-		let client = new Client({
-			type: 'passive',
-			options: {}
-		});
-
-		return client.negotiate().catch((e) => {
-			expect(e).toEqual(new Error('issuers are missing.'));
-		});
 	});
 
 	test('tokenNegotiatorClient on callback with event type tokens-selected ', () => {

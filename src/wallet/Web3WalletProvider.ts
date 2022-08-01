@@ -1,17 +1,20 @@
 import { ethers } from "ethers";
 import { logger } from "../utils";
 import {SafeConnectOptions} from "./SafeConnectProvider";
+import {Client} from "../client";
 
 export class Web3WalletProvider {
 
 	state: any;
 	safeConnectOptions?: SafeConnectOptions;
+	client: Client;
 
-	constructor(safeConnectUrl?: SafeConnectOptions) {
+	constructor(client: Client, safeConnectOptions?: SafeConnectOptions) {
 
 		this.state = { addresses: [ /* { address, chainId, provider } */ ] };
 
-		this.safeConnectOptions = safeConnectUrl;
+		this.client = client;
+		this.safeConnectOptions = safeConnectOptions;
 	}
 
 	async connectWith ( walletType: string ) {
@@ -55,28 +58,6 @@ export class Web3WalletProvider {
 		this.state.addresses.push({ address, chainId, provider, blockChain });
 
 		return this.state.addresses;
-
-	}
-
-	async getWeb3ChainId ( web3: any) {
-
-		return web3.eth.getChainId();
-
-	}
-
-	async getWeb3Accounts( web3: any ) {
-
-		return web3.eth.getAccounts();
-
-	}
-
-	async getWeb3ChainIdAndAccounts( web3: any ) {
-
-		const chainId = await this.getWeb3ChainId( web3 );
-        
-		const accounts = await this.getWeb3Accounts( web3 );
-
-		return { chainId, accounts };
 
 	}
 
@@ -137,13 +118,14 @@ export class Web3WalletProvider {
 
 		await torus.login();
 
-		const web3 = new ethers.providers.Web3Provider(torus.provider);
+		const provider = new ethers.providers.Web3Provider(torus.provider);
+		const accounts = await provider.listAccounts();
 
-		const { accounts, chainId } = await this.getWeb3ChainIdAndAccounts( web3 );
+		if (accounts.length === 0){
+			throw new Error("No accounts found via wallet-connect.");
+		}
 
-		const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], chainId, torus.provider);
-
-		return registeredWalletAddress;
+		return this.registerNewWalletAddress(accounts[0], '1',  torus.provider);
 
 	}
 
@@ -176,8 +158,6 @@ export class Web3WalletProvider {
 
 		const address = await provider.initSafeConnect();
 
-		console.log(address);
-
 		this.registerNewWalletAddress(address, "1", provider);
 
 		return address;
@@ -191,7 +171,7 @@ export class Web3WalletProvider {
 
 		const {SafeConnectProvider} = await import("./SafeConnectProvider");
 
-		return new SafeConnectProvider(this.safeConnectOptions);
+		return new SafeConnectProvider(this.client.getUi(), this.safeConnectOptions);
 	}
 
 	// async Fortmatic () {

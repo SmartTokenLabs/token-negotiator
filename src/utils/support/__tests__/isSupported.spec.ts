@@ -1,33 +1,15 @@
 // @ts-nocheck
 
-import { isBrowserDeviceWalletSupported } from '../isSupported';
+import { isUserAgentSupported } from '../isSupported';
 
 describe('browser simulations', () => {
 	test('check if browser is supported', () => {
-		expect(isBrowserDeviceWalletSupported()).toEqual(true);
+		expect(isUserAgentSupported()).toEqual(true);
 	});
 	test('check if browser is supported', () => {
-		expect(isBrowserDeviceWalletSupported({
+		expect(isUserAgentSupported({
 			iE: true,
-			iE9: true,
-			edge: true,
-			chrome: true,
-			phantomJS: true,
-			fireFox: true,
-			safari: true,
-			android: true,
-			iOS: true,
-			mac: true,
-			windows: true,
-			webView: true,
-			touchDevice: true,
-			metaMask: true,
-			alphaWallet: true,
-			mew: true,
-			trust: true,
-			goWallet: true,
-			status: true,
-			isImToken: true
+			iE9: true
 		})).toEqual(true);
 	});
 	test('check if browser is not supported', () => {
@@ -42,27 +24,8 @@ describe('browser simulations', () => {
 			},
 		);
 
-		expect(isBrowserDeviceWalletSupported({
-			iE: true,
-			iE9: true,
-			edge: true,
-			chrome: true,
-			phantomJS: true,
-			fireFox: true,
-			safari: true,
-			android: true,
-			iOS: true,
-			mac: false,
-			windows: true,
-			webView: true,
-			touchDevice: true,
-			metaMask: true,
-			alphaWallet: true,
-			mew: true,
-			trust: true,
-			goWallet: true,
-			status: true,
-			isImToken: true
+		expect(isUserAgentSupported({
+			mac: true
 		})).toEqual(false);
 	});
 });

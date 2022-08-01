@@ -3,5 +3,16 @@ test
 src
 _bundles
 docs
-token-negotiator-alpha-dist
+token-negotiator-dist
 reports
+.eslintignore                                 
+.eslintrc                                     
+.github
+babel.config.js
+jest.config.js                                
+junit.xml                                     
+mock-images
+tsconfig.build.json                           
+tsconfig.json                                 
+tslint.json                                   
+webpack.config.js 

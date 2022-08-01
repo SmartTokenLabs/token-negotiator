@@ -90,8 +90,10 @@ export class SelectIssuers extends AbstractView {
 			let data = issuers[issuerKey];
 			let tokens = this.client.getTokenStore().getIssuerTokens(issuerKey);
 
-			if (data.title)
-				html += this.issuerConnectMarkup(data.title, data.image, issuerKey, tokens);
+			if (!data.title)
+				data.title = data.collectionID.replace(/[-,_]+/g, " ");
+
+			html += this.issuerConnectMarkup(data.title, data.image, issuerKey, tokens);
 		}
 
 		this.issuerListContainer.innerHTML = html;
@@ -136,7 +138,7 @@ export class SelectIssuers extends AbstractView {
 
 		this.tokensContainer.style.display = 'none';
 
-		this.viewContainer.classList.toggle("open");
+		this.viewContainer.querySelector(".issuer-slider-tn").classList.toggle("open");
 
 		// TODO - Review and uplift this logic. Its not working as expected from tests.
 
@@ -190,7 +192,8 @@ export class SelectIssuers extends AbstractView {
 			tokens = await this.client.connectTokenIssuer(issuer);
 		} catch (err){
 			logger(2, err);
-			this.ui.showError((err as string));
+			this.ui.showError(err);
+			this.client.eventSender.emitErrorToClient(err, issuer);
 			return;
 		}
 
@@ -267,7 +270,7 @@ export class SelectIssuers extends AbstractView {
 
 			});
 
-			if(!config.onChain) {
+			if(config.onChain === false) {
 
 				const { title, image } = config;
 
@@ -302,7 +305,7 @@ export class SelectIssuers extends AbstractView {
 
 	showTokenView(issuer: string) {
 
-		this.viewContainer.classList.toggle("open");
+		this.viewContainer.querySelector(".issuer-slider-tn").classList.toggle("open");
 
 		// TODO review and uplift this code, its not working as expected.
 

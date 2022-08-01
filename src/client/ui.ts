@@ -1,19 +1,20 @@
 import {Start} from './views/start';
 
 import {logger, requiredParams} from "../utils";
-import {Client} from "./index";
+import {Client, ClientError} from "./index";
 import {ViewInterface, ViewConstructor, AbstractView} from "./views/view-interface";
 
 export type UIType = "popup" | "inline"; // TODO: implement modal too
 
 export interface UIOptionsInterface {
-	uiType?: UIType,
-	containerElement?: string,
-    openingHeading?: string,
-    issuerHeading?: string,
-    repeatAction?: string,
-    theme?: string,
-    position?: string
+	uiType?: UIType;
+	containerElement?: string;
+    openingHeading?: string;
+    issuerHeading?: string;
+    repeatAction?: string;
+    theme?: string;
+    position?: string;
+	autoPopup?: boolean;
 }
 
 export class Ui {
@@ -51,32 +52,37 @@ export class Ui {
 
 	initialize(){
 
-		this.popupContainer = document.querySelector(this.options.containerElement);
+		setTimeout(() => {
 
-		requiredParams(this.popupContainer, 'No entry point element with the class name of ' + this.options.containerElement + ' found.');
+			this.popupContainer = document.querySelector(this.options.containerElement);
 
-		if (this.popupContainer) {
+			requiredParams(this.popupContainer, 'No entry point element with the class name of ' + this.options.containerElement + ' found.');
 
-			this.initializeUIType();
+			if (this.popupContainer) {
 
-			this.addTheme();
+				this.initializeUIType();
 
-			this.viewContainer = this.popupContainer.querySelector(".view-content-tn");
-			this.loadContainer = this.popupContainer.querySelector(".load-container-tn");
-			this.retryButton = this.loadContainer.querySelector('.dismiss-error-tn');
+				this.addTheme();
 
-			this.retryButton.addEventListener('click', () => {
-				this.dismissLoader();
-				if (this.retryCallback) {
-					this.retryCallback();
-					this.retryCallback = undefined;
-					this.retryButton.innerText = "Dismiss";
-				}
-			});
+				this.viewContainer = this.popupContainer.querySelector(".view-content-tn");
+				this.loadContainer = this.popupContainer.querySelector(".load-container-tn");
+				this.retryButton = this.loadContainer.querySelector('.dismiss-error-tn');
 
-			this.updateUI(Start);
+				this.retryButton.addEventListener('click', () => {
+					this.dismissLoader();
+					if (this.retryCallback) {
+						this.retryCallback();
+						this.retryCallback = undefined;
+						this.retryButton.innerText = "Dismiss";
+					}
+				});
 
-		}
+				this.updateUI(Start);
+
+			}
+
+		}, 0);
+
 	}
 
 	initializeUIType(){
@@ -163,14 +169,26 @@ export class Ui {
 
 	}
 
-	showError(...message: string[]){
+	showError(error: string | Error, canDismiss = true){
+
+		if (typeof error !== "string"){
+			if (error.name === ClientError.USER_ABORT){
+				return this.dismissLoader();
+			}
+			error = error.message ? error.message : error.toString();
+		}
 
 		this.loadContainer.querySelector('.loader-tn').style.display = 'none';
 		this.retryButton.style.display = 'block';
 
-		this.loadContainer.querySelector('.loader-msg-tn').innerHTML = message.join("\n");
+		this.loadContainer.querySelector('.loader-msg-tn').innerHTML = error;
 
 		this.loadContainer.style.display = 'flex';
+	
+		if (!canDismiss) {
+			this.loadContainer.querySelector('.dismiss-error-tn').style.display = 'none';
+		}
+
 	}
 
 	setErrorRetryCallback(retryCallback?: Function){
@@ -193,12 +211,8 @@ export class Ui {
 	}
 
 	private addTheme() {
-
 		let refTokenSelector = document.querySelector(".overlay-tn");
-
-		if (refTokenSelector)
-			refTokenSelector.classList.add((this.options?.theme ?? 'light') + "-tn");
-
+		if (refTokenSelector) refTokenSelector.classList.add((this.options?.theme ?? 'light') + "-tn");
 	}
 
 	private assignFabButtonAnimation() {

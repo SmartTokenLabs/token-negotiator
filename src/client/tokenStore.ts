@@ -33,6 +33,16 @@ export class TokenStore {
 		this.prePopulateTokenLookupStore(issuers);
 	}
 
+	public hasOnChainTokens() {
+
+		for (let i in this.currentIssuers){
+			if (this.currentIssuers[i])
+				return true;
+		}
+
+		return false;
+	}
+
 	public getCurrentIssuers(onChainFilter?: boolean){
 		let current: TokenLookup = {};
 		for (let collectionId in this.currentIssuers){
@@ -87,6 +97,8 @@ export class TokenStore {
 		issuers.forEach((issuer: TokenConfig, i ) => {
 			if (!issuer.collectionID) return;
 
+			if(issuer.onChain === undefined) issuer.onChain = true;
+			
 			issuer.collectionID = this.formatCollectionID(issuer.collectionID);
 
 			if (collectionIds[issuer.collectionID] !== undefined){
