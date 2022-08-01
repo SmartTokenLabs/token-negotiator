@@ -14,6 +14,8 @@ export class SelectWallet extends AbstractView {
 
 	render(){
 
+		// TODO only show the wallets that relate to the tokens available.
+
 		const MetaMaskButton = (typeof window.ethereum !== 'undefined') ?
 			`<button class="wallet-button-tn" data-wallet="MetaMask">
                 ${metaMaskSVG}

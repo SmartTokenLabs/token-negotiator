@@ -14,8 +14,6 @@
   </head>
   <body onload="init()">
     <div class="overlay-tn"></div>
-
-
     <script>
       function init() {
         window.negotiator = new negotiator.Client({
@@ -23,7 +21,7 @@
           issuers: [
             {
               collectionID: "penthouse-panther-club",
-              collectionId: "ff846ef2eed57e5367cf8826e63f4d53fe28d28aa67417accb6e4b48cbd19136",
+              collectionAddress: "ff846ef2eed57e5367cf8826e63f4d53fe28d28aa67417accb6e4b48cbd19136",
               onChain: true,
               collectionSymbol: "PPC",
               chain: "mainnet",
@@ -31,15 +29,19 @@
             },
             {
               collectionID: "pixel",
-              collectionId: "166424b16c4c7f40eb852f9eb2d0d6869a9ed7ac54a8e6afbd516676bfbbeb19",
+              collectionAddress: "166424b16c4c7f40eb852f9eb2d0d6869a9ed7ac54a8e6afbd516676bfbbeb19",
               onChain: true,
               collectionSymbol: "PIXEL",
               chain: "mainnet",
               blockchain: "solana",
             },
-            // { onChain: true, collectionID: "exp", contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' },
-            // { collectionID: "rink", contract: '0x77187e35640a67f37814706f32425687ff527544', chain: 'rinkeby' },
-            // { collectionID: "bayc", contract: '0x26472AA24D795AbcB687bddb44d733ef55Ebdf09', chain: 'Rinkeby' }
+            {
+              onChain: true, 
+              collectionID: "expansion-punks", 
+              contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', 
+              chain: 'mainnet',
+              blockchain: "ethereum",
+            }
           ],
           options: {
             overlay: {

@@ -8,7 +8,7 @@ export const getNftCollection = async (
   issuer: OnChainTokenConfig,
   ipfsBaseUrl?: string
 ) => {
-  const blockchain = issuer?.blockchain ?? "ethereum";
+  const blockchain = issuer?.blockchain ?? "evm";
   let query: string;
   if (blockchain === "solana") {
     query = getSolanaNftCollectionUrl(issuer, ipfsBaseUrl);
@@ -27,8 +27,8 @@ const getEvmNftCollectionUrl = (issuer: any, ipfsBaseUrl: string) => {
 };
 
 const getSolanaNftCollectionUrl = (issuer: any, ipfsBaseUrl: string) => {
-  const { collectionId, chain } = issuer;
-  let query = `${baseURL}/get-token-collection?collectionId=${collectionId}&chain=${chain}&blockchain=solana`;
+  const { collectionAddress, chain } = issuer;
+  let query = `${baseURL}/get-token-collection?collectionAddress=${collectionAddress}&chain=${chain}&blockchain=solana`;
   if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`;
   return query;
 };
@@ -38,7 +38,7 @@ export const getNftTokens = (
   owner: string,
   ipfsBaseUrl?: string
 ) => {
-	const blockchain = issuer?.blockchain ?? "ethereum";
+	const blockchain = issuer?.blockchain ?? "evm";
   let query: string;
   if (blockchain === "solana") {
     query = getSolanaNftTokensUrl(issuer, owner, ipfsBaseUrl);
@@ -50,7 +50,7 @@ export const getNftTokens = (
 
 const getEvmNftTokensUrl = (issuer:any, owner:string, ipfsBaseUrl:string) => {
 	const { contract, chain, openSeaSlug } = issuer;
-  const blockchain = issuer?.blockchain ?? "ethereum";
+  const blockchain = issuer?.blockchain ?? "evm";
   let query = `${baseURL}/get-owner-tokens?smartContract=${contract}&chain=${chain}&owner=${owner}&blockchain=${blockchain}`;
   if (openSeaSlug) query += `&openSeaSlug=${openSeaSlug}`;
 	if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`;
@@ -59,7 +59,7 @@ const getEvmNftTokensUrl = (issuer:any, owner:string, ipfsBaseUrl:string) => {
 
 const getSolanaNftTokensUrl = (issuer:any, owner:string, ipfsBaseUrl:string) => {
 	const { chain, collectionSymbol } = issuer;
-  const blockchain = issuer?.blockchain ?? "ethereum";
+  const blockchain = issuer?.blockchain ?? "evm";
   let query = `${baseURL}/get-owner-tokens?chain=${chain}&owner=${owner}&blockchain=${blockchain}`;
   if (collectionSymbol) query += `&collectionSymbol=${collectionSymbol}`;
 	if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`;
