@@ -29,7 +29,8 @@ export interface BrowserDataInterface {
 	imTokenAndroid?: boolean
 }
 
-export const isUserAgentSupported = (unSupportedUserAgents: BrowserDataInterface = {}): boolean => {
+export const isUserAgentSupported = (unSupportedUserAgents?: BrowserDataInterface): boolean => {
+	if (!unSupportedUserAgents) return true;
 	const browserData = getBrowserData();
 	const unsupported = Object.keys(unSupportedUserAgents);
 	return !(unsupported.some(browser => browserData[browser]));
