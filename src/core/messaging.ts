@@ -38,7 +38,8 @@ export class Messaging {
 	async sendMessage(request: RequestInterfaceBase, forceTab = false): Promise<ResponseInterfaceBase> {
 
 		if (!forceTab && this.iframeStorageSupport === null) {
-			this.iframeStorageSupport = !window.safari;
+			// iframe local storage access from other origins is not available in safari & ios UIWebView
+			this.iframeStorageSupport = !(window.safari || /(iphone|ipod|ipad).*applewebkit/.test(window.navigator.userAgent.toLowerCase()));
 		}
 
 		// Uncomment to test popup mode
