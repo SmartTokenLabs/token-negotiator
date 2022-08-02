@@ -135,6 +135,7 @@ var Messaging = (function () {
                         _this.iframeStorageSupport = !!((_a = response === null || response === void 0 ? void 0 : response.data) === null || _a === void 0 ? void 0 : _a.thirdPartyCookies);
                         if (!_this.iframeStorageSupport) {
                             afterResolveOrError();
+                            reject("IFRAME_STORAGE");
                         }
                         return;
                     }
