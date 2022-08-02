@@ -77,17 +77,14 @@ export class SelectWallet extends AbstractView {
 
 		logger(2, "Connect wallet: " + wallet);
 
-		let timer = setTimeout(() => {
-			this.ui.showLoader(
-				"<h4>Connecting to " + wallet + "...</h4>",
-				"<small>You may need to unlock your wallet to continue.</small>"
-			);
-		}, 500); // In case already authorized
+		this.ui.showLoaderDelayed([
+			"<h4>Connecting to " + wallet + "...</h4>",
+			"<small>You may need to unlock your wallet to continue.</small>"
+		], 500);
 
 		try {
 			await this.client.negotiatorConnectToWallet(wallet);
 
-			if (timer) clearTimeout(timer);
 			this.ui.dismissLoader();
 
 			if (this.params?.data?.connectCallback){
@@ -97,7 +94,6 @@ export class SelectWallet extends AbstractView {
 			}
 
 		} catch (err: any){
-			if (timer) clearTimeout(timer);
 			this.ui.showError(err);
 			return;
 		}
