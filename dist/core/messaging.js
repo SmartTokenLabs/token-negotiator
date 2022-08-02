@@ -54,7 +54,7 @@ var Messaging = (function () {
                 switch (_a.label) {
                     case 0:
                         if (!forceTab && this.iframeStorageSupport === null) {
-                            this.iframeStorageSupport = !(window.safari || /(iphone|ipod|ipad).*applewebkit/.test(window.navigator.userAgent.toLowerCase()));
+                            this.iframeStorageSupport = !window.safari;
                         }
                         logger(2, "Send request: ");
                         logger(2, request);
