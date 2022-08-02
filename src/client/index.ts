@@ -472,7 +472,6 @@ export class Client {
 			logger(2,err);
 
 			if (err.message === "WALLET_REQUIRED"){
-				if (timer) clearTimeout(timer);
 				return this.handleWalletRequired(authRequest);
 			}
 
