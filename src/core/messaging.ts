@@ -38,8 +38,7 @@ export class Messaging {
 	async sendMessage(request: RequestInterfaceBase, forceTab = false): Promise<ResponseInterfaceBase> {
 
 		if (!forceTab && this.iframeStorageSupport === null) {
-			if (window.safari)
-				this.iframeStorageSupport = false;
+			this.iframeStorageSupport = !window.safari;
 		}
 
 		// Uncomment to test popup mode
@@ -140,11 +139,11 @@ export class Messaging {
 						if (!iframe || this.iframeStorageSupport === true)
 							return;
 
-						this.iframeStorageSupport = !!response?.data?.thirdPartyCookies;
+						/* this.iframeStorageSupport = !!response?.data?.thirdPartyCookies;
 						if (!this.iframeStorageSupport){
 							afterResolveOrError();
 							reject("IFRAME_STORAGE");
-						}
+						}*/
 						return;
 					}
 
