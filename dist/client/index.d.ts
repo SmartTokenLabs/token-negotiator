@@ -33,6 +33,7 @@ export declare class Client {
     private uiUpdateCallbacks;
     static getKey(file: string): import("@tokenscript/attestation/dist/libs/KeyPair").KeyPair;
     constructor(config: NegotiationInterface);
+    private mergeConfig;
     getTokenStore(): TokenStore;
     getUi(): Ui;
     triggerUiUpdateCallback(type: UIUpdateEventType, data?: {}): void;

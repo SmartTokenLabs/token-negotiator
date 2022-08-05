@@ -93,9 +93,7 @@ export class Client {
 
 	constructor(config: NegotiationInterface) {
 
-		config.uiOptions = {...defaultConfig.uiOptions, ...config?.uiOptions}
-
-		this.config = Object.assign(defaultConfig, config);
+		this.config = this.mergeConfig(defaultConfig, config);
 
 		this.negotiateAlreadyFired = false;
 
@@ -105,6 +103,20 @@ export class Client {
 			this.tokenStore.updateIssuers(this.config.issuers);
 
 		this.messaging = new Messaging();
+	}
+
+	private mergeConfig(defaultConfig, config){
+
+		for (let key in config){
+
+			if (config[key] && config[key].constructor === Object){
+				defaultConfig[key] = this.mergeConfig(defaultConfig[key] ?? {}, config[key]);
+			} else {
+				defaultConfig[key] = config[key];
+			}
+		}
+
+		return defaultConfig;
 	}
 
 	getTokenStore() {
@@ -184,7 +196,7 @@ export class Client {
 
 	private checkUserAgentSupport(type: string){
 
-		if (!isUserAgentSupported(this.config.unSupportedUserAgent[type].config)){
+		if (!isUserAgentSupported(this.config.unSupportedUserAgent?.[type]?.config)){
 
 			let err = this.config.unSupportedUserAgent[type].errorMessage;
 

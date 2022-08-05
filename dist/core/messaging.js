@@ -54,8 +54,7 @@ var Messaging = (function () {
                 switch (_a.label) {
                     case 0:
                         if (!forceTab && this.iframeStorageSupport === null) {
-                            if (window.safari)
-                                this.iframeStorageSupport = false;
+                            this.iframeStorageSupport = !window.safari;
                         }
                         logger(2, "Send request: ");
                         logger(2, request);
@@ -121,7 +120,6 @@ var Messaging = (function () {
         var received = false;
         var timer = null;
         var listener = function (event) {
-            var _a;
             var response = event.data;
             var requestUrl = new URL(origin);
             if (response.evtid === id) {
@@ -132,10 +130,6 @@ var Messaging = (function () {
                     if (response.evt === ResponseActionBase.COOKIE_CHECK) {
                         if (!iframe || _this.iframeStorageSupport === true)
                             return;
-                        _this.iframeStorageSupport = !!((_a = response === null || response === void 0 ? void 0 : response.data) === null || _a === void 0 ? void 0 : _a.thirdPartyCookies);
-                        if (!_this.iframeStorageSupport) {
-                            afterResolveOrError();
-                        }
                         return;
                     }
                     if (response.evt === ResponseActionBase.ERROR) {

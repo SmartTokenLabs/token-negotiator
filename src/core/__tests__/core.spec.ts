@@ -8,16 +8,7 @@ import {
 	decodeTokens,
 	storeMagicURL,
 	readMagicUrl,
-	ethKeyIsValid,
-	validateUseEthKey,
-	getUnpredictableNumber,
-	getChallengeSigned,
-	connectMetamaskAndGetAddress,
-	signNewChallenge,
-	signMessageWithBrowserWallet,
-	rawTokenCheck,
-	getRawToken,
-	getTokens,
+	ethKeyIsValid
 } from './../index';
 import {readSignedTicket} from "../../outlet";
 
