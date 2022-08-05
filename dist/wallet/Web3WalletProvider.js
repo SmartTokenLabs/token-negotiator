@@ -37,8 +37,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 import { ethers } from "ethers";
 import { logger } from "../utils";
 var Web3WalletProvider = (function () {
-    function Web3WalletProvider() {
+    function Web3WalletProvider(client, safeConnectOptions) {
         this.state = { addresses: [] };
+        this.client = client;
+        this.safeConnectOptions = safeConnectOptions;
     }
     Web3WalletProvider.prototype.connectWith = function (walletType) {
         return __awaiter(this, void 0, void 0, function () {
@@ -59,13 +61,13 @@ var Web3WalletProvider = (function () {
             });
         });
     };
-    Web3WalletProvider.prototype.signWith = function (message, walletData) {
+    Web3WalletProvider.prototype.signWith = function (message, walletProvider) {
         return __awaiter(this, void 0, void 0, function () {
             var provider, signer;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        provider = new ethers.providers.Web3Provider(walletData.provider);
+                        provider = new ethers.providers.Web3Provider(walletProvider);
                         signer = provider.getSigner();
                         return [4, signer.signMessage(message)];
                     case 1: return [2, _a.sent()];
@@ -154,6 +156,41 @@ var Web3WalletProvider = (function () {
                             throw new Error("No accounts found via wallet-connect.");
                         }
                         return [2, this.registerNewWalletAddress(accounts[0], '1', torus.provider)];
+                }
+            });
+        });
+    };
+    Web3WalletProvider.prototype.SafeConnect = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var provider, address;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        logger(2, 'connect SafeConnect');
+                        return [4, this.getSafeConnectProvider()];
+                    case 1:
+                        provider = _a.sent();
+                        return [4, provider.initSafeConnect()];
+                    case 2:
+                        address = _a.sent();
+                        this.registerNewWalletAddress(address, "1", provider);
+                        return [2, address];
+                }
+            });
+        });
+    };
+    Web3WalletProvider.prototype.safeConnectAvailable = function () {
+        return this.safeConnectOptions !== undefined;
+    };
+    Web3WalletProvider.prototype.getSafeConnectProvider = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var SafeConnectProvider;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, import("./SafeConnectProvider")];
+                    case 1:
+                        SafeConnectProvider = (_a.sent()).SafeConnectProvider;
+                        return [2, new SafeConnectProvider(this.client.getUi(), this.safeConnectOptions)];
                 }
             });
         });

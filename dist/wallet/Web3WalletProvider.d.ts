@@ -1,12 +1,19 @@
+import { SafeConnectOptions } from "./SafeConnectProvider";
+import { Client } from "../client";
 export declare class Web3WalletProvider {
     state: any;
-    constructor();
+    safeConnectOptions?: SafeConnectOptions;
+    client: Client;
+    constructor(client: Client, safeConnectOptions?: SafeConnectOptions);
     connectWith(walletType: string): Promise<any>;
-    signWith(message: string, walletData: any): Promise<string>;
+    signWith(message: string, walletProvider: any): Promise<string>;
     getConnectedWalletData(): any;
     registerNewWalletAddress(address: string, chainId: string, provider: any): any;
     MetaMask(): Promise<any>;
     WalletConnect(): Promise<any>;
     Torus(): Promise<any>;
+    SafeConnect(): Promise<any>;
+    safeConnectAvailable(): boolean;
+    getSafeConnectProvider(): Promise<import("./SafeConnectProvider").SafeConnectProvider>;
 }
 export default Web3WalletProvider;

@@ -1,14 +1,3 @@
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -46,10 +35,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 import { attachPostMessageListener, logger, removePostMessageListener } from "../utils";
-export var MessageActionBase;
-(function (MessageActionBase) {
-    MessageActionBase["COOKIE_CHECK"] = "cookie-check";
-})(MessageActionBase || (MessageActionBase = {}));
+import { ClientError } from "../client";
 export var ResponseActionBase;
 (function (ResponseActionBase) {
     ResponseActionBase["COOKIE_CHECK"] = "cookie-check";
@@ -59,7 +45,6 @@ export var ResponseActionBase;
 var Messaging = (function () {
     function Messaging() {
         this.iframeStorageSupport = null;
-        this.rejectHandler = null;
     }
     Messaging.prototype.sendMessage = function (request, forceTab) {
         if (forceTab === void 0) { forceTab = false; }
@@ -69,8 +54,7 @@ var Messaging = (function () {
                 switch (_a.label) {
                     case 0:
                         if (!forceTab && this.iframeStorageSupport === null) {
-                            if (window.safari)
-                                this.iframeStorageSupport = false;
+                            this.iframeStorageSupport = !window.safari;
                         }
                         logger(2, "Send request: ");
                         logger(2, request);
@@ -98,13 +82,12 @@ var Messaging = (function () {
         return new Promise(function (resolve, reject) {
             var id = Messaging.getUniqueEventId();
             var url = _this.constructUrl(id, request);
-            var iframe = _this.createIframe();
+            var iframe = _this.createIframe(function () {
+                _this.removeModal();
+                reject(ClientError.USER_ABORT);
+            });
             _this.setResponseListener(id, request.origin, request.timeout, resolve, reject, function () {
-                if (iframe === null || iframe === void 0 ? void 0 : iframe.parentNode)
-                    iframe.parentNode.removeChild(iframe);
-                var modal = _this.getModal();
-                if (modal)
-                    modal.style.display = "none";
+                _this.removeModal();
             }, iframe);
             iframe.src = url;
         });
@@ -119,6 +102,16 @@ var Messaging = (function () {
                     tabRef.close();
             });
             tabRef = _this.openTab(_this.constructUrl(id, request));
+            if (!tabRef || tabRef.closed || typeof tabRef.closed == "undefined") {
+                reject(ClientError.POPUP_BLOCKED);
+                return;
+            }
+            var tabCloseCheck = setInterval(function () {
+                if (!tabRef || tabRef.closed) {
+                    clearInterval(tabCloseCheck);
+                    reject(ClientError.USER_ABORT);
+                }
+            }, 500);
         });
     };
     Messaging.prototype.setResponseListener = function (id, origin, timeout, resolve, reject, cleanUpCallback, iframe) {
@@ -126,9 +119,7 @@ var Messaging = (function () {
         if (iframe === void 0) { iframe = null; }
         var received = false;
         var timer = null;
-        this.rejectHandler = reject;
         var listener = function (event) {
-            var _a;
             var response = event.data;
             var requestUrl = new URL(origin);
             if (response.evtid === id) {
@@ -139,15 +130,10 @@ var Messaging = (function () {
                     if (response.evt === ResponseActionBase.COOKIE_CHECK) {
                         if (!iframe || _this.iframeStorageSupport === true)
                             return;
-                        _this.iframeStorageSupport = !!((_a = response === null || response === void 0 ? void 0 : response.data) === null || _a === void 0 ? void 0 : _a.thirdPartyCookies);
-                        if (!_this.iframeStorageSupport) {
-                            afterResolveOrError();
-                            reject("IFRAME_STORAGE");
-                        }
                         return;
                     }
                     if (response.evt === ResponseActionBase.ERROR) {
-                        reject(response.errors);
+                        reject(new Error(response.errors.join(". ")));
                     }
                     else if (response.evt === ResponseActionBase.SHOW_FRAME) {
                         if (iframe) {
@@ -157,7 +143,7 @@ var Messaging = (function () {
                         return;
                     }
                     else {
-                        resolve(__assign({ evt: response.evt }, response.data));
+                        resolve(response);
                     }
                     afterResolveOrError();
                 }
@@ -179,14 +165,13 @@ var Messaging = (function () {
         if (timeout > 0)
             timer = setTimeout(function () {
                 if (!received)
-                    reject("Failed to receive response from window/iframe");
+                    reject(new Error("Failed to receive response from window/iframe"));
                 afterResolveOrError();
             }, timeout);
     };
-    Messaging.prototype.getModal = function () {
-        var _this = this;
+    Messaging.prototype.getModal = function (closedCallback) {
         var modal = document.getElementById("modal-tn");
-        if (modal)
+        if (modal || !closedCallback)
             return modal;
         modal = document.createElement('div');
         modal.id = "modal-tn";
@@ -195,19 +180,16 @@ var Messaging = (function () {
         modal.innerHTML = "\n            <div class=\"modal-content-tn\">\n                <div class=\"modal-header-tn\">\n                    <span class=\"modal-close-tn\">&times;</span>\n                </div>\n                <div class=\"modal-body-tn\"></div>\n            </div>\n        ";
         document.body.appendChild(modal);
         modal.getElementsByClassName('modal-close-tn')[0].addEventListener('click', function () {
-            if (modal) {
-                modal.style.display = "none";
-                var content = modal.querySelector('.modal-body-tn');
-                if (content) {
-                    content.innerHTML = "";
-                }
-                if (_this.rejectHandler) {
-                    _this.rejectHandler("Popup closed by user");
-                    _this.rejectHandler = null;
-                }
-            }
+            closedCallback();
         });
         return modal;
+    };
+    Messaging.prototype.removeModal = function () {
+        var modal = this.getModal();
+        if (modal) {
+            modal.style.display = "none";
+            modal.remove();
+        }
     };
     Messaging.prototype.constructUrl = function (id, request) {
         var url = "".concat(request.origin, "#evtid=").concat(id, "&action=").concat(request.action);
@@ -230,15 +212,13 @@ var Messaging = (function () {
         return url;
     };
     Messaging.prototype.openTab = function (url) {
-        return window.open(url, "win1", "left=0,top=0,width=320,height=320");
+        return window.open(url, "_blank");
     };
-    Messaging.prototype.createIframe = function (url) {
+    Messaging.prototype.createIframe = function (closeCallback) {
         var iframe = document.createElement('iframe');
         iframe.setAttribute('allow', "clipboard-read");
-        var modal = this.getModal();
+        var modal = this.getModal(closeCallback);
         modal.getElementsByClassName('modal-body-tn')[0].appendChild(iframe);
-        if (url)
-            iframe.src = url;
         return iframe;
     };
     Messaging.getUniqueEventId = function () {

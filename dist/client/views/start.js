@@ -15,6 +15,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 import { AbstractView } from "./view-interface";
 import { SelectWallet } from "./select-wallet";
+import { SelectIssuers } from "./select-issuers";
 var Start = (function (_super) {
     __extends(Start, _super);
     function Start() {
@@ -25,7 +26,7 @@ var Start = (function (_super) {
         this.viewContainer.querySelector('.opening-btn-tn').addEventListener('click', this.goToWalletSelection.bind(this));
     };
     Start.prototype.goToWalletSelection = function () {
-        this.popup.updatePopup(SelectWallet);
+        this.ui.updateUI(this.client.getTokenStore().hasOnChainTokens() ? SelectWallet : SelectIssuers);
     };
     return Start;
 }(AbstractView));

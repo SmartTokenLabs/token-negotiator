@@ -1,3 +1,4 @@
+import { Ui } from "./ui";
 import "./../vendor/keyShape";
 import { TokenStore } from "./tokenStore";
 import { OffChainTokenConfig, OnChainTokenConfig, AuthenticateInterface, NegotiationInterface } from "./interface";
@@ -8,46 +9,58 @@ declare global {
         ethereum: any;
     }
 }
+export declare const enum UIUpdateEventType {
+    ISSUERS_LOADING = 0,
+    ISSUERS_LOADED = 1
+}
+export declare enum ClientError {
+    POPUP_BLOCKED = "POPUP_BLOCKED",
+    USER_ABORT = "USER_ABORT"
+}
+export declare enum ClientErrorMessage {
+    POPUP_BLOCKED = "Please add an exception to your popup blocker before continuing.",
+    USER_ABORT = "The user aborted the process."
+}
 export declare class Client {
     private negotiateAlreadyFired;
+    issuersLoaded: boolean;
     private config;
     private web3WalletProvider;
     private messaging;
-    private popup;
+    private ui;
     private clientCallBackEvents;
-    private onChainTokenModule;
     private tokenStore;
     private uiUpdateCallbacks;
     static getKey(file: string): import("@tokenscript/attestation/dist/libs/KeyPair").KeyPair;
     constructor(config: NegotiationInterface);
+    private mergeConfig;
     getTokenStore(): TokenStore;
-    triggerUiUpdateCallbacks(): void;
-    registerUiUpdateCallback(id: string, callback: Function): void;
-    private getWalletProvider;
+    getUi(): Ui;
+    triggerUiUpdateCallback(type: UIUpdateEventType, data?: {}): void;
+    registerUiUpdateCallback(type: UIUpdateEventType, callback: Function): void;
+    safeConnectAvailable(): boolean;
+    getWalletProvider(): Promise<Web3WalletProvider>;
     negotiatorConnectToWallet(walletType: string): Promise<any>;
-    setPassiveNegotiationWebTokens(): Promise<void>;
     enrichTokenLookupDataOnChainTokens(): Promise<void>;
+    private checkUserAgentSupport;
     negotiate(issuers?: OnChainTokenConfig | OffChainTokenConfig[], openPopup?: boolean): Promise<void>;
-    activeNegotiationStrategy(openPopup: boolean): Promise<void>;
+    activeNegotiationStrategy(openPopup: boolean): void;
     private cancelAutoload;
     tokenAutoLoad(onLoading: (issuer: string) => void, onComplete: (issuer: string, tokens: any[]) => void): Promise<void>;
     cancelTokenAutoload(): void;
+    setPassiveNegotiationWebTokens(): Promise<void>;
     setPassiveNegotiationOnChainTokens(): Promise<void>;
     passiveNegotiationStrategy(): Promise<void>;
     connectTokenIssuer(issuer: string): Promise<any>;
     updateSelectedTokens(selectedTokens: any): void;
-    authenticateOnChain(authRequest: AuthenticateInterface): Promise<{
-        issuer: any;
-        proof: any;
-    }>;
-    authenticateOffChain(authRequest: AuthenticateInterface): Promise<unknown>;
-    authenticate(authRequest: AuthenticateInterface): Promise<void>;
+    authenticate(authRequest: AuthenticateInterface): any;
+    private handleWalletRequired;
     private handleProofError;
-    checkPublicAddressMatch(issuer: string, unsignedToken: any): Promise<any>;
     eventSender: {
         emitAllTokensToClient: (tokens: any) => void;
         emitSelectedTokensToClient: (tokens: any) => void;
-        emitProofToClient: (proof: any, issuer: any, error?: string) => void;
+        emitProofToClient: (data: any, issuer: any, error?: string) => void;
+        emitErrorToClient: (error: Error, issuer?: string) => void;
     };
     addTokenViaMagicLink(magicLink: any): Promise<any>;
     on(type: string, callback?: any, data?: any): any;

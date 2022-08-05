@@ -43,6 +43,13 @@ import { SignedDevconTicket } from "@tokenscript/attestation/dist/asn1/shemas/Si
 import { AsnParser } from "@peculiar/asn1-schema";
 import { uint8toBuffer } from "../utils";
 import { ResponseActionBase } from "../core/messaging";
+var defaultConfig = {
+    tokenUrlName: "ticket",
+    tokenSecretName: "secret",
+    tokenIdName: "id",
+    unsignedTokenDataName: "ticket",
+    itemStorageKey: "dcTokens"
+};
 var readSignedTicket = (function () {
     function readSignedTicket(source) {
         var signedDevconTicket = AsnParser.parse(uint8toBuffer(source), SignedDevconTicket);
@@ -54,7 +61,7 @@ var readSignedTicket = (function () {
 export { readSignedTicket };
 var Outlet = (function () {
     function Outlet(config) {
-        this.tokenConfig = config;
+        this.tokenConfig = Object.assign(defaultConfig, config);
         if (!this.tokenConfig.tokenParser) {
             this.tokenConfig.tokenParser = readSignedTicket;
         }
@@ -149,7 +156,7 @@ var Outlet = (function () {
                             evtid: evtid,
                             evt: OutletResponseAction.PROOF,
                             data: {
-                                issuer: this.tokenConfig.tokenName,
+                                issuer: this.tokenConfig.collectionID,
                                 proof: tokenProof
                             }
                         });
@@ -170,7 +177,7 @@ var Outlet = (function () {
             evtid: evtid,
             evt: OutletResponseAction.ISSUER_TOKENS,
             data: {
-                issuer: this.tokenConfig.tokenName,
+                issuer: this.tokenConfig.collectionID,
                 tokens: issuerTokens
             }
         });

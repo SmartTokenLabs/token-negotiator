@@ -1,7 +1,6 @@
 import { OffChainTokenConfig, OnChainTokenConfig } from "./interface";
-import { ContractData } from "../onChainTokenModule";
 interface TokenLookup {
-    [collectionID: string]: OnChainTokenConfig | OffChainTokenConfig | ContractData;
+    [collectionID: string]: OnChainTokenConfig | OffChainTokenConfig;
 }
 declare type TokenConfig = OnChainTokenConfig | OffChainTokenConfig;
 export declare class TokenStore {
@@ -12,17 +11,18 @@ export declare class TokenStore {
     private autoEnableTokens;
     constructor(autoEnableTokens: boolean);
     updateIssuers(issuers: TokenConfig[]): void;
+    hasOnChainTokens(): boolean;
     getCurrentIssuers(onChainFilter?: boolean): TokenLookup;
     getCurrentTokens(onChainFilter?: boolean): {
         [issuer: string]: [];
     };
     hasUnloadedTokens(): boolean;
-    getIssuerTokens(issuer: string): [] | null;
+    getIssuerTokens(issuer: string): [];
     setTokens(issuer: string, tokens: []): void;
     getSelectedTokens(): any;
     setSelectedTokens(selectedTokens: any): void;
     private prePopulateTokenLookupStore;
-    updateTokenLookupStore(tokenKey: string, data: OnChainTokenConfig | OffChainTokenConfig | ContractData): void;
+    updateTokenLookupStore(tokenKey: string, data: OnChainTokenConfig | OffChainTokenConfig): void;
     private formatCollectionChain;
     private formatCollectionID;
 }

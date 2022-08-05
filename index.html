@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 
-    <script type="text/javascript" src="./token-negotiator-alpha-dist/negotiator.js"></script>
-    <link rel="stylesheet" href="./token-negotiator-alpha-dist/theme/style.css" />
+    <script type="text/javascript" src="./token-negotiator-dist/negotiator.js"></script>
+    <link rel="stylesheet" href="./token-negotiator-dist/theme/style.css" />
     
 </head>
 <body onload="init()">
@@ -22,35 +22,40 @@
                 type: 'active',
                 issuers: [
                     // {
-                    //     collectionID: 'devcon', 
-                    //     title: "Devcon",
-                    //     onChain: false,
-                    //     tokenOrigin: "http://localhost:3002/",
-                    //     attestationOrigin: "https://stage.attestation.id/",
-                    //     unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
-                    //     image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
-                    //     base64senderPublicKey: "",
-                    //     base64attestorPubKey: ""
+                    // collectionID: 'devcon',
+                    // title: "Devcon",
+                    // onChain: false,
+                    // tokenOrigin: "http://localhost:3002/",
+                    // attestationOrigin: "https://attestation.id/",
+                    // unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
+                    // image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
+                    // base64senderPublicKeys:
+                    //     {
+                    //         "AttestationDAO" : 'MFYwEAYHKoZIzj0CAQYFK...'
+                    //     },
+                    // base64attestorPubKey: "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ="
                     // },
-                    { onChain: true, collectionID: "exp", contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' },
-                    // { collectionID: "rink", contract: '0x77187e35640a67f37814706f32425687ff527544', chain: 'rinkeby' },
-                    // { collectionID: "bayc", contract: '0x26472AA24D795AbcB687bddb44d733ef55Ebdf09', chain: 'Rinkeby' }
+                    { onChain: true, collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
                 ],
-                options: {
-                    overlay: {
+                uiOptions: {
                     openingHeading: "Open a new world of discounts available with your tokens.",
                     issuerHeading: "Get discount with Ticket",
                     repeatAction: "try again",
                     theme: "light",
                     position: "bottom-right"
-                    },
-                    filters: {},
                 },
-                // onChainModuleKeys: {
-                //     moralis: 'testing',
-                //     alchemy: 'testing',
-                //     opensea: 'testing'
-                // }
+                unSupportedUserAgent: {
+                    authentication: {
+                        config: {
+                            // options to test against : ["iE", "iE9", "edge", "chrome", "phantomJS", "fireFox", "safari", "android", "iOS", "mac", "windows", "webView", "touchDevice", "metaMask", "alphaWallet", "mew", "trust", "goWallet", "status", "imToken", "metaMaskAndroid", "alphaWalletAndroid", "mewAndroid", "imTokenAndroid"];
+                            // metaMaskAndroid: true,
+                            // alphaWalletAndroid: true,
+                            // mewAndroid: true,
+                            // imTokenAndroid: true,
+                        },
+                        warningMessage: "No Support for Authentication with this user agent. Try Chrome, Safari or Edge instead."
+                    }
+                }
             });
 
             window.negotiator.on("tokens-selected", (tokens) => {

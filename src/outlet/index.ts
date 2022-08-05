@@ -3,16 +3,34 @@ import { logger, requiredParams } from "../utils";
 import { decodeTokens, filterTokens } from "../core";
 import { OutletAction, OutletResponseAction } from "../client/messaging";
 import { AuthHandler } from "./auth-handler";
-
-// requred for default TicketDecoder
+// requred for default TicketDecoder.
 import { SignedDevconTicket } from "@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket";
 import { AsnParser } from "@peculiar/asn1-schema";
 import { uint8toBuffer } from "../utils";
 import { ResponseActionBase, ResponseInterfaceBase } from "../core/messaging";
 
 interface OutletInterface {
-	config: any;
+	collectionID: string;
+	attestationOrigin: string;
+	tokenParser?: any;
+	base64senderPublicKeys: {[key: string]: string};
+	base64attestorPubKey: string;
+
+	// Possibly deprecated parameters which have defaults
+	tokenUrlName?: string;
+	tokenSecretName?: string;
+	tokenIdName?: string;
+	unsignedTokenDataName?: string;
+	itemStorageKey?: string;
 }
+
+const defaultConfig = {
+	tokenUrlName: "ticket",
+	tokenSecretName: "secret",
+	tokenIdName: "id",
+	unsignedTokenDataName: "ticket",
+	itemStorageKey: "dcTokens"
+};
 
 export class readSignedTicket {
 	ticket: any;
@@ -33,7 +51,7 @@ export class Outlet {
 	urlParams?: URLSearchParams;
 
 	constructor(config: OutletInterface) {
-		this.tokenConfig = config;
+		this.tokenConfig = Object.assign(defaultConfig, config);
 
 		// set default tokenReader
 		if (!this.tokenConfig.tokenParser) {
@@ -87,11 +105,8 @@ export class Outlet {
 			const token: string = this.getDataFromQuery("token");
 			const wallet: string = this.getDataFromQuery("wallet");
 			const address: string = this.getDataFromQuery("address");
-
 			requiredParams(token, "unsigned token is missing");
-
 			this.sendTokenProof(evtid, token, address, wallet);
-
 			break;
 		}
 		default: {
@@ -155,6 +170,7 @@ export class Outlet {
 	}
 
 	async sendTokenProof(evtid: any, token: any, address: string, wallet: string) {
+		
 		if (!token) return "error";
 
 		const unsignedToken = JSON.parse(token);
@@ -178,7 +194,7 @@ export class Outlet {
 				evtid: evtid,
 				evt: OutletResponseAction.PROOF,
 				data: {
-					issuer: this.tokenConfig.tokenName,
+					issuer: this.tokenConfig.collectionID,
 					proof: tokenProof
 				}
 			});
@@ -196,7 +212,7 @@ export class Outlet {
 			evtid: evtid,
 			evt: OutletResponseAction.ISSUER_TOKENS,
 			data: {
-				issuer: this.tokenConfig.tokenName,
+				issuer: this.tokenConfig.collectionID,
 				tokens: issuerTokens
 			}
 		});

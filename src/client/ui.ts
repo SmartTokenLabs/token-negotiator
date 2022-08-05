@@ -1,52 +1,99 @@
 import {Start} from './views/start';
 
 import {logger, requiredParams} from "../utils";
-import {Client} from "./index";
+import {Client, ClientError} from "./index";
 import {ViewInterface, ViewConstructor, AbstractView} from "./views/view-interface";
 
-export interface PopupOptionsInterface {
-    openingHeading?: string,
-    issuerHeading?: string,
-    repeatAction?: string,
-    theme?: string,
-    position?: string
+export type UIType = "popup" | "inline"; // TODO: implement modal too
+
+export interface UIOptionsInterface {
+	uiType?: UIType;
+	containerElement?: string;
+    openingHeading?: string;
+    issuerHeading?: string;
+    repeatAction?: string;
+    theme?: string;
+    position?: string;
+	autoPopup?: boolean;
 }
 
-export class Popup {
+export class Ui {
 
-	options?: PopupOptionsInterface
+	private static UI_CONTAINER_HTML = `
+		<div class="overlay-content-tn">
+			<div class="load-container-tn" style="display: none;">
+				<div class="lds-ellipsis loader-tn"><div></div><div></div><div></div><div></div></div>
+				<div class="loader-msg-tn"></div>
+				<button class="dismiss-error-tn btn-tn">Dismiss</button>
+			</div>
+			<div class="view-content-tn"></div>
+		</div>
+	`;
+
+	private static FAB_BUTTON_HTML = `
+		<button aria-label="token negotiator toggle" class="overlay-fab-button-tn">
+		  <svg style="pointer-events: none" xmlns="http://www.w3.org/2000/svg" width="55" height="55" viewBox="0 0 55 55"><path fill="white" id="svg-tn-left" d="M25.5 26h-5c0-2.9-0.6-5.6-1.7-8.1c-1-2.3-2.4-4.3-4.2-6.1c-1.9-1.9-4.3-3.4-6.8-4.4c-2.3-0.9-4.8-1.4-7.3-1.4v-5h7h18v6.2v5.6v6.2Z" transform="translate(13,28.5) translate(0,0) translate(-13,-13.5)"/><path id="svg-tn-right" fill="white" d="M53 1v11.9v6.1v7h-12.8h-6.1h-6.1v-13.4v-5.2v-6.4h12.6h5.3Z" transform="translate(41.5,28.7) translate(0,0) translate(-40.5,-13.5)"/></svg>
+		</button>
+	`;
+
+	options?: UIOptionsInterface
 	client: Client;
 	popupContainer: any;
 	viewContainer: any;
 	loadContainer: any;
 	currentView: ViewInterface|undefined;
+	retryCallback?: Function;
+	retryButton: any;
 
-	constructor(options: PopupOptionsInterface, client: Client) {
+	constructor(options: UIOptionsInterface, client: Client) {
 		this.options = options;
 		this.client = client;
 	}
 
 	initialize(){
 
-		this.popupContainer = document.querySelector(".overlay-tn");
+		setTimeout(() => {
 
-		requiredParams(this.popupContainer, 'No entry point element with the class name of .overlay-tn found.');
+			this.popupContainer = document.querySelector(this.options.containerElement);
 
-		if (this.popupContainer) {
+			requiredParams(this.popupContainer, 'No entry point element with the class name of ' + this.options.containerElement + ' found.');
 
-			this.popupContainer.innerHTML = `
-                <div class="overlay-content-tn">
-                    <div class="load-container-tn" style="display: none;">
-                        <div class="lds-ellipsis loader-tn"><div></div><div></div><div></div><div></div></div>
-                        <div class="loader-msg-tn"></div>
-                        <button class="dismiss-error-tn btn-tn">Dismiss</button>
-                    </div>
-                    <div class="view-content-tn"></div>
-                </div>
-                <button aria-label="token negotiator toggle" class="overlay-fab-button-tn">
-                  <svg style="pointer-events: none" xmlns="http://www.w3.org/2000/svg" width="55" height="55" viewBox="0 0 55 55"><path fill="white" id="svg-tn-left" d="M25.5 26h-5c0-2.9-0.6-5.6-1.7-8.1c-1-2.3-2.4-4.3-4.2-6.1c-1.9-1.9-4.3-3.4-6.8-4.4c-2.3-0.9-4.8-1.4-7.3-1.4v-5h7h18v6.2v5.6v6.2Z" transform="translate(13,28.5) translate(0,0) translate(-13,-13.5)"/><path id="svg-tn-right" fill="white" d="M53 1v11.9v6.1v7h-12.8h-6.1h-6.1v-13.4v-5.2v-6.4h12.6h5.3Z" transform="translate(41.5,28.7) translate(0,0) translate(-40.5,-13.5)"/></svg>
-                </button>
-            `;
+			if (this.popupContainer) {
+
+				this.initializeUIType();
+
+				this.addTheme();
+
+				this.viewContainer = this.popupContainer.querySelector(".view-content-tn");
+				this.loadContainer = this.popupContainer.querySelector(".load-container-tn");
+				this.retryButton = this.loadContainer.querySelector('.dismiss-error-tn');
+
+				this.retryButton.addEventListener('click', () => {
+					this.dismissLoader();
+					if (this.retryCallback) {
+						this.retryCallback();
+						this.retryCallback = undefined;
+						this.retryButton.innerText = "Dismiss";
+					}
+				});
+
+				this.updateUI(Start);
+
+			}
+
+		}, 0);
+
+	}
+
+	initializeUIType(){
+
+		this.popupContainer.classList.add(this.options.uiType + "-tn");
+
+		switch (this.options.uiType){
+
+		case "popup":
+
+			this.popupContainer.innerHTML = Ui.UI_CONTAINER_HTML + Ui.FAB_BUTTON_HTML;
 
 			this.popupContainer.querySelector('.overlay-fab-button-tn').addEventListener('click', this.togglePopup.bind(this));
 
@@ -60,19 +107,20 @@ export class Popup {
 
 			this.assignFabButtonAnimation();
 
-			this.addTheme();
+			break;
 
-			this.viewContainer = this.popupContainer.querySelector(".view-content-tn");
-			this.loadContainer = this.popupContainer.querySelector(".load-container-tn");
+		case "inline":
 
-			this.loadContainer.querySelector('.dismiss-error-tn').addEventListener('click', this.dismissLoader.bind(this));
+			this.popupContainer.innerHTML = Ui.UI_CONTAINER_HTML;
 
-			this.updatePopup(Start);
-
+			break;
 		}
 	}
 
 	closeOverlay() {
+
+		if (this.options.uiType === "inline")
+			return;
 
 		this.popupContainer.classList.remove("open");
 
@@ -82,6 +130,10 @@ export class Popup {
 	}
 
 	openOverlay(){
+
+		if (this.options.uiType === "inline")
+			return;
+
 		// Prevent out-of-popup click from closing the popup straight away
 		setTimeout(()=> {
 			this.popupContainer.classList.add("open");
@@ -105,7 +157,7 @@ export class Popup {
 		}
 	}
 
-	updatePopup(ViewClass: ViewConstructor<AbstractView>, data?: any) {
+	updateUI(ViewClass: ViewConstructor<AbstractView>, data?: any) {
 
 		if (!this.viewContainer){
 			logger(3, "Element .overlay-content-tn not found: popup not initialized");
@@ -117,14 +169,31 @@ export class Popup {
 
 	}
 
-	showError(...message: string[]){
+	showError(error: string | Error, canDismiss = true){
+
+		if (typeof error !== "string"){
+			if (error.name === ClientError.USER_ABORT){
+				return this.dismissLoader();
+			}
+			error = error.message ? error.message : error.toString();
+		}
 
 		this.loadContainer.querySelector('.loader-tn').style.display = 'none';
-		this.loadContainer.querySelector('.dismiss-error-tn').style.display = 'block';
+		this.retryButton.style.display = 'block';
 
-		this.loadContainer.querySelector('.loader-msg-tn').innerHTML = message.join("\n");
+		this.loadContainer.querySelector('.loader-msg-tn').innerHTML = error;
 
 		this.loadContainer.style.display = 'flex';
+	
+		if (!canDismiss) {
+			this.loadContainer.querySelector('.dismiss-error-tn').style.display = 'none';
+		}
+
+	}
+
+	setErrorRetryCallback(retryCallback?: Function){
+		this.retryCallback = retryCallback;
+		this.retryButton.innerText = "Retry";
 	}
 
 	showLoader(...message: string[]){
@@ -142,12 +211,8 @@ export class Popup {
 	}
 
 	private addTheme() {
-
 		let refTokenSelector = document.querySelector(".overlay-tn");
-
-		if (refTokenSelector)
-			refTokenSelector.classList.add((this.options?.theme ?? 'light'));
-
+		if (refTokenSelector) refTokenSelector.classList.add((this.options?.theme ?? 'light') + "-tn");
 	}
 
 	private assignFabButtonAnimation() {

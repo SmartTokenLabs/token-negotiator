@@ -2,7 +2,7 @@ var AbstractView = (function () {
     function AbstractView(client, popup, viewContainer, params) {
         this.params = {};
         this.client = client;
-        this.popup = popup;
+        this.ui = popup;
         this.viewContainer = viewContainer;
         this.params = params;
         this.init();

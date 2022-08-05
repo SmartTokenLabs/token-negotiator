@@ -69,6 +69,17 @@ var SelectIssuers = (function (_super) {
     function SelectIssuers() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
+    SelectIssuers.prototype.init = function () {
+        var _this = this;
+        this.client.registerUiUpdateCallback(0, function () {
+            _this.issuersLoading();
+        });
+        this.client.registerUiUpdateCallback(1, function () {
+            _this.ui.dismissLoader();
+            _this.client.cancelTokenAutoload();
+            _this.render();
+        });
+    };
     SelectIssuers.prototype.render = function () {
         this.viewContainer.innerHTML = "\n            <div class=\"inner-content-tn issuer-slider-tn\">\n              <div class=\"issuer-view-tn scroll-tn\">\n                <div class=\"brand-tn\"></div>\n                <div class=\"headline-container-tn\">\n                  <p class=\"headline-tn\">".concat(this.params.options.issuerHeading, "</p>\n                </div>\n                <ul class=\"token-issuer-list-container-tn\" role=\"menubar\"></ul>\n              </div>\n              <div class=\"token-view-tn scroll-tn\" style=\"display: none;\">\n                <div class=\"brand-tn\"></div>\n                <div style=\"display: flex\">\n                  <button aria-label=\"back to token issuer menu\" class=\"back-to-menu-tn\">\n                    <svg style=\"position: relative; top: 1px;\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\" xmlns=\"http://www.w3.org/2000/svg\">\n                        <g fill=\"none\" fill-rule=\"evenodd\">\n                            <path d=\"m10.2 15.8 7.173 7.56c.55.587 1.453.587 2.01 0a1.554 1.554 0 0 0 0-2.12l-5.158-5.44 5.157-5.44a1.554 1.554 0 0 0 0-2.12 1.367 1.367 0 0 0-2.009 0L10.2 15.8z\" fill=\"#000\" fill-rule=\"nonzero\"/>\n                        </g>\n                    </svg>\n                  </button>\n                  <p class=\"headline-tn token-name\">Token Name Here</p>\n                </div>\n                <ul class=\"token-list-container-tn\" role=\"menubar\"></ul>\n              </div>\n            </div>\n        ");
         this.viewContainer.querySelector('.back-to-menu-tn').addEventListener('click', this.backToIssuers.bind(this));
@@ -80,8 +91,16 @@ var SelectIssuers = (function (_super) {
         }
         this.populateIssuers();
         var tokensListElem = this.tokensContainer.getElementsByClassName("token-list-container-tn")[0];
-        this.tokenListView = new TokenList(this.client, this.popup, tokensListElem, {});
-        this.autoLoadTokens();
+        this.tokenListView = new TokenList(this.client, this.ui, tokensListElem, {});
+        if (this.client.issuersLoaded) {
+            this.autoLoadTokens();
+        }
+        else {
+            this.issuersLoading();
+        }
+    };
+    SelectIssuers.prototype.issuersLoading = function () {
+        this.ui.showLoader("<h4>Loading contract data...</h4>");
     };
     SelectIssuers.prototype.populateIssuers = function () {
         var e_1, _a;
@@ -91,8 +110,9 @@ var SelectIssuers = (function (_super) {
         for (var issuerKey in issuers) {
             var data = issuers[issuerKey];
             var tokens = this.client.getTokenStore().getIssuerTokens(issuerKey);
-            if (data.title)
-                html += this.issuerConnectMarkup(data.title, data.image, issuerKey, tokens);
+            if (!data.title)
+                data.title = data.collectionID.replace(/[-,_]+/g, " ");
+            html += this.issuerConnectMarkup(data.title, data.image, issuerKey, tokens);
         }
         this.issuerListContainer.innerHTML = html;
         try {
@@ -121,17 +141,13 @@ var SelectIssuers = (function (_super) {
                 _this.navigateToTokensView(issuer);
             }
         });
-        this.client.registerUiUpdateCallback("select-issuers", function () {
-            _this.client.cancelTokenAutoload();
-            _this.render();
-        });
     };
     SelectIssuers.prototype.issuerConnectMarkup = function (title, image, issuer, tokens) {
         return "\n            <li class=\"issuer-connect-banner-tn\" data-issuer=\"".concat(issuer, "\" role=\"menuitem\">\n              <div style=\"display: flex; align-items: center;\">\n                <div class=\"img-container-tn issuer-icon-tn shimmer-tn\" data-image-src=\"").concat(image, "\" data-token-title=\"").concat(title, "\"></div>\n                <p class=\"issuer-connect-title\">").concat(title, "</p>\n              </div>\n              <button aria-label=\"connect with the token issuer ").concat(issuer, "\" aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"token-list-container-tn\" \n              \t\t\tclass=\"connect-btn-tn\" style=\"").concat(((tokens === null || tokens === void 0 ? void 0 : tokens.length) ? "display: none;" : ""), "\" data-issuer=\"").concat(issuer, "\">Load</button>\n              <button aria-label=\"tokens available from token issuer ").concat(issuer, "\" aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"token-list-container-tn\" \n              \t\t\tclass=\"tokens-btn-tn\" style=\"").concat(((tokens === null || tokens === void 0 ? void 0 : tokens.length) ? "display: block;" : ""), "\" data-issuer=\"").concat(issuer, "\">").concat(tokens === null || tokens === void 0 ? void 0 : tokens.length, " token").concat(((tokens === null || tokens === void 0 ? void 0 : tokens.length) ? "s" : ""), " available</button>\n            </li>\n        ");
     };
     SelectIssuers.prototype.backToIssuers = function () {
         this.tokensContainer.style.display = 'none';
-        this.viewContainer.classList.toggle("open");
+        this.viewContainer.querySelector(".issuer-slider-tn").classList.toggle("open");
     };
     SelectIssuers.prototype.autoLoadTokens = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -163,7 +179,7 @@ var SelectIssuers = (function (_super) {
                         data = event.target.dataset;
                         issuer = data.issuer;
                         tokens = [];
-                        this.popup.showLoader("<h4>Loading tokens...</h4>");
+                        this.ui.showLoader("<h4>Loading tokens...</h4>");
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
@@ -174,12 +190,13 @@ var SelectIssuers = (function (_super) {
                     case 3:
                         err_1 = _a.sent();
                         logger(2, err_1);
-                        this.popup.showError(err_1);
+                        this.ui.showError(err_1);
+                        this.client.eventSender.emitErrorToClient(err_1, issuer);
                         return [2];
                     case 4:
-                        this.popup.dismissLoader();
+                        this.ui.dismissLoader();
                         if (!(tokens === null || tokens === void 0 ? void 0 : tokens.length)) {
-                            this.popup.showError("No tokens found!");
+                            this.ui.showError("No tokens found!");
                             return [2];
                         }
                         this.issuerConnected(issuer, tokens);
@@ -259,7 +276,7 @@ var SelectIssuers = (function (_super) {
         (_a = this.tokenListView) === null || _a === void 0 ? void 0 : _a.update({ issuer: issuer, tokens: tokens });
     };
     SelectIssuers.prototype.showTokenView = function (issuer) {
-        this.viewContainer.classList.toggle("open");
+        this.viewContainer.querySelector(".issuer-slider-tn").classList.toggle("open");
     };
     return SelectIssuers;
 }(AbstractView));

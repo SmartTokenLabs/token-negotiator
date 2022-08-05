@@ -63,41 +63,50 @@ var SelectWallet = (function (_super) {
     SelectWallet.prototype.render = function () {
         var _this = this;
         var MetaMaskButton = (typeof window.ethereum !== 'undefined') ?
-            "<button class=\"wallet-button-tn\" data-wallet=\"MetaMask\">\n                ".concat(metaMaskSVG, "\n                <p>MetaMask</p>\n            </button>") : ' ';
-        this.viewContainer.innerHTML = "\n            <div class=\"inner-content-tn scroll-tn\">\n              <div class=\"wallet-selection-view-tn\">\n                <div class=\"issuer-view-tn\">\n                  <div class=\"brand-tn\"></div>\n                  <div class=\"headline-container-tn\">\n                    <p style=\"text-align: center;\">Select Wallet</p>\n                  </div>\n                  <div class=\"wallet-button-container-tn\">\n                    ".concat(MetaMaskButton, "\n                    <button class=\"wallet-button-tn\" data-wallet=\"WalletConnect\">\n                      ").concat(walletConnectSVG, "\n                      <p>Wallet Connect</p>\n                    </button>\n                    <button class=\"wallet-button-tn\" data-wallet=\"Torus\">\n                      ").concat(torusSVG, "\n                      <p>Torus</p>\n                    </button>\n                  </div>\n                </div>\n              </div>\n            </div>\n        ");
+            "<button class=\"wallet-button-tn\" data-wallet=\"MetaMask\">\n                ".concat(metaMaskSVG, "\n                <p>MetaMask</p>\n            </button>") : '';
+        var SafeConnectButton = this.client.safeConnectAvailable() ?
+            "<button class=\"wallet-button-tn\" data-wallet=\"SafeConnect\">\n\t\t\t  <svg style=\"pointer-events: none\" xmlns=\"http://www.w3.org/2000/svg\" width=\"55\" height=\"55\" viewBox=\"0 0 55 55\">\n\t\t\t\t<path fill=\"black\" d=\"M25.5 26h-5c0-2.9-0.6-5.6-1.7-8.1c-1-2.3-2.4-4.3-4.2-6.1c-1.9-1.9-4.3-3.4-6.8-4.4c-2.3-0.9-4.8-1.4-7.3-1.4v-5h7h18v6.2v5.6v6.2Z\" transform=\"translate(13,28.5) translate(0,0) translate(-13,-13.5)\"/>\n\t\t\t\t<path fill=\"black\" d=\"M53 1v11.9v6.1v7h-12.8h-6.1h-6.1v-13.4v-5.2v-6.4h12.6h5.3Z\" transform=\"translate(41.5,28.7) translate(0,0) translate(-40.5,-13.5)\"/></svg>\n\t\t\t  <p>Safe Connect</p>\n\t\t\t</button>" : '';
+        this.viewContainer.innerHTML = "\n            <div class=\"inner-content-tn scroll-tn\">\n              <div class=\"wallet-selection-view-tn\">\n                <div class=\"issuer-view-tn\">\n                  <div class=\"brand-tn\"></div>\n                  <div class=\"headline-container-tn\">\n                    <p style=\"text-align: center;\">Select Wallet</p>\n                  </div>\n                  <div class=\"wallet-button-container-tn\">\n                  \t".concat(SafeConnectButton, "\n                    ").concat(MetaMaskButton, "\n                    <button class=\"wallet-button-tn\" data-wallet=\"WalletConnect\">\n                      ").concat(walletConnectSVG, "\n                      <p>Wallet Connect</p>\n                    </button>\n                    <button class=\"wallet-button-tn\" data-wallet=\"Torus\">\n                      ").concat(torusSVG, "\n                      <p>Torus</p>\n                    </button>\n                  </div>\n                </div>\n              </div>\n            </div>\n        ");
         this.viewContainer.querySelectorAll('.wallet-button-tn').forEach(function (elem) {
             elem.addEventListener('click', _this.connectWallet.bind(_this));
         });
     };
     SelectWallet.prototype.connectWallet = function (e) {
+        var _a, _b, _c, _d;
         return __awaiter(this, void 0, void 0, function () {
             var wallet, timer, err_1;
             var _this = this;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            return __generator(this, function (_e) {
+                switch (_e.label) {
                     case 0:
                         wallet = e.currentTarget.dataset.wallet;
                         logger(2, "Connect wallet: " + wallet);
                         timer = setTimeout(function () {
-                            _this.popup.showLoader("<h4>Connecting to " + wallet + "...</h4>", "<small>You may need to unlock your wallet to continue.</small>");
+                            _this.ui.showLoader("<h4>Connecting to " + wallet + "...</h4>", "<small>You may need to unlock your wallet to continue.</small>");
                         }, 500);
-                        _a.label = 1;
+                        _e.label = 1;
                     case 1:
-                        _a.trys.push([1, 3, , 4]);
+                        _e.trys.push([1, 3, , 4]);
                         return [4, this.client.negotiatorConnectToWallet(wallet)];
                     case 2:
-                        _a.sent();
-                        this.popup.updatePopup(SelectIssuers);
-                        return [3, 4];
-                    case 3:
-                        err_1 = _a.sent();
-                        this.popup.showError((err_1.message ? err_1.message : err_1));
-                        return [2];
-                    case 4:
+                        _e.sent();
                         if (timer)
                             clearTimeout(timer);
-                        this.popup.dismissLoader();
+                        this.ui.dismissLoader();
+                        if ((_b = (_a = this.params) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.connectCallback) {
+                            (_d = (_c = this.params) === null || _c === void 0 ? void 0 : _c.data) === null || _d === void 0 ? void 0 : _d.connectCallback();
+                        }
+                        else {
+                            this.ui.updateUI(SelectIssuers);
+                        }
+                        return [3, 4];
+                    case 3:
+                        err_1 = _e.sent();
+                        if (timer)
+                            clearTimeout(timer);
+                        this.ui.showError(err_1);
                         return [2];
+                    case 4: return [2];
                 }
             });
         });

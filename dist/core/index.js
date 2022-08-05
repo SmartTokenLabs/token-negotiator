@@ -34,8 +34,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-import { base64ToUint8array, compareObjects, logger, } from "../utils/index";
-import { ethers } from "ethers";
+import { base64ToUint8array, compareObjects, } from "../utils/index";
 export var filterTokens = function (decodedTokens, filter) {
     if (filter === void 0) { filter = []; }
     var res = [];
@@ -117,7 +116,8 @@ export var readMagicUrl = function (tokenUrlName, tokenSecretName, tokenIdName, 
         urlParams = new URLSearchParams(window.location.search);
     var tokenFromQuery = urlParams.get(tokenUrlName);
     var secretFromQuery = urlParams.get(tokenSecretName);
-    var idFromQuery = urlParams.get(tokenIdName);
+    var tmp = urlParams.get(tokenIdName);
+    var idFromQuery = tmp ? tmp : "";
     if (!(tokenFromQuery && secretFromQuery))
         throw new Error("Incomplete token params in URL.");
     var tokensOutput = readTokens(itemStorageKey);
@@ -132,136 +132,13 @@ export var readMagicUrl = function (tokenUrlName, tokenSecretName, tokenIdName, 
         tokens.push({
             token: tokenFromQuery,
             secret: secretFromQuery,
-            id: idFromQuery,
+            id: decodeURIComponent(idFromQuery),
             magic_link: window.location.href,
         });
         return tokens;
     }
     throw new Error("Token already added.");
 };
-export var ethKeyIsValid = function (ethKey) {
-    return ethKey.expiry >= Date.now();
-};
-export var validateUseEthKey = function (endPoint, data) { return __awaiter(void 0, void 0, void 0, function () {
-    var response, json, e_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 3, , 4]);
-                return [4, fetch(endPoint, {
-                        method: "POST",
-                        cache: "no-cache",
-                        headers: { "Content-Type": "application/json" },
-                        redirect: "follow",
-                        referrerPolicy: "no-referrer",
-                        body: JSON.stringify(data),
-                    })];
-            case 1:
-                response = _a.sent();
-                return [4, response.json()];
-            case 2:
-                json = _a.sent();
-                return [2, json.address];
-            case 3:
-                e_1 = _a.sent();
-                return [2, {
-                        success: false,
-                        message: "validate ethkey request failed",
-                    }];
-            case 4: return [2];
-        }
-    });
-}); };
-export var getUnpredictableNumber = function (endPoint) { return __awaiter(void 0, void 0, void 0, function () {
-    var response, json, e_2;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 3, , 4]);
-                return [4, fetch(endPoint)];
-            case 1:
-                response = _a.sent();
-                return [4, response.json()];
-            case 2:
-                json = _a.sent();
-                json.success = true;
-                return [2, json];
-            case 3:
-                e_2 = _a.sent();
-                return [2, {
-                        success: false,
-                        message: "UN request failed",
-                    }];
-            case 4: return [2];
-        }
-    });
-}); };
-export var getChallengeSigned = function (tokenIssuer, web3WalletProvider) { return __awaiter(void 0, void 0, void 0, function () {
-    var storageEthKeys, ethKeys, address, useEthKey;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                storageEthKeys = localStorage.getItem(tokenIssuer.ethKeyitemStorageKey);
-                ethKeys = storageEthKeys && storageEthKeys.length ? JSON.parse(storageEthKeys) : {};
-                address = web3WalletProvider.getConnectedWalletData()[0].address;
-                if (!!address) return [3, 2];
-                return [4, web3WalletProvider.connect("MetaMask")];
-            case 1:
-                _a.sent();
-                address = web3WalletProvider.getConnectedWalletData()[0].address;
-                _a.label = 2;
-            case 2:
-                address = address.toLowerCase();
-                if (ethKeys && ethKeys[address] && !ethKeyIsValid(ethKeys[address])) {
-                    delete ethKeys[address];
-                }
-                if (!(ethKeys && ethKeys[address])) return [3, 3];
-                useEthKey = ethKeys[address];
-                return [3, 5];
-            case 3: return [4, signNewChallenge(tokenIssuer.unEndPoint, web3WalletProvider)];
-            case 4:
-                useEthKey = _a.sent();
-                if (useEthKey) {
-                    ethKeys[useEthKey.address.toLowerCase()] = useEthKey;
-                    localStorage.setItem(tokenIssuer.ethKeyitemStorageKey, JSON.stringify(ethKeys));
-                }
-                _a.label = 5;
-            case 5: return [2, useEthKey];
-        }
-    });
-}); };
-export var signNewChallenge = function (unEndPoint, web3WalletProvider) { return __awaiter(void 0, void 0, void 0, function () {
-    var res, UN, randomness, domain, expiry, messageToSign, signature, msgHash, msgHashBytes, recoveredAddress;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                logger(2, "sign new challenge");
-                return [4, getUnpredictableNumber(unEndPoint)];
-            case 1:
-                res = _a.sent();
-                UN = res.number, randomness = res.randomness, domain = res.domain, expiry = res.expiration, messageToSign = res.messageToSign;
-                return [4, signMessageWithBrowserWallet(messageToSign, web3WalletProvider)];
-            case 2:
-                signature = _a.sent();
-                msgHash = ethers.utils.hashMessage(messageToSign);
-                msgHashBytes = ethers.utils.arrayify(msgHash);
-                recoveredAddress = ethers.utils.recoverAddress(msgHashBytes, signature);
-                return [2, {
-                        address: recoveredAddress,
-                        expiry: expiry,
-                        domain: domain,
-                        randomness: randomness,
-                        signature: signature,
-                        UN: UN,
-                    }];
-        }
-    });
-}); };
-export var signMessageWithBrowserWallet = function (message, web3WalletProvider) { return __awaiter(void 0, void 0, void 0, function () {
-    return __generator(this, function (_a) {
-        return [2, web3WalletProvider.signWith(message, web3WalletProvider.getConnectedWalletData()[0])];
-    });
-}); };
 export var rawTokenCheck = function (unsignedToken, tokenIssuer) { return __awaiter(void 0, void 0, void 0, function () {
     var rawTokenData, base64ticket, ticketSecret, tokenObj;
     return __generator(this, function (_a) {

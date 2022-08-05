@@ -4,7 +4,9 @@ export declare class SelectIssuers extends AbstractView {
     issuerListContainer: any;
     tokensContainer: any;
     tokenListView: TokenList | undefined;
+    init(): void;
     render(): void;
+    issuersLoading(): void;
     populateIssuers(): void;
     issuerConnectMarkup(title: string, image: string | undefined, issuer: string, tokens: [] | null): string;
     backToIssuers(): void;

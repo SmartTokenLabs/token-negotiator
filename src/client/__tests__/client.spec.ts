@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { Client } from "./../index";
+import { Client } from "../index";
 
 function getOffChainConfigClient() {
 	return new Client({
@@ -21,6 +21,31 @@ function getOffChainConfigClient() {
 }
 
 describe('client spec', () => {
+
+	test('tokenNegotiatorClient a failed new instance of client - missing issuers key', () => {
+
+		let client = new Client({
+			type: 'passive',
+			options: {}
+		});
+
+		return client.negotiate().catch((e) => {
+			expect(e).toEqual(new Error('issuers are missing.'));
+		});
+	});
+	
+	test('tokenNegotiatorClient a failed new instance of client - missing issuers length', () => {
+
+		let client = new Client({
+			type: 'passive',
+			issuers: [],
+			options: {}
+		});
+
+		return client.negotiate().catch((e) => {
+			expect(e).toEqual(new Error('issuers are missing.'));
+		});
+	});
 
 	test('tokenNegotiatorClient a new instance of client', () => {
 		const tokenNegotiatorClient = getOffChainConfigClient();
@@ -91,18 +116,6 @@ describe('client spec', () => {
 		expect(Object.keys(tokenNegotiatorClient.getTokenStore().getCurrentTokens()).length).toBe(1);
 	});
 
-	test('tokenNegotiatorClient a failed new instance of client - missing issuers', () => {
-
-		let client = new Client({
-			type: 'passive',
-			options: {}
-		});
-
-		return client.negotiate().catch((e) => {
-			expect(e).toEqual(new Error('issuers are missing.'));
-		});
-	});
-
 	test('tokenNegotiatorClient on callback with event type tokens-selected ', () => {
 		const tokenNegotiatorClient = getOffChainConfigClient();
 		const event = 'tokens-selected';
@@ -119,18 +132,12 @@ describe('client spec', () => {
 		}).toThrow('Event type is not defined');
 	});
   
-	test('tokenNegotiatorClient method checkPublicAddressMatch to return failed check data', async () => {
+	/* test('tokenNegotiatorClient method checkPublicAddressMatch to throw error', async () => {
 		const tokenNegotiatorClient = getOffChainConfigClient();
-		const output = await tokenNegotiatorClient.checkPublicAddressMatch("devcon", null);
-		expect(output).toEqual({ status: false, useEthKey: null, proof: null });
-	});
-  
-	test('tokenNegotiatorClient method checkPublicAddressMatch to throw error', async () => {
-		const tokenNegotiatorClient = getOffChainConfigClient();
-		return tokenNegotiatorClient.checkPublicAddressMatch("devcon", { fake: "data" }).catch(err => {
+		return tokenNegotiatorClient.getAddressChallenge(Challenge.DEFAULT_ENDPOINT).catch(err => {
 			expect(err).toEqual(new Error("MetaMask is not available. Please check the extension is supported and active."));
 		});
-	});
+	});*/
 
 	test('tokenNegotiatorClient method eventSender event hook functions', async () => {
 		const tokenNegotiatorClient = getOffChainConfigClient();

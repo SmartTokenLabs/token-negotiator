@@ -2,12 +2,25 @@ import {AbstractView} from "./view-interface";
 import {TokenListItemInterface, TokenList} from "./token-list";
 import {IconView} from "./icon-view";
 import { logger } from "../../utils";
+import {UIUpdateEventType} from "../index";
 
 export class SelectIssuers extends AbstractView {
 
 	issuerListContainer: any;
 	tokensContainer: any;
 	tokenListView: TokenList|undefined;
+
+	init(){
+		this.client.registerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADING, ()=> {
+			this.issuersLoading();
+		});
+
+		this.client.registerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADED, ()=> {
+			this.ui.dismissLoader();
+			this.client.cancelTokenAutoload();
+			this.render();
+		});
+	}
 
 	render(){
 
@@ -51,10 +64,18 @@ export class SelectIssuers extends AbstractView {
 
 		let tokensListElem = this.tokensContainer.getElementsByClassName("token-list-container-tn")[0];
 
-		this.tokenListView = new TokenList(this.client, this.popup, tokensListElem, {});
+		this.tokenListView = new TokenList(this.client, this.ui, tokensListElem, {});
 
-		this.autoLoadTokens();
+		if (this.client.issuersLoaded) {
+			this.autoLoadTokens();
+		} else {
+			this.issuersLoading();
+		}
 
+	}
+
+	issuersLoading(){
+		this.ui.showLoader("<h4>Loading contract data...</h4>");
 	}
 
 	// TODO: back to wallet selection?
@@ -69,8 +90,10 @@ export class SelectIssuers extends AbstractView {
 			let data = issuers[issuerKey];
 			let tokens = this.client.getTokenStore().getIssuerTokens(issuerKey);
 
-			if (data.title)
-				html += this.issuerConnectMarkup(data.title, data.image, issuerKey, tokens);
+			if (!data.title)
+				data.title = data.collectionID.replace(/[-,_]+/g, " ");
+
+			html += this.issuerConnectMarkup(data.title, data.image, issuerKey, tokens);
 		}
 
 		this.issuerListContainer.innerHTML = html;
@@ -94,10 +117,6 @@ export class SelectIssuers extends AbstractView {
 			}
 		});
 
-		this.client.registerUiUpdateCallback("select-issuers", ()=> {
-			this.client.cancelTokenAutoload();
-			this.render();
-		});
 	}
 
 	issuerConnectMarkup(title: string, image: string|undefined, issuer: string, tokens: []|null){
@@ -119,7 +138,7 @@ export class SelectIssuers extends AbstractView {
 
 		this.tokensContainer.style.display = 'none';
 
-		this.viewContainer.classList.toggle("open");
+		this.viewContainer.querySelector(".issuer-slider-tn").classList.toggle("open");
 
 		// TODO - Review and uplift this logic. Its not working as expected from tests.
 
@@ -167,20 +186,21 @@ export class SelectIssuers extends AbstractView {
 
 		let tokens: any[] = [];
 
-		this.popup.showLoader("<h4>Loading tokens...</h4>");
+		this.ui.showLoader("<h4>Loading tokens...</h4>");
 
 		try {
 			tokens = await this.client.connectTokenIssuer(issuer);
 		} catch (err){
 			logger(2, err);
-			this.popup.showError((err as string));
+			this.ui.showError(err);
+			this.client.eventSender.emitErrorToClient(err, issuer);
 			return;
 		}
 
-		this.popup.dismissLoader();
+		this.ui.dismissLoader();
 
 		if (!tokens?.length){
-			this.popup.showError("No tokens found!");
+			this.ui.showError("No tokens found!");
 			return;
 		}
 
@@ -285,7 +305,7 @@ export class SelectIssuers extends AbstractView {
 
 	showTokenView(issuer: string) {
 
-		this.viewContainer.classList.toggle("open");
+		this.viewContainer.querySelector(".issuer-slider-tn").classList.toggle("open");
 
 		// TODO review and uplift this code, its not working as expected.
 

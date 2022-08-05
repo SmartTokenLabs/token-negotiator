@@ -3,6 +3,8 @@ node_modules
 reports/coverage
 junit.xml
 dist-common-js
+token-negotiator-alpha-dist/
+token-negotiator-dist/
+#dist/
 bundles
 .idea
-#dist
