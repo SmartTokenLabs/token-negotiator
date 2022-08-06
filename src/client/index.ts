@@ -35,7 +35,8 @@ const defaultConfig: NegotiationInterface = {
 		containerElement: ".overlay-tn",
 		openingHeading: "Validate your token ownership for access",
 		issuerHeading: "Detected tokens",
-		autoPopup: true
+		autoPopup: true,
+		position: "bottom-right"
 	},
 	autoLoadTokens: true,
 	autoEnableTokens: true,
