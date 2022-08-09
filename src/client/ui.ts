@@ -20,7 +20,7 @@ export interface UIOptionsInterface {
 export class Ui {
 
 	private static UI_CONTAINER_HTML = `
-		<div class="overlay-content-tn">
+		<div class="overlay-content-tn" aria-label="Token negotiator overlay">
 			<div class="load-container-tn" style="display: none;">
 				<div class="lds-ellipsis loader-tn"><div></div><div></div><div></div><div></div></div>
 				<div class="loader-msg-tn"></div>

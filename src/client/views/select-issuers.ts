@@ -31,7 +31,9 @@ export class SelectIssuers extends AbstractView {
                 <div class="headline-container-tn">
                   <p class="headline-tn">${this.params.options.issuerHeading}</p>
                 </div>
-                <ul class="token-issuer-list-container-tn" role="menubar"></ul>
+								<nav>
+                	<ul class="token-issuer-list-container-tn" role="menubar"></ul>
+								</nav>
               </div>
               <div class="token-view-tn scroll-tn" style="display: none;">
                 <div class="brand-tn"></div>
@@ -122,7 +124,7 @@ export class SelectIssuers extends AbstractView {
 	issuerConnectMarkup(title: string, image: string|undefined, issuer: string, tokens: []|null){
 		return `
             <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
-              <div style="display: flex; align-items: center;">
+              <div tabindex="0" style="display: flex; align-items: center;">
                 <div class="img-container-tn issuer-icon-tn shimmer-tn" data-image-src="${image}" data-token-title="${title}"></div>
                 <p class="issuer-connect-title">${title}</p>
               </div>
