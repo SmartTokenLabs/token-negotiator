@@ -43,10 +43,10 @@ const defaultConfig: NegotiationInterface = {
 	unSupportedUserAgent: {
 		authentication: {
 			config: {
-				metaMaskAndroid: true,
-				alphaWalletAndroid: true,
-				mewAndroid: true,
-				imTokenAndroid: true,
+				// metaMaskAndroid: true,
+				// alphaWalletAndroid: true,
+				// mewAndroid: true,
+				// imTokenAndroid: true,
 			},
 			errorMessage: NOT_SUPPORTED_ERROR
 		},
@@ -194,7 +194,7 @@ export class Client {
 		this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADED);
 	}
 
-	private checkUserAgentSupport(type: string){
+	public checkUserAgentSupport(type: string){
 
 		if (!isUserAgentSupported(this.config.unSupportedUserAgent?.[type]?.config)){
 
@@ -218,7 +218,16 @@ export class Client {
 
 	async negotiate(issuers?: OnChainTokenConfig | OffChainTokenConfig[], openPopup = false) {
 
-		this.checkUserAgentSupport("full");
+		try {
+			this.checkUserAgentSupport("full");
+		} catch(err){
+			logger(2,err);
+			err.name = "NOT_SUPPORTED_ERROR";
+			console.log("browser not supported");
+			this.eventSender.emitErrorToClient(err);
+			return;
+		}
+		
 
 		if (issuers) this.tokenStore.updateIssuers(issuers);
 
@@ -437,7 +446,16 @@ export class Client {
 
 	async authenticate(authRequest: AuthenticateInterface) {
 
-		this.checkUserAgentSupport("authentication")
+		try {
+			this.checkUserAgentSupport("authentication")
+		} catch(err){
+			logger(2,err);
+			err.name = "NOT_SUPPORTED_ERROR";
+			console.log("browser not supported");
+			this.eventSender.emitErrorToClient(err);
+			return;
+		}
+
 
 		const { issuer, unsignedToken } = authRequest;
 		requiredParams(

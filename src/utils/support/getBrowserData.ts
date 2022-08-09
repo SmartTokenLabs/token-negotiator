@@ -1,3 +1,5 @@
+import { logger } from '..';
+
 export const getBrowserData = () => {
   
 	const inBrowser = typeof window !== "undefined";
@@ -11,14 +13,13 @@ export const getBrowserData = () => {
 	const isPhantomJS = UA && /phantomjs/.test(UA);
 	const isFireFox = UA && /firefox\/\d+/.test(UA);
 	const isSafari = window.safari ? true : false;
+	const isBrave = !!window.navigator["brave"];
 
 	// detect OS
 	const isAndroid = UA && UA.indexOf("android") > 0;
 	const isIOS = UA && /iphone|ipad|ipod|ios/.test(UA);
-
-	// detect device
-	const isMac = window.navigator.platform.toLowerCase().includes("mac") || window.navigator.userAgent.toLowerCase().includes("mac");
-	const isWindows = window.navigator.platform.toLowerCase().includes("win") || window.navigator.userAgent.toLowerCase().includes("win");
+	const isMac = UA && /\smac\s/.test(UA);
+	const isWindows = UA && /windows/.test(UA);
 
 	// detect if touch device
 	let isTouchDevice = false;
@@ -31,7 +32,7 @@ export const getBrowserData = () => {
 	// detect wallet
 
 	let windowEthereum = window.ethereum;
-
+	
 	if (typeof window.ethereum === "undefined") {
 		windowEthereum = { 
 			isMetaMask: false, 
@@ -49,7 +50,7 @@ export const getBrowserData = () => {
 	const isGoWallet = isTouchDevice && windowEthereum.isGoWallet;
 	const isMyEthereumWallet =isTouchDevice && windowEthereum.isTrust && windowEthereum.isMetaMask;
 	const isImToken = !!navigator.userAgent.match(/\simToken\//);
-  
+
 	return {
 		iE: isIE,
 		iE9: isIE9,
@@ -70,6 +71,7 @@ export const getBrowserData = () => {
 		goWallet: isGoWallet,
 		status: isStatusWallet,
 		imToken: isImToken,
+		brave: isBrave,
 		metaMaskAndroid: isAndroid && windowEthereum.isMetaMask,
 		alphaWalletAndroid: isAndroid && windowEthereum.isAlphaWallet,
 		mewAndroid: isAndroid && windowEthereum.isTrust && windowEthereum.isMetaMask,

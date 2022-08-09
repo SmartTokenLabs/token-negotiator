@@ -189,6 +189,9 @@ export const rawTokenCheck = async (unsignedToken: any, tokenIssuer: any) => {
 		tokenObj.magicLink = rawTokenData.magic_link;
 	}
 
+	// @ts-ignore
+	if (tokenIssuer.attestationInTab) tokenObj.attestationInTab = true;
+
 	return tokenObj;
 };
 
