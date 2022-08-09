@@ -26,6 +26,7 @@ declare global {
 }
 
 const NOT_SUPPORTED_ERROR = "This browser is not supported. Please try using Chrome, Edge, FireFox or Safari.";
+const NO_INTERNET_ERROR_MESSAGE = "No internet connection. Please check your internet connection and try again";
 
 const defaultConfig: NegotiationInterface = {
 	type: "active",
@@ -58,7 +59,7 @@ const defaultConfig: NegotiationInterface = {
 			},
 			errorMessage: NOT_SUPPORTED_ERROR
 		}
-	}
+	},
 }
 
 export const enum UIUpdateEventType {
@@ -196,7 +197,6 @@ export class Client {
 	}
 
 	private checkUserAgentSupport(type: string){
-
 		if (!isUserAgentSupported(this.config.unSupportedUserAgent?.[type]?.config)){
 
 			let err = this.config.unSupportedUserAgent[type].errorMessage;
@@ -241,6 +241,8 @@ export class Client {
 
 			await this.passiveNegotiationStrategy();
 		}
+
+		window.addEventListener('offline', () => this.checkInternetConnectivity());
 	}
 
 	activeNegotiationStrategy(openPopup: boolean) {
@@ -551,9 +553,23 @@ export class Client {
 			this.on("token-proof", null, { data, issuer, error });
 		},
 		emitErrorToClient: (error: Error, issuer = "none") => {
+
+			this.checkInternetConnectivity();
+
 			this.on("error", null, {error, issuer});
 		}
 	};
+
+	checkInternetConnectivity(): void {
+		if (!navigator.onLine) {
+			if (this.config.type === 'active') {
+				setTimeout(() => {
+					this.ui.showError(this.config.noInternetErrorMessage ?? NO_INTERNET_ERROR_MESSAGE);
+				}, 1000);
+			}
+			throw new Error(this.config.noInternetErrorMessage ?? NO_INTERNET_ERROR_MESSAGE)
+		}
+	}
 
 	async addTokenViaMagicLink(magicLink: any) {
 		let url = new URL(magicLink);
