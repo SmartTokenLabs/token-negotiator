@@ -252,8 +252,26 @@
 .overlay-tn.popup-tn {
   position: fixed;
   z-index: 9999;
+}
+
+.overlay-tn.popup-tn.bottom-right {
   bottom: 24px;
   right: 24px;
+}
+
+.overlay-tn.popup-tn.bottom-left {
+  bottom: 24px;
+  left: 24px;
+}
+
+.overlay-tn.popup-tn.top-right {
+  top: 10px;
+  right: 24px;
+}
+
+.overlay-tn.popup-tn.top-left {
+  top: 10px;
+  left: 24px;
 }
 
 .overlay-tn .wallet-button-tn,
@@ -290,9 +308,27 @@
   border-radius: 54px;
   cursor: pointer;
   z-index: 999;
+  position: absolute;
+}
+
+.overlay-tn.popup-tn.bottom-right .overlay-fab-button-tn {
   bottom: 0;
   right: 0;
-  position: absolute;
+}
+
+.overlay-tn.popup-tn.bottom-left .overlay-fab-button-tn {
+  bottom: 0;
+  left: 0px;
+}
+
+.overlay-tn.popup-tn.top-right .overlay-fab-button-tn {
+  top: 0px;
+  right: 0;
+}
+
+.overlay-tn.popup-tn.top-left .overlay-fab-button-tn {
+  top: 0px;
+  left: 0px;
 }
 
 .overlay-tn .headline-container-tn p {
@@ -322,9 +358,28 @@
   opacity: 1;
   visibility: visible;
   transition: all .3s .1s;
-  bottom: 88px;
   padding: 0;
   pointer-events: inherit;
+}
+
+.overlay-tn.popup-tn.open.bottom-right .overlay-content-tn {
+  right: 0;
+  bottom: 88px;
+}
+
+.overlay-tn.popup-tn.open.top-right .overlay-content-tn {
+  right: 0;
+  top: 88px;
+}
+
+.overlay-tn.popup-tn.open.bottom-left .overlay-content-tn {
+  left: 0;
+  bottom: 88px;
+}
+
+.overlay-tn.popup-tn.open.top-left .overlay-content-tn {
+  top: 88px;
+  left: 0;
 }
 
 .overlay-tn .overlay-content-tn {
@@ -340,7 +395,6 @@
   opacity: 0;
   visibility: hidden;
   position: absolute;
-  right: 0;
   bottom: 74px;
   box-shadow: 0 2px 4px 0 rgba(103, 103, 103, 0.5);
   z-index: 888;

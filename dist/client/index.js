@@ -1,14 +1,3 @@
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -125,8 +114,7 @@ var Client = (function () {
                 _this.on("error", null, { error: error, issuer: issuer });
             }
         };
-        config.uiOptions = __assign(__assign({}, defaultConfig.uiOptions), config === null || config === void 0 ? void 0 : config.uiOptions);
-        this.config = Object.assign(defaultConfig, config);
+        this.config = this.mergeConfig(defaultConfig, config);
         this.negotiateAlreadyFired = false;
         this.tokenStore = new TokenStore(this.config.autoEnableTokens);
         if (((_a = this.config.issuers) === null || _a === void 0 ? void 0 : _a.length) > 0)
@@ -135,6 +123,18 @@ var Client = (function () {
     }
     Client.getKey = function (file) {
         return Authenticator.decodePublicKey(file);
+    };
+    Client.prototype.mergeConfig = function (defaultConfig, config) {
+        var _a;
+        for (var key in config) {
+            if (config[key] && config[key].constructor === Object) {
+                defaultConfig[key] = this.mergeConfig((_a = defaultConfig[key]) !== null && _a !== void 0 ? _a : {}, config[key]);
+            }
+            else {
+                defaultConfig[key] = config[key];
+            }
+        }
+        return defaultConfig;
     };
     Client.prototype.getTokenStore = function () {
         return this.tokenStore;
@@ -234,7 +234,8 @@ var Client = (function () {
     };
     Client.prototype.checkUserAgentSupport = function (type) {
         var _this = this;
-        if (!isUserAgentSupported(this.config.unSupportedUserAgent[type].config)) {
+        var _a, _b;
+        if (!isUserAgentSupported((_b = (_a = this.config.unSupportedUserAgent) === null || _a === void 0 ? void 0 : _a[type]) === null || _b === void 0 ? void 0 : _b.config)) {
             var err_1 = this.config.unSupportedUserAgent[type].errorMessage;
             if (this.config.type === 'active') {
                 this.ui = new Ui(this.config.uiOptions, this);

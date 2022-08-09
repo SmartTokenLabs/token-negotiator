@@ -35,11 +35,11 @@ export interface NegotiationInterface {
     messagingForceTab?: boolean;
     safeConnectOptions?: SafeConnectOptions;
     unSupportedUserAgent?: {
-        authentication: {
+        authentication?: {
             config: BrowserDataInterface,
             errorMessage: string
         },
-        full: {
+        full?: {
             config: BrowserDataInterface,
             errorMessage: string
         }

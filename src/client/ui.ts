@@ -13,14 +13,14 @@ export interface UIOptionsInterface {
     issuerHeading?: string;
     repeatAction?: string;
     theme?: string;
-    position?: string;
+    position?: 'bottom-right' | 'bottom-left' | 'top-left' | 'top-right';
 	autoPopup?: boolean;
 }
 
 export class Ui {
 
 	private static UI_CONTAINER_HTML = `
-		<div class="overlay-content-tn">
+		<div class="overlay-content-tn" aria-label="Token negotiator overlay">
 			<div class="load-container-tn" style="display: none;">
 				<div class="lds-ellipsis loader-tn"><div></div><div></div><div></div><div></div></div>
 				<div class="loader-msg-tn"></div>
@@ -92,6 +92,9 @@ export class Ui {
 		switch (this.options.uiType){
 
 		case "popup":
+			this.options.position
+				? this.popupContainer.classList.add(this.options.position)
+				: this.popupContainer.classList.add('bottom-right');
 
 			this.popupContainer.innerHTML = Ui.UI_CONTAINER_HTML + Ui.FAB_BUTTON_HTML;
 
@@ -212,7 +215,9 @@ export class Ui {
 
 	private addTheme() {
 		let refTokenSelector = document.querySelector(".overlay-tn");
-		if (refTokenSelector) refTokenSelector.classList.add((this.options?.theme ?? 'light') + "-tn");
+		if (refTokenSelector) {
+			refTokenSelector.classList.add((this.options?.theme ?? 'light') + "-tn");
+		}
 	}
 
 	private assignFabButtonAnimation() {
