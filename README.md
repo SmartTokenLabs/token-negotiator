@@ -30,6 +30,65 @@ The following types of tokens are supported:
 - fantom
 - POAP via XDai
 
+<table>
+  <thead>
+    <tr>
+      <th>Blockchain Name</th>
+      <th>Symbol in Token Negotiator</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Ethereum</td>
+      <td>eth (or mainnet)</td>
+    </tr>
+    <tr>
+      <td>Polygon Mainnet</td>
+      <td>polygon</td>
+    </tr>
+    <tr>
+      <td>Arbitrum One</td>
+      <td>arbitrum</td>
+    </tr>
+    <tr>
+      <td>Optimism</td>
+      <td>optimism</td>
+    </tr>
+    <tr>
+      <td>Rinkeby Testnet</td>
+      <td>rinkeby</td>
+    </tr>
+    <tr>
+      <td>Ropsten Testnet</td>
+      <td>ropsten</td>
+    </tr>
+    <tr>
+      <td>Goerli Testnet</td>
+      <td>goerli</td>
+    </tr>
+    <tr>
+      <td>Kovan Testnet</td>
+      <td>kovan</td>
+    </tr>
+    <tr>
+      <td>BNB smart chain</td>
+      <td>bsc</td>
+    </tr>
+    <tr>
+      <td>Mumbai testnet</td>
+      <td>mumbai</td>
+    </tr>
+    <tr>
+      <td>Avalanche Mainnet C-Chain</td>
+      <td>avalanche</td>
+    </tr>
+    <tr>
+      <td>Fantom opera</td>
+      <td>fantom</td>
+    </tr>
+  </tbody>
+</table>
+
 ## Installation
 
 Within your application install the token negotiator:
