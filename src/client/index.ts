@@ -231,7 +231,6 @@ export class Client {
 
 			this.activeNegotiationStrategy(openPopup);
 
-			await this.enrichTokenLookupDataOnChainTokens();
 		} else {
 			// TODO build logic to allow to connect with wallectConnect, Torus etc.
 			// Logic to ask user to connect to wallet when they have provided web3 tokens to negotiate with.
@@ -251,6 +250,10 @@ export class Client {
 
 		if (this.ui) {
 			autoOpenPopup = this.tokenStore.hasUnloadedTokens();
+
+			if (this.ui.viewIsNotStart() && this.tokenStore.hasUnloadedIssuers())
+				this.enrichTokenLookupDataOnChainTokens();
+
 		} else {
 			this.ui = new Ui(this.config.uiOptions, this);
 			this.ui.initialize();

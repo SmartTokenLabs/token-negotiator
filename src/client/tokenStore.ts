@@ -61,6 +61,18 @@ export class TokenStore {
 		return current;
 	}
 
+	public hasUnloadedIssuers(){
+
+		let issuers = this.getCurrentIssuers(true);
+
+		for (let i in issuers){
+			if (!issuers[i].title)
+				return true;
+		}
+
+		return false;
+	}
+
 	public hasUnloadedTokens(){
 		for (let tokens of Object.values(this.getCurrentTokens())){
 			if (tokens.length === 0)

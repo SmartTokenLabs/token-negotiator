@@ -172,6 +172,10 @@ export class Ui {
 
 	}
 
+	viewIsNotStart(){
+		return !(this.currentView instanceof Start);
+	}
+
 	showError(error: string | Error, canDismiss = true){
 
 		if (typeof error !== "string"){
