@@ -33,7 +33,7 @@ export class SignedUNChallenge extends AbstractAuthentication implements Authent
 
 		if (!currentProof){
 
-			let walletConnection = web3WalletProvider.getConnectedWalletData()[0].provider;
+			let walletConnection = web3WalletProvider.getWalletProvider(address);
 
 			currentProof = {
 				type: this.TYPE,
@@ -54,9 +54,9 @@ export class SignedUNChallenge extends AbstractAuthentication implements Authent
 
 			} else {
 
-				signature = await web3WalletProvider.signWith(
-					challenge.messageToSign,
-					walletConnection
+				signature = await web3WalletProvider.signMessage(
+					address,
+					challenge.messageToSign
 				);
 			}
 
