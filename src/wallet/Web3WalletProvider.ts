@@ -65,7 +65,7 @@ export class Web3WalletProvider {
 			let connection = state[address];
 
 			try {
-				await this.connectWith(connection.providerType);
+				await this.connectWith(connection.providerType, true);
 			} catch(e){
 				console.log("Wallet couldn't connect" + e.message);
 				delete state[address];
@@ -74,14 +74,14 @@ export class Web3WalletProvider {
 		}
 	}
 
-	async connectWith ( walletType: string ) {
+	async connectWith ( walletType: string, checkConnectionOnly = false ) {
 
 		if(!walletType) throw new Error('Please provide a Wallet type to connect with.');
 
 		if(this[walletType as keyof Web3WalletProvider]) {
 
 			// @ts-ignore
-			const address = await this[walletType as keyof Web3WalletProvider]();
+			const address = await this[walletType as keyof Web3WalletProvider](checkConnectionOnly);
 
 			logger(2, 'address', address);
 
@@ -137,30 +137,34 @@ export class Web3WalletProvider {
 			throw new Error("No accounts found via wallet-connect.");
 		}
 
-		for (let account of accounts){
-			this.registerNewWalletAddress(account, chainId, providerName, provider);
-		}
+		let curAccount = accounts[0];
+
+		this.registerNewWalletAddress(curAccount, chainId, providerName, provider);
 
 		// @ts-ignore
 		provider.provider.on("accountsChanged", (accounts) => {
 
-			console.log("Account changed!");
+			if (curAccount === accounts[0])
+				return;
 
-			for (let i in this.connections){
-				if (this.connections[i].providerType === providerName)
-					delete this.connections[i];
-			}
+			console.log("Account changed: " + accounts[0]);
 
-			for (let account of accounts){
-				this.registerNewWalletAddress(account, chainId, providerName, provider);
-			}
+			delete this.connections[curAccount.toLowerCase()];
+
+			curAccount = accounts[0];
+
+			this.registerNewWalletAddress(curAccount, chainId, providerName, provider);
+
 			this.saveConnections();
+
+			this.client.getTokenStore().clearCachedTokens();
+			this.client.enrichTokenLookupDataOnChainTokens();
 		});
 
 		return accounts[0];
 	}
 
-	async MetaMask () {
+	async MetaMask (checkConnectionOnly: boolean) {
 
 		logger(2, 'connect MetaMask');
       
@@ -180,23 +184,33 @@ export class Web3WalletProvider {
         
 	}
 
-	async WalletConnect () {
+	async WalletConnect (checkConnectionOnly: boolean) {
 
 		logger(2, 'connect Wallet Connect');
 
 		const walletConnectProvider = await import("./WalletConnectProvider");
 
-		const walletConnect = await walletConnectProvider.getWalletConnectProviderInstance();
+		const walletConnect = await walletConnectProvider.getWalletConnectProviderInstance(checkConnectionOnly);
 
-		await walletConnect.enable();
+		return new Promise((resolve, reject) => {
 
-		const provider = new ethers.providers.Web3Provider(walletConnect);
+			if (checkConnectionOnly){
+				walletConnect.connector.on("display_uri", (err, payload) => {
+					reject(new Error("Connection expired"));
+				});
+			}
 
-		return this.registerProvider(provider, "WalletConnect");
+			walletConnect.enable().then(() => {
+				const provider = new ethers.providers.Web3Provider(walletConnect);
+
+				resolve(this.registerProvider(provider, "WalletConnect"));
+			}).catch((e) => reject(e));
+
+		})
 
 	}
 
-	async Torus () {
+	async Torus (checkConnectionOnly: boolean) {
 
 		const TorusProvider = await import("./TorusProvider");
 

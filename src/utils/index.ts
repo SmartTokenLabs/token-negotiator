@@ -18,7 +18,7 @@ if (process && process.env && process.env.DISPLAY_DEBUG_LEVEL) {
 }
 
 export function logger(level: number, ...args: any[]){
-	if (!displayDebugLevel || level > displayDebugLevel) return;
+	//if (!displayDebugLevel || level > displayDebugLevel) return;
 	console.log(...args);
 }
 
