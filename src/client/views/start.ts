@@ -22,6 +22,7 @@ export class Start extends AbstractView {
 
 	goToWalletSelection() {
 		this.client.checkInternetConnectivity();
+		this.client.enrichTokenLookupDataOnChainTokens();
 		this.ui.updateUI(this.client.getTokenStore().hasOnChainTokens() ? SelectWallet : SelectIssuers);
 	}
 
