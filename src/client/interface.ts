@@ -43,7 +43,8 @@ export interface NegotiationInterface {
             config: BrowserDataInterface,
             errorMessage: string
         }
-    }
+    },
+    noInternetErrorMessage?: string;
 }
 
 // TODO: Implement tokenId - each issuer token should have a unique ID (tokenId for instance).

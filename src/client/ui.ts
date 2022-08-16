@@ -13,14 +13,14 @@ export interface UIOptionsInterface {
     issuerHeading?: string;
     repeatAction?: string;
     theme?: string;
-    position?: string;
+    position?: 'bottom-right' | 'bottom-left' | 'top-left' | 'top-right';
 	autoPopup?: boolean;
 }
 
 export class Ui {
 
 	private static UI_CONTAINER_HTML = `
-		<div class="overlay-content-tn">
+		<div class="overlay-content-tn" aria-label="Token negotiator overlay">
 			<div class="load-container-tn" style="display: none;">
 				<div class="lds-ellipsis loader-tn"><div></div><div></div><div></div><div></div></div>
 				<div class="loader-msg-tn"></div>
@@ -92,6 +92,9 @@ export class Ui {
 		switch (this.options.uiType){
 
 		case "popup":
+			this.options.position
+				? this.popupContainer.classList.add(this.options.position)
+				: this.popupContainer.classList.add('bottom-right');
 
 			this.popupContainer.innerHTML = Ui.UI_CONTAINER_HTML + Ui.FAB_BUTTON_HTML;
 
@@ -171,6 +174,8 @@ export class Ui {
 
 	showError(error: string | Error, canDismiss = true){
 
+		this.cancelDelayedLoader();
+
 		if (typeof error !== "string"){
 			if (error.name === ClientError.USER_ABORT){
 				return this.dismissLoader();
@@ -196,7 +201,28 @@ export class Ui {
 		this.retryButton.innerText = "Retry";
 	}
 
+	loadTimer?: any = null;
+
+	showLoaderDelayed(messages: string[], delay: number, openOverlay = false){
+		if (this.loadTimer)
+			clearTimeout(this.loadTimer);
+
+		this.loadTimer = setTimeout(() => {
+			this.showLoader(...messages);
+			if (openOverlay) this.openOverlay();
+		}, delay);
+	}
+
+	cancelDelayedLoader(){
+		if (this.loadTimer){
+			clearTimeout(this.loadTimer);
+			this.loadTimer = null;
+		}
+	}
+
 	showLoader(...message: string[]){
+
+		this.cancelDelayedLoader();
 
 		this.loadContainer.querySelector('.loader-tn').style.display = 'block';
 		this.loadContainer.querySelector('.dismiss-error-tn').style.display = 'none';
@@ -207,12 +233,15 @@ export class Ui {
 	}
 
 	dismissLoader(){
+		this.cancelDelayedLoader();
 		this.loadContainer.style.display = 'none';
 	}
 
 	private addTheme() {
 		let refTokenSelector = document.querySelector(".overlay-tn");
-		if (refTokenSelector) refTokenSelector.classList.add((this.options?.theme ?? 'light') + "-tn");
+		if (refTokenSelector) {
+			refTokenSelector.classList.add((this.options?.theme ?? 'light') + "-tn");
+		}
 	}
 
 	private assignFabButtonAnimation() {

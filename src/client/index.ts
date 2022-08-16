@@ -26,6 +26,7 @@ declare global {
 }
 
 const NOT_SUPPORTED_ERROR = "This browser is not supported. Please try using Chrome, Edge, FireFox or Safari.";
+const NO_INTERNET_ERROR_MESSAGE = "No internet connection. Please check your internet connection and try again";
 
 const defaultConfig: NegotiationInterface = {
 	type: "active",
@@ -35,7 +36,8 @@ const defaultConfig: NegotiationInterface = {
 		containerElement: ".overlay-tn",
 		openingHeading: "Validate your token ownership for access",
 		issuerHeading: "Detected tokens",
-		autoPopup: true
+		autoPopup: true,
+		position: "bottom-right"
 	},
 	autoLoadTokens: true,
 	autoEnableTokens: true,
@@ -57,7 +59,7 @@ const defaultConfig: NegotiationInterface = {
 			},
 			errorMessage: NOT_SUPPORTED_ERROR
 		}
-	}
+	},
 }
 
 export const enum UIUpdateEventType {
@@ -204,11 +206,8 @@ export class Client {
 				this.ui = new Ui(this.config.uiOptions, this);
 				this.ui.initialize();
 				this.ui.openOverlay();
-
-				setTimeout(() => {
-					this.ui.showError(err, false);
-					this.ui.viewContainer.style.display = 'none';
-				}, 1000);
+				this.ui.showError(err, false);
+				this.ui.viewContainer.style.display = 'none';
 			}
 
 			throw new Error(err);
@@ -249,6 +248,8 @@ export class Client {
 
 			await this.passiveNegotiationStrategy();
 		}
+
+		window.addEventListener('offline', () => this.checkInternetConnectivity());
 	}
 
 	activeNegotiationStrategy(openPopup: boolean) {
@@ -469,16 +470,12 @@ export class Client {
 			throw new Error("Provided issuer was not found.");
 
 		// TODO: How to handle error display in passive negotiation? Use optional UI or emit errors to listener?
-		let timer;
 
 		if (this.ui) {
-			timer = setTimeout(() => {
-				this.ui.showLoader(
-					"<h4>Authenticating...</h4>",
-					"<small>You may need to sign a new challenge in your wallet</small>"
-				);
-				this.ui.openOverlay();
-			}, 600);
+			this.ui.showLoaderDelayed([
+				"<h4>Authenticating...</h4>",
+				"<small>You may need to sign a new challenge in your wallet</small>"
+			], 600, true);
 		}
 
 		let AuthType;
@@ -509,7 +506,6 @@ export class Client {
 			logger(2,err);
 
 			if (err.message === "WALLET_REQUIRED"){
-				if (timer) clearTimeout(timer);
 				return this.handleWalletRequired(authRequest);
 			}
 
@@ -518,7 +514,6 @@ export class Client {
 		}
 
 		if (this.ui) {
-			if (timer) clearTimeout(timer);
 			this.ui.dismissLoader();
 			this.ui.closeOverlay();
 		}
@@ -568,9 +563,23 @@ export class Client {
 			this.on("token-proof", null, { data, issuer, error });
 		},
 		emitErrorToClient: (error: Error, issuer = "none") => {
+
+			this.checkInternetConnectivity();
+
 			this.on("error", null, {error, issuer});
 		}
 	};
+
+	checkInternetConnectivity(): void {
+		if (!navigator.onLine) {
+			if (this.config.type === 'active') {
+				setTimeout(() => {
+					this.ui.showError(this.config.noInternetErrorMessage ?? NO_INTERNET_ERROR_MESSAGE);
+				}, 1000);
+			}
+			throw new Error(this.config.noInternetErrorMessage ?? NO_INTERNET_ERROR_MESSAGE)
+		}
+	}
 
 	async addTokenViaMagicLink(magicLink: any) {
 		let url = new URL(magicLink);
