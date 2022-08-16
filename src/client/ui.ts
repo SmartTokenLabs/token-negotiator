@@ -171,6 +171,8 @@ export class Ui {
 
 	showError(error: string | Error, canDismiss = true){
 
+		this.cancelDelayedLoader();
+
 		if (typeof error !== "string"){
 			if (error.name === ClientError.USER_ABORT){
 				return this.dismissLoader();
@@ -196,7 +198,28 @@ export class Ui {
 		this.retryButton.innerText = "Retry";
 	}
 
+	loadTimer?: any = null;
+
+	showLoaderDelayed(messages: string[], delay: number, openOverlay = false){
+		if (this.loadTimer)
+			clearTimeout(this.loadTimer);
+
+		this.loadTimer = setTimeout(() => {
+			this.showLoader(...messages);
+			if (openOverlay) this.openOverlay();
+		}, delay);
+	}
+
+	cancelDelayedLoader(){
+		if (this.loadTimer){
+			clearTimeout(this.loadTimer);
+			this.loadTimer = null;
+		}
+	}
+
 	showLoader(...message: string[]){
+
+		this.cancelDelayedLoader();
 
 		this.loadContainer.querySelector('.loader-tn').style.display = 'block';
 		this.loadContainer.querySelector('.dismiss-error-tn').style.display = 'none';
@@ -207,6 +230,7 @@ export class Ui {
 	}
 
 	dismissLoader(){
+		this.cancelDelayedLoader();
 		this.loadContainer.style.display = 'none';
 	}
 
