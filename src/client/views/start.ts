@@ -23,7 +23,8 @@ export class Start extends AbstractView {
 	async goToWalletSelection() {
 		this.client.checkInternetConnectivity();
 
-		// TODO: Enable skipping of start screen when wallet is available
+		// TODO: Enable skipping of start screen when wallet is already connected?
+		this.ui.showLoaderDelayed(["Initializing wallet.."], 500);
 
 		if (this.client.getTokenStore().hasOnChainTokens()){
 			let wp = await this.client.getWalletProvider();
@@ -33,6 +34,8 @@ export class Start extends AbstractView {
 		} else {
 			this.ui.updateUI(SelectIssuers);
 		}
+
+		this.ui.dismissLoader();
 
 	}
 
