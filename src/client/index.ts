@@ -205,11 +205,8 @@ export class Client {
 				this.ui = new Ui(this.config.uiOptions, this);
 				this.ui.initialize();
 				this.ui.openOverlay();
-
-				setTimeout(() => {
-					this.ui.showError(err, false);
-					this.ui.viewContainer.style.display = 'none';
-				}, 1000);
+				this.ui.showError(err, false);
+				this.ui.viewContainer.style.display = 'none';
 			}
 
 			throw new Error(err);
@@ -454,16 +451,12 @@ export class Client {
 			throw new Error("Provided issuer was not found.");
 
 		// TODO: How to handle error display in passive negotiation? Use optional UI or emit errors to listener?
-		let timer;
 
 		if (this.ui) {
-			timer = setTimeout(() => {
-				this.ui.showLoader(
-					"<h4>Authenticating...</h4>",
-					"<small>You may need to sign a new challenge in your wallet</small>"
-				);
-				this.ui.openOverlay();
-			}, 600);
+			this.ui.showLoaderDelayed([
+				"<h4>Authenticating...</h4>",
+				"<small>You may need to sign a new challenge in your wallet</small>"
+			], 600, true);
 		}
 
 		let AuthType;
@@ -494,7 +487,6 @@ export class Client {
 			logger(2,err);
 
 			if (err.message === "WALLET_REQUIRED"){
-				if (timer) clearTimeout(timer);
 				return this.handleWalletRequired(authRequest);
 			}
 
@@ -503,7 +495,6 @@ export class Client {
 		}
 
 		if (this.ui) {
-			if (timer) clearTimeout(timer);
 			this.ui.dismissLoader();
 			this.ui.closeOverlay();
 		}
