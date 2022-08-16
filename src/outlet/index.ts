@@ -12,6 +12,7 @@ import { ResponseActionBase, ResponseInterfaceBase } from "../core/messaging";
 interface OutletInterface {
 	collectionID: string;
 	attestationOrigin: string;
+	attestationInTab?: boolean;
 	tokenParser?: any;
 	base64senderPublicKeys: {[key: string]: string};
 	base64attestorPubKey: string;

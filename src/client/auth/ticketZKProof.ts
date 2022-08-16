@@ -28,8 +28,6 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 			useEthKey = unRes.data as UNInterface;
 		}
 
-		console.log("Sending attestation.id");
-
 		let res = await this.messaging.sendMessage({
 			action: OutletAction.GET_PROOF,
 			origin: issuerConfig.tokenOrigin,

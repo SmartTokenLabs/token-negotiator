@@ -5,6 +5,7 @@ import { ResponseActionBase } from "../core/messaging";
 import { Outlet } from "./index";
 import { Authenticator } from "@tokenscript/attestation";
 import { logger } from "../utils";
+import { getBrowserData } from "../utils/support/getBrowserData";
 
 export interface DevconToken {
 	ticketBlob: string;
@@ -12,12 +13,51 @@ export interface DevconToken {
 	email?: string;
 	magicLink?: string;
 	attestationOrigin: string;
+	attestationInTab?: boolean;
 }
 
 interface PostMessageData {
 	force?: boolean;
 	email?: string;
 	magicLink?: string;
+}
+
+function preparePopupCenter(w, h) {
+	let win = window;
+	if (window.parent != window) {
+		win = window.parent;
+	} 
+	
+	let w = Math.min(w, 800);
+
+	// Fixes dual-screen position                             Most browsers      Firefox
+	const dualScreenLeft = win.screenLeft !==  undefined ? win.screenLeft : win.screenX;
+	const dualScreenTop = win.screenTop !==  undefined   ? win.screenTop  : win.screenY;
+
+	let width = win.innerWidth ? win.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width;
+	let height = win.innerHeight ? win.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height;
+
+	const systemZoom = width / win.screen.availWidth;
+	// const left = (width - w) / 2 / systemZoom + dualScreenLeft
+	const left = (width - w) / 2 + dualScreenLeft
+	// const top = (height - h) / 2 / systemZoom + dualScreenTop
+	const top = (height - h) / 2  + dualScreenTop
+
+	return `
+		toolbar=no, 
+		location=no, 
+		directories=no, 
+		status=no, 
+		menubar=no, 
+		scrollbars=yes, 
+		resizable=yes, 
+		copyhistory=yes, 
+		width=${w }, 
+		height=${h },
+		top=${top}, 
+		left=${left}
+	`;
+	
 }
 
 export class AuthHandler {
@@ -29,6 +69,11 @@ export class AuthHandler {
 	private email: string | undefined;
 	private signedTokenSecret: bigint | undefined;
 	private attestationOrigin: string | undefined;
+
+	private attestationInTab: boolean;
+	private attestationTabHandler: any;
+	private buttonOverlay: HTMLElement | null = null;
+	private tryingToGetAttestationInBackground: boolean = false;
 
 	private iframe: HTMLIFrameElement | null = null;
 	private iframeWrap: HTMLElement | null = null;
@@ -56,15 +101,100 @@ export class AuthHandler {
 		this.magicLink = tokenObj.magicLink;
 		this.email = tokenObj.email;
 		this.signedTokenSecret = tokenObj.ticketSecret;
+
 		this.attestationOrigin = tokenObj.attestationOrigin;
+		this.attestationInTab = tokenObj.attestationInTab;
 
 		this.address = address;
 		this.wallet = wallet;
 	}
 
+	private openAttestationApp(){
+		if (this.attestationInTab && !this.tryingToGetAttestationInBackground) {
+			// TODO check if its an iframe, if TAB then no need to request to display 
+			logger(2, "display new TAB to attest, ask parent to show current iframe");
+			
+			this.outlet.sendMessageResponse({
+				evtid: this.evtid,
+				evt: ResponseActionBase.SHOW_FRAME,
+			});
+
+			let button; 
+			if (getBrowserData().metaMaskAndroid) {
+				button = document.createElement("a");
+				button.setAttribute("href", this.attestationOrigin);
+				button.setAttribute("target", "_blank");
+			} else {
+				button = document.createElement("div");
+			}
+			button.setAttribute(
+				"style",
+				`
+					background: #000c;
+					color: #fff;
+					padding: 10px;
+					border: 1px solid #fff2;
+					border-radius: 4px;
+					cursor: pointer;
+					transition: box-shadow 0.3s;
+					box-shadow: 0 0px 10px #fffc;
+				`
+			);
+			button.innerHTML = "Click to get Email Attestation";
+
+			button.addEventListener("click", ()=>{
+				// this.attestationTabHandler = window.open(this.attestationOrigin, '_blank');
+				
+				let winParams = preparePopupCenter(800, 700);
+				// this.attestationTabHandler = window.open(this.attestationOrigin,"Attestation",winParams); 
+				if (!getBrowserData().metaMaskAndroid) {
+					this.attestationTabHandler = window.open(this.attestationOrigin, "Attestation");            
+				}           
+
+				button.remove();
+				this.buttonOverlay.remove();
+			})
+			const styles = document.createElement("style");
+			styles.innerHTML = `
+				#button_overlay div:hover {
+					box-shadow: 0 0px 14px #ffff !important;
+				}
+			`;
+
+			this.buttonOverlay = document.createElement("div");
+			this.buttonOverlay.id = "button_overlay"
+			this.buttonOverlay.setAttribute(
+				"style",
+				`
+					width:100%;
+					height: 100vh; 
+					position: fixed; 
+					align-items: center; 
+					justify-content: center;
+					display: flex;
+					top: 0; 
+					left: 0; 
+					background: #000c
+				`
+			);
+			this.buttonOverlay.appendChild(button);
+			this.buttonOverlay.appendChild(styles);
+			document.body.appendChild(this.buttonOverlay);
+		
+		} else {
+			logger(2, "open attestation in iframe");
+			this.createIframe();
+		}
+	}
+
 	// TODO: combine functionality with messaging to enable tab support? Changes required in attestation.id code
 	public authenticate() {
 		return new Promise((resolve, reject) => {
+
+			// dont do it for brawe, brawe doesnt support access to indexDB through iframe
+			if (this.attestationInTab && !getBrowserData().brave){
+				this.tryingToGetAttestationInBackground = true;
+			}
 
 			if (!this.attestationOrigin) return reject(new Error("Attestation origin is null"));
 
@@ -77,13 +207,13 @@ export class AuthHandler {
 					return;
 				}
 
-				if (!this.iframe || !this.iframeWrap || !this.iframe.contentWindow)
-					return;
+				if ((this.iframe && this.iframeWrap && this.iframe.contentWindow) || this.attestationTabHandler){
+					this.postMessageAttestationListener(e, resolve, reject);
+				}
 
-				this.postMessageAttestationListener(e, resolve, reject);
 			});
 
-			this.createIframe();
+			this.openAttestationApp();
 		});
 	}
 
@@ -115,35 +245,47 @@ export class AuthHandler {
 		reject: Function
 	) {
 		logger(2,'postMessageAttestationListener event (auth-handler)', event.data);
+
+		let attestationHandler = this.attestationTabHandler ? this.attestationTabHandler : this.iframe.contentWindow;
     
 		if (typeof event.data.ready !== "undefined" && event.data.ready === true) {
 			let sendData: PostMessageData = { force: false };
-			// We will not use magicLink attestation anymore
-			// because of lower security level
-			//
-			// if (this.magicLink){
-			//     sendData.magicLink = this.magicLink;
 
-			//     if (sendData.magicLink.indexOf("#") > -1)
-			//         sendData.magicLink = sendData.magicLink.replace("#", "?");
-			// }
 			if (this.email) sendData.email = this.email;
 			if (this.wallet) sendData.wallet = this.wallet;
 			if (this.address) sendData.address = this.address;
 
-			this.iframe.contentWindow.postMessage(sendData, this.attestationOrigin);
+			attestationHandler.postMessage(sendData, this.attestationOrigin);
 			return;
 		}
 
 		if (typeof event.data.display !== "undefined") {
-			if (event.data.display === true) {
-				this.iframeWrap.style.display = "flex";
-				// this.negotiator && this.negotiator.commandDisplayIframe();
+			// force display/hide iframe/tab
 
-				this.outlet.sendMessageResponse({
-					evtid: this.evtid,
-					evt: ResponseActionBase.SHOW_FRAME,
-				});
+			if (event.data.display === true) {
+				
+				// display works for iframe only
+				if (this.iframeWrap) {
+					
+					if (this.tryingToGetAttestationInBackground){
+
+						// doesnt have ready attestation, 
+						// lets open attestation in the new tab
+						this.tryingToGetAttestationInBackground = false;
+						this.iframe.remove();
+						this.iframeWrap.remove();
+						this.openAttestationApp();
+						return;
+					} 
+					
+					this.iframeWrap.style.display = "flex";
+				
+					// ask parent to show this iframe
+					this.outlet.sendMessageResponse({
+						evtid: this.evtid,
+						evt: ResponseActionBase.SHOW_FRAME,
+					});
+				}
 			} else {
 
 				if (event.data.error){
@@ -151,8 +293,10 @@ export class AuthHandler {
 					reject(new Error(event.data.error));
 				}
 
-				this.iframeWrap.style.display = "none";
-				// this.negotiator && this.negotiator.commandHideIframe();
+				// display works for iframe only
+				if (this.iframeWrap) {
+					this.iframeWrap.style.display = "none";
+				} 
 			}
 		}
 
@@ -160,7 +304,15 @@ export class AuthHandler {
 			return;
 		}
 
-		this.iframeWrap.remove();
+		if (this.attestationTabHandler) {
+			this.attestationTabHandler.close();
+		}  
+		
+		if (this.iframeWrap){
+			this.iframeWrap.remove();
+		}
+
+		
 
 		this.attestationBlob = event.data?.attestation;
 		this.attestationSecret = event.data?.requestSecret;

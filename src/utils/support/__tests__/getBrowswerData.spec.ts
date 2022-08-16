@@ -33,6 +33,7 @@ describe('browser simulations', () => {
 			goWallet: false,
 			status: false,
 			imToken: false,
+			brave: false,
 			metaMaskAndroid: false,
 			alphaWalletAndroid: false,
 			mewAndroid: false,

@@ -1,4 +1,5 @@
 
+import { logger } from '..';
 import { getBrowserData } from './getBrowserData';
 
 export interface BrowserDataInterface {
@@ -22,6 +23,7 @@ export interface BrowserDataInterface {
 	goWallet?: boolean
 	status?: boolean
 	imToken?: boolean
+	brave?: boolean
 
 	metaMaskAndroid?: boolean
 	alphaWalletAndroid?: boolean
@@ -32,6 +34,8 @@ export interface BrowserDataInterface {
 export const isUserAgentSupported = (unSupportedUserAgents?: BrowserDataInterface): boolean => {
 	if (!unSupportedUserAgents) return true;
 	const browserData = getBrowserData();
+	logger(2, "unSupportedUserAgents: ", unSupportedUserAgents)
+	logger(2, "browserData: ", browserData)
 	const unsupported = Object.keys(unSupportedUserAgents);
-	return !(unsupported.some(browser => browserData[browser]));
+	return !(unsupported.some(browser => unSupportedUserAgents[browser] && browserData[browser]));
 }
