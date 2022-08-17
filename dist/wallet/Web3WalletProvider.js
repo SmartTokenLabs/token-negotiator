@@ -78,8 +78,9 @@ var Web3WalletProvider = (function () {
     Web3WalletProvider.prototype.getConnectedWalletData = function () {
         return this.state.addresses;
     };
-    Web3WalletProvider.prototype.registerNewWalletAddress = function (address, chainId, provider) {
-        this.state.addresses.push({ address: address, chainId: chainId, provider: provider });
+    Web3WalletProvider.prototype.registerNewWalletAddress = function (address, chainId, provider, blockChain) {
+        if (blockChain === void 0) { blockChain = 'evm'; }
+        this.state.addresses.push({ address: address, chainId: chainId, provider: provider, blockChain: blockChain });
         return this.state.addresses;
     };
     Web3WalletProvider.prototype.MetaMask = function () {
@@ -156,6 +157,24 @@ var Web3WalletProvider = (function () {
                             throw new Error("No accounts found via wallet-connect.");
                         }
                         return [2, this.registerNewWalletAddress(accounts[0], '1', torus.provider)];
+                }
+            });
+        });
+    };
+    Web3WalletProvider.prototype.Phantom = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var connection, accountAddress;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        logger(2, 'connect Phantom');
+                        if (!(typeof window.solana !== 'undefined')) return [3, 2];
+                        return [4, window.solana.connect()];
+                    case 1:
+                        connection = _a.sent();
+                        accountAddress = connection.publicKey.toBase58();
+                        return [2, this.registerNewWalletAddress(accountAddress, "mainnet-beta", window.solana, 'solana')];
+                    case 2: throw new Error("MetaMask is not available. Please check the extension is supported and active.");
                 }
             });
         });

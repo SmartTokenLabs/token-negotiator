@@ -37,8 +37,26 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 import { ResponseActionBase } from "../core/messaging";
 import { Authenticator } from "@tokenscript/attestation";
 import { logger } from "../utils";
+import { getBrowserData } from "../utils/support/getBrowserData";
+function preparePopupCenter(w, h) {
+    var win = window;
+    if (window.parent != window) {
+        win = window.parent;
+    }
+    var w = Math.min(w, 800);
+    var dualScreenLeft = win.screenLeft !== undefined ? win.screenLeft : win.screenX;
+    var dualScreenTop = win.screenTop !== undefined ? win.screenTop : win.screenY;
+    var width = win.innerWidth ? win.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width;
+    var height = win.innerHeight ? win.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height;
+    var systemZoom = width / win.screen.availWidth;
+    var left = (width - w) / 2 + dualScreenLeft;
+    var top = (height - h) / 2 + dualScreenTop;
+    return "\n\t\ttoolbar=no, \n\t\tlocation=no, \n\t\tdirectories=no, \n\t\tstatus=no, \n\t\tmenubar=no, \n\t\tscrollbars=yes, \n\t\tresizable=yes, \n\t\tcopyhistory=yes, \n\t\twidth=".concat(w, ", \n\t\theight=").concat(h, ",\n\t\ttop=").concat(top, ", \n\t\tleft=").concat(left, "\n\t");
+}
 var AuthHandler = (function () {
     function AuthHandler(outlet, evtid, tokenDef, tokenObj, address, wallet) {
+        this.buttonOverlay = null;
+        this.tryingToGetAttestationInBackground = false;
         this.iframe = null;
         this.iframeWrap = null;
         this.attestationBlob = null;
@@ -52,12 +70,57 @@ var AuthHandler = (function () {
         this.email = tokenObj.email;
         this.signedTokenSecret = tokenObj.ticketSecret;
         this.attestationOrigin = tokenObj.attestationOrigin;
+        this.attestationInTab = tokenObj.attestationInTab;
         this.address = address;
         this.wallet = wallet;
     }
+    AuthHandler.prototype.openAttestationApp = function () {
+        var _this = this;
+        if (this.attestationInTab && !this.tryingToGetAttestationInBackground) {
+            logger(2, "display new TAB to attest, ask parent to show current iframe");
+            this.outlet.sendMessageResponse({
+                evtid: this.evtid,
+                evt: ResponseActionBase.SHOW_FRAME,
+            });
+            var button_1;
+            if (getBrowserData().metaMaskAndroid) {
+                button_1 = document.createElement("a");
+                button_1.setAttribute("href", this.attestationOrigin);
+                button_1.setAttribute("target", "_blank");
+            }
+            else {
+                button_1 = document.createElement("div");
+            }
+            button_1.setAttribute("style", "\n\t\t\t\t\tbackground: #000c;\n\t\t\t\t\tcolor: #fff;\n\t\t\t\t\tpadding: 10px;\n\t\t\t\t\tborder: 1px solid #fff2;\n\t\t\t\t\tborder-radius: 4px;\n\t\t\t\t\tcursor: pointer;\n\t\t\t\t\ttransition: box-shadow 0.3s;\n\t\t\t\t\tbox-shadow: 0 0px 10px #fffc;\n\t\t\t\t");
+            button_1.innerHTML = "Click to get Email Attestation";
+            button_1.addEventListener("click", function () {
+                var winParams = preparePopupCenter(800, 700);
+                if (!getBrowserData().metaMaskAndroid) {
+                    _this.attestationTabHandler = window.open(_this.attestationOrigin, "Attestation");
+                }
+                button_1.remove();
+                _this.buttonOverlay.remove();
+            });
+            var styles = document.createElement("style");
+            styles.innerHTML = "\n\t\t\t\t#button_overlay div:hover {\n\t\t\t\t\tbox-shadow: 0 0px 14px #ffff !important;\n\t\t\t\t}\n\t\t\t";
+            this.buttonOverlay = document.createElement("div");
+            this.buttonOverlay.id = "button_overlay";
+            this.buttonOverlay.setAttribute("style", "\n\t\t\t\t\twidth:100%;\n\t\t\t\t\theight: 100vh; \n\t\t\t\t\tposition: fixed; \n\t\t\t\t\talign-items: center; \n\t\t\t\t\tjustify-content: center;\n\t\t\t\t\tdisplay: flex;\n\t\t\t\t\ttop: 0; \n\t\t\t\t\tleft: 0; \n\t\t\t\t\tbackground: #000c\n\t\t\t\t");
+            this.buttonOverlay.appendChild(button_1);
+            this.buttonOverlay.appendChild(styles);
+            document.body.appendChild(this.buttonOverlay);
+        }
+        else {
+            logger(2, "open attestation in iframe");
+            this.createIframe();
+        }
+    };
     AuthHandler.prototype.authenticate = function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
+            if (_this.attestationInTab && !getBrowserData().brave) {
+                _this.tryingToGetAttestationInBackground = true;
+            }
             if (!_this.attestationOrigin)
                 return reject(new Error("Attestation origin is null"));
             window.addEventListener("message", function (e) {
@@ -67,11 +130,11 @@ var AuthHandler = (function () {
                 if (e.origin !== attestURL.origin) {
                     return;
                 }
-                if (!_this.iframe || !_this.iframeWrap || !_this.iframe.contentWindow)
-                    return;
-                _this.postMessageAttestationListener(e, resolve, reject);
+                if ((_this.iframe && _this.iframeWrap && _this.iframe.contentWindow) || _this.attestationTabHandler) {
+                    _this.postMessageAttestationListener(e, resolve, reject);
+                }
             });
-            _this.createIframe();
+            _this.openAttestationApp();
         });
     };
     AuthHandler.prototype.createIframe = function () {
@@ -93,11 +156,12 @@ var AuthHandler = (function () {
     AuthHandler.prototype.postMessageAttestationListener = function (event, resolve, reject) {
         var _a, _b, _c, _d;
         return __awaiter(this, void 0, void 0, function () {
-            var sendData, useToken, e_1;
+            var attestationHandler, sendData, useToken, e_1;
             return __generator(this, function (_e) {
                 switch (_e.label) {
                     case 0:
                         logger(2, 'postMessageAttestationListener event (auth-handler)', event.data);
+                        attestationHandler = this.attestationTabHandler ? this.attestationTabHandler : this.iframe.contentWindow;
                         if (typeof event.data.ready !== "undefined" && event.data.ready === true) {
                             sendData = { force: false };
                             if (this.email)
@@ -106,29 +170,45 @@ var AuthHandler = (function () {
                                 sendData.wallet = this.wallet;
                             if (this.address)
                                 sendData.address = this.address;
-                            this.iframe.contentWindow.postMessage(sendData, this.attestationOrigin);
+                            attestationHandler.postMessage(sendData, this.attestationOrigin);
                             return [2];
                         }
                         if (typeof event.data.display !== "undefined") {
                             if (event.data.display === true) {
-                                this.iframeWrap.style.display = "flex";
-                                this.outlet.sendMessageResponse({
-                                    evtid: this.evtid,
-                                    evt: ResponseActionBase.SHOW_FRAME,
-                                });
+                                if (this.iframeWrap) {
+                                    if (this.tryingToGetAttestationInBackground) {
+                                        this.tryingToGetAttestationInBackground = false;
+                                        this.iframe.remove();
+                                        this.iframeWrap.remove();
+                                        this.openAttestationApp();
+                                        return [2];
+                                    }
+                                    this.iframeWrap.style.display = "flex";
+                                    this.outlet.sendMessageResponse({
+                                        evtid: this.evtid,
+                                        evt: ResponseActionBase.SHOW_FRAME,
+                                    });
+                                }
                             }
                             else {
                                 if (event.data.error) {
                                     logger(2, "Error received from the iframe: " + event.data.error);
                                     reject(new Error(event.data.error));
                                 }
-                                this.iframeWrap.style.display = "none";
+                                if (this.iframeWrap) {
+                                    this.iframeWrap.style.display = "none";
+                                }
                             }
                         }
                         if (!((_a = event.data) === null || _a === void 0 ? void 0 : _a.attestation) || !((_b = event.data) === null || _b === void 0 ? void 0 : _b.requestSecret)) {
                             return [2];
                         }
-                        this.iframeWrap.remove();
+                        if (this.attestationTabHandler) {
+                            this.attestationTabHandler.close();
+                        }
+                        if (this.iframeWrap) {
+                            this.iframeWrap.remove();
+                        }
                         this.attestationBlob = (_c = event.data) === null || _c === void 0 ? void 0 : _c.attestation;
                         this.attestationSecret = (_d = event.data) === null || _d === void 0 ? void 0 : _d.requestSecret;
                         _e.label = 1;

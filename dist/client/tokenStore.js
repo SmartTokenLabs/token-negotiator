@@ -58,6 +58,14 @@ var TokenStore = (function () {
         }
         return current;
     };
+    TokenStore.prototype.hasUnloadedIssuers = function () {
+        var issuers = this.getCurrentIssuers(true);
+        for (var i in issuers) {
+            if (!issuers[i].title)
+                return true;
+        }
+        return false;
+    };
     TokenStore.prototype.hasUnloadedTokens = function () {
         var e_1, _a;
         try {

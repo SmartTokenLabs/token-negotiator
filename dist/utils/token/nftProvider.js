@@ -35,26 +35,70 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 var baseURL = "https://api.token-discovery.tokenscript.org";
-export var getNftCollection = function (issuer) { return __awaiter(void 0, void 0, void 0, function () {
-    var contract, chain, openSeaSlug, query;
-    return __generator(this, function (_a) {
-        contract = issuer.contract, chain = issuer.chain, openSeaSlug = issuer.openSeaSlug;
-        query = "".concat(baseURL, "/get-token-collection?smartContract=").concat(contract, "&chain=").concat(chain);
-        if (openSeaSlug)
-            query += "&openSeaSlug=".concat(openSeaSlug);
+export var getNftCollection = function (issuer, ipfsBaseUrl) { return __awaiter(void 0, void 0, void 0, function () {
+    var blockchain, query;
+    var _a;
+    return __generator(this, function (_b) {
+        blockchain = (_a = issuer === null || issuer === void 0 ? void 0 : issuer.blockchain) !== null && _a !== void 0 ? _a : "ethereum";
+        if (blockchain === "solana") {
+            query = getSolanaNftCollectionUrl(issuer, ipfsBaseUrl);
+        }
+        else {
+            query = getEvmNftCollectionUrl(issuer, ipfsBaseUrl);
+        }
         return [2, tokenRequest(query, true)];
     });
 }); };
-export var getNftTokens = function (issuer, owner) { return __awaiter(void 0, void 0, void 0, function () {
-    var contract, chain, openSeaSlug, query;
-    return __generator(this, function (_a) {
-        contract = issuer.contract, chain = issuer.chain, openSeaSlug = issuer.openSeaSlug;
-        query = "".concat(baseURL, "/get-owner-tokens?smartContract=").concat(contract, "&chain=").concat(chain, "&owner=").concat(owner);
-        if (openSeaSlug)
-            query += "&openSeaSlug=".concat(openSeaSlug);
-        return [2, tokenRequest(query, false)];
-    });
-}); };
+var getEvmNftCollectionUrl = function (issuer, ipfsBaseUrl) {
+    var contract = issuer.contract, chain = issuer.chain, openSeaSlug = issuer.openSeaSlug;
+    var query = "".concat(baseURL, "/get-token-collection?smartContract=").concat(contract, "&chain=").concat(chain, "&blockchain=ethereum");
+    if (openSeaSlug)
+        query += "&openSeaSlug=".concat(openSeaSlug);
+    if (ipfsBaseUrl)
+        query += "&ipfsBaseUrl=".concat(ipfsBaseUrl);
+    return query;
+};
+var getSolanaNftCollectionUrl = function (issuer, ipfsBaseUrl) {
+    var collectionAddress = issuer.collectionAddress, chain = issuer.chain;
+    var query = "".concat(baseURL, "/get-token-collection?collectionAddress=").concat(collectionAddress, "&chain=").concat(chain, "&blockchain=solana");
+    if (ipfsBaseUrl)
+        query += "&ipfsBaseUrl=".concat(ipfsBaseUrl);
+    return query;
+};
+export var getNftTokens = function (issuer, owner, ipfsBaseUrl) {
+    var _a;
+    var blockchain = (_a = issuer === null || issuer === void 0 ? void 0 : issuer.blockchain) !== null && _a !== void 0 ? _a : "ethereum";
+    var query;
+    if (blockchain === "solana") {
+        query = getSolanaNftTokensUrl(issuer, owner, ipfsBaseUrl);
+    }
+    else {
+        query = getEvmNftTokensUrl(issuer, owner, ipfsBaseUrl);
+    }
+    return tokenRequest(query, true);
+};
+var getEvmNftTokensUrl = function (issuer, owner, ipfsBaseUrl) {
+    var _a;
+    var contract = issuer.contract, chain = issuer.chain, openSeaSlug = issuer.openSeaSlug;
+    var blockchain = (_a = issuer === null || issuer === void 0 ? void 0 : issuer.blockchain) !== null && _a !== void 0 ? _a : "ethereum";
+    var query = "".concat(baseURL, "/get-owner-tokens?smartContract=").concat(contract, "&chain=").concat(chain, "&owner=").concat(owner, "&blockchain=").concat(blockchain);
+    if (openSeaSlug)
+        query += "&openSeaSlug=".concat(openSeaSlug);
+    if (ipfsBaseUrl)
+        query += "&ipfsBaseUrl=".concat(ipfsBaseUrl);
+    return query;
+};
+var getSolanaNftTokensUrl = function (issuer, owner, ipfsBaseUrl) {
+    var _a;
+    var chain = issuer.chain, collectionSymbol = issuer.collectionSymbol;
+    var blockchain = (_a = issuer === null || issuer === void 0 ? void 0 : issuer.blockchain) !== null && _a !== void 0 ? _a : "ethereum";
+    var query = "".concat(baseURL, "/get-owner-tokens?chain=").concat(chain, "&owner=").concat(owner, "&blockchain=").concat(blockchain);
+    if (collectionSymbol)
+        query += "&collectionSymbol=".concat(collectionSymbol);
+    if (ipfsBaseUrl)
+        query += "&ipfsBaseUrl=".concat(ipfsBaseUrl);
+    return query;
+};
 export var tokenRequest = function (query, silenceRequestError) { return __awaiter(void 0, void 0, void 0, function () {
     var response, ok, msg_1;
     return __generator(this, function (_a) {
@@ -64,9 +108,9 @@ export var tokenRequest = function (query, silenceRequestError) { return __await
                 return [4, fetch(query)];
             case 1:
                 response = _a.sent();
-                ok = (response.status >= 200 && response.status <= 299) ? true : false;
+                ok = response.status >= 200 && response.status <= 299 ? true : false;
                 if (!ok && silenceRequestError === true) {
-                    console.warn('token api request failed: ', query);
+                    console.warn("token api request failed: ", query);
                     return [2];
                 }
                 if (ok)

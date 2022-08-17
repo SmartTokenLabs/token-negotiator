@@ -18,6 +18,7 @@ export declare const getBrowserData: () => {
     goWallet: any;
     status: any;
     imToken: boolean;
+    brave: boolean;
     metaMaskAndroid: any;
     alphaWalletAndroid: any;
     mewAndroid: any;

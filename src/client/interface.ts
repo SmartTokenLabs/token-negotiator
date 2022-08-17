@@ -16,6 +16,7 @@ export interface OnChainTokenConfig extends IssuerConfigInterface {
     contract: string;
     chain: string;
     openSeaSlug?: string;
+    blockchain?: string;
 }
 
 export interface IssuerConfigInterface {
@@ -24,6 +25,7 @@ export interface IssuerConfigInterface {
     title?: string;
     image?: string;
     filters?: {};
+    blockchain?: string;
 }
 
 export interface NegotiationInterface {
@@ -57,4 +59,6 @@ export interface AuthenticateInterface {
     wallet?: string;
     type?: AuthenticationMethod;
     options?: any;
+    blockchain?: string;
 }
+

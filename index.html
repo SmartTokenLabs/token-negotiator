@@ -1,23 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
 
-    <script type="text/javascript" src="./token-negotiator-dist/negotiator.js"></script>
+    <script
+      type="text/javascript"
+      src="./token-negotiator-dist/negotiator.js"
+    ></script>
     <link rel="stylesheet" href="./token-negotiator-dist/theme/style.css" />
-    
-</head>
-<body onload="init()">
-
+  </head>
+  <body onload="init()">
     <div class="overlay-tn"></div>
-    
     <script>
-
-        function init() {
-
+      function init() {
             window.negotiator = new negotiator.Client({
                 type: 'active',
                 issuers: [
@@ -35,7 +33,29 @@
                     //     },
                     // base64attestorPubKey: "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ="
                     // },
-                    { onChain: true, collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
+                    {
+                    collectionID: "penthouse-panther-club",
+                    collectionAddress: "ff846ef2eed57e5367cf8826e63f4d53fe28d28aa67417accb6e4b48cbd19136",
+                    onChain: true,
+                    collectionSymbol: "PPC",
+                    chain: "mainnet",
+                    blockchain: "solana",
+                  },
+                  {
+                    collectionID: "pixel",
+                    collectionAddress: "166424b16c4c7f40eb852f9eb2d0d6869a9ed7ac54a8e6afbd516676bfbbeb19",
+                    onChain: true,
+                    collectionSymbol: "PIXEL",
+                    chain: "mainnet",
+                    blockchain: "solana",
+                  },
+                  {
+                    onChain: true, 
+                    collectionID: "expansion-punks", 
+                    contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', 
+                    chain: 'eth',
+                    blockchain: "ethereum",
+                  },
                 ],
                 uiOptions: {
                     openingHeading: "Open a new world of discounts available with your tokens.",
@@ -68,15 +88,12 @@
                 console.log(tokens);
             });
 
-            window.negotiator.on("token-proof", (proof) => {
-                console.log(proof);
-            });
+        window.negotiator.on("token-proof", (proof) => {
+          console.log(proof);
+        });
 
-            window.negotiator.negotiate();
-
-        }
-
+        window.negotiator.negotiate();
+      }
     </script>
-
-</body>
+  </body>
 </html>

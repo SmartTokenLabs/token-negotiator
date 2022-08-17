@@ -8,7 +8,7 @@ export interface UIOptionsInterface {
     issuerHeading?: string;
     repeatAction?: string;
     theme?: string;
-    position?: string;
+    position?: 'bottom-right' | 'bottom-left' | 'top-left' | 'top-right';
     autoPopup?: boolean;
 }
 export declare class Ui {
@@ -29,8 +29,12 @@ export declare class Ui {
     openOverlay(): void;
     togglePopup(): void;
     updateUI(ViewClass: ViewConstructor<AbstractView>, data?: any): void;
+    viewIsNotStart(): boolean;
     showError(error: string | Error, canDismiss?: boolean): void;
     setErrorRetryCallback(retryCallback?: Function): void;
+    loadTimer?: any;
+    showLoaderDelayed(messages: string[], delay: number, openOverlay?: boolean): void;
+    cancelDelayedLoader(): void;
     showLoader(...message: string[]): void;
     dismissLoader(): void;
     private addTheme;

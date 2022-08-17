@@ -15,13 +15,14 @@ import {SelectWallet} from "./views/select-wallet";
 import {SelectIssuers} from "./views/select-issuers";
 
 // @ts-ignore
-if(typeof window !== "undefined") window.tn = { version: "2.0.0" };
+if(typeof window !== "undefined") window.tn = { version: "2.1.0" };
 
 declare global {
 	interface Window {
 		KeyshapeJS?: any;
 		tokenToggleSelection: any;
 		ethereum: any;
+		solana;
 	}
 }
 

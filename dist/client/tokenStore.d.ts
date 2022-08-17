@@ -16,6 +16,7 @@ export declare class TokenStore {
     getCurrentTokens(onChainFilter?: boolean): {
         [issuer: string]: [];
     };
+    hasUnloadedIssuers(): boolean;
     hasUnloadedTokens(): boolean;
     getIssuerTokens(issuer: string): [];
     setTokens(issuer: string, tokens: []): void;
