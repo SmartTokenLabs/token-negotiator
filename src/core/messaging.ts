@@ -167,14 +167,14 @@ export class Messaging {
 							modal.style.display = "block";
 
 							if (response.max_width) {
-								let modalContent = modal.querySelector(".modal-content-tn");
+								let modalContent:HTMLElement = modal.querySelector(".modal-content-tn");
 								if (modalContent){
 									modalContent.style.maxWidth = response.max_width;
 								}
 							}
 
 							if (response.min_height) {
-								let iframe = modal.querySelector("iframe");
+								let iframe:HTMLElement = modal.querySelector("iframe");
 								if (iframe){
 									iframe.style.minHeight = response.min_height;
 								}
