@@ -34,7 +34,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var baseURL = "http://localhost:3000";
+var baseURL = "https://api.token-discovery.tokenscript.org";
 export var getNftCollection = function (issuer, ipfsBaseUrl) { return __awaiter(void 0, void 0, void 0, function () {
     var blockchain, query;
     var _a;

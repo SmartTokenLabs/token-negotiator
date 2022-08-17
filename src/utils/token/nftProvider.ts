@@ -1,8 +1,7 @@
 // @ts-nocheck
 import { OnChainTokenConfig } from "../../client/interface";
 
-const baseURL = "http://localhost:3000";
-// const baseURL = "https://api.token-discovery.tokenscript.org";
+const baseURL = "https://api.token-discovery.tokenscript.org";
 
 export const getNftCollection = async (
   issuer: OnChainTokenConfig,
