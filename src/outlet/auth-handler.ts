@@ -84,6 +84,10 @@ export class AuthHandler {
 	private base64attestorPubKey: string | undefined;
 	private base64senderPublicKeys: { [key: string]: string };
 
+	private wrapperBase = "tn_attestation_open";
+	private interval = null;
+	private rejectHandler:Function;
+
 	constructor(
 		outlet: Outlet,
 		evtid: any,
@@ -109,60 +113,92 @@ export class AuthHandler {
 		this.wallet = wallet;
 	}
 
-	private openAttestationApp(){
+	openAttestationApp(){
+
 		if (this.attestationInTab && !this.tryingToGetAttestationInBackground) {
+
 			// TODO check if its an iframe, if TAB then no need to request to display 
 			logger(2, "display new TAB to attest, ask parent to show current iframe");
 			
 			this.outlet.sendMessageResponse({
 				evtid: this.evtid,
 				evt: ResponseActionBase.SHOW_FRAME,
+				max_width: "500px",
+				min_height: "300px"
 			});
 
 			let button; 
-			if (getBrowserData().metaMaskAndroid) {
-				button = document.createElement("a");
-				button.setAttribute("href", this.attestationOrigin);
-				button.setAttribute("target", "_blank");
-			} else {
-				button = document.createElement("div");
-			}
+			
+			button = document.createElement("div");
 			button.setAttribute(
 				"style",
 				`
-					background: #000c;
+					margin: 20px auto 0;
+					padding: 5px 15px;
+					background: #0219fa;
+					font-weight: 700;
+					font-size: 20px;
+					line-height: 50px;
+					border-radius: 100px;
 					color: #fff;
-					padding: 10px;
-					border: 1px solid #fff2;
-					border-radius: 4px;
 					cursor: pointer;
-					transition: box-shadow 0.3s;
-					box-shadow: 0 0px 10px #fffc;
+					display: block;
+					text-align: center;
 				`
 			);
 			button.innerHTML = "Click to get Email Attestation";
 
 			button.addEventListener("click", ()=>{
-				// this.attestationTabHandler = window.open(this.attestationOrigin, '_blank');
 				
-				let winParams = preparePopupCenter(800, 700);
+				// let winParams = preparePopupCenter(800, 700);
 				// this.attestationTabHandler = window.open(this.attestationOrigin,"Attestation",winParams); 
-				if (!getBrowserData().metaMaskAndroid) {
-					this.attestationTabHandler = window.open(this.attestationOrigin, "Attestation");            
-				}           
+				
+				this.attestationTabHandler = window.open(this.attestationOrigin, "Attestation");                  
 
 				button.remove();
-				this.buttonOverlay.remove();
+
+				let title = this.buttonOverlay.querySelector("." + this.wrapperBase + "_title");
+				let subtitle = this.buttonOverlay.querySelector("." + this.wrapperBase + "_subtitle");
+				if (title) {
+					title.innerHTML = "Email Attestation verification in progress";
+				}
+				if (subtitle) {
+					subtitle.innerHTML = "Please complete the verification process to continue";
+				}
+
+				this.interval = setInterval(()=>{
+					if (this.attestationTabHandler.closed){
+						console.log("child tab closed... ");
+						clearInterval(this.interval);
+						this.rejectHandler(new Error("User closed TAB"));
+					}
+					
+				}, 2000);
+
+				// this.buttonOverlay.remove();
 			})
+			
+			let wrapperID = this.wrapperBase + "_wrap_" + Date.now();
 			const styles = document.createElement("style");
 			styles.innerHTML = `
-				#button_overlay div:hover {
+				#${wrapperID} div:hover {
 					box-shadow: 0 0px 14px #ffff !important;
+				}
+				#${wrapperID} .${this.wrapperBase}_content {
+					color: #fff; 
+					text-align: center;
+				}
+				#${wrapperID} .${this.wrapperBase}_title {
+					
+				}
+				#${wrapperID} .${this.wrapperBase}_subtitle {
+					font-size:18px;
+					color: #ccc;
 				}
 			`;
 
 			this.buttonOverlay = document.createElement("div");
-			this.buttonOverlay.id = "button_overlay"
+			this.buttonOverlay.id = wrapperID;
 			this.buttonOverlay.setAttribute(
 				"style",
 				`
@@ -174,12 +210,17 @@ export class AuthHandler {
 					display: flex;
 					top: 0; 
 					left: 0; 
-					background: #000c
+					background: #000f;
+					display: flex;
+					flex-direction: column;
+					padding: 30px;
 				`
 			);
+			this.buttonOverlay.innerHTML = `<h1 class="${this.wrapperBase}_content ${this.wrapperBase}_title">Needs email attestation to complete verification.</h1><p class="${this.wrapperBase}_content ${this.wrapperBase}_subtitle"></p>`;
 			this.buttonOverlay.appendChild(button);
 			this.buttonOverlay.appendChild(styles);
 			document.body.appendChild(this.buttonOverlay);
+			// button.click();
 		
 		} else {
 			logger(2, "open attestation in iframe");
@@ -190,6 +231,7 @@ export class AuthHandler {
 	// TODO: combine functionality with messaging to enable tab support? Changes required in attestation.id code
 	public authenticate() {
 		return new Promise((resolve, reject) => {
+			this.rejectHandler = reject;
 
 			// dont do it for brawe, brawe doesnt support access to indexDB through iframe
 			if (this.attestationInTab && !getBrowserData().brave){
@@ -213,11 +255,12 @@ export class AuthHandler {
 
 			});
 
-			this.openAttestationApp();
+			this.openAttestationApp(reject);
 		});
 	}
 
 	private createIframe() {
+
 		const iframe = document.createElement("iframe");
 		iframe.setAttribute("allow", "clipboard-read");
 		this.iframe = iframe;
@@ -245,7 +288,7 @@ export class AuthHandler {
 		reject: Function
 	) {
 		logger(2,'postMessageAttestationListener event (auth-handler)', event.data);
-
+	
 		let attestationHandler = this.attestationTabHandler ? this.attestationTabHandler : this.iframe.contentWindow;
     
 		if (typeof event.data.ready !== "undefined" && event.data.ready === true) {
@@ -284,6 +327,8 @@ export class AuthHandler {
 					this.outlet.sendMessageResponse({
 						evtid: this.evtid,
 						evt: ResponseActionBase.SHOW_FRAME,
+						// max_width: "700px",
+						// min_height: "600px"
 					});
 				}
 			} else {
@@ -305,6 +350,7 @@ export class AuthHandler {
 		}
 
 		if (this.attestationTabHandler) {
+			// console.log("tab close disabled for now");
 			this.attestationTabHandler.close();
 		}  
 		
