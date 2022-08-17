@@ -20,15 +20,15 @@
                 type: 'active',
                 issuers: [
                     // {
-                    // collectionID: 'devcon', 
+                    // collectionID: 'devcon',
                     // title: "Devcon",
                     // onChain: false,
                     // tokenOrigin: "http://localhost:3002/",
                     // attestationOrigin: "https://attestation.id/",
                     // unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
                     // image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
-                    // base64senderPublicKeys: 
-                    //     { 
+                    // base64senderPublicKeys:
+                    //     {
                     //         "AttestationDAO" : 'MFYwEAYHKoZIzj0CAQYFK...'
                     //     },
                     // base64attestorPubKey: "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ="
@@ -62,20 +62,26 @@
                     issuerHeading: "Get discount with Ticket",
                     repeatAction: "try again",
                     theme: "light",
-                    position: "bottom-right"
+                    position: "top-right"
                 },
                 unSupportedUserAgent: {
                     authentication: {
                         config: {
-                            // options to test against : ["iE", "iE9", "edge", "chrome", "phantomJS", "fireFox", "safari", "android", "iOS", "mac", "windows", "webView", "touchDevice", "metaMask", "alphaWallet", "mew", "trust", "goWallet", "status", "imToken", "metaMaskAndroid", "alphaWalletAndroid", "mewAndroid", "imTokenAndroid"];
-                            // metaMaskAndroid: true,
-                            // alphaWalletAndroid: true,
-                            // mewAndroid: true,
-                            // imTokenAndroid: true,
+                            metaMaskAndroid: true,
+                            alphaWalletAndroid: true,
+                            mewAndroid: true,
+                            imTokenAndroid: true,
                         },
-                        warningMessage: "No Support for Authentication with this user agent. Try Chrome, Safari or Edge instead."
+                        errorMessage: "No Support for Authentication with this user agent. Try Chrome, Safari or Edge instead."
+                    },
+                    full: {
+                        config: {
+                            iE: true,
+                            iE9: true,
+                        },
+                        errorMessage: "This browser is not supported. Please try using Chrome, Edge, FireFox or Safari."
                     }
-                }
+                },
             });
 
             window.negotiator.on("tokens-selected", (tokens) => {

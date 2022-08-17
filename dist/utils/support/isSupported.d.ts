@@ -19,6 +19,7 @@ export interface BrowserDataInterface {
     goWallet?: boolean;
     status?: boolean;
     imToken?: boolean;
+    brave?: boolean;
     metaMaskAndroid?: boolean;
     alphaWalletAndroid?: boolean;
     mewAndroid?: boolean;

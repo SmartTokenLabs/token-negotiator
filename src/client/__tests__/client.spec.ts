@@ -20,6 +20,17 @@ function getOffChainConfigClient() {
 	});
 }
 
+function getOnChainConfigClient() {
+	return new Client({
+		type: "active",
+		issuers: [
+			{ onChain:true, collectionID: "bayc", contract: '0x26472AA24D795AbcB687bddb44d733ef55Ebdf09', chain: 'rinkeby' },
+			{ onChain:true, collectionID: "mayc", contract: '0x2F6F12b68165aBb483484927919D0d3fE450462E', chain: 'rinkeby' }
+		],
+		options: {}
+	});
+}
+
 describe('client spec', () => {
 
 	test('tokenNegotiatorClient a failed new instance of client - missing issuers key', () => {
@@ -92,11 +103,120 @@ describe('client spec', () => {
 		expect(store.getSelectedTokens()).toEqual({});
 	});
 
+	test('tokenNegotiatorClient method safeConnectAvailable', () => {
+		const tokenNegotiatorClient = getOffChainConfigClient();
+		expect(tokenNegotiatorClient.safeConnectAvailable()).toBe(false);
+	});
+
+	test('tokenNegotiatorClient method getWalletProvider', async () => {
+		const tokenNegotiatorClient = getOffChainConfigClient();
+		const {Web3WalletProvider} = await import("../../wallet/Web3WalletProvider");
+		expect(await tokenNegotiatorClient.getWalletProvider()).toStrictEqual(new Web3WalletProvider(tokenNegotiatorClient, tokenNegotiatorClient.config.safeConnectOptions));
+	});
+
+	test('tokenNegotiatorClient method negotiatorConnectToWallet', async () => {
+		const tokenNegotiatorClient = getOffChainConfigClient();
+		let metamask_err;
+		await (await tokenNegotiatorClient.getWalletProvider()).MetaMask().catch(err => {
+			metamask_err = err;
+		})
+		return await tokenNegotiatorClient.negotiatorConnectToWallet('MetaMask').catch(err => {
+			expect(err).toEqual(metamask_err);
+		});
+	});
+
+	test('tokenNegotiatorClient method enrichTokenLookupDataOnChainTokens', async () => {
+		const tokenNegotiatorClient = getOnChainConfigClient();
+		try {
+			await tokenNegotiatorClient.enrichTokenLookupDataOnChainTokens();
+		} catch(err) {
+			expect(err).toEqual(new Error('HTTP error.'));
+		}
+		expect(tokenNegotiatorClient.getTokenStore().getCurrentIssuers(true)).toBeDefined();
+	});
+
+	test('tokenNegotiatorClient method negotiate', async () => {
+		let offChainIssuer = [
+			{
+				collectionID: 'devcon', 
+				title: "Devcon",
+				onChain: false,
+				tokenOrigin: "http://localhost:3002/",
+				attestationOrigin: "https://stage.attestation.id/",
+				unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
+				image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
+				base64senderPublicKey: "",
+				base64attestorPubKey: ""
+			}
+		]
+		const tokenNegotiatorActiveClient = new Client({
+			type: "active",
+			issuers: [
+				{ onChain: true, collectionID: "bayc", contract: '0x26472AA24D795AbcB687bddb44d733ef55Ebdf09', chain: 'rinkeby' },
+			],
+			options: {}
+		});
+		const tokenNegotiatorPassiveClient = new Client({
+			type: "passive",
+			issuers: [
+				{ onChain: true, collectionID: "bayc", contract: '0x26472AA24D795AbcB687bddb44d733ef55Ebdf09', chain: 'rinkeby' },
+			],
+			options: {}
+		});
+		
+		tokenNegotiatorActiveClient.negotiate(offChainIssuer);
+		expect(tokenNegotiatorActiveClient.getTokenStore().getCurrentIssuers()).toEqual({
+			"devcon": {
+				collectionID: 'devcon',
+				title: "Devcon",
+				onChain: false,
+				tokenOrigin: "http://localhost:3002/",
+				attestationOrigin: "https://stage.attestation.id/",
+				unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
+				image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
+				base64senderPublicKey: "",
+				base64attestorPubKey: ""
+			}
+		});
+		tokenNegotiatorPassiveClient.negotiate(offChainIssuer);
+		expect(tokenNegotiatorPassiveClient.getTokenStore().getCurrentIssuers()).toEqual({
+			"devcon": {
+				collectionID: 'devcon',
+				title: "Devcon",
+				onChain: false,
+				tokenOrigin: "http://localhost:3002/",
+				attestationOrigin: "https://stage.attestation.id/",
+				unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
+				image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
+				base64senderPublicKey: "",
+				base64attestorPubKey: ""
+			}
+		});
+	});
+
+	test('tokenNegotiatorClient method setPassiveNegotiationWebTokens', async () => {
+		const tokenNegotiatorClient = getOffChainConfigClient();		
+		await tokenNegotiatorClient.setPassiveNegotiationWebTokens();
+		expect(tokenNegotiatorClient.getTokenStore().getIssuerTokens()).toBeDefined();
+	});
+
+	test('tokenNegotiatorClient method setPassiveNegotiationOnChainTokens', async () => {
+		const tokenNegotiatorClient = getOnChainConfigClient();
+		await tokenNegotiatorClient.setPassiveNegotiationOnChainTokens();
+		expect(tokenNegotiatorClient.getTokenStore().getIssuerTokens()).toBeDefined();
+	});
+	
+	test('tokenNegotiatorClient method activeNegotiationStrategy', () => {
+		const tokenNegotiatorActiveClient = getOnChainConfigClient();
+		tokenNegotiatorActiveClient.activeNegotiationStrategy(true);
+		tokenNegotiatorActiveClient.activeNegotiationStrategy(false);
+	});
+
 	test('tokenNegotiatorClient with valid contract and chain', () => {
 		const tokenNegotiatorClient = new Client({
 			type: "active",
 			issuers: [
-				{ collectionID: "bayc", contract: '0x26472AA24D795AbcB687bddb44d733ef55Ebdf09', chain: 'rinkeby' }
+				{ collectionID: "bayc", contract: '0x26472AA24D795AbcB687bddb44d733ef55Ebdf09', chain: 'rinkeby' },
 			],
 			options: {}
 		});
@@ -181,23 +301,51 @@ describe('client spec', () => {
 		expect(tokenNegotiatorClient.getTokenStore().getCurrentIssuers()["bayc"].chain).toEqual("rinkeby");
 	});
 
+	test('tokenNegotiatorClient method authenticate', async () => {
+		const issuer = {
+			"collectionID": "devcon",
+			"onChain": false,
+			"title": "Devcon",
+			"image": "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
+			"tokenOrigin": "http://localhost:3002/",
+			"attestationOrigin": "https://attestation.id/",
+			"unEndPoint": "https://crypto-verify.herokuapp.com/use-devcon-ticket",
+			"base64senderPublicKeys": {
+				"6": "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABGMxHraqggr2keTXszIcchTjYjH5WXpDaBOYgXva82mKcGnKgGRORXSmcjWN2suUCMkLQj3UNlZCFWF10wIrrlw="
+			},
+			"base64attestorPubKey": "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ="
+		};
+		const tokenNegotiatorClient = getOffChainConfigClient();
+		tokenNegotiatorClient.getTokenStore().setTokens("devcon", [{'devcon': { "a": 'true' }}]);
+		
+		const authRequest = {
+			issuer: issuer,
+			unsignedToken: {'devcon': { "a": 'true' }},
+		};
+		try {
+			await tokenNegotiatorClient.authenticate(authRequest);
+		} catch (err) {
+			expect(err).toEqual(new Error("Provided issuer was not found."));
+		}
+	});
+
 	// TOOD Mock response from window
 	// test('tokenNegotiatorClient method addTokenViaMagicLink to succeed in collection of tokens', async () => {
-	//   window.open = jest.fn({
-	//     data: { 
-	//       evt: "issuer-tokens"
-	//     },
-	//     tokens: [
-	//       { 
-	//         class: "web3",  
-	//         colour: "gold",
-	//         vip: "true"
-	//       }
-	//     ]
-	//   });
-	//   const tokenNegotiatorClient = getOffChainConfigClient();
-	//   const output = await tokenNegotiatorClient.addTokenViaMagicLink("https://en.wikipedia.org/wiki/Gavin_Wood?ticket=test&secret=test&id=test");
-	//   expect(output).toEqual({});
+	// 	window.open = jest.fn({
+	// 		data: { 
+	// 			evt: "issuer-tokens"
+	// 		},
+	// 		tokens: [
+	// 			{ 
+	// 				class: "web3",  
+	// 				colour: "gold",
+	// 				vip: "true"
+	// 			}
+	// 		]
+	// 	});
+	// 	const tokenNegotiatorClient = getOffChainConfigClient();
+	// 	const output = await tokenNegotiatorClient.addTokenViaMagicLink("https://en.wikipedia.org/wiki/Gavin_Wood?ticket=test&secret=test&id=test");
+	// 	expect(output).toEqual({});
 	// });
   
 });

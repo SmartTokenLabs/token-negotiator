@@ -15,7 +15,7 @@ import {SelectWallet} from "./views/select-wallet";
 import {SelectIssuers} from "./views/select-issuers";
 
 // @ts-ignore
-if(typeof window !== "undefined") window.tn = { version: "2.0.0" };
+if(typeof window !== "undefined") window.tn = { version: "2.1.0" };
 
 declare global {
 	interface Window {
@@ -27,6 +27,7 @@ declare global {
 }
 
 const NOT_SUPPORTED_ERROR = "This browser is not supported. Please try using Chrome, Edge, FireFox or Safari.";
+const NO_INTERNET_ERROR_MESSAGE = "No internet connection. Please check your internet connection and try again";
 
 const defaultConfig: NegotiationInterface = {
 	type: "active",
@@ -36,7 +37,8 @@ const defaultConfig: NegotiationInterface = {
 		containerElement: ".overlay-tn",
 		openingHeading: "Validate your token ownership for access",
 		issuerHeading: "Detected tokens",
-		autoPopup: true
+		autoPopup: true,
+		position: "bottom-right"
 	},
 	autoLoadTokens: true,
 	autoEnableTokens: true,
@@ -44,10 +46,10 @@ const defaultConfig: NegotiationInterface = {
 	unSupportedUserAgent: {
 		authentication: {
 			config: {
-				metaMaskAndroid: true,
-				alphaWalletAndroid: true,
-				mewAndroid: true,
-				imTokenAndroid: true,
+				// metaMaskAndroid: true,
+				// alphaWalletAndroid: true,
+				// mewAndroid: true,
+				// imTokenAndroid: true,
 			},
 			errorMessage: NOT_SUPPORTED_ERROR
 		},
@@ -58,7 +60,7 @@ const defaultConfig: NegotiationInterface = {
 			},
 			errorMessage: NOT_SUPPORTED_ERROR
 		}
-	}
+	},
 }
 
 export const enum UIUpdateEventType {
@@ -94,9 +96,7 @@ export class Client {
 
 	constructor(config: NegotiationInterface) {
 
-		config.uiOptions = {...defaultConfig.uiOptions, ...config?.uiOptions}
-
-		this.config = Object.assign(defaultConfig, config);
+		this.config = this.mergeConfig(defaultConfig, config);
 
 		this.negotiateAlreadyFired = false;
 
@@ -106,6 +106,20 @@ export class Client {
 			this.tokenStore.updateIssuers(this.config.issuers);
 
 		this.messaging = new Messaging();
+	}
+
+	private mergeConfig(defaultConfig, config){
+
+		for (let key in config){
+
+			if (config[key] && config[key].constructor === Object){
+				defaultConfig[key] = this.mergeConfig(defaultConfig[key] ?? {}, config[key]);
+			} else {
+				defaultConfig[key] = config[key];
+			}
+		}
+
+		return defaultConfig;
 	}
 
 	getTokenStore() {
@@ -183,9 +197,9 @@ export class Client {
 		this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADED);
 	}
 
-	private checkUserAgentSupport(type: string){
+	public checkUserAgentSupport(type: string){
 
-		if (!isUserAgentSupported(this.config.unSupportedUserAgent[type].config)){
+		if (!isUserAgentSupported(this.config.unSupportedUserAgent?.[type]?.config)){
 
 			let err = this.config.unSupportedUserAgent[type].errorMessage;
 
@@ -193,11 +207,8 @@ export class Client {
 				this.ui = new Ui(this.config.uiOptions, this);
 				this.ui.initialize();
 				this.ui.openOverlay();
-
-				setTimeout(() => {
-					this.ui.showError(err, false);
-					this.ui.viewContainer.style.display = 'none';
-				}, 1000);
+				this.ui.showError(err, false);
+				this.ui.viewContainer.style.display = 'none';
 			}
 
 			throw new Error(err);
@@ -207,7 +218,16 @@ export class Client {
 
 	async negotiate(issuers?: OnChainTokenConfig | OffChainTokenConfig[], openPopup = false) {
 
-		this.checkUserAgentSupport("full");
+		try {
+			this.checkUserAgentSupport("full");
+		} catch(err){
+			logger(2,err);
+			err.name = "NOT_SUPPORTED_ERROR";
+			console.log("browser not supported");
+			this.eventSender.emitErrorToClient(err);
+			return;
+		}
+		
 
 		if (issuers) this.tokenStore.updateIssuers(issuers);
 
@@ -219,7 +239,6 @@ export class Client {
 
 			this.activeNegotiationStrategy(openPopup);
 
-			await this.enrichTokenLookupDataOnChainTokens();
 		} else {
 			// TODO build logic to allow to connect with wallectConnect, Torus etc.
 			// Logic to ask user to connect to wallet when they have provided web3 tokens to negotiate with.
@@ -229,6 +248,8 @@ export class Client {
 
 			await this.passiveNegotiationStrategy();
 		}
+
+		window.addEventListener('offline', () => this.checkInternetConnectivity());
 	}
 
 	activeNegotiationStrategy(openPopup: boolean) {
@@ -237,6 +258,10 @@ export class Client {
 
 		if (this.ui) {
 			autoOpenPopup = this.tokenStore.hasUnloadedTokens();
+
+			if (this.ui.viewIsNotStart() && this.tokenStore.hasUnloadedIssuers())
+				this.enrichTokenLookupDataOnChainTokens();
+
 		} else {
 			this.ui = new Ui(this.config.uiOptions, this);
 			this.ui.initialize();
@@ -343,8 +368,8 @@ export class Client {
 				);
 
 				this.tokenStore.setTokens(issuerKey, tokens);
-			} catch (e){
-				logger(2,err);
+			} catch (err) {
+				logger(2, err);
 				this.eventSender.emitErrorToClient(err, issuerKey);
 			}
 		}
@@ -426,7 +451,16 @@ export class Client {
 
 	async authenticate(authRequest: AuthenticateInterface) {
 
-		this.checkUserAgentSupport("authentication")
+		try {
+			this.checkUserAgentSupport("authentication")
+		} catch(err){
+			logger(2,err);
+			err.name = "NOT_SUPPORTED_ERROR";
+			console.log("browser not supported");
+			this.eventSender.emitErrorToClient(err);
+			return;
+		}
+
 
 		const { issuer, unsignedToken } = authRequest;
 		requiredParams(
@@ -440,16 +474,12 @@ export class Client {
 			throw new Error("Provided issuer was not found.");
 
 		// TODO: How to handle error display in passive negotiation? Use optional UI or emit errors to listener?
-		let timer;
 
 		if (this.ui) {
-			timer = setTimeout(() => {
-				this.ui.showLoader(
-					"<h4>Authenticating...</h4>",
-					"<small>You may need to sign a new challenge in your wallet</small>"
-				);
-				this.ui.openOverlay();
-			}, 600);
+			this.ui.showLoaderDelayed([
+				"<h4>Authenticating...</h4>",
+				"<small>You may need to sign a new challenge in your wallet</small>"
+			], 600, true);
 		}
 
 		let AuthType;
@@ -480,7 +510,6 @@ export class Client {
 			logger(2,err);
 
 			if (err.message === "WALLET_REQUIRED"){
-				if (timer) clearTimeout(timer);
 				return this.handleWalletRequired(authRequest);
 			}
 
@@ -489,7 +518,6 @@ export class Client {
 		}
 
 		if (this.ui) {
-			if (timer) clearTimeout(timer);
 			this.ui.dismissLoader();
 			this.ui.closeOverlay();
 		}
@@ -539,9 +567,23 @@ export class Client {
 			this.on("token-proof", null, { data, issuer, error });
 		},
 		emitErrorToClient: (error: Error, issuer = "none") => {
+
+			this.checkInternetConnectivity();
+
 			this.on("error", null, {error, issuer});
 		}
 	};
+
+	checkInternetConnectivity(): void {
+		if (!navigator.onLine) {
+			if (this.config.type === 'active') {
+				setTimeout(() => {
+					this.ui.showError(this.config.noInternetErrorMessage ?? NO_INTERNET_ERROR_MESSAGE);
+				}, 1000);
+			}
+			throw new Error(this.config.noInternetErrorMessage ?? NO_INTERNET_ERROR_MESSAGE)
+		}
+	}
 
 	async addTokenViaMagicLink(magicLink: any) {
 		let url = new URL(magicLink);

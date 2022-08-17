@@ -8,10 +8,11 @@ export var getBrowserData = function () {
     var isPhantomJS = UA && /phantomjs/.test(UA);
     var isFireFox = UA && /firefox\/\d+/.test(UA);
     var isSafari = window.safari ? true : false;
+    var isBrave = !!window.navigator["brave"];
     var isAndroid = UA && UA.indexOf("android") > 0;
     var isIOS = UA && /iphone|ipad|ipod|ios/.test(UA);
-    var isMac = window.navigator.platform.toLowerCase().includes("mac") || window.navigator.userAgent.toLowerCase().includes("mac");
-    var isWindows = window.navigator.platform.toLowerCase().includes("win") || window.navigator.userAgent.toLowerCase().includes("win");
+    var isMac = UA && /\smac\s/.test(UA);
+    var isWindows = UA && /windows/.test(UA);
     var isTouchDevice = false;
     var isMobile = window.matchMedia;
     if (isMobile) {
@@ -55,6 +56,7 @@ export var getBrowserData = function () {
         goWallet: isGoWallet,
         status: isStatusWallet,
         imToken: isImToken,
+        brave: isBrave,
         metaMaskAndroid: isAndroid && windowEthereum.isMetaMask,
         alphaWalletAndroid: isAndroid && windowEthereum.isAlphaWallet,
         mewAndroid: isAndroid && windowEthereum.isTrust && windowEthereum.isMetaMask,

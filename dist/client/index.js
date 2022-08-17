@@ -1,14 +1,3 @@
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -58,8 +47,9 @@ import { isUserAgentSupported } from '../utils/support/isSupported';
 import { SelectWallet } from "./views/select-wallet";
 import { SelectIssuers } from "./views/select-issuers";
 if (typeof window !== "undefined")
-    window.tn = { version: "2.0.0" };
+    window.tn = { version: "2.1.0" };
 var NOT_SUPPORTED_ERROR = "This browser is not supported. Please try using Chrome, Edge, FireFox or Safari.";
+var NO_INTERNET_ERROR_MESSAGE = "No internet connection. Please check your internet connection and try again";
 var defaultConfig = {
     type: "active",
     issuers: [],
@@ -68,19 +58,15 @@ var defaultConfig = {
         containerElement: ".overlay-tn",
         openingHeading: "Validate your token ownership for access",
         issuerHeading: "Detected tokens",
-        autoPopup: true
+        autoPopup: true,
+        position: "bottom-right"
     },
     autoLoadTokens: true,
     autoEnableTokens: true,
     messagingForceTab: false,
     unSupportedUserAgent: {
         authentication: {
-            config: {
-                metaMaskAndroid: true,
-                alphaWalletAndroid: true,
-                mewAndroid: true,
-                imTokenAndroid: true,
-            },
+            config: {},
             errorMessage: NOT_SUPPORTED_ERROR
         },
         full: {
@@ -90,7 +76,7 @@ var defaultConfig = {
             },
             errorMessage: NOT_SUPPORTED_ERROR
         }
-    }
+    },
 };
 export var ClientError;
 (function (ClientError) {
@@ -122,11 +108,11 @@ var Client = (function () {
             },
             emitErrorToClient: function (error, issuer) {
                 if (issuer === void 0) { issuer = "none"; }
+                _this.checkInternetConnectivity();
                 _this.on("error", null, { error: error, issuer: issuer });
             }
         };
-        config.uiOptions = __assign(__assign({}, defaultConfig.uiOptions), config === null || config === void 0 ? void 0 : config.uiOptions);
-        this.config = Object.assign(defaultConfig, config);
+        this.config = this.mergeConfig(defaultConfig, config);
         this.negotiateAlreadyFired = false;
         this.tokenStore = new TokenStore(this.config.autoEnableTokens);
         if (((_a = this.config.issuers) === null || _a === void 0 ? void 0 : _a.length) > 0)
@@ -135,6 +121,18 @@ var Client = (function () {
     }
     Client.getKey = function (file) {
         return Authenticator.decodePublicKey(file);
+    };
+    Client.prototype.mergeConfig = function (defaultConfig, config) {
+        var _a;
+        for (var key in config) {
+            if (config[key] && config[key].constructor === Object) {
+                defaultConfig[key] = this.mergeConfig((_a = defaultConfig[key]) !== null && _a !== void 0 ? _a : {}, config[key]);
+            }
+            else {
+                defaultConfig[key] = config[key];
+            }
+        }
+        return defaultConfig;
     };
     Client.prototype.getTokenStore = function () {
         return this.tokenStore;
@@ -233,46 +231,53 @@ var Client = (function () {
         });
     };
     Client.prototype.checkUserAgentSupport = function (type) {
-        var _this = this;
-        if (!isUserAgentSupported(this.config.unSupportedUserAgent[type].config)) {
-            var err_1 = this.config.unSupportedUserAgent[type].errorMessage;
+        var _a, _b;
+        if (!isUserAgentSupported((_b = (_a = this.config.unSupportedUserAgent) === null || _a === void 0 ? void 0 : _a[type]) === null || _b === void 0 ? void 0 : _b.config)) {
+            var err = this.config.unSupportedUserAgent[type].errorMessage;
             if (this.config.type === 'active') {
                 this.ui = new Ui(this.config.uiOptions, this);
                 this.ui.initialize();
                 this.ui.openOverlay();
-                setTimeout(function () {
-                    _this.ui.showError(err_1, false);
-                    _this.ui.viewContainer.style.display = 'none';
-                }, 1000);
+                this.ui.showError(err, false);
+                this.ui.viewContainer.style.display = 'none';
             }
-            throw new Error(err_1);
+            throw new Error(err);
         }
     };
     Client.prototype.negotiate = function (issuers, openPopup) {
         if (openPopup === void 0) { openPopup = false; }
         return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        this.checkUserAgentSupport("full");
+                        try {
+                            this.checkUserAgentSupport("full");
+                        }
+                        catch (err) {
+                            logger(2, err);
+                            err.name = "NOT_SUPPORTED_ERROR";
+                            console.log("browser not supported");
+                            this.eventSender.emitErrorToClient(err);
+                            return [2];
+                        }
                         if (issuers)
                             this.tokenStore.updateIssuers(issuers);
                         requiredParams(Object.keys(this.tokenStore.getCurrentIssuers()).length, "issuers are missing.");
-                        if (!(this.config.type === "active")) return [3, 2];
+                        if (!(this.config.type === "active")) return [3, 1];
                         this.issuersLoaded = false;
                         this.activeNegotiationStrategy(openPopup);
-                        return [4, this.enrichTokenLookupDataOnChainTokens()];
-                    case 1:
-                        _a.sent();
-                        return [3, 5];
-                    case 2: return [4, this.enrichTokenLookupDataOnChainTokens()];
-                    case 3:
+                        return [3, 4];
+                    case 1: return [4, this.enrichTokenLookupDataOnChainTokens()];
+                    case 2:
                         _a.sent();
                         return [4, this.passiveNegotiationStrategy()];
-                    case 4:
+                    case 3:
                         _a.sent();
-                        _a.label = 5;
-                    case 5: return [2];
+                        _a.label = 4;
+                    case 4:
+                        window.addEventListener('offline', function () { return _this.checkInternetConnectivity(); });
+                        return [2];
                 }
             });
         });
@@ -281,6 +286,8 @@ var Client = (function () {
         var autoOpenPopup;
         if (this.ui) {
             autoOpenPopup = this.tokenStore.hasUnloadedTokens();
+            if (this.ui.viewIsNotStart() && this.tokenStore.hasUnloadedIssuers())
+                this.enrichTokenLookupDataOnChainTokens();
         }
         else {
             this.ui = new Ui(this.config.uiOptions, this);
@@ -347,7 +354,7 @@ var Client = (function () {
     };
     Client.prototype.setPassiveNegotiationWebTokens = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var issuers, _a, _b, _i, issuer, res, issuerConfig, err_2;
+            var issuers, _a, _b, _i, issuer, res, issuerConfig, err_1;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -377,10 +384,10 @@ var Client = (function () {
                         res = _c.sent();
                         return [3, 5];
                     case 4:
-                        err_2 = _c.sent();
-                        logger(2, err_2);
+                        err_1 = _c.sent();
+                        logger(2, err_1);
                         console.log("popup error");
-                        this.eventSender.emitErrorToClient(err_2, issuer);
+                        this.eventSender.emitErrorToClient(err_1, issuer);
                         return [3, 6];
                     case 5:
                         logger(2, "tokens:");
@@ -397,7 +404,7 @@ var Client = (function () {
     };
     Client.prototype.setPassiveNegotiationOnChainTokens = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var issuers, walletProvider, _a, _b, _i, issuerKey, issuer, tokens, e_3;
+            var issuers, walletProvider, _a, _b, _i, issuerKey, issuer, tokens, err_2;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -423,9 +430,9 @@ var Client = (function () {
                         this.tokenStore.setTokens(issuerKey, tokens);
                         return [3, 6];
                     case 5:
-                        e_3 = _c.sent();
-                        logger(2, err);
-                        this.eventSender.emitErrorToClient(err, issuerKey);
+                        err_2 = _c.sent();
+                        logger(2, err_2);
+                        this.eventSender.emitErrorToClient(err_2, issuerKey);
                         return [3, 6];
                     case 6:
                         _i++;
@@ -510,22 +517,30 @@ var Client = (function () {
     Client.prototype.authenticate = function (authRequest) {
         var _a;
         return __awaiter(this, void 0, void 0, function () {
-            var issuer, unsignedToken, config, timer, AuthType, authenticator, res, err_3;
-            var _this = this;
+            var issuer, unsignedToken, config, AuthType, authenticator, res, err_3;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
-                        this.checkUserAgentSupport("authentication");
+                        try {
+                            this.checkUserAgentSupport("authentication");
+                        }
+                        catch (err) {
+                            logger(2, err);
+                            err.name = "NOT_SUPPORTED_ERROR";
+                            console.log("browser not supported");
+                            this.eventSender.emitErrorToClient(err);
+                            return [2];
+                        }
                         issuer = authRequest.issuer, unsignedToken = authRequest.unsignedToken;
                         requiredParams(issuer && unsignedToken, "Issuer and signed token required.");
                         config = this.tokenStore.getCurrentIssuers()[issuer];
                         if (!config)
                             throw new Error("Provided issuer was not found.");
                         if (this.ui) {
-                            timer = setTimeout(function () {
-                                _this.ui.showLoader("<h4>Authenticating...</h4>", "<small>You may need to sign a new challenge in your wallet</small>");
-                                _this.ui.openOverlay();
-                            }, 600);
+                            this.ui.showLoaderDelayed([
+                                "<h4>Authenticating...</h4>",
+                                "<small>You may need to sign a new challenge in your wallet</small>"
+                            ], 600, true);
                         }
                         if (authRequest.type) {
                             AuthType = authRequest.type;
@@ -550,16 +565,12 @@ var Client = (function () {
                         err_3 = _b.sent();
                         logger(2, err_3);
                         if (err_3.message === "WALLET_REQUIRED") {
-                            if (timer)
-                                clearTimeout(timer);
                             return [2, this.handleWalletRequired(authRequest)];
                         }
                         this.handleProofError(err_3, issuer);
                         throw err_3;
                     case 4:
                         if (this.ui) {
-                            if (timer)
-                                clearTimeout(timer);
                             this.ui.dismissLoader();
                             this.ui.closeOverlay();
                         }
@@ -588,7 +599,7 @@ var Client = (function () {
                         return [2, this.authenticate(authRequest)];
                     case 4: return [2, new Promise(function (resolve, reject) {
                             _this.ui.updateUI(SelectWallet, { connectCallback: function () { return __awaiter(_this, void 0, void 0, function () {
-                                    var res, e_4;
+                                    var res, e_3;
                                     return __generator(this, function (_a) {
                                         switch (_a.label) {
                                             case 0:
@@ -602,8 +613,8 @@ var Client = (function () {
                                                 resolve(res);
                                                 return [3, 4];
                                             case 3:
-                                                e_4 = _a.sent();
-                                                reject(e_4);
+                                                e_3 = _a.sent();
+                                                reject(e_3);
                                                 return [3, 4];
                                             case 4: return [2];
                                         }
@@ -618,6 +629,19 @@ var Client = (function () {
         if (this.ui)
             this.ui.showError(err);
         this.eventSender.emitProofToClient(null, issuer, err);
+    };
+    Client.prototype.checkInternetConnectivity = function () {
+        var _this = this;
+        var _a;
+        if (!navigator.onLine) {
+            if (this.config.type === 'active') {
+                setTimeout(function () {
+                    var _a;
+                    _this.ui.showError((_a = _this.config.noInternetErrorMessage) !== null && _a !== void 0 ? _a : NO_INTERNET_ERROR_MESSAGE);
+                }, 1000);
+            }
+            throw new Error((_a = this.config.noInternetErrorMessage) !== null && _a !== void 0 ? _a : NO_INTERNET_ERROR_MESSAGE);
+        }
     };
     Client.prototype.addTokenViaMagicLink = function (magicLink) {
         return __awaiter(this, void 0, void 0, function () {

@@ -16,7 +16,7 @@ export interface OnChainTokenConfig extends IssuerConfigInterface {
     contract: string;
     chain: string;
     openSeaSlug?: string;
-    blockchain: string;
+    blockchain?: string;
 }
 
 export interface IssuerConfigInterface {
@@ -25,6 +25,7 @@ export interface IssuerConfigInterface {
     title?: string;
     image?: string;
     filters?: {};
+    blockchain?: string;
 }
 
 export interface NegotiationInterface {
@@ -36,15 +37,16 @@ export interface NegotiationInterface {
     messagingForceTab?: boolean;
     safeConnectOptions?: SafeConnectOptions;
     unSupportedUserAgent?: {
-        authentication: {
+        authentication?: {
             config: BrowserDataInterface,
             errorMessage: string
         },
-        full: {
+        full?: {
             config: BrowserDataInterface,
             errorMessage: string
         }
-    }
+    },
+    noInternetErrorMessage?: string;
 }
 
 // TODO: Implement tokenId - each issuer token should have a unique ID (tokenId for instance).
@@ -57,5 +59,6 @@ export interface AuthenticateInterface {
     wallet?: string;
     type?: AuthenticationMethod;
     options?: any;
+    blockchain?: string;
 }
 

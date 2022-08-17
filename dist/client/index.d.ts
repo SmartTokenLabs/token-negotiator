@@ -34,6 +34,7 @@ export declare class Client {
     private uiUpdateCallbacks;
     static getKey(file: string): import("@tokenscript/attestation/dist/libs/KeyPair").KeyPair;
     constructor(config: NegotiationInterface);
+    private mergeConfig;
     getTokenStore(): TokenStore;
     getUi(): Ui;
     triggerUiUpdateCallback(type: UIUpdateEventType, data?: {}): void;
@@ -42,7 +43,7 @@ export declare class Client {
     getWalletProvider(): Promise<Web3WalletProvider>;
     negotiatorConnectToWallet(walletType: string): Promise<any>;
     enrichTokenLookupDataOnChainTokens(): Promise<void>;
-    private checkUserAgentSupport;
+    checkUserAgentSupport(type: string): void;
     negotiate(issuers?: OnChainTokenConfig | OffChainTokenConfig[], openPopup?: boolean): Promise<void>;
     activeNegotiationStrategy(openPopup: boolean): void;
     private cancelAutoload;
@@ -62,6 +63,7 @@ export declare class Client {
         emitProofToClient: (data: any, issuer: any, error?: string) => void;
         emitErrorToClient: (error: Error, issuer?: string) => void;
     };
+    checkInternetConnectivity(): void;
     addTokenViaMagicLink(magicLink: any): Promise<any>;
     on(type: string, callback?: any, data?: any): any;
 }

@@ -157,6 +157,8 @@ export var rawTokenCheck = function (unsignedToken, tokenIssuer) { return __awai
         if (rawTokenData && rawTokenData.magic_link) {
             tokenObj.magicLink = rawTokenData.magic_link;
         }
+        if (tokenIssuer.attestationInTab)
+            tokenObj.attestationInTab = true;
         return [2, tokenObj];
     });
 }); };

@@ -90,19 +90,17 @@ var TicketZKProof = (function (_super) {
                         unRes = _b.sent();
                         useEthKey = unRes.data;
                         _b.label = 2;
-                    case 2:
-                        console.log("Sending attestation.id");
-                        return [4, this.messaging.sendMessage({
-                                action: OutletAction.GET_PROOF,
-                                origin: issuerConfig.tokenOrigin,
-                                timeout: 0,
-                                data: {
-                                    issuer: issuerConfig.collectionID,
-                                    token: tokens[0],
-                                    address: request.address ? request.address : (useEthKey ? useEthKey.address : ""),
-                                    wallet: request.wallet ? request.wallet : ""
-                                }
-                            }, request.options.messagingForceTab, this.client.getUi())];
+                    case 2: return [4, this.messaging.sendMessage({
+                            action: OutletAction.GET_PROOF,
+                            origin: issuerConfig.tokenOrigin,
+                            timeout: 0,
+                            data: {
+                                issuer: issuerConfig.collectionID,
+                                token: tokens[0],
+                                address: request.address ? request.address : (useEthKey ? useEthKey.address : ""),
+                                wallet: request.wallet ? request.wallet : ""
+                            }
+                        }, request.options.messagingForceTab, this.client.getUi())];
                     case 3:
                         res = _b.sent();
                         if (!res.data.proof)
