@@ -127,25 +127,10 @@ export class AuthHandler {
 				min_height: "300px"
 			});
 
-			let button; 
+			let button:HTMLDivElement; 
 			
 			button = document.createElement("div");
-			button.setAttribute(
-				"style",
-				`
-					margin: 20px auto 0;
-					padding: 5px 15px;
-					background: #0219fa;
-					font-weight: 700;
-					font-size: 20px;
-					line-height: 50px;
-					border-radius: 100px;
-					color: #fff;
-					cursor: pointer;
-					display: block;
-					text-align: center;
-				`
-			);
+			button.classList.add(this.wrapperBase + "_btn");
 			button.innerHTML = "Click to get Email Attestation";
 
 			button.addEventListener("click", ()=>{
@@ -181,27 +166,7 @@ export class AuthHandler {
 			let wrapperID = this.wrapperBase + "_wrap_" + Date.now();
 			const styles = document.createElement("style");
 			styles.innerHTML = `
-				#${wrapperID} div:hover {
-					box-shadow: 0 0px 14px #ffff !important;
-				}
-				#${wrapperID} .${this.wrapperBase}_content {
-					color: #fff; 
-					text-align: center;
-				}
-				#${wrapperID} .${this.wrapperBase}_title {
-					
-				}
-				#${wrapperID} .${this.wrapperBase}_subtitle {
-					font-size:18px;
-					color: #ccc;
-				}
-			`;
-
-			this.buttonOverlay = document.createElement("div");
-			this.buttonOverlay.id = wrapperID;
-			this.buttonOverlay.setAttribute(
-				"style",
-				`
+				#${wrapperID} {
 					width:100%;
 					height: 100vh; 
 					position: fixed; 
@@ -214,8 +179,52 @@ export class AuthHandler {
 					display: flex;
 					flex-direction: column;
 					padding: 30px;
-				`
-			);
+				}
+				#${wrapperID} div:hover {
+					box-shadow: 0 0px 14px #ffff !important;
+				}
+				#${wrapperID} .${this.wrapperBase}_content {
+					color: #fff; 
+					text-align: center;
+				}
+				#${wrapperID} .${this.wrapperBase}_title {
+					
+				}
+				
+				#${wrapperID} .${this.wrapperBase}_subtitle {
+					font-size:18px;
+					color: #ccc;
+				}
+				#${wrapperID} .${this.wrapperBase}_btn {
+					margin: 20px auto 0;
+					padding: 5px 15px;
+					background: #0219fa;
+					font-weight: 700;
+					font-size: 20px;
+					line-height: 1.3;
+					border-radius: 100px;
+					color: #fff;
+					cursor: pointer;
+					display: block;
+					text-align: center;
+				}
+
+				@media (max-width: 768px){
+					#${wrapperID} {
+						padding: 20px 10px;
+					}
+					#${wrapperID} .${this.wrapperBase}_title {
+						font-size: 24px;
+					}
+					#${wrapperID} .${this.wrapperBase}_btn {
+						padding: 10px 15px;
+						font-size: 18px;
+					}
+				}
+			`;
+
+			this.buttonOverlay = document.createElement("div");
+			this.buttonOverlay.id = wrapperID;
 			this.buttonOverlay.innerHTML = `<h1 class="${this.wrapperBase}_content ${this.wrapperBase}_title">Needs email attestation to complete verification.</h1><p class="${this.wrapperBase}_content ${this.wrapperBase}_subtitle"></p>`;
 			this.buttonOverlay.appendChild(button);
 			this.buttonOverlay.appendChild(styles);
