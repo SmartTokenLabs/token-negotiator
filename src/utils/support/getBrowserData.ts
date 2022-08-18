@@ -73,6 +73,8 @@ export const getBrowserData = () => {
 		status: isStatusWallet,
 		imToken: isImToken,
 		brave: isBrave,
+		braveAndroid: isBrave && isAndroid,
+		braveIOS: isBrave && isIOS,
 		metaMaskAndroid: isAndroid && isMetaMask,
 		alphaWalletAndroid: isAndroid && isAlphaWallet,
 		mewAndroid: isAndroid && isMyEthereumWallet,
