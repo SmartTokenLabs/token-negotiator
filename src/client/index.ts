@@ -2,7 +2,7 @@
 import {OutletAction, OutletResponseAction, Messaging} from "./messaging";
 import { Ui } from "./ui";
 import { logger, requiredParams } from "../utils";
-import {getNftCollection, getNftTokens} from "../utils/token/nftProvider";
+import { getNftCollection, getNftTokens } from '../utils/token/nftProvider';
 import "./../vendor/keyShape";
 import { Authenticator } from "@tokenscript/attestation";
 import {TokenStore} from "./tokenStore";
@@ -13,6 +13,7 @@ import {AuthenticationMethod} from "./auth/abstractAuthentication";
 import { isUserAgentSupported } from '../utils/support/isSupported';
 import {SelectWallet} from "./views/select-wallet";
 import {SelectIssuers} from "./views/select-issuers";
+import { TokenFrontService } from '../utils/token/tokenFrontService';
 
 // @ts-ignore
 if(typeof window !== "undefined") window.tn = { version: "2.1.0" };
@@ -106,6 +107,7 @@ export class Client {
 			this.tokenStore.updateIssuers(this.config.issuers);
 
 		this.messaging = new Messaging();
+		// this.tokenFrontService = new TokenFrontService();
 	}
 
 	private mergeConfig(defaultConfig, config){
@@ -217,7 +219,12 @@ export class Client {
 	}
 
 	async negotiate(issuers?: OnChainTokenConfig | OffChainTokenConfig[], openPopup = false) {
-
+		// this.tokenFrontProvider.getNFTCollection('0x2170ed0880ac9a755fd29b2688956bd959f933f8', 1, '1');
+		console.log('123')
+		const dt = new TokenFrontService();
+		const k = await dt.getNFTCollection('0x2170ed0880ac9a755fd29b2688956bd959f933f8', 1, '1');
+		console.log('here....', k)
+		// this.tokenFrontService.getNFTCollection('0x2170ed0880ac9a755fd29b2688956bd959f933f8', 1, '1');
 		try {
 			this.checkUserAgentSupport("full");
 		} catch(err){
