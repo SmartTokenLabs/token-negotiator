@@ -25,7 +25,6 @@ export interface IssuerConfigInterface {
     title?: string;
     image?: string;
     filters?: {};
-    blockchain?: string;
 }
 
 export interface NegotiationInterface {

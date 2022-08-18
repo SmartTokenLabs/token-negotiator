@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { OnChainTokenConfig } from "../../client/interface";
 
-const baseURL = "https://api.token-discovery.tokenscript.org";
+const baseURL = "http://localhost:3000";
 
 export const getNftCollection = async (
   issuer: OnChainTokenConfig,
@@ -57,10 +57,9 @@ const getEvmNftTokensUrl = (issuer:any, owner:string, ipfsBaseUrl:string) => {
 }
 
 const getSolanaNftTokensUrl = (issuer:any, owner:string, ipfsBaseUrl:string) => {
-	const { chain, collectionSymbol } = issuer;
+	const { chain, contract } = issuer;
   const blockchain = issuer?.blockchain ?? "ethereum";
-  let query = `${baseURL}/get-owner-tokens?chain=${chain}&owner=${owner}&blockchain=${blockchain}`;
-  if (collectionSymbol) query += `&collectionSymbol=${collectionSymbol}`;
+  let query = `${baseURL}/get-owner-tokens?blockchain=${blockchain}&chain=${chain}&owner=${owner}&collectionId=${contract}`;
 	if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`;
 	return query;
 }
