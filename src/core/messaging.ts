@@ -136,14 +136,9 @@ export class Messaging {
 					received = true;
 
 					if (response.evt === ResponseActionBase.COOKIE_CHECK){
-						if (!iframe || this.iframeStorageSupport === true)
-							return;
+						// if (!iframe || this.iframeStorageSupport === true)
+						// 	return;
 
-						/* this.iframeStorageSupport = !!response?.data?.thirdPartyCookies;
-						if (!this.iframeStorageSupport){
-							afterResolveOrError();
-							reject("IFRAME_STORAGE");
-						}*/
 						return;
 					}
 

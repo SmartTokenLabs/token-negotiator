@@ -1,5 +1,4 @@
 import {AuthenticateInterface, OffChainTokenConfig, OnChainTokenConfig} from "../interface";
-import Web3WalletProvider from "../../wallet/Web3WalletProvider";
 import {Client} from "../index";
 
 export interface AuthenticationResult {

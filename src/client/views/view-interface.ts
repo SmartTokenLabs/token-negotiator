@@ -26,7 +26,7 @@ export abstract class AbstractView implements ViewInterface {
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-empty-function
-	public init(): void {}
+	public init(): void { /* TODO document why this method 'init' is empty */ }
 
 	abstract render(): void;
 

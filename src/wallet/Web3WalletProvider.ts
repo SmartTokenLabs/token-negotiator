@@ -11,7 +11,7 @@ export class Web3WalletProvider {
 
 	constructor(client: Client, safeConnectOptions?: SafeConnectOptions) {
 
-		this.state = { addresses: [ /* { address, chainId, provider } */ ] };
+		this.state = { addresses: [] }; // address, chainId, provider
 
 		this.client = client;
 		this.safeConnectOptions = safeConnectOptions;
@@ -173,70 +173,6 @@ export class Web3WalletProvider {
 
 		return new SafeConnectProvider(this.client.getUi(), this.safeConnectOptions);
 	}
-
-	// async Fortmatic () {
-
-	//     logger(2, 'connect Fortmatic');
-
-	//     // https://replit.com/@fortmatic/demo-kitchen-sink
-
-	//     // const fm = new Fortmatic('pk_test_96DF5BB9127A2C79');
-
-	//     const fm = new Fortmatic('pk_live_7F5E8827DC55A364');
-        
-	//     const fortmaticProvider = fm.getProvider();
-
-	//     // @ts-ignore
-	//     const web3 = new Web3(fortmaticProvider);
-
-	//     const { accounts, chainId } = await this.getWeb3ChainIdAndAccounts( web3 );
-
-	//     const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], chainId, fortmaticProvider);
-
-	//     return registeredWalletAddress;
-
-	// };
-
-	// async Portis () {
-
-	//     logger(2, 'connect Portis');
-
-	//     // https://docs.portis.io/#/methods
-
-	//     const portis = new Portis("211b48db-e8cc-4b68-82ad-bf781727ea9e", "rinkeby");
-
-	//     portis.onError(error => { logger(2, 'portis error', error) });
-
-	//     const web3 = new Web3(portis.provider);
-
-	//     const { accounts, chainId } = await this.getWeb3ChainIdAndAccounts( web3 );
-
-	//     const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], chainId, portis.provider);
-
-	//     return registeredWalletAddress;
-        
-	// };
-
-	// async Authereum  () {
-
-	//     logger(2, 'connect Authereum');
-
-	//     const authereum = new Authereum('kovan');
-
-	//     const authereumProvider = authereum.getProvider();
-
-	//     const web3 = new Web3(authereumProvider);
-
-	//     await authereumProvider.enable();
-
-	//     const { accounts, chainId } = await this.getWeb3ChainIdAndAccounts( web3 );
-
-	//     const registeredWalletAddress = this.registerNewWalletAddress(accounts[0], chainId, authereumProvider);
-
-	//     return registeredWalletAddress;
-
-	// };
-
 }
 
 export default Web3WalletProvider;
