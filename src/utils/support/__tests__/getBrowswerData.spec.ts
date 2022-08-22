@@ -34,6 +34,8 @@ describe('browser simulations', () => {
 			status: false,
 			imToken: false,
 			brave: false,
+			braveAndroid: false,
+			braveIOS: false,
 			metaMaskAndroid: false,
 			alphaWalletAndroid: false,
 			mewAndroid: false,

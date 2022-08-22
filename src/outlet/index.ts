@@ -239,9 +239,9 @@ export class Outlet {
 			target = window.opener;
 		}
 
-		let pUrl = new URL(document.referrer);
-		origin = pUrl.origin;
+		// let pUrl = new URL(document.referrer);
+		// origin = pUrl.origin;
 
-		if (target) target.postMessage(response, origin);
+		if (target) target.postMessage(response, "*");
 	}
 }
