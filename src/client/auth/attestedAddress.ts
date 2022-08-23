@@ -1,6 +1,8 @@
 import {AbstractAuthentication, AuthenticationMethod, AuthenticationResult} from "./abstractAuthentication";
 import {AuthenticateInterface, OffChainTokenConfig, OnChainTokenConfig} from "../interface";
 import {EthereumKeyLinkingAttestation} from "@tokenscript/attestation/dist/safe-connect/EthereumKeyLinkingAttestation";
+import {SafeConnectProvider} from "../../wallet/SafeConnectProvider";
+import {ProofRequestInterface, SafeConnect} from "./util/SafeConnect";
 
 export class AttestedAddress extends AbstractAuthentication implements AuthenticationMethod {
 
@@ -19,22 +21,54 @@ export class AttestedAddress extends AbstractAuthentication implements Authentic
 		if (!request.options?.address)
 			throw new Error("Address attestation requires a secondary address.");
 
-		let address = web3WalletProvider.getConnectedWalletData()[0].address;
+		let wallet = web3WalletProvider.getConnectedWalletData()[0];
 
-		let currentProof: AuthenticationResult|null = this.getSavedProof(address);
+		let currentProof: AuthenticationResult|null = this.getSavedProof(wallet.address);
 
-		if (currentProof.data.expiry < Date.now()) {
-			this.deleteProof(address);
+		if (currentProof?.data?.expiry < Date.now()) {
+			this.deleteProof(wallet.address);
 			currentProof = null;
 		}
 
-		let safeConnect = await web3WalletProvider.getSafeConnectProvider();
-
 		if (!currentProof){
 
-			// This will request and save a new challenge from safe connect
-			await safeConnect.initSafeConnect();
-			currentProof = this.getSavedProof(address);
+			if (wallet.provider instanceof SafeConnectProvider){
+				// This will request and save a new challenge from safe connect
+				await wallet.provider.initSafeConnect();
+				currentProof = this.getSavedProof(wallet.address);
+			} else {
+
+				let challenge = await SafeConnect.getChallenge(web3WalletProvider.safeConnectOptions.url, wallet.address);
+
+				let signature = await web3WalletProvider.signWith(challenge.messageToSign, wallet.provider);
+
+				// this.getUi().showLoader("Issuing Attestation");
+
+				let serverPayload = <ProofRequestInterface>{
+					type: "address_attest",
+					subject: await SafeConnect.getLinkPublicKey(),
+					address: wallet.address,
+					signature: signature,
+					/* data: {
+						context: data.context
+					}*/
+				};
+
+				let attest = await SafeConnect.getAttestation(web3WalletProvider.safeConnectOptions.url, serverPayload);
+
+				currentProof = {
+					type: this.TYPE,
+					data: {
+						expiry: attest.expiry,
+						...attest.data
+					},
+					target: {
+						address: attest.data.address
+					}
+				};
+
+				this.saveProof(attest.data.address, currentProof);
+			}
 
 			if (!currentProof)
 				throw new Error("Could not get address attestation from safe connect");
@@ -42,20 +76,9 @@ export class AttestedAddress extends AbstractAuthentication implements Authentic
 
 		let addrAttest = currentProof.data.attestation;
 
-		currentProof.data.attestation = await AttestedAddress.createAndSignLinkAttestation(addrAttest, request.options.address, await safeConnect.getLinkSigningKey());
+		currentProof.data.attestation = await SafeConnect.createAndSignLinkAttestation(addrAttest, request.options.address, await SafeConnect.getLinkPrivateKey());
 
 		return currentProof;
-	}
-
-	private static async createAndSignLinkAttestation(addressAttest: string, linkedEthAddress: string, holdingPrivKey: CryptoKey){
-
-		const linkAttest = new EthereumKeyLinkingAttestation();
-
-		linkAttest.create(addressAttest, linkedEthAddress, 3600);
-
-		await linkAttest.sign(holdingPrivKey);
-
-		return linkAttest.getBase64();
 	}
 
 }
