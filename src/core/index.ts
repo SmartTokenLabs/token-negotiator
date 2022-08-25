@@ -1,11 +1,7 @@
 import {
 	base64ToUint8array,
-	requiredParams,
 	compareObjects,
-	logger,
 } from "../utils/index";
-// @ts-ignore
-import { ethers } from "ethers";
 
 interface FilterInterface {
   [key: string]: any;
@@ -227,7 +223,7 @@ export const getRawToken = (unsignedToken: any, tokenIssuer: any) => {
 		}
 		
 		return token;
-	} else {
-		return null;
 	}
+
+	return null;
 };

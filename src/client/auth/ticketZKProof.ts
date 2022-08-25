@@ -28,6 +28,7 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 			useEthKey = unRes.data as UNInterface;
 		}
 
+		const useEthKeyAddress = useEthKey ? useEthKey.address : "";
 		let res = await this.messaging.sendMessage({
 			action: OutletAction.GET_PROOF,
 			origin: issuerConfig.tokenOrigin,
@@ -35,7 +36,7 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 			data: {
 				issuer: issuerConfig.collectionID,
 				token: tokens[0],
-				address: request.address ? request.address : (useEthKey ? useEthKey.address : ""),
+				address: request.address ? request.address : useEthKeyAddress,
 				wallet: request.wallet ? request.wallet : ""
 			}
 		}, request.options.messagingForceTab, this.client.getUi());

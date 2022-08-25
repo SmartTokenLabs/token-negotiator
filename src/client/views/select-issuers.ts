@@ -142,25 +142,7 @@ export class SelectIssuers extends AbstractView {
 
 		this.viewContainer.querySelector(".issuer-slider-tn").classList.toggle("open");
 
-		// TODO - Review and uplift this logic. Its not working as expected from tests.
-
-		// const connectBtns = this.viewContainer.querySelectorAll(`.connect-btn-tn`);
-		// const tokenBtns = this.viewContainer.querySelectorAll(`.tokens-btn-tn`);
-
-		// connectBtns.forEach(function (userItem:any) {
-		//     userItem.setAttribute('aria-expanded', false);
-		// });
-
-		// tokenBtns.forEach(function (userItem:any) {
-		//     userItem.setAttribute('aria-expanded', false);
-		// });
-
-		// const issuerViewEl = this.viewContainer.querySelector(`.issuer-view-tn`);
-		// const tokenViewEl = this.viewContainer.querySelector(`.token-view-tn`);
-
-		// issuerViewEl.setAttribute('aria-hidden', true);
-		// tokenViewEl.setAttribute('aria-hidden', false);
-
+		// TODO - Review and uplift this logic. Its not working as expected from tests
 	}
 
 	async autoLoadTokens(){

@@ -28,19 +28,18 @@ function preparePopupCenter(w, h) {
 		win = window.parent;
 	} 
 	
-	let w = Math.min(w, 800);
+	w = Math.min(w, 800);
 
 	// Fixes dual-screen position                             Most browsers      Firefox
 	const dualScreenLeft = win.screenLeft !==  undefined ? win.screenLeft : win.screenX;
 	const dualScreenTop = win.screenTop !==  undefined   ? win.screenTop  : win.screenY;
 
-	let width = win.innerWidth ? win.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width;
-	let height = win.innerHeight ? win.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height;
+	const clientWidth = document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width;
+	const clientHeight = document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height;
+	let width = win.innerWidth ? win.innerWidth : clientWidth;
+	let height = win.innerHeight ? win.innerHeight : clientHeight;
 
-	const systemZoom = width / win.screen.availWidth;
-	// const left = (width - w) / 2 / systemZoom + dualScreenLeft
 	const left = (width - w) / 2 + dualScreenLeft
-	// const top = (height - h) / 2 / systemZoom + dualScreenTop
 	const top = (height - h) / 2  + dualScreenTop
 
 	return `

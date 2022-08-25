@@ -1,5 +1,3 @@
-import { logger } from '..';
-
 export const getBrowserData = () => {
   
 	const inBrowser = typeof window !== "undefined";

@@ -1,12 +1,10 @@
-import { rawTokenCheck, readMagicUrl, storeMagicURL } from "../core";
-import { logger, requiredParams } from "../utils";
-import { decodeTokens, filterTokens } from "../core";
+import { rawTokenCheck, readMagicUrl, storeMagicURL, decodeTokens, filterTokens } from "../core";
+import { logger, requiredParams, uint8toBuffer } from "../utils";
 import { OutletAction, OutletResponseAction } from "../client/messaging";
 import { AuthHandler } from "./auth-handler";
 // requred for default TicketDecoder.
 import { SignedDevconTicket } from "@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket";
 import { AsnParser } from "@peculiar/asn1-schema";
-import { uint8toBuffer } from "../utils";
 import { ResponseActionBase, ResponseInterfaceBase } from "../core/messaging";
 
 interface OutletInterface {
