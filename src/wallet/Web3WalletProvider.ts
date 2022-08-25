@@ -9,9 +9,10 @@ interface WalletConnectionState {
 
 interface WalletConnection {
 	address: string,
-	chainId: number,
+	chainId: number|string,
 	providerType: string,
-	provider?: ethers.providers.Web3Provider
+	blockChain: string,
+	provider?: ethers.providers.Web3Provider,
 }
 
 export class Web3WalletProvider {
@@ -38,7 +39,8 @@ export class Web3WalletProvider {
 			savedConnections[address] = {
 				address: con.address,
 				chainId: con.chainId,
-				providerType: con.providerType
+				providerType: con.providerType,
+				blockChain: con.blockChain
 			};
 		}
 
@@ -121,14 +123,14 @@ export class Web3WalletProvider {
 		return Object.values(this.connections);
 	}
 
-	registerNewWalletAddress ( address: string, chainId: number, providerType: string, provider: any ) {
+	registerNewWalletAddress ( address: string, chainId: number|string, providerType: string, provider: any, blockChain = 'evm' ) {
 
-		this.connections[address.toLowerCase()] = { address, chainId, providerType, provider };
+		this.connections[address.toLowerCase()] = { address, chainId, providerType, provider, blockChain };
 
 		return address;
 	}
 
-	private async registerProvider(provider: ethers.providers.Web3Provider, providerName: string, blockChain='evm'){
+	private async registerProvider(provider: ethers.providers.Web3Provider, providerName: string){
 
 		const accounts = await provider.listAccounts();
 		const chainId = (await provider.detectNetwork()).chainId;
@@ -234,10 +236,10 @@ export class Web3WalletProvider {
 
 			const connection = await window.solana.connect();
 
-			const accountAddress:string = connection.publicKey.toBase58();
+			const accountAddress: string = connection.publicKey.toBase58();
 
 			// mainnet-beta,
-			return this.registerNewWalletAddress(accountAddress, "mainnet-beta", window.solana, 'solana');
+			return this.registerNewWalletAddress(accountAddress, "mainnet-beta", 'phantom', window.solana, 'solana');
 
 		} else {
 
