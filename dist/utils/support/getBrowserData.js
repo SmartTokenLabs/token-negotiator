@@ -29,13 +29,13 @@ export var getBrowserData = function () {
             isGoWallet: false,
         };
     }
-    var isMetaMask = isTouchDevice && windowEthereum.isMetaMask;
-    var isAlphaWallet = isTouchDevice && windowEthereum.isAlphaWallet;
-    var isTrust = isTouchDevice && windowEthereum.isTrust;
-    var isStatusWallet = isTouchDevice && windowEthereum.isStatusWallet;
-    var isGoWallet = isTouchDevice && windowEthereum.isGoWallet;
-    var isMyEthereumWallet = isTouchDevice && windowEthereum.isTrust && windowEthereum.isMetaMask;
+    var isAlphaWallet = isTouchDevice && !!windowEthereum.isAlphaWallet;
+    var isTrust = isTouchDevice && !!windowEthereum.isTrust;
+    var isStatusWallet = isTouchDevice && !!windowEthereum.isStatusWallet;
+    var isGoWallet = isTouchDevice && !!windowEthereum.isGoWallet;
+    var isMyEthereumWallet = isTouchDevice && !!windowEthereum.isTrust && !!windowEthereum.isMetaMask;
     var isImToken = !!navigator.userAgent.match(/\simToken\//);
+    var isMetaMask = isTouchDevice && !!windowEthereum.isMetaMask && !isTrust && !isBrave;
     return {
         iE: isIE,
         iE9: isIE9,
@@ -57,9 +57,11 @@ export var getBrowserData = function () {
         status: isStatusWallet,
         imToken: isImToken,
         brave: isBrave,
-        metaMaskAndroid: isAndroid && windowEthereum.isMetaMask,
-        alphaWalletAndroid: isAndroid && windowEthereum.isAlphaWallet,
-        mewAndroid: isAndroid && windowEthereum.isTrust && windowEthereum.isMetaMask,
+        braveAndroid: isBrave && isAndroid,
+        braveIOS: isBrave && isIOS,
+        metaMaskAndroid: isAndroid && isMetaMask,
+        alphaWalletAndroid: isAndroid && isAlphaWallet,
+        mewAndroid: isAndroid && isMyEthereumWallet,
         imTokenAndroid: isAndroid && isImToken,
     };
 };

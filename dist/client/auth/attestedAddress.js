@@ -13,6 +13,17 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -50,7 +61,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 import { AbstractAuthentication } from "./abstractAuthentication";
-import { EthereumKeyLinkingAttestation } from "@tokenscript/attestation/dist/safe-connect/EthereumKeyLinkingAttestation";
+import { SafeConnectProvider } from "../../wallet/SafeConnectProvider";
+import { SafeConnect } from "./util/SafeConnect";
 var AttestedAddress = (function (_super) {
     __extends(AttestedAddress, _super);
     function AttestedAddress() {
@@ -59,63 +71,75 @@ var AttestedAddress = (function (_super) {
         return _this;
     }
     AttestedAddress.prototype.getTokenProof = function (issuerConfig, _tokens, request) {
-        var _a;
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
-            var web3WalletProvider, address, currentProof, safeConnect, addrAttest, _b, _c, _d, _e;
-            return __generator(this, function (_f) {
-                switch (_f.label) {
+            var web3WalletProvider, wallet, currentProof, challenge, signature, serverPayload, attest, addrAttest, _c, _d, _e, _f;
+            var _g;
+            return __generator(this, function (_h) {
+                switch (_h.label) {
                     case 0: return [4, this.client.getWalletProvider()];
                     case 1:
-                        web3WalletProvider = _f.sent();
+                        web3WalletProvider = _h.sent();
                         if (!web3WalletProvider.safeConnectAvailable())
                             throw new Error("Safe connect is not available");
                         if (!issuerConfig.onChain)
                             throw new Error(this.TYPE + " is not available for off-chain tokens.");
                         if (!((_a = request.options) === null || _a === void 0 ? void 0 : _a.address))
                             throw new Error("Address attestation requires a secondary address.");
-                        address = web3WalletProvider.getConnectedWalletData()[0].address;
-                        currentProof = this.getSavedProof(address);
-                        if (currentProof.data.expiry < Date.now()) {
-                            this.deleteProof(address);
+                        wallet = web3WalletProvider.getConnectedWalletData()[0];
+                        currentProof = this.getSavedProof(wallet.address);
+                        if (((_b = currentProof === null || currentProof === void 0 ? void 0 : currentProof.data) === null || _b === void 0 ? void 0 : _b.expiry) < Date.now()) {
+                            this.deleteProof(wallet.address);
                             currentProof = null;
                         }
-                        return [4, web3WalletProvider.getSafeConnectProvider()];
+                        if (!!currentProof) return [3, 9];
+                        if (!(wallet.provider instanceof SafeConnectProvider)) return [3, 3];
+                        return [4, wallet.provider.initSafeConnect()];
                     case 2:
-                        safeConnect = _f.sent();
-                        if (!!currentProof) return [3, 4];
-                        return [4, safeConnect.initSafeConnect()];
-                    case 3:
-                        _f.sent();
-                        currentProof = this.getSavedProof(address);
+                        _h.sent();
+                        currentProof = this.getSavedProof(wallet.address);
+                        return [3, 8];
+                    case 3: return [4, SafeConnect.getChallenge(web3WalletProvider.safeConnectOptions.url, wallet.address)];
+                    case 4:
+                        challenge = _h.sent();
+                        return [4, web3WalletProvider.signWith(challenge.messageToSign, wallet.provider)];
+                    case 5:
+                        signature = _h.sent();
+                        _g = {
+                            type: "address_attest"
+                        };
+                        return [4, SafeConnect.getLinkPublicKey()];
+                    case 6:
+                        serverPayload = (_g.subject = _h.sent(),
+                            _g.address = wallet.address,
+                            _g.signature = signature,
+                            _g);
+                        return [4, SafeConnect.getAttestation(web3WalletProvider.safeConnectOptions.url, serverPayload)];
+                    case 7:
+                        attest = _h.sent();
+                        currentProof = {
+                            type: this.TYPE,
+                            data: __assign({ expiry: attest.expiry }, attest.data),
+                            target: {
+                                address: attest.data.address
+                            }
+                        };
+                        this.saveProof(attest.data.address, currentProof);
+                        _h.label = 8;
+                    case 8:
                         if (!currentProof)
                             throw new Error("Could not get address attestation from safe connect");
-                        _f.label = 4;
-                    case 4:
+                        _h.label = 9;
+                    case 9:
                         addrAttest = currentProof.data.attestation;
-                        _b = currentProof.data;
-                        _d = (_c = AttestedAddress).createAndSignLinkAttestation;
-                        _e = [addrAttest, request.options.address];
-                        return [4, safeConnect.getLinkSigningKey()];
-                    case 5: return [4, _d.apply(_c, _e.concat([_f.sent()]))];
-                    case 6:
-                        _b.attestation = _f.sent();
+                        _c = currentProof.data;
+                        _e = (_d = SafeConnect).createAndSignLinkAttestation;
+                        _f = [addrAttest, request.options.address];
+                        return [4, SafeConnect.getLinkPrivateKey()];
+                    case 10: return [4, _e.apply(_d, _f.concat([_h.sent()]))];
+                    case 11:
+                        _c.attestation = _h.sent();
                         return [2, currentProof];
-                }
-            });
-        });
-    };
-    AttestedAddress.createAndSignLinkAttestation = function (addressAttest, linkedEthAddress, holdingPrivKey) {
-        return __awaiter(this, void 0, void 0, function () {
-            var linkAttest;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        linkAttest = new EthereumKeyLinkingAttestation();
-                        linkAttest.create(addressAttest, linkedEthAddress, 3600);
-                        return [4, linkAttest.sign(holdingPrivKey)];
-                    case 1:
-                        _a.sent();
-                        return [2, linkAttest.getBase64()];
                 }
             });
         });

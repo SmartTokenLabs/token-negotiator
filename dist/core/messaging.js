@@ -45,6 +45,8 @@ export var ResponseActionBase;
 var Messaging = (function () {
     function Messaging() {
         this.iframeStorageSupport = null;
+        this.iframe = null;
+        this.listenerSet = false;
     }
     Messaging.prototype.sendMessage = function (request, forceTab) {
         if (forceTab === void 0) { forceTab = false; }
@@ -82,14 +84,17 @@ var Messaging = (function () {
         return new Promise(function (resolve, reject) {
             var id = Messaging.getUniqueEventId();
             var url = _this.constructUrl(id, request);
-            var iframe = _this.createIframe(function () {
+            _this.iframe = _this.createIframe(function () {
                 _this.removeModal();
                 reject(ClientError.USER_ABORT);
             });
-            _this.setResponseListener(id, request.origin, request.timeout, resolve, reject, function () {
-                _this.removeModal();
-            }, iframe);
-            iframe.src = url;
+            if (!_this.listenerSet) {
+                _this.listenerSet = true;
+                _this.setResponseListener(id, request.origin, request.timeout, resolve, reject, function () {
+                    _this.removeModal();
+                });
+            }
+            _this.iframe.src = url;
         });
     };
     Messaging.prototype.sendPopup = function (request) {
@@ -114,31 +119,43 @@ var Messaging = (function () {
             }, 500);
         });
     };
-    Messaging.prototype.setResponseListener = function (id, origin, timeout, resolve, reject, cleanUpCallback, iframe) {
+    Messaging.prototype.setResponseListener = function (id, origin, timeout, resolve, reject, cleanUpCallback) {
         var _this = this;
-        if (iframe === void 0) { iframe = null; }
         var received = false;
         var timer = null;
         var listener = function (event) {
+            if (event.data.target) {
+                return;
+            }
             var response = event.data;
             var requestUrl = new URL(origin);
             if (response.evtid === id) {
-                if (requestUrl.origin === event.origin) {
+                if (requestUrl.origin === event.origin && response.evt) {
                     logger(2, "event response received");
                     logger(2, event.data);
                     received = true;
                     if (response.evt === ResponseActionBase.COOKIE_CHECK) {
-                        if (!iframe || _this.iframeStorageSupport === true)
-                            return;
                         return;
                     }
                     if (response.evt === ResponseActionBase.ERROR) {
                         reject(new Error(response.errors.join(". ")));
                     }
                     else if (response.evt === ResponseActionBase.SHOW_FRAME) {
-                        if (iframe) {
+                        if (_this.iframe) {
                             var modal = _this.getModal();
                             modal.style.display = "block";
+                            if (response.max_width) {
+                                var modalContent = modal.querySelector(".modal-content-tn");
+                                if (modalContent) {
+                                    modalContent.style.maxWidth = response.max_width;
+                                }
+                            }
+                            if (response.min_height) {
+                                var iframe = modal.querySelector("iframe");
+                                if (iframe) {
+                                    iframe.style.minHeight = response.min_height;
+                                }
+                            }
                         }
                         return;
                     }

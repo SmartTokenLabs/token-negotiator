@@ -14,11 +14,9 @@ export declare class SafeConnectProvider {
     private keyStore;
     private readonly options;
     private messaging;
-    static HOLDING_KEY_ALGORITHM: string;
     constructor(ui: Ui, options: SafeConnectOptions);
     initSafeConnect(): Promise<any>;
     private processProofResult;
     private getInitialProofRequest;
     signUNChallenge(un: UNInterface): Promise<any>;
-    getLinkSigningKey(): Promise<CryptoKey>;
 }

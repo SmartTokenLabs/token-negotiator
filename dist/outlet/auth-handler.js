@@ -43,12 +43,13 @@ function preparePopupCenter(w, h) {
     if (window.parent != window) {
         win = window.parent;
     }
-    var w = Math.min(w, 800);
+    w = Math.min(w, 800);
     var dualScreenLeft = win.screenLeft !== undefined ? win.screenLeft : win.screenX;
     var dualScreenTop = win.screenTop !== undefined ? win.screenTop : win.screenY;
-    var width = win.innerWidth ? win.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width;
-    var height = win.innerHeight ? win.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height;
-    var systemZoom = width / win.screen.availWidth;
+    var clientWidth = document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width;
+    var clientHeight = document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height;
+    var width = win.innerWidth ? win.innerWidth : clientWidth;
+    var height = win.innerHeight ? win.innerHeight : clientHeight;
     var left = (width - w) / 2 + dualScreenLeft;
     var top = (height - h) / 2 + dualScreenTop;
     return "\n\t\ttoolbar=no, \n\t\tlocation=no, \n\t\tdirectories=no, \n\t\tstatus=no, \n\t\tmenubar=no, \n\t\tscrollbars=yes, \n\t\tresizable=yes, \n\t\tcopyhistory=yes, \n\t\twidth=".concat(w, ", \n\t\theight=").concat(h, ",\n\t\ttop=").concat(top, ", \n\t\tleft=").concat(left, "\n\t");
@@ -61,6 +62,8 @@ var AuthHandler = (function () {
         this.iframeWrap = null;
         this.attestationBlob = null;
         this.attestationSecret = null;
+        this.wrapperBase = "tn_attestation_open";
+        this.interval = null;
         this.outlet = outlet;
         this.evtid = evtid;
         this.base64senderPublicKeys = tokenDef.base64senderPublicKeys;
@@ -81,31 +84,38 @@ var AuthHandler = (function () {
             this.outlet.sendMessageResponse({
                 evtid: this.evtid,
                 evt: ResponseActionBase.SHOW_FRAME,
+                max_width: "500px",
+                min_height: "300px"
             });
             var button_1;
-            if (getBrowserData().metaMaskAndroid) {
-                button_1 = document.createElement("a");
-                button_1.setAttribute("href", this.attestationOrigin);
-                button_1.setAttribute("target", "_blank");
-            }
-            else {
-                button_1 = document.createElement("div");
-            }
-            button_1.setAttribute("style", "\n\t\t\t\t\tbackground: #000c;\n\t\t\t\t\tcolor: #fff;\n\t\t\t\t\tpadding: 10px;\n\t\t\t\t\tborder: 1px solid #fff2;\n\t\t\t\t\tborder-radius: 4px;\n\t\t\t\t\tcursor: pointer;\n\t\t\t\t\ttransition: box-shadow 0.3s;\n\t\t\t\t\tbox-shadow: 0 0px 10px #fffc;\n\t\t\t\t");
+            button_1 = document.createElement("div");
+            button_1.classList.add(this.wrapperBase + "_btn");
             button_1.innerHTML = "Click to get Email Attestation";
             button_1.addEventListener("click", function () {
-                var winParams = preparePopupCenter(800, 700);
-                if (!getBrowserData().metaMaskAndroid) {
-                    _this.attestationTabHandler = window.open(_this.attestationOrigin, "Attestation");
-                }
+                _this.attestationTabHandler = window.open(_this.attestationOrigin, "Attestation");
                 button_1.remove();
-                _this.buttonOverlay.remove();
+                var title = _this.buttonOverlay.querySelector("." + _this.wrapperBase + "_title");
+                var subtitle = _this.buttonOverlay.querySelector("." + _this.wrapperBase + "_subtitle");
+                if (title) {
+                    title.innerHTML = "Email Attestation verification in progress";
+                }
+                if (subtitle) {
+                    subtitle.innerHTML = "Please complete the verification process to continue";
+                }
+                _this.interval = setInterval(function () {
+                    if (_this.attestationTabHandler.closed) {
+                        console.log("child tab closed... ");
+                        clearInterval(_this.interval);
+                        _this.rejectHandler(new Error("User closed TAB"));
+                    }
+                }, 2000);
             });
+            var wrapperID = this.wrapperBase + "_wrap_" + Date.now();
             var styles = document.createElement("style");
-            styles.innerHTML = "\n\t\t\t\t#button_overlay div:hover {\n\t\t\t\t\tbox-shadow: 0 0px 14px #ffff !important;\n\t\t\t\t}\n\t\t\t";
+            styles.innerHTML = "\n\t\t\t\t#".concat(wrapperID, " {\n\t\t\t\t\twidth:100%;\n\t\t\t\t\theight: 100vh; \n\t\t\t\t\tposition: fixed; \n\t\t\t\t\talign-items: center; \n\t\t\t\t\tjustify-content: center;\n\t\t\t\t\tdisplay: flex;\n\t\t\t\t\ttop: 0; \n\t\t\t\t\tleft: 0; \n\t\t\t\t\tbackground: #000f;\n\t\t\t\t\tdisplay: flex;\n\t\t\t\t\tflex-direction: column;\n\t\t\t\t\tpadding: 30px;\n\t\t\t\t}\n\t\t\t\t#").concat(wrapperID, " div:hover {\n\t\t\t\t\tbox-shadow: 0 0px 14px #ffff !important;\n\t\t\t\t}\n\t\t\t\t#").concat(wrapperID, " .").concat(this.wrapperBase, "_content {\n\t\t\t\t\tcolor: #fff; \n\t\t\t\t\ttext-align: center;\n\t\t\t\t}\n\t\t\t\t#").concat(wrapperID, " .").concat(this.wrapperBase, "_title {\n\t\t\t\t\t\n\t\t\t\t}\n\t\t\t\t\n\t\t\t\t#").concat(wrapperID, " .").concat(this.wrapperBase, "_subtitle {\n\t\t\t\t\tfont-size:18px;\n\t\t\t\t\tcolor: #ccc;\n\t\t\t\t}\n\t\t\t\t#").concat(wrapperID, " .").concat(this.wrapperBase, "_btn {\n\t\t\t\t\tmargin: 20px auto 0;\n\t\t\t\t\tpadding: 5px 15px;\n\t\t\t\t\tbackground: #0219fa;\n\t\t\t\t\tfont-weight: 700;\n\t\t\t\t\tfont-size: 20px;\n\t\t\t\t\tline-height: 1.3;\n\t\t\t\t\tborder-radius: 100px;\n\t\t\t\t\tcolor: #fff;\n\t\t\t\t\tcursor: pointer;\n\t\t\t\t\tdisplay: block;\n\t\t\t\t\ttext-align: center;\n\t\t\t\t}\n\n\t\t\t\t@media (max-width: 768px){\n\t\t\t\t\t#").concat(wrapperID, " {\n\t\t\t\t\t\tpadding: 20px 10px;\n\t\t\t\t\t}\n\t\t\t\t\t#").concat(wrapperID, " .").concat(this.wrapperBase, "_title {\n\t\t\t\t\t\tfont-size: 24px;\n\t\t\t\t\t}\n\t\t\t\t\t#").concat(wrapperID, " .").concat(this.wrapperBase, "_btn {\n\t\t\t\t\t\tpadding: 10px 15px;\n\t\t\t\t\t\tfont-size: 18px;\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t");
             this.buttonOverlay = document.createElement("div");
-            this.buttonOverlay.id = "button_overlay";
-            this.buttonOverlay.setAttribute("style", "\n\t\t\t\t\twidth:100%;\n\t\t\t\t\theight: 100vh; \n\t\t\t\t\tposition: fixed; \n\t\t\t\t\talign-items: center; \n\t\t\t\t\tjustify-content: center;\n\t\t\t\t\tdisplay: flex;\n\t\t\t\t\ttop: 0; \n\t\t\t\t\tleft: 0; \n\t\t\t\t\tbackground: #000c\n\t\t\t\t");
+            this.buttonOverlay.id = wrapperID;
+            this.buttonOverlay.innerHTML = "<h1 class=\"".concat(this.wrapperBase, "_content ").concat(this.wrapperBase, "_title\">Needs email attestation to complete verification.</h1><p class=\"").concat(this.wrapperBase, "_content ").concat(this.wrapperBase, "_subtitle\"></p>");
             this.buttonOverlay.appendChild(button_1);
             this.buttonOverlay.appendChild(styles);
             document.body.appendChild(this.buttonOverlay);
@@ -118,6 +128,7 @@ var AuthHandler = (function () {
     AuthHandler.prototype.authenticate = function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
+            _this.rejectHandler = reject;
             if (_this.attestationInTab && !getBrowserData().brave) {
                 _this.tryingToGetAttestationInBackground = true;
             }
@@ -134,7 +145,7 @@ var AuthHandler = (function () {
                     _this.postMessageAttestationListener(e, resolve, reject);
                 }
             });
-            _this.openAttestationApp();
+            _this.openAttestationApp(reject);
         });
     };
     AuthHandler.prototype.createIframe = function () {

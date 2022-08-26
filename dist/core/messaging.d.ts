@@ -11,6 +11,8 @@ export interface ResponseInterfaceBase {
     evt: string;
     data?: any;
     errors?: string[];
+    max_width?: string;
+    min_height?: string;
 }
 export declare enum ResponseActionBase {
     COOKIE_CHECK = "cookie-check",
@@ -25,6 +27,8 @@ declare global {
 }
 export declare class Messaging {
     iframeStorageSupport: null | boolean;
+    iframe: any;
+    listenerSet: boolean;
     sendMessage(request: RequestInterfaceBase, forceTab?: boolean): Promise<ResponseInterfaceBase>;
     private sendIframe;
     private sendPopup;

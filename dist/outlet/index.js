@@ -34,14 +34,12 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-import { rawTokenCheck, readMagicUrl, storeMagicURL } from "../core";
-import { logger, requiredParams } from "../utils";
-import { decodeTokens, filterTokens } from "../core";
+import { rawTokenCheck, readMagicUrl, storeMagicURL, decodeTokens, filterTokens } from "../core";
+import { logger, requiredParams, uint8toBuffer } from "../utils";
 import { OutletAction, OutletResponseAction } from "../client/messaging";
 import { AuthHandler } from "./auth-handler";
 import { SignedDevconTicket } from "@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket";
 import { AsnParser } from "@peculiar/asn1-schema";
-import { uint8toBuffer } from "../utils";
 import { ResponseActionBase } from "../core/messaging";
 var defaultConfig = {
     tokenUrlName: "ticket",
@@ -200,10 +198,8 @@ var Outlet = (function () {
         else {
             target = window.opener;
         }
-        var pUrl = new URL(document.referrer);
-        origin = pUrl.origin;
         if (target)
-            target.postMessage(response, origin);
+            target.postMessage(response, "*");
     };
     return Outlet;
 }());

@@ -75,7 +75,7 @@ var TicketZKProof = (function (_super) {
     TicketZKProof.prototype.getTokenProof = function (issuerConfig, tokens, request) {
         var _a;
         return __awaiter(this, void 0, void 0, function () {
-            var useEthKey, unChallenge, unRes, res, proof;
+            var useEthKey, unChallenge, unRes, useEthKeyAddress, res, proof;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -90,17 +90,19 @@ var TicketZKProof = (function (_super) {
                         unRes = _b.sent();
                         useEthKey = unRes.data;
                         _b.label = 2;
-                    case 2: return [4, this.messaging.sendMessage({
-                            action: OutletAction.GET_PROOF,
-                            origin: issuerConfig.tokenOrigin,
-                            timeout: 0,
-                            data: {
-                                issuer: issuerConfig.collectionID,
-                                token: tokens[0],
-                                address: request.address ? request.address : (useEthKey ? useEthKey.address : ""),
-                                wallet: request.wallet ? request.wallet : ""
-                            }
-                        }, request.options.messagingForceTab, this.client.getUi())];
+                    case 2:
+                        useEthKeyAddress = useEthKey ? useEthKey.address : "";
+                        return [4, this.messaging.sendMessage({
+                                action: OutletAction.GET_PROOF,
+                                origin: issuerConfig.tokenOrigin,
+                                timeout: 0,
+                                data: {
+                                    issuer: issuerConfig.collectionID,
+                                    token: tokens[0],
+                                    address: request.address ? request.address : useEthKeyAddress,
+                                    wallet: request.wallet ? request.wallet : ""
+                                }
+                            }, request.options.messagingForceTab, this.client.getUi())];
                     case 3:
                         res = _b.sent();
                         if (!res.data.proof)

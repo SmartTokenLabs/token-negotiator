@@ -186,8 +186,6 @@ export var getRawToken = function (unsignedToken, tokenIssuer) {
         }
         return token_1;
     }
-    else {
-        return null;
-    }
+    return null;
 };
 //# sourceMappingURL=index.js.map

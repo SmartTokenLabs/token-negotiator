@@ -1,3 +1,14 @@
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -35,10 +46,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 import { Messaging } from "../client/messaging";
-import { uint8tohex } from "@tokenscript/attestation/dist/libs/utils";
 import { KeyStore } from "@tokenscript/attestation/dist/safe-connect/KeyStore";
 import { AttestedAddress } from "../client/auth/attestedAddress";
 import { SafeConnectChallenge } from "../client/auth/safeConnectChallenge";
+import { SafeConnect } from "../client/auth/util/SafeConnect";
 export var SafeConnectAction;
 (function (SafeConnectAction) {
     SafeConnectAction["CONNECT"] = "connect";
@@ -87,10 +98,7 @@ var SafeConnectProvider = (function () {
                 proofModel = new AttestedAddress();
                 proofData = {
                     type: proofModel.TYPE,
-                    data: {
-                        attestation: attest.data.attestation,
-                        address: attest.data.address
-                    },
+                    data: __assign({ expiry: attest.expiry }, attest.data),
                     target: {
                         address: attest.data.address
                     }
@@ -112,20 +120,20 @@ var SafeConnectProvider = (function () {
     };
     SafeConnectProvider.prototype.getInitialProofRequest = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var request, holdingKey;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var request, _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         request = {};
                         if (!this.options.initialProof)
                             return [2];
                         request.type = this.options.initialProof;
                         if (!(this.options.initialProof !== "simple_challenge")) return [3, 2];
-                        return [4, this.keyStore.getOrCreateKey(SafeConnectProvider.HOLDING_KEY_ALGORITHM)];
+                        _a = request;
+                        return [4, SafeConnect.getLinkPublicKey()];
                     case 1:
-                        holdingKey = _a.sent();
-                        request.subject = uint8tohex(holdingKey.holdingPubKey);
-                        _a.label = 2;
+                        _a.subject = _b.sent();
+                        _b.label = 2;
                     case 2: return [2, request];
                 }
             });
@@ -152,20 +160,6 @@ var SafeConnectProvider = (function () {
             });
         });
     };
-    SafeConnectProvider.prototype.getLinkSigningKey = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var keys;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, this.keyStore.getOrCreateKey(SafeConnectProvider.HOLDING_KEY_ALGORITHM)];
-                    case 1:
-                        keys = _a.sent();
-                        return [2, keys.attestHoldingKey.privateKey];
-                }
-            });
-        });
-    };
-    SafeConnectProvider.HOLDING_KEY_ALGORITHM = "RSASSA-PKCS1-v1_5";
     return SafeConnectProvider;
 }());
 export { SafeConnectProvider };
