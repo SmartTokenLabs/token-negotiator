@@ -3,7 +3,6 @@ import {TokenListItemInterface, TokenList} from "./token-list";
 import {IconView} from "./icon-view";
 import { logger } from "../../utils";
 import {UIUpdateEventType} from "../index";
-import {SelectWallet} from "./select-wallet";
 
 export class SelectIssuers extends AbstractView {
 
