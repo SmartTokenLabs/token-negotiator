@@ -219,12 +219,7 @@ export class Client {
 	}
 
 	async negotiate(issuers?: OnChainTokenConfig | OffChainTokenConfig[], openPopup = false) {
-		// this.tokenFrontProvider.getNFTCollection('0x2170ed0880ac9a755fd29b2688956bd959f933f8', 1, '1');
-		console.log('123')
-		const dt = new TokenFrontService();
-		const k = await dt.getNFTCollection('0x2170ed0880ac9a755fd29b2688956bd959f933f8', 1, '1');
-		console.log('here....', k)
-		// this.tokenFrontService.getNFTCollection('0x2170ed0880ac9a755fd29b2688956bd959f933f8', 1, '1');
+
 		try {
 			this.checkUserAgentSupport("full");
 		} catch(err){
