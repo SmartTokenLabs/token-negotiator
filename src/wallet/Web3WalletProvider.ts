@@ -27,8 +27,21 @@ export class Web3WalletProvider {
 	constructor(client: Client, safeConnectOptions?: SafeConnectOptions) {
 		this.client = client;
 		this.safeConnectOptions = safeConnectOptions;
+		this.getConnectionByIndex = this.getConnectionByIndex;
 	}
 
+	getConnectionByIndex(connectionIndex:number){
+		let index = 0;
+		let connection = null;
+		for (let address in this.connections){
+			if(connectionIndex === index){
+				connection = this.connections[address];
+			}
+			index++;
+		};
+		return connection;
+	}
+	
 	saveConnections(){
 
 		let savedConnections: WalletConnectionState = {};

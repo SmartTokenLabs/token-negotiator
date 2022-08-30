@@ -392,6 +392,16 @@ Key values applied to all tokens.
 
 ````
 
+## Web3 Wallet Connection 
+
+Get wallet connection instances.
+
+````javascript
+
+  const connectedWallet = negotiator.getConnectionByIndex(0);
+
+````
+
 ## Token Issuers
 
 ```javascript
