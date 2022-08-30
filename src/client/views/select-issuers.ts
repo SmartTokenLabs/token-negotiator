@@ -30,6 +30,7 @@ export class SelectIssuers extends AbstractView {
                 <div class="brand-tn"></div>
                 <div class="headline-container-tn">
                   <p class="headline-tn">${this.params.options.issuerHeading}</p>
+                  <button class="btn-tn dis-wallet-tn" aria-label="Disconnect Wallet">Disconnect</button>
                 </div>
 								<nav>
                 	<ul class="token-issuer-list-container-tn" role="menubar"></ul>
@@ -37,7 +38,7 @@ export class SelectIssuers extends AbstractView {
               </div>
               <div class="token-view-tn scroll-tn" style="display: none;">
                 <div class="brand-tn"></div>
-                <div style="display: flex">
+                <div style="display: flex; align-items: center;">
                   <button aria-label="back to token issuer menu" class="back-to-menu-tn">
                     <svg style="position: relative; top: 1px;" width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
                         <g fill="none" fill-rule="evenodd">
@@ -53,6 +54,10 @@ export class SelectIssuers extends AbstractView {
         `;
 
 		this.viewContainer.querySelector('.back-to-menu-tn').addEventListener('click', this.backToIssuers.bind(this));
+
+		this.viewContainer.querySelector('.dis-wallet-tn').addEventListener('click', () => {
+			this.client.disconnectWallet();
+		});
 
 		this.issuerListContainer = document.querySelector(".token-issuer-list-container-tn");
 		this.tokensContainer = document.getElementsByClassName("token-view-tn")[0];
