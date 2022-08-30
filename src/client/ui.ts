@@ -259,4 +259,16 @@ export class Ui {
 		}
 
 	}
+
+	switchTheme(newTheme: string) {
+		const refTokenSelector = document.querySelector(".overlay-tn");
+		if (refTokenSelector) {
+			if (this.options.theme) {
+				refTokenSelector.classList.remove(`${this.options.theme}-tn`);
+			}
+
+			refTokenSelector.classList.add(`${newTheme}-tn`);
+			this.options.theme = newTheme;
+		}
+	}
 }

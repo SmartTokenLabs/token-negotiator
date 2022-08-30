@@ -13,8 +13,10 @@
     <link rel="stylesheet" href="./token-negotiator-dist/theme/style.css" />
   </head>
   <body onload="init()">
+    <button onclick="switchTheme()">Switch theme</button>
     <div class="overlay-tn"></div>
     <script>
+      var theme = 'dark';
       function init() {
             window.negotiator = new negotiator.Client({
                 type: 'active',
@@ -61,7 +63,7 @@
                     openingHeading: "Open a new world of discounts available with your tokens.",
                     issuerHeading: "Get discount with Ticket",
                     repeatAction: "try again",
-                    theme: "light",
+                    theme: theme,
                     position: "top-right"
                 },
                 unSupportedUserAgent: {
@@ -93,6 +95,15 @@
         });
 
         window.negotiator.negotiate();
+      }
+
+      function switchTheme() {
+        console.log('old theme ==>', theme);
+
+        theme = theme === 'dark' ? 'light' : 'dark';
+        window.negotiator.switchTheme(theme);
+
+        console.log('new theme ==>', theme);
       }
     </script>
   </body>
