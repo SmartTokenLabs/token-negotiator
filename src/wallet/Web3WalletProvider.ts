@@ -11,7 +11,7 @@ interface WalletConnection {
 	address: string,
 	chainId: number|string,
 	providerType: string,
-	blockChain: string,
+	blockchain: string,
 	provider?: ethers.providers.Web3Provider,
 }
 
@@ -40,11 +40,25 @@ export class Web3WalletProvider {
 				address: con.address,
 				chainId: con.chainId,
 				providerType: con.providerType,
-				blockChain: con.blockChain
+				blockchain: con.blockchain
 			};
+			
 		}
 
 		localStorage.setItem(Web3WalletProvider.LOCAL_STORAGE_KEY, JSON.stringify(savedConnections));
+
+	}
+
+	emitSavedConnection(address:string) {
+		if(
+			Object.keys(this.connections).length &&
+			address
+		) {
+			this.client.eventSender.emitConnectedWalletInstance(this.connections[address.toLocaleLowerCase()]);
+			return this.connections[address.toLocaleLowerCase()];
+		} else {
+			return null;
+		}
 	}
 
 	deleteConnections(){
@@ -72,6 +86,7 @@ export class Web3WalletProvider {
 				console.log("Wallet couldn't connect" + e.message);
 				delete state[address];
 				this.saveConnections();
+				this.emitSavedConnection(address);
 			}
 		}
 	}
@@ -88,6 +103,8 @@ export class Web3WalletProvider {
 			logger(2, 'address', address);
 
 			this.saveConnections();
+
+			this.emitSavedConnection(address);
 
 			return address;
              
@@ -123,9 +140,9 @@ export class Web3WalletProvider {
 		return Object.values(this.connections);
 	}
 
-	registerNewWalletAddress ( address: string, chainId: number|string, providerType: string, provider: any, blockChain = 'evm' ) {
+	registerNewWalletAddress ( address: string, chainId: number|string, providerType: string, provider: any, blockchain = 'evm' ) {
 
-		this.connections[address.toLowerCase()] = { address, chainId, providerType, provider, blockChain };
+		this.connections[address.toLowerCase()] = { address, chainId, providerType, provider, blockchain };
 
 		return address;
 	}
@@ -158,6 +175,8 @@ export class Web3WalletProvider {
 			this.registerNewWalletAddress(curAccount, chainId, providerName, provider);
 
 			this.saveConnections();
+
+			this.emitSavedConnection(curAccount);
 
 			this.client.getTokenStore().clearCachedTokens();
 			this.client.enrichTokenLookupDataOnChainTokens();

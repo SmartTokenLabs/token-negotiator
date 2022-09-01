@@ -110,6 +110,9 @@ var Client = (function () {
                 if (issuer === void 0) { issuer = "none"; }
                 _this.checkInternetConnectivity();
                 _this.on("error", null, { error: error, issuer: issuer });
+            },
+            emitConnectedWalletInstance: function (connectedWallet) {
+                _this.on("connected-wallet", null, connectedWallet);
             }
         };
         this.config = this.mergeConfig(defaultConfig, config);
@@ -163,6 +166,22 @@ var Client = (function () {
                         this.web3WalletProvider = new Web3WalletProvider(this, this.config.safeConnectOptions);
                         _a.label = 2;
                     case 2: return [2, this.web3WalletProvider];
+                }
+            });
+        });
+    };
+    Client.prototype.disconnectWallet = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var wp;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, this.getWalletProvider()];
+                    case 1:
+                        wp = _a.sent();
+                        wp.deleteConnections();
+                        this.tokenStore.clearCachedTokens();
+                        this.ui.updateUI(SelectWallet);
+                        return [2];
                 }
             });
         });

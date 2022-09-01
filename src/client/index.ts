@@ -578,6 +578,9 @@ export class Client {
 			this.checkInternetConnectivity();
 
 			this.on("error", null, {error, issuer});
+		},
+		emitConnectedWalletInstance: (connectedWallet: any) => {
+			this.on("connected-wallet", null, connectedWallet);
 		}
 	};
 

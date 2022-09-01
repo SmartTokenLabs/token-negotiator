@@ -65,6 +65,9 @@
 
 .overlay-tn.light-tn .headline-container-tn {
   border-bottom: 1px solid #ececec;
+  display: flex;
+  align-items: center;
+  padding-top: 8px;
 }
 
 .overlay-tn.light-tn .overlay-content-tn .token-tn {
@@ -335,6 +338,10 @@
   margin: 1rem;
 }
 
+.dis-wallet-tn {
+  margin: 5px 10px;
+}
+
 .stl-tn {
   cursor: pointer;
 }
@@ -413,7 +420,7 @@
 .overlay-tn .overlay-content-tn .headline-tn {
   width: auto;
   margin: 0;
-  padding: 21px 12px 13px 12px;
+  padding: 13px 12px 13px 12px;
   font-size: 1.2rem; 
   font-size: max(1.2rem, 18px);
   font-weight: bold;
