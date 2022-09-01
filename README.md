@@ -306,7 +306,7 @@ Authenticating ownership of the token will provide a proof with a limited expiry
 ````javascript
 
   /**
-  * @returns {String} issuer token issuer
+  * @param {String} issuer token issuer
   * @param {Object} unsignedToken token to attest
   */
   negotiator.authenticate({ 
