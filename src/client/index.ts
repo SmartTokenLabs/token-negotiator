@@ -628,4 +628,8 @@ export class Client {
 			}
 		}
 	}
+
+	switchTheme(newTheme: string) {
+		this.ui.switchTheme(newTheme);
+	}
 }

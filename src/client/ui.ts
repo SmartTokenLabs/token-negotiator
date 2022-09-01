@@ -62,7 +62,7 @@ export class Ui {
 
 				this.initializeUIType();
 
-				this.addTheme();
+				this.setTheme(this.options?.theme ?? 'light');
 
 				this.viewContainer = this.popupContainer.querySelector(".view-content-tn");
 				this.loadContainer = this.popupContainer.querySelector(".load-container-tn");
@@ -241,10 +241,12 @@ export class Ui {
 		this.loadContainer.style.display = 'none';
 	}
 
-	private addTheme() {
+	private setTheme(theme: string) {
 		let refTokenSelector = document.querySelector(".overlay-tn");
 		if (refTokenSelector) {
-			refTokenSelector.classList.add((this.options?.theme ?? 'light') + "-tn");
+			theme = this.validateTheme(theme);
+			refTokenSelector.classList.add(theme + "-tn");
+			this.options.theme = theme;
 		}
 	}
 
@@ -258,5 +260,17 @@ export class Ui {
 
 		}
 
+	}
+
+	private validateTheme(theme: string): string {
+		if (theme && theme === 'dark') {
+			return theme
+		}
+
+		return 'light';
+	}
+
+	switchTheme(newTheme: string) {
+		this.setTheme(newTheme);
 	}
 }
