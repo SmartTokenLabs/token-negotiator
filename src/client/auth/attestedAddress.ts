@@ -40,7 +40,7 @@ export class AttestedAddress extends AbstractAuthentication implements Authentic
 
 				let challenge = await SafeConnect.getChallenge(web3WalletProvider.safeConnectOptions.url, wallet.address);
 
-				let signature = await web3WalletProvider.signWith(challenge.messageToSign, wallet.provider);
+				let signature = await web3WalletProvider.signMessage(wallet.address, challenge.messageToSign);
 
 				// this.getUi().showLoader("Issuing Attestation");
 

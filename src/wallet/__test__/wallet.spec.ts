@@ -47,10 +47,10 @@ describe('wallet spec', () => {
 	test('web3WalletProvider method registerNewWalletAddress and getConnectedWalletData', async () => {
 		const walletConnectProvider = await import("../WalletConnectProvider");
 		const walletConnect = await walletConnectProvider.getWalletConnectProviderInstance();
-		expect(web3WalletProvider.registerNewWalletAddress('0x123', '1', walletConnect)[0].address).toEqual('0x123');
+		expect(web3WalletProvider.registerNewWalletAddress('0x123', '1', 'MetaMask', walletConnect)).toEqual('0x123');
 		const TorusProvider = await import("../TorusProvider");
 		const torus = await TorusProvider.getTorusProviderInstance();
-		expect(web3WalletProvider.registerNewWalletAddress('0x12345', '1', torus.provider)[1].address).toEqual('0x12345');
+		expect(web3WalletProvider.registerNewWalletAddress('0x12345', '1', 'phantom', torus.provider)).toEqual('0x12345');
 		expect(web3WalletProvider.getConnectedWalletData()).toBeDefined();
 	});
 
