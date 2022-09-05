@@ -66,7 +66,7 @@ var SelectWallet = (function (_super) {
         var _this = this;
         var MetaMaskButton = (typeof window.ethereum !== 'undefined') ?
             "<button class=\"wallet-button-tn\" data-wallet=\"MetaMask\" aria-label=\"Metamask wallet button\">\n                ".concat(metaMaskSVG, "\n                <p>MetaMask</p>\n            </button>") : '';
-        var PhantomButton = (typeof window.solana !== 'undefined') ?
+        var PhantomButton = this.client.solanaAvailable() ?
             "<button class=\"wallet-button-tn\" data-wallet=\"Phantom\">\n                ".concat(phantomSVG, "\n                <p>Phantom</p>\n            </button>") : '';
         var SafeConnectButton = this.client.safeConnectAvailable() ?
             "<button class=\"wallet-button-tn\" data-wallet=\"SafeConnect\" aria-label=\"Safe connect wallet button\">\n\t\t\t  ".concat(safeConnectSVG, "\n\t\t\t  <p>Safe Connect</p>\n\t\t\t</button>") : '';
