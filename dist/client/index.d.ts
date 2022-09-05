@@ -40,7 +40,9 @@ export declare class Client {
     triggerUiUpdateCallback(type: UIUpdateEventType, data?: {}): void;
     registerUiUpdateCallback(type: UIUpdateEventType, callback: Function): void;
     safeConnectAvailable(): boolean;
+    solanaAvailable(): boolean;
     getWalletProvider(): Promise<Web3WalletProvider>;
+    disconnectWallet(): Promise<void>;
     negotiatorConnectToWallet(walletType: string): Promise<any>;
     enrichTokenLookupDataOnChainTokens(): Promise<void>;
     checkUserAgentSupport(type: string): void;
@@ -66,4 +68,5 @@ export declare class Client {
     checkInternetConnectivity(): void;
     addTokenViaMagicLink(magicLink: any): Promise<any>;
     on(type: string, callback?: any, data?: any): any;
+    switchTheme(newTheme: string): void;
 }

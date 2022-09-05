@@ -31,6 +31,16 @@ function getOnChainConfigClient() {
 	});
 }
 
+function getOnChainSolanaConfigClient() {
+	return new Client({
+		type: "active",
+		issuers: [
+			{ collectionID: "penthouse-panther-club", collectionAddress: "ff846ef2eed57e5367cf8826e63f4d53fe28d28aa67417accb6e4b48cbd19136", onChain: true, collectionSymbol: "PPC", chain: "mainnet", blockchain: "solana" }
+		],
+		options: {}
+	});
+}
+
 describe('client spec', () => {
 
 	test('tokenNegotiatorClient a failed new instance of client - missing issuers key', () => {
@@ -106,6 +116,23 @@ describe('client spec', () => {
 	test('tokenNegotiatorClient method safeConnectAvailable', () => {
 		const tokenNegotiatorClient = getOffChainConfigClient();
 		expect(tokenNegotiatorClient.safeConnectAvailable()).toBe(false);
+	});
+
+	test('tokenNegotiatorClient method solanaAvailable will return false with no window.solana instance', () => {
+		const tokenNegotiatorClient = getOnChainSolanaConfigClient();
+		expect(tokenNegotiatorClient.solanaAvailable()).toBe(false);
+	});
+	
+	test('tokenNegotiatorClient method solanaAvailable should show Solana', () => {
+		const tokenNegotiatorClient = getOnChainSolanaConfigClient();
+		window.solana = jest.fn({ instance: true });
+		expect(tokenNegotiatorClient.solanaAvailable()).toBe(true);
+	});
+	
+	test('tokenNegotiatorClient method solanaAvailable should not show Solana with no required issuer tokens', () => {
+		const tokenNegotiatorClient = getOnChainConfigClient();
+		window.solana = jest.fn({ instance: true }); // 
+		expect(tokenNegotiatorClient.solanaAvailable()).toBe(false);
 	});
 
 	test('tokenNegotiatorClient method getWalletProvider', async () => {
@@ -328,24 +355,5 @@ describe('client spec', () => {
 			expect(err).toEqual(new Error("Provided issuer was not found."));
 		}
 	});
-
-	// TOOD Mock response from window
-	// test('tokenNegotiatorClient method addTokenViaMagicLink to succeed in collection of tokens', async () => {
-	// 	window.open = jest.fn({
-	// 		data: { 
-	// 			evt: "issuer-tokens"
-	// 		},
-	// 		tokens: [
-	// 			{ 
-	// 				class: "web3",  
-	// 				colour: "gold",
-	// 				vip: "true"
-	// 			}
-	// 		]
-	// 	});
-	// 	const tokenNegotiatorClient = getOffChainConfigClient();
-	// 	const output = await tokenNegotiatorClient.addTokenViaMagicLink("https://en.wikipedia.org/wiki/Gavin_Wood?ticket=test&secret=test&id=test");
-	// 	expect(output).toEqual({});
-	// });
   
 });

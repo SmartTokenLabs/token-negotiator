@@ -82,7 +82,7 @@ var SignedUNChallenge = (function (_super) {
                             }
                         }
                         if (!!currentProof) return [3, 7];
-                        walletConnection = web3WalletProvider.getConnectedWalletData()[0].provider;
+                        walletConnection = web3WalletProvider.getWalletProvider(address);
                         currentProof = {
                             type: this.TYPE,
                             data: {},
@@ -100,7 +100,7 @@ var SignedUNChallenge = (function (_super) {
                     case 3:
                         signature = _c.sent();
                         return [3, 6];
-                    case 4: return [4, web3WalletProvider.signWith(challenge.messageToSign, walletConnection)];
+                    case 4: return [4, web3WalletProvider.signMessage(address, challenge.messageToSign)];
                     case 5:
                         signature = _c.sent();
                         _c.label = 6;
