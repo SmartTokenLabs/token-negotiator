@@ -244,6 +244,7 @@ export class Ui {
 	private setTheme(theme: string) {
 		let refTokenSelector = document.querySelector(".overlay-tn");
 		if (refTokenSelector) {
+			refTokenSelector.classList.remove(this.options.theme + "-tn");
 			theme = this.validateTheme(theme);
 			refTokenSelector.classList.add(theme + "-tn");
 			this.options.theme = theme;
