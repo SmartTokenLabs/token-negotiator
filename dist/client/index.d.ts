@@ -64,6 +64,7 @@ export declare class Client {
         emitSelectedTokensToClient: (tokens: any) => void;
         emitProofToClient: (data: any, issuer: any, error?: string) => void;
         emitErrorToClient: (error: Error, issuer?: string) => void;
+        emitConnectedWalletInstance: (connectedWallet: any) => void;
     };
     checkInternetConnectivity(): void;
     addTokenViaMagicLink(magicLink: any): Promise<any>;

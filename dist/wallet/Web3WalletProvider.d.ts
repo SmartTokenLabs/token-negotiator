@@ -8,7 +8,7 @@ interface WalletConnection {
     address: string;
     chainId: number | string;
     providerType: string;
-    blockChain: string;
+    blockchain: string;
     provider?: ethers.providers.Web3Provider;
 }
 export declare class Web3WalletProvider {
@@ -18,13 +18,14 @@ export declare class Web3WalletProvider {
     client: Client;
     constructor(client: Client, safeConnectOptions?: SafeConnectOptions);
     saveConnections(): void;
+    emitSavedConnection(address: string): WalletConnection;
     deleteConnections(): void;
     loadConnections(): Promise<void>;
     connectWith(walletType: string, checkConnectionOnly?: boolean): any;
     signMessage(address: string, message: string): Promise<string>;
     getWalletProvider(address: string): ethers.providers.Web3Provider;
     getConnectedWalletData(): WalletConnection[];
-    registerNewWalletAddress(address: string, chainId: number | string, providerType: string, provider: any, blockChain?: string): string;
+    registerNewWalletAddress(address: string, chainId: number | string, providerType: string, provider: any, blockchain?: string): string;
     private registerProvider;
     MetaMask(checkConnectionOnly: boolean): Promise<string>;
     WalletConnect(checkConnectionOnly: boolean): Promise<unknown>;

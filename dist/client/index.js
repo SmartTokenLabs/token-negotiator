@@ -110,6 +110,9 @@ var Client = (function () {
                 if (issuer === void 0) { issuer = "none"; }
                 _this.checkInternetConnectivity();
                 _this.on("error", null, { error: error, issuer: issuer });
+            },
+            emitConnectedWalletInstance: function (connectedWallet) {
+                _this.on("connected-wallet", null, connectedWallet);
             }
         };
         this.config = this.mergeConfig(defaultConfig, config);

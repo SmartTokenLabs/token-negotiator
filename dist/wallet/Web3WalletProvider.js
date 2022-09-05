@@ -50,10 +50,20 @@ var Web3WalletProvider = (function () {
                 address: con.address,
                 chainId: con.chainId,
                 providerType: con.providerType,
-                blockChain: con.blockChain
+                blockchain: con.blockchain
             };
         }
         localStorage.setItem(Web3WalletProvider.LOCAL_STORAGE_KEY, JSON.stringify(savedConnections));
+    };
+    Web3WalletProvider.prototype.emitSavedConnection = function (address) {
+        if (Object.keys(this.connections).length &&
+            address) {
+            this.client.eventSender.emitConnectedWalletInstance(this.connections[address.toLocaleLowerCase()]);
+            return this.connections[address.toLocaleLowerCase()];
+        }
+        else {
+            return null;
+        }
     };
     Web3WalletProvider.prototype.deleteConnections = function () {
         this.connections = {};
@@ -92,6 +102,7 @@ var Web3WalletProvider = (function () {
                         console.log("Wallet couldn't connect" + e_1.message);
                         delete state[address];
                         this.saveConnections();
+                        this.emitSavedConnection(address);
                         return [3, 5];
                     case 5:
                         _i++;
@@ -116,6 +127,7 @@ var Web3WalletProvider = (function () {
                         address = _a.sent();
                         logger(2, 'address', address);
                         this.saveConnections();
+                        this.emitSavedConnection(address);
                         return [2, address];
                     case 2: throw new Error('Wallet type not found');
                 }
@@ -146,9 +158,9 @@ var Web3WalletProvider = (function () {
     Web3WalletProvider.prototype.getConnectedWalletData = function () {
         return Object.values(this.connections);
     };
-    Web3WalletProvider.prototype.registerNewWalletAddress = function (address, chainId, providerType, provider, blockChain) {
-        if (blockChain === void 0) { blockChain = 'evm'; }
-        this.connections[address.toLowerCase()] = { address: address, chainId: chainId, providerType: providerType, provider: provider, blockChain: blockChain };
+    Web3WalletProvider.prototype.registerNewWalletAddress = function (address, chainId, providerType, provider, blockchain) {
+        if (blockchain === void 0) { blockchain = 'evm'; }
+        this.connections[address.toLowerCase()] = { address: address, chainId: chainId, providerType: providerType, provider: provider, blockchain: blockchain };
         return address;
     };
     Web3WalletProvider.prototype.registerProvider = function (provider, providerName) {
@@ -176,6 +188,7 @@ var Web3WalletProvider = (function () {
                             curAccount = accounts[0];
                             _this.registerNewWalletAddress(curAccount, chainId, providerName, provider);
                             _this.saveConnections();
+                            _this.emitSavedConnection(curAccount);
                             _this.client.getTokenStore().clearCachedTokens();
                             _this.client.enrichTokenLookupDataOnChainTokens();
                         });
