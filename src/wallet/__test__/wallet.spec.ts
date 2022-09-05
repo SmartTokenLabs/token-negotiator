@@ -43,6 +43,18 @@ describe('wallet spec', () => {
 			expect(err).toEqual(new Error('Wallet type not found'));
 		}
 	});
+	
+	test('web3WalletProvider emit saved connection to return null where no connections are configured', async () => {
+		const savedConnection = web3WalletProvider.emitSavedConnection('0x1263b90F4e1DFe89A8f9E623FF57adb252851fC3');
+		expect(savedConnection).toEqual(null);
+	});
+	
+	test('web3WalletProvider emit saved connection with data', async () => {
+		const walletConnectProvider = await import("../WalletConnectProvider");
+		const walletConnect = await walletConnectProvider.getWalletConnectProviderInstance();
+		web3WalletProvider.registerNewWalletAddress('0x1263b90F4e1DFe89A8f9E623FF57adb252851fC3'.toLocaleLowerCase(), '1', 'MetaMask', walletConnect);
+		web3WalletProvider.emitSavedConnection('0x1263b90F4e1DFe89A8f9E623FF57adb252851fC3');
+	});
 
 	test('web3WalletProvider method registerNewWalletAddress and getConnectedWalletData', async () => {
 		const walletConnectProvider = await import("../WalletConnectProvider");

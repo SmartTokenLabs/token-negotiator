@@ -91,6 +91,30 @@ describe('wallet spec', function () {
             }
         });
     }); });
+    test('web3WalletProvider emit saved connection to return null where no connections are configured', function () { return __awaiter(void 0, void 0, void 0, function () {
+        var savedConnection;
+        return __generator(this, function (_a) {
+            savedConnection = web3WalletProvider.emitSavedConnection('0x1263b90F4e1DFe89A8f9E623FF57adb252851fC3');
+            expect(savedConnection).toEqual(null);
+            return [2];
+        });
+    }); });
+    test('web3WalletProvider emit saved connection with data', function () { return __awaiter(void 0, void 0, void 0, function () {
+        var walletConnectProvider, walletConnect;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4, import("../WalletConnectProvider")];
+                case 1:
+                    walletConnectProvider = _a.sent();
+                    return [4, walletConnectProvider.getWalletConnectProviderInstance()];
+                case 2:
+                    walletConnect = _a.sent();
+                    web3WalletProvider.registerNewWalletAddress('0x1263b90F4e1DFe89A8f9E623FF57adb252851fC3'.toLocaleLowerCase(), '1', 'MetaMask', walletConnect);
+                    web3WalletProvider.emitSavedConnection('0x1263b90F4e1DFe89A8f9E623FF57adb252851fC3');
+                    return [2];
+            }
+        });
+    }); });
     test('web3WalletProvider method registerNewWalletAddress and getConnectedWalletData', function () { return __awaiter(void 0, void 0, void 0, function () {
         var walletConnectProvider, walletConnect, TorusProvider, torus;
         return __generator(this, function (_a) {
@@ -101,14 +125,14 @@ describe('wallet spec', function () {
                     return [4, walletConnectProvider.getWalletConnectProviderInstance()];
                 case 2:
                     walletConnect = _a.sent();
-                    expect(web3WalletProvider.registerNewWalletAddress('0x123', '1', walletConnect)[0].address).toEqual('0x123');
+                    expect(web3WalletProvider.registerNewWalletAddress('0x123', '1', 'MetaMask', walletConnect)).toEqual('0x123');
                     return [4, import("../TorusProvider")];
                 case 3:
                     TorusProvider = _a.sent();
                     return [4, TorusProvider.getTorusProviderInstance()];
                 case 4:
                     torus = _a.sent();
-                    expect(web3WalletProvider.registerNewWalletAddress('0x12345', '1', torus.provider)[1].address).toEqual('0x12345');
+                    expect(web3WalletProvider.registerNewWalletAddress('0x12345', '1', 'phantom', torus.provider)).toEqual('0x12345');
                     expect(web3WalletProvider.getConnectedWalletData()).toBeDefined();
                     return [2];
             }

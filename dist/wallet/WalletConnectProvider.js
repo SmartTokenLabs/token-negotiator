@@ -35,9 +35,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 import WalletConnectProvider from "@walletconnect/web3-provider";
-export var getWalletConnectProviderInstance = function () { return __awaiter(void 0, void 0, void 0, function () {
+export var getWalletConnectProviderInstance = function (checkConnectionOnly) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
-        return [2, new WalletConnectProvider({ infuraId: "7753fa7b79d2469f97c156780fce37ac" })];
+        return [2, new WalletConnectProvider({ infuraId: "7753fa7b79d2469f97c156780fce37ac", qrcode: !checkConnectionOnly })];
     });
 }); };
 //# sourceMappingURL=WalletConnectProvider.js.map

@@ -322,6 +322,26 @@ Authenticating ownership of the token will provide a proof with a limited expiry
 
 ````
 
+### Utilise the wallet provider instance
+
+Once connected to Token Negotiator, the wallet instance can be used.
+
+````javascript
+
+  /**
+  * @returns {String} blockchain
+  * @returns {String} wallet address
+  * @return {String} chain id
+  * @return {String} providerType 'MetaMask'
+  * @return {Object} provider instance
+  */
+  negotiator.on('connected-wallet', (connectedWallet) => {
+    // handle the wallet instance as required by your application
+    // { ... }
+  });
+
+````
+
 ### For projects where you are not using a Node.js work flow.
 
 1. Go to the following URL: https://github.com/TokenScript/token-negotiator
