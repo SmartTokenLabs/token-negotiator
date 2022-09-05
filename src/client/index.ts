@@ -153,6 +153,13 @@ export class Client {
 		return this.web3WalletProvider;
 	}
 
+	public async disconnectWallet(){
+		let wp = await this.getWalletProvider();
+		wp.deleteConnections();
+		this.tokenStore.clearCachedTokens();
+		this.ui.updateUI(SelectWallet);
+	}
+
 	async negotiatorConnectToWallet(walletType: string) {
 
 		let walletProvider = await this.getWalletProvider();

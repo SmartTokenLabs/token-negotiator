@@ -3,29 +3,91 @@ import { logger } from "../utils";
 import {SafeConnectOptions} from "./SafeConnectProvider";
 import {Client} from "../client";
 
+interface WalletConnectionState {
+	[index: string]: WalletConnection
+}
+
+interface WalletConnection {
+	address: string,
+	chainId: number|string,
+	providerType: string,
+	blockChain: string,
+	provider?: ethers.providers.Web3Provider,
+}
+
 export class Web3WalletProvider {
 
-	state: any;
+	private static LOCAL_STORAGE_KEY = "tn-wallet-connections";
+
+	connections: WalletConnectionState = {};
+
 	safeConnectOptions?: SafeConnectOptions;
 	client: Client;
 
 	constructor(client: Client, safeConnectOptions?: SafeConnectOptions) {
-
-		this.state = { addresses: [] }; // address, chainId, provider
-
 		this.client = client;
 		this.safeConnectOptions = safeConnectOptions;
 	}
 
-	async connectWith ( walletType: string ) {
+	saveConnections(){
+
+		let savedConnections: WalletConnectionState = {};
+
+		for (let address in this.connections){
+			let con = this.connections[address];
+
+			savedConnections[address] = {
+				address: con.address,
+				chainId: con.chainId,
+				providerType: con.providerType,
+				blockChain: con.blockChain
+			};
+		}
+
+		localStorage.setItem(Web3WalletProvider.LOCAL_STORAGE_KEY, JSON.stringify(savedConnections));
+	}
+
+	deleteConnections(){
+		this.connections = {};
+		localStorage.removeItem(Web3WalletProvider.LOCAL_STORAGE_KEY);
+	}
+
+	async loadConnections(){
+
+		let data = localStorage.getItem(Web3WalletProvider.LOCAL_STORAGE_KEY);
+
+		if (!data) return;
+
+		let state = JSON.parse(data);
+
+		if (!state) return;
+
+		for (let address in state){
+
+			let connection = state[address];
+
+			try {
+				await this.connectWith(connection.providerType, true);
+			} catch(e){
+				console.log("Wallet couldn't connect" + e.message);
+				delete state[address];
+				this.saveConnections();
+			}
+		}
+	}
+
+	async connectWith ( walletType: string, checkConnectionOnly = false ) {
 
 		if(!walletType) throw new Error('Please provide a Wallet type to connect with.');
 
 		if(this[walletType as keyof Web3WalletProvider]) {
-            
-			const address = await this[walletType as keyof Web3WalletProvider]();
+
+			// @ts-ignore
+			const address = await this[walletType as keyof Web3WalletProvider](checkConnectionOnly);
 
 			logger(2, 'address', address);
+
+			this.saveConnections();
 
 			return address;
              
@@ -37,47 +99,84 @@ export class Web3WalletProvider {
 
 	}
 
-	async signWith ( message: string, walletProvider: any ) {
+	async signMessage(address: string, message: string) {
 
-		let provider = new ethers.providers.Web3Provider(walletProvider);
+		let provider = this.getWalletProvider(address);
 
-		let signer = provider.getSigner();
-  
+		let signer = provider.getSigner(address);
+
 		return await signer.signMessage(message);
 
 	}
 
-	getConnectedWalletData () {
+	getWalletProvider(address: string) {
 
-		return this.state.addresses;
+		address = address.toLowerCase();
 
+		if (!this.connections[address]?.provider)
+			throw new Error("Wallet provider not found for address");
+
+		return this.connections[address].provider;
 	}
 
-	registerNewWalletAddress ( address: string, chainId: string, provider: any, blockChain='evm' ) {
-        
-		this.state.addresses.push({ address, chainId, provider, blockChain });
-
-		return this.state.addresses;
-
+	getConnectedWalletData() {
+		return Object.values(this.connections);
 	}
 
-	async MetaMask () {
+	registerNewWalletAddress ( address: string, chainId: number|string, providerType: string, provider: any, blockChain = 'evm' ) {
+
+		this.connections[address.toLowerCase()] = { address, chainId, providerType, provider, blockChain };
+
+		return address;
+	}
+
+	private async registerProvider(provider: ethers.providers.Web3Provider, providerName: string){
+
+		const accounts = await provider.listAccounts();
+		const chainId = (await provider.detectNetwork()).chainId;
+
+		if (accounts.length === 0){
+			throw new Error("No accounts found via wallet-connect.");
+		}
+
+		let curAccount = accounts[0];
+
+		this.registerNewWalletAddress(curAccount, chainId, providerName, provider);
+
+		// @ts-ignore
+		provider.provider.on("accountsChanged", (accounts) => {
+
+			if (curAccount === accounts[0])
+				return;
+
+			console.log("Account changed: " + accounts[0]);
+
+			delete this.connections[curAccount.toLowerCase()];
+
+			curAccount = accounts[0];
+
+			this.registerNewWalletAddress(curAccount, chainId, providerName, provider);
+
+			this.saveConnections();
+
+			this.client.getTokenStore().clearCachedTokens();
+			this.client.enrichTokenLookupDataOnChainTokens();
+		});
+
+		return accounts[0];
+	}
+
+	async MetaMask (checkConnectionOnly: boolean) {
 
 		logger(2, 'connect MetaMask');
       
 		if (typeof window.ethereum !== 'undefined') {
 
-			// @ts-ignore
-			// await ethereum.enable(); // fall back may be needed for FF to open Extension Prompt.
-            
-			const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-            
-			const hexChainId = await window.ethereum.request({ method: 'eth_chainId' });
+			await window.ethereum.enable(); // fall back may be needed for FF to open Extension Prompt.
 
-			const accountAddress = accounts[0];
+			const provider = new ethers.providers.Web3Provider(window.ethereum);
 
-			// @ts-ignore
-			return this.registerNewWalletAddress(accountAddress, parseInt(hexChainId, 16), ethereum);
+			return this.registerProvider(provider, "MetaMask");
 
 		} else {
 
@@ -87,28 +186,33 @@ export class Web3WalletProvider {
         
 	}
 
-	async WalletConnect () {
+	async WalletConnect (checkConnectionOnly: boolean) {
 
 		logger(2, 'connect Wallet Connect');
 
 		const walletConnectProvider = await import("./WalletConnectProvider");
 
-		const walletConnect = await walletConnectProvider.getWalletConnectProviderInstance();
+		const walletConnect = await walletConnectProvider.getWalletConnectProviderInstance(checkConnectionOnly);
 
-		await walletConnect.enable();
+		return new Promise((resolve, reject) => {
 
-		const provider = new ethers.providers.Web3Provider(walletConnect);
-		const accounts = await provider.listAccounts();
+			if (checkConnectionOnly){
+				walletConnect.connector.on("display_uri", (err, payload) => {
+					reject(new Error("Connection expired"));
+				});
+			}
 
-		if (accounts.length === 0){
-			throw new Error("No accounts found via wallet-connect.");
-		}
+			walletConnect.enable().then(() => {
+				const provider = new ethers.providers.Web3Provider(walletConnect);
 
-		return this.registerNewWalletAddress(accounts[0], '1',  walletConnect);
+				resolve(this.registerProvider(provider, "WalletConnect"));
+			}).catch((e) => reject(e));
+
+		})
 
 	}
 
-	async Torus () {
+	async Torus (checkConnectionOnly: boolean) {
 
 		const TorusProvider = await import("./TorusProvider");
 
@@ -119,35 +223,30 @@ export class Web3WalletProvider {
 		await torus.login();
 
 		const provider = new ethers.providers.Web3Provider(torus.provider);
-		const accounts = await provider.listAccounts();
 
-		if (accounts.length === 0){
-			throw new Error("No accounts found via wallet-connect.");
-		}
-
-		return this.registerNewWalletAddress(accounts[0], '1',  torus.provider);
+		return this.registerProvider(provider, "Torus");
 
 	}
 
 	async Phantom () {
 
 		logger(2, 'connect Phantom');
-    
+
 		if (typeof window.solana !== 'undefined') {
-            
+
 			const connection = await window.solana.connect();
 
-			const accountAddress:string = connection.publicKey.toBase58();
+			const accountAddress: string = connection.publicKey.toBase58();
 
-			// mainnet-beta, 
-			return this.registerNewWalletAddress(accountAddress, "mainnet-beta", window.solana, 'solana');
+			// mainnet-beta,
+			return this.registerNewWalletAddress(accountAddress, "mainnet-beta", 'phantom', window.solana, 'solana');
 
 		} else {
 
 			throw new Error("MetaMask is not available. Please check the extension is supported and active.");
 
 		}
-        
+
 	}
 
 	async SafeConnect(){
@@ -158,7 +257,7 @@ export class Web3WalletProvider {
 
 		const address = await provider.initSafeConnect();
 
-		this.registerNewWalletAddress(address, "1", provider);
+		this.registerNewWalletAddress(address, 1, "SafeConnect", provider);
 
 		return address;
 	}
