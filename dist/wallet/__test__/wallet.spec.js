@@ -101,14 +101,14 @@ describe('wallet spec', function () {
                     return [4, walletConnectProvider.getWalletConnectProviderInstance()];
                 case 2:
                     walletConnect = _a.sent();
-                    expect(web3WalletProvider.registerNewWalletAddress('0x123', '1', walletConnect)[0].address).toEqual('0x123');
+                    expect(web3WalletProvider.registerNewWalletAddress('0x123', '1', 'MetaMask', walletConnect)).toEqual('0x123');
                     return [4, import("../TorusProvider")];
                 case 3:
                     TorusProvider = _a.sent();
                     return [4, TorusProvider.getTorusProviderInstance()];
                 case 4:
                     torus = _a.sent();
-                    expect(web3WalletProvider.registerNewWalletAddress('0x12345', '1', torus.provider)[1].address).toEqual('0x12345');
+                    expect(web3WalletProvider.registerNewWalletAddress('0x12345', '1', 'phantom', torus.provider)).toEqual('0x12345');
                     expect(web3WalletProvider.getConnectedWalletData()).toBeDefined();
                     return [2];
             }

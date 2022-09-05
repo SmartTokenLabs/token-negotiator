@@ -142,6 +142,13 @@ export class Client {
 	public safeConnectAvailable(){
 		return this.config.safeConnectOptions !== undefined;
 	}
+	
+	public solanaAvailable(){
+		return  (
+			typeof window.solana !== 'undefined' &&
+			this.config.issuers.filter((issuer: any) => { return issuer?.blockchain?.toLowerCase() === 'solana' }).length > 0
+		) 
+	}
 
 	public async getWalletProvider(){
 

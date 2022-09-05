@@ -38,11 +38,71 @@ import { ethers } from "ethers";
 import { logger } from "../utils";
 var Web3WalletProvider = (function () {
     function Web3WalletProvider(client, safeConnectOptions) {
-        this.state = { addresses: [] };
+        this.connections = {};
         this.client = client;
         this.safeConnectOptions = safeConnectOptions;
     }
-    Web3WalletProvider.prototype.connectWith = function (walletType) {
+    Web3WalletProvider.prototype.saveConnections = function () {
+        var savedConnections = {};
+        for (var address in this.connections) {
+            var con = this.connections[address];
+            savedConnections[address] = {
+                address: con.address,
+                chainId: con.chainId,
+                providerType: con.providerType,
+                blockChain: con.blockChain
+            };
+        }
+        localStorage.setItem(Web3WalletProvider.LOCAL_STORAGE_KEY, JSON.stringify(savedConnections));
+    };
+    Web3WalletProvider.prototype.deleteConnections = function () {
+        this.connections = {};
+        localStorage.removeItem(Web3WalletProvider.LOCAL_STORAGE_KEY);
+    };
+    Web3WalletProvider.prototype.loadConnections = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var data, state, _a, _b, _i, address, connection, e_1;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        data = localStorage.getItem(Web3WalletProvider.LOCAL_STORAGE_KEY);
+                        if (!data)
+                            return [2];
+                        state = JSON.parse(data);
+                        if (!state)
+                            return [2];
+                        _a = [];
+                        for (_b in state)
+                            _a.push(_b);
+                        _i = 0;
+                        _c.label = 1;
+                    case 1:
+                        if (!(_i < _a.length)) return [3, 6];
+                        address = _a[_i];
+                        connection = state[address];
+                        _c.label = 2;
+                    case 2:
+                        _c.trys.push([2, 4, , 5]);
+                        return [4, this.connectWith(connection.providerType, true)];
+                    case 3:
+                        _c.sent();
+                        return [3, 5];
+                    case 4:
+                        e_1 = _c.sent();
+                        console.log("Wallet couldn't connect" + e_1.message);
+                        delete state[address];
+                        this.saveConnections();
+                        return [3, 5];
+                    case 5:
+                        _i++;
+                        return [3, 1];
+                    case 6: return [2];
+                }
+            });
+        });
+    };
+    Web3WalletProvider.prototype.connectWith = function (walletType, checkConnectionOnly) {
+        if (checkConnectionOnly === void 0) { checkConnectionOnly = false; }
         return __awaiter(this, void 0, void 0, function () {
             var address;
             return __generator(this, function (_a) {
@@ -51,62 +111,101 @@ var Web3WalletProvider = (function () {
                         if (!walletType)
                             throw new Error('Please provide a Wallet type to connect with.');
                         if (!this[walletType]) return [3, 2];
-                        return [4, this[walletType]()];
+                        return [4, this[walletType](checkConnectionOnly)];
                     case 1:
                         address = _a.sent();
                         logger(2, 'address', address);
+                        this.saveConnections();
                         return [2, address];
                     case 2: throw new Error('Wallet type not found');
                 }
             });
         });
     };
-    Web3WalletProvider.prototype.signWith = function (message, walletProvider) {
+    Web3WalletProvider.prototype.signMessage = function (address, message) {
         return __awaiter(this, void 0, void 0, function () {
             var provider, signer;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        provider = new ethers.providers.Web3Provider(walletProvider);
-                        signer = provider.getSigner();
+                        provider = this.getWalletProvider(address);
+                        signer = provider.getSigner(address);
                         return [4, signer.signMessage(message)];
                     case 1: return [2, _a.sent()];
                 }
             });
         });
     };
+    Web3WalletProvider.prototype.getWalletProvider = function (address) {
+        var _a;
+        address = address.toLowerCase();
+        if (!((_a = this.connections[address]) === null || _a === void 0 ? void 0 : _a.provider))
+            throw new Error("Wallet provider not found for address");
+        return this.connections[address].provider;
+    };
     Web3WalletProvider.prototype.getConnectedWalletData = function () {
-        return this.state.addresses;
+        return Object.values(this.connections);
     };
-    Web3WalletProvider.prototype.registerNewWalletAddress = function (address, chainId, provider, blockChain) {
+    Web3WalletProvider.prototype.registerNewWalletAddress = function (address, chainId, providerType, provider, blockChain) {
         if (blockChain === void 0) { blockChain = 'evm'; }
-        this.state.addresses.push({ address: address, chainId: chainId, provider: provider, blockChain: blockChain });
-        return this.state.addresses;
+        this.connections[address.toLowerCase()] = { address: address, chainId: chainId, providerType: providerType, provider: provider, blockChain: blockChain };
+        return address;
     };
-    Web3WalletProvider.prototype.MetaMask = function () {
+    Web3WalletProvider.prototype.registerProvider = function (provider, providerName) {
         return __awaiter(this, void 0, void 0, function () {
-            var accounts, hexChainId, accountAddress;
+            var accounts, chainId, curAccount;
+            var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0:
-                        logger(2, 'connect MetaMask');
-                        if (!(typeof window.ethereum !== 'undefined')) return [3, 3];
-                        return [4, window.ethereum.request({ method: 'eth_requestAccounts' })];
+                    case 0: return [4, provider.listAccounts()];
                     case 1:
                         accounts = _a.sent();
-                        return [4, window.ethereum.request({ method: 'eth_chainId' })];
+                        return [4, provider.detectNetwork()];
                     case 2:
-                        hexChainId = _a.sent();
-                        accountAddress = accounts[0];
-                        return [2, this.registerNewWalletAddress(accountAddress, parseInt(hexChainId, 16), ethereum)];
-                    case 3: throw new Error("MetaMask is not available. Please check the extension is supported and active.");
+                        chainId = (_a.sent()).chainId;
+                        if (accounts.length === 0) {
+                            throw new Error("No accounts found via wallet-connect.");
+                        }
+                        curAccount = accounts[0];
+                        this.registerNewWalletAddress(curAccount, chainId, providerName, provider);
+                        provider.provider.on("accountsChanged", function (accounts) {
+                            if (curAccount === accounts[0])
+                                return;
+                            console.log("Account changed: " + accounts[0]);
+                            delete _this.connections[curAccount.toLowerCase()];
+                            curAccount = accounts[0];
+                            _this.registerNewWalletAddress(curAccount, chainId, providerName, provider);
+                            _this.saveConnections();
+                            _this.client.getTokenStore().clearCachedTokens();
+                            _this.client.enrichTokenLookupDataOnChainTokens();
+                        });
+                        return [2, accounts[0]];
                 }
             });
         });
     };
-    Web3WalletProvider.prototype.WalletConnect = function () {
+    Web3WalletProvider.prototype.MetaMask = function (checkConnectionOnly) {
         return __awaiter(this, void 0, void 0, function () {
-            var walletConnectProvider, walletConnect, provider, accounts;
+            var provider;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        logger(2, 'connect MetaMask');
+                        if (!(typeof window.ethereum !== 'undefined')) return [3, 2];
+                        return [4, window.ethereum.enable()];
+                    case 1:
+                        _a.sent();
+                        provider = new ethers.providers.Web3Provider(window.ethereum);
+                        return [2, this.registerProvider(provider, "MetaMask")];
+                    case 2: throw new Error("MetaMask is not available. Please check the extension is supported and active.");
+                }
+            });
+        });
+    };
+    Web3WalletProvider.prototype.WalletConnect = function (checkConnectionOnly) {
+        return __awaiter(this, void 0, void 0, function () {
+            var walletConnectProvider, walletConnect;
+            var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -114,27 +213,27 @@ var Web3WalletProvider = (function () {
                         return [4, import("./WalletConnectProvider")];
                     case 1:
                         walletConnectProvider = _a.sent();
-                        return [4, walletConnectProvider.getWalletConnectProviderInstance()];
+                        return [4, walletConnectProvider.getWalletConnectProviderInstance(checkConnectionOnly)];
                     case 2:
                         walletConnect = _a.sent();
-                        return [4, walletConnect.enable()];
-                    case 3:
-                        _a.sent();
-                        provider = new ethers.providers.Web3Provider(walletConnect);
-                        return [4, provider.listAccounts()];
-                    case 4:
-                        accounts = _a.sent();
-                        if (accounts.length === 0) {
-                            throw new Error("No accounts found via wallet-connect.");
-                        }
-                        return [2, this.registerNewWalletAddress(accounts[0], '1', walletConnect)];
+                        return [2, new Promise(function (resolve, reject) {
+                                if (checkConnectionOnly) {
+                                    walletConnect.connector.on("display_uri", function (err, payload) {
+                                        reject(new Error("Connection expired"));
+                                    });
+                                }
+                                walletConnect.enable().then(function () {
+                                    var provider = new ethers.providers.Web3Provider(walletConnect);
+                                    resolve(_this.registerProvider(provider, "WalletConnect"));
+                                }).catch(function (e) { return reject(e); });
+                            })];
                 }
             });
         });
     };
-    Web3WalletProvider.prototype.Torus = function () {
+    Web3WalletProvider.prototype.Torus = function (checkConnectionOnly) {
         return __awaiter(this, void 0, void 0, function () {
-            var TorusProvider, torus, provider, accounts;
+            var TorusProvider, torus, provider;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4, import("./TorusProvider")];
@@ -150,13 +249,7 @@ var Web3WalletProvider = (function () {
                     case 4:
                         _a.sent();
                         provider = new ethers.providers.Web3Provider(torus.provider);
-                        return [4, provider.listAccounts()];
-                    case 5:
-                        accounts = _a.sent();
-                        if (accounts.length === 0) {
-                            throw new Error("No accounts found via wallet-connect.");
-                        }
-                        return [2, this.registerNewWalletAddress(accounts[0], '1', torus.provider)];
+                        return [2, this.registerProvider(provider, "Torus")];
                 }
             });
         });
@@ -173,7 +266,7 @@ var Web3WalletProvider = (function () {
                     case 1:
                         connection = _a.sent();
                         accountAddress = connection.publicKey.toBase58();
-                        return [2, this.registerNewWalletAddress(accountAddress, "mainnet-beta", window.solana, 'solana')];
+                        return [2, this.registerNewWalletAddress(accountAddress, "mainnet-beta", 'phantom', window.solana, 'solana')];
                     case 2: throw new Error("MetaMask is not available. Please check the extension is supported and active.");
                 }
             });
@@ -192,7 +285,7 @@ var Web3WalletProvider = (function () {
                         return [4, provider.initSafeConnect()];
                     case 2:
                         address = _a.sent();
-                        this.registerNewWalletAddress(address, "1", provider);
+                        this.registerNewWalletAddress(address, 1, "SafeConnect", provider);
                         return [2, address];
                 }
             });
@@ -214,6 +307,7 @@ var Web3WalletProvider = (function () {
             });
         });
     };
+    Web3WalletProvider.LOCAL_STORAGE_KEY = "tn-wallet-connections";
     return Web3WalletProvider;
 }());
 export { Web3WalletProvider };

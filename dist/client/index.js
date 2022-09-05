@@ -150,6 +150,10 @@ var Client = (function () {
     Client.prototype.safeConnectAvailable = function () {
         return this.config.safeConnectOptions !== undefined;
     };
+    Client.prototype.solanaAvailable = function () {
+        return (typeof window.solana !== 'undefined' &&
+            this.config.issuers.filter(function (issuer) { var _a; return ((_a = issuer === null || issuer === void 0 ? void 0 : issuer.blockchain) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === 'solana'; }).length > 0);
+    };
     Client.prototype.getWalletProvider = function () {
         return __awaiter(this, void 0, void 0, function () {
             var Web3WalletProvider;
@@ -163,6 +167,22 @@ var Client = (function () {
                         this.web3WalletProvider = new Web3WalletProvider(this, this.config.safeConnectOptions);
                         _a.label = 2;
                     case 2: return [2, this.web3WalletProvider];
+                }
+            });
+        });
+    };
+    Client.prototype.disconnectWallet = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var wp;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, this.getWalletProvider()];
+                    case 1:
+                        wp = _a.sent();
+                        wp.deleteConnections();
+                        this.tokenStore.clearCachedTokens();
+                        this.ui.updateUI(SelectWallet);
+                        return [2];
                 }
             });
         });
@@ -677,6 +697,9 @@ var Client = (function () {
                 return this.clientCallBackEvents[type].call(type, data);
             }
         }
+    };
+    Client.prototype.switchTheme = function (newTheme) {
+        this.ui.switchTheme(newTheme);
     };
     return Client;
 }());

@@ -102,7 +102,7 @@ var AttestedAddress = (function (_super) {
                     case 3: return [4, SafeConnect.getChallenge(web3WalletProvider.safeConnectOptions.url, wallet.address)];
                     case 4:
                         challenge = _h.sent();
-                        return [4, web3WalletProvider.signWith(challenge.messageToSign, wallet.provider)];
+                        return [4, web3WalletProvider.signMessage(wallet.address, challenge.messageToSign)];
                     case 5:
                         signature = _h.sent();
                         _g = {

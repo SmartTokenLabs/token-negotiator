@@ -37,6 +37,8 @@ export declare class Ui {
     cancelDelayedLoader(): void;
     showLoader(...message: string[]): void;
     dismissLoader(): void;
-    private addTheme;
+    private setTheme;
     private assignFabButtonAnimation;
+    private validateTheme;
+    switchTheme(newTheme: string): void;
 }

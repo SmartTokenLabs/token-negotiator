@@ -35,6 +35,12 @@ var TokenStore = (function () {
         }
         this.prePopulateTokenLookupStore(issuers);
     };
+    TokenStore.prototype.clearCachedTokens = function () {
+        for (var i in this.tokens) {
+            this.tokens[i] = [];
+        }
+        this.selectedTokens = {};
+    };
     TokenStore.prototype.hasOnChainTokens = function () {
         for (var i in this.currentIssuers) {
             if (this.currentIssuers[i])

@@ -20,7 +20,7 @@ export class SelectWallet extends AbstractView {
                 <p>MetaMask</p>
             </button>` : '';
 		
-		const PhantomButton = (typeof window.solana !== 'undefined') ?
+		const PhantomButton = this.client.solanaAvailable() ?
 			`<button class="wallet-button-tn" data-wallet="Phantom">
                 ${phantomSVG}
                 <p>Phantom</p>

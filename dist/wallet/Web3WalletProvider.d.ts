@@ -1,18 +1,35 @@
+import { ethers } from "ethers";
 import { SafeConnectOptions } from "./SafeConnectProvider";
 import { Client } from "../client";
+interface WalletConnectionState {
+    [index: string]: WalletConnection;
+}
+interface WalletConnection {
+    address: string;
+    chainId: number | string;
+    providerType: string;
+    blockChain: string;
+    provider?: ethers.providers.Web3Provider;
+}
 export declare class Web3WalletProvider {
-    state: any;
+    private static LOCAL_STORAGE_KEY;
+    connections: WalletConnectionState;
     safeConnectOptions?: SafeConnectOptions;
     client: Client;
     constructor(client: Client, safeConnectOptions?: SafeConnectOptions);
-    connectWith(walletType: string): Promise<any>;
-    signWith(message: string, walletProvider: any): Promise<string>;
-    getConnectedWalletData(): any;
-    registerNewWalletAddress(address: string, chainId: string, provider: any, blockChain?: string): any;
-    MetaMask(): Promise<any>;
-    WalletConnect(): Promise<any>;
-    Torus(): Promise<any>;
-    Phantom(): Promise<any>;
+    saveConnections(): void;
+    deleteConnections(): void;
+    loadConnections(): Promise<void>;
+    connectWith(walletType: string, checkConnectionOnly?: boolean): any;
+    signMessage(address: string, message: string): Promise<string>;
+    getWalletProvider(address: string): ethers.providers.Web3Provider;
+    getConnectedWalletData(): WalletConnection[];
+    registerNewWalletAddress(address: string, chainId: number | string, providerType: string, provider: any, blockChain?: string): string;
+    private registerProvider;
+    MetaMask(checkConnectionOnly: boolean): Promise<string>;
+    WalletConnect(checkConnectionOnly: boolean): Promise<unknown>;
+    Torus(checkConnectionOnly: boolean): Promise<string>;
+    Phantom(): Promise<string>;
     SafeConnect(): Promise<any>;
     safeConnectAvailable(): boolean;
     getSafeConnectProvider(): Promise<import("./SafeConnectProvider").SafeConnectProvider>;
