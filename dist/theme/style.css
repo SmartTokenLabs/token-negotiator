@@ -63,9 +63,10 @@
   width: 100%;
 }
 
-.overlay-tn.light-tn .headline-container-tn {
+.overlay-tn .headline-container-tn {
   border-bottom: 1px solid #ececec;
   display: flex;
+  justify-content: space-between;
   align-items: center;
   padding-top: 8px;
 }
@@ -339,7 +340,7 @@
 }
 
 .dis-wallet-tn {
-  margin: 0 0 10px 10px;
+  margin: 10px;
 }
 
 .stl-tn {
