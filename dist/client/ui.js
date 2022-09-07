@@ -173,6 +173,7 @@ var Ui = (function () {
     Ui.prototype.setTheme = function (theme) {
         var refTokenSelector = document.querySelector(".overlay-tn");
         if (refTokenSelector) {
+            refTokenSelector.classList.remove(this.options.theme + "-tn");
             theme = this.validateTheme(theme);
             refTokenSelector.classList.add(theme + "-tn");
             this.options.theme = theme;

@@ -461,7 +461,7 @@ OffChain | string  |
 | image                  | Collection image URL: loaded from API if not specified                            | Both         | OffChain | string  |
 | contract               | Ethereum contract address for the collection                                      | OnChain      | Y        | string  |
 | collectionAddress               | Solana contract address for the collection (required when using Solana tokens)                                                | OnChain      | Y        | string  |
-| collectionSymbol               | Solana contract symbol for the collection (required when using Solana tokens)                                                  | OnChain      | Y        | string  |
+| symbol               | Solana contract symbol for the collection (required when using Solana tokens)                                                  | OnChain      | Y        | string  |
 | chain                  | Ethereum chain for the collection                                                 | OnChain      | Y        | string  |
 | openSeaSlug            | The collection name for OpenSea listing. Improves performance for token fetching. | OnChain      | N        | string  |
 

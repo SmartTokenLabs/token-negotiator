@@ -11,15 +11,15 @@ export const getNftCollection = async (
   let query: string;
   if (blockchain === "solana") {
     query = getSolanaNftCollectionUrl(issuer, ipfsBaseUrl);
-	} else {
-		query = getEvmNftCollectionUrl(issuer, ipfsBaseUrl);
-	}
+  } else {
+    query = getEvmNftCollectionUrl(issuer, ipfsBaseUrl);
+  }
   return tokenRequest(query, true);
 };
 
 const getEvmNftCollectionUrl = (issuer: any, ipfsBaseUrl: string) => {
   const { contract, chain, openSeaSlug } = issuer;
-  let query = `${baseURL}/get-token-collection?smartContract=${contract}&chain=${chain}&blockchain=ethereum`;
+  let query = `${baseURL}/get-token-collection?smartContract=${contract}&chain=${chain}&blockchain=evm`;
   if (openSeaSlug) query += `&openSeaSlug=${openSeaSlug}`;
   if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`;
   return query;
@@ -37,33 +37,51 @@ export const getNftTokens = (
   owner: string,
   ipfsBaseUrl?: string
 ) => {
-	const blockchain = issuer?.blockchain ?? "ethereum";
+  const blockchain = issuer?.blockchain ?? "evm";
   let query: string;
   if (blockchain === "solana") {
     query = getSolanaNftTokensUrl(issuer, owner, ipfsBaseUrl);
-	} else {
-		query = getEvmNftTokensUrl(issuer, owner, ipfsBaseUrl);
-	}
+  } else {
+    query = getEvmNftTokensUrl(issuer, owner, ipfsBaseUrl);
+  }
   return tokenRequest(query, true);
 };
 
-const getEvmNftTokensUrl = (issuer:any, owner:string, ipfsBaseUrl:string) => {
-	const { contract, chain, openSeaSlug } = issuer;
-  const blockchain = issuer?.blockchain ?? "ethereum";
+const getEvmNftTokensUrl = (
+  issuer: any,
+  owner: string,
+  ipfsBaseUrl: string
+) => {
+  const { contract, chain, openSeaSlug } = issuer;
+  const blockchain = issuer?.blockchain ?? "evm";
   let query = `${baseURL}/get-owner-tokens?smartContract=${contract}&chain=${chain}&owner=${owner}&blockchain=${blockchain}`;
   if (openSeaSlug) query += `&openSeaSlug=${openSeaSlug}`;
-	if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`;
-	return query;
-}
+  if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`;
+  return query;
+};
 
-const getSolanaNftTokensUrl = (issuer:any, owner:string, ipfsBaseUrl:string) => {
-	const { chain, collectionSymbol } = issuer;
-  const blockchain = issuer?.blockchain ?? "ethereum";
+const getSolanaNftTokensUrl = (
+  issuer: any,
+  owner: string,
+  ipfsBaseUrl: string
+) => {
+  const {
+    chain,
+    symbol,
+    tokenProgram,
+    collectionAddress,
+    updateAuthority,
+    symbol,
+  } = issuer;
+  const blockchain = issuer?.blockchain ?? "evm";
   let query = `${baseURL}/get-owner-tokens?chain=${chain}&owner=${owner}&blockchain=${blockchain}`;
-  if (collectionSymbol) query += `&collectionSymbol=${collectionSymbol}`;
-	if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`;
-	return query;
-}
+  if (symbol) query += `&symbol=${symbol}`;
+  if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`;
+  if (tokenProgram) query += `&tokenProgram=${tokenProgram}`;
+  if (collectionAddress) query += `&collectionAddress=${collectionAddress}`;
+  if (updateAuthority) query += `&updateAuthority=${updateAuthority}`;
+  return query;
+};
 
 export const tokenRequest = async (
   query: string,
