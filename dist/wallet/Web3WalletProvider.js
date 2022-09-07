@@ -68,6 +68,7 @@ var Web3WalletProvider = (function () {
     Web3WalletProvider.prototype.deleteConnections = function () {
         this.connections = {};
         localStorage.removeItem(Web3WalletProvider.LOCAL_STORAGE_KEY);
+        localStorage.removeItem("walletconnect");
     };
     Web3WalletProvider.prototype.loadConnections = function () {
         return __awaiter(this, void 0, void 0, function () {

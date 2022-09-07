@@ -49,7 +49,7 @@ export class Web3WalletProvider {
 
 	}
 
-	emitSavedConnection(address:string) {
+	emitSavedConnection(address: string) {
 		if(
 			Object.keys(this.connections).length &&
 			address
@@ -64,6 +64,7 @@ export class Web3WalletProvider {
 	deleteConnections(){
 		this.connections = {};
 		localStorage.removeItem(Web3WalletProvider.LOCAL_STORAGE_KEY);
+		localStorage.removeItem("walletconnect");
 	}
 
 	async loadConnections(){

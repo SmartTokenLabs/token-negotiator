@@ -47,3 +47,7 @@ jobs:
         uses: ArtiomTr/jest-coverage-report-action@v2
         with:
           test-script: npm run test
+      - uses: actions/upload-artifact@v3
+        with:
+          name: test-report
+          path: reports/
