@@ -42,7 +42,9 @@ jobs:
           GPR_USER: ${{ secrets.GPR_USER }}
           GPR_KEY: ${{ secrets.GPR_KEY }}
       - name: build
-        run: npm run build
+        run: |
+          npm run build
+          npm run build-umd
       - name: test
         uses: ArtiomTr/jest-coverage-report-action@v2
         with:
