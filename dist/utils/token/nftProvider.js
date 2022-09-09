@@ -36,11 +36,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 var baseURL = "https://api.token-discovery.tokenscript.org";
 export var getNftCollection = function (issuer, ipfsBaseUrl) { return __awaiter(void 0, void 0, void 0, function () {
-    var blockchain, query;
-    var _a;
-    return __generator(this, function (_b) {
-        blockchain = (_a = issuer === null || issuer === void 0 ? void 0 : issuer.blockchain) !== null && _a !== void 0 ? _a : "evm";
-        if (blockchain === "solana") {
+    var query;
+    return __generator(this, function (_a) {
+        if ((issuer === null || issuer === void 0 ? void 0 : issuer.blockchain) === "solana") {
             query = getSolanaNftCollectionUrl(issuer, ipfsBaseUrl);
         }
         else {
@@ -66,10 +64,8 @@ export var getSolanaNftCollectionUrl = function (issuer, ipfsBaseUrl) {
     return query;
 };
 export var getNftTokens = function (issuer, owner, ipfsBaseUrl) {
-    var _a;
-    var blockchain = (_a = issuer === null || issuer === void 0 ? void 0 : issuer.blockchain) !== null && _a !== void 0 ? _a : "evm";
     var query;
-    if (blockchain === "solana") {
+    if ((issuer === null || issuer === void 0 ? void 0 : issuer.blockchain) === "solana") {
         query = getSolanaNftTokensUrl(issuer, owner, ipfsBaseUrl);
     }
     else {
@@ -92,7 +88,7 @@ export var getEvmNftTokensUrl = function (issuer, owner, ipfsBaseUrl) {
 };
 export var getSolanaNftTokensUrl = function (issuer, owner, ipfsBaseUrl) {
     var _a;
-    var chain = issuer.chain, symbol = issuer.symbol, tokenProgram = issuer.tokenProgram, collectionAddress = issuer.collectionAddress, updateAuthority = issuer.updateAuthority, symbol = issuer.symbol;
+    var chain = issuer.chain, tokenProgram = issuer.tokenProgram, collectionAddress = issuer.collectionAddress, updateAuthority = issuer.updateAuthority, symbol = issuer.symbol;
     var blockchain = (_a = issuer === null || issuer === void 0 ? void 0 : issuer.blockchain) !== null && _a !== void 0 ? _a : "evm";
     if (!chain && (!tokenProgram || !collectionAddress || !updateAuthority || !symbol))
         return undefined;

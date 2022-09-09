@@ -1,11 +1,11 @@
-import {OffChainTokenConfig, OnChainTokenConfig} from "./interface";
+import {OffChainTokenConfig, OnChainTokenConfig, SolanaIssuerConfig} from "./interface";
 import {logger} from "../utils";
 
 interface TokenLookup {
 	[collectionID: string]: OnChainTokenConfig | OffChainTokenConfig
 }
 
-type TokenConfig = OnChainTokenConfig | OffChainTokenConfig;
+type TokenConfig = OnChainTokenConfig | OffChainTokenConfig | SolanaIssuerConfig;
 
 export class TokenStore {
 

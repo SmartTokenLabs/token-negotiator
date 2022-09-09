@@ -1,16 +1,14 @@
-// @ts-nocheck
-import {OnChainTokenConfig} from "../../client/interface";
+import {OnChainTokenConfig, SolanaIssuerConfig} from "../../client/interface";
 
 const baseURL = "https://api.token-discovery.tokenscript.org";
 
 export const getNftCollection = async (
-	issuer: OnChainTokenConfig,
+	issuer: OnChainTokenConfig | SolanaIssuerConfig,
 	ipfsBaseUrl?: string
 ) => {
-	const blockchain = issuer?.blockchain ?? "evm";
 	let query: string;
-	if (blockchain === "solana") {
-		query = getSolanaNftCollectionUrl(issuer, ipfsBaseUrl);
+	if (issuer?.blockchain === "solana") {
+		query = getSolanaNftCollectionUrl(issuer as SolanaIssuerConfig, ipfsBaseUrl);
 	} else {
 		query = getEvmNftCollectionUrl(issuer, ipfsBaseUrl);
 	}
@@ -25,8 +23,8 @@ const getEvmNftCollectionUrl = (issuer: OnChainTokenConfig, ipfsBaseUrl: string)
 	return query;
 };
 
-export const getSolanaNftCollectionUrl = (issuer: OnChainTokenConfig, ipfsBaseUrl: string) => {
-	const { collectionAddress, chain } = issuer;
+export const getSolanaNftCollectionUrl = (issuer: SolanaIssuerConfig, ipfsBaseUrl: string) => {
+	const {collectionAddress, chain} = issuer;
 	let query = `${baseURL}/get-token-collection?collectionAddress=${collectionAddress}&chain=${chain}&blockchain=solana`;
 	if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`;
 	return query;
@@ -37,10 +35,9 @@ export const getNftTokens = (
 	owner: string,
 	ipfsBaseUrl?: string
 ) => {
-	const blockchain = issuer?.blockchain ?? "evm";
 	let query: string;
-	if (blockchain === "solana") {
-		query = getSolanaNftTokensUrl(issuer, owner, ipfsBaseUrl);
+	if (issuer?.blockchain === "solana") {
+		query = getSolanaNftTokensUrl(issuer as SolanaIssuerConfig, owner, ipfsBaseUrl);
 	} else {
 		query = getEvmNftTokensUrl(issuer, owner, ipfsBaseUrl);
 	}
@@ -62,13 +59,12 @@ export const getEvmNftTokensUrl = (
 };
 
 export const getSolanaNftTokensUrl = (
-  issuer: any,
-  owner: string,
-  ipfsBaseUrl: string
+	issuer: SolanaIssuerConfig,
+	owner: string,
+	ipfsBaseUrl: string
 ) => {
   const {
     chain,
-    symbol,
     tokenProgram,
     collectionAddress,
     updateAuthority,
