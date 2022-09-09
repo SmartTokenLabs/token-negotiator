@@ -35,20 +35,12 @@ var __values = (this && this.__values) || function(o) {
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 import { Buffer } from "buffer";
-var displayDebugLevel;
-var testsDisplayDebugLevel;
-if (process && process.env && process.env.DISPLAY_DEBUG_LEVEL) {
-    displayDebugLevel = parseInt(process.env.DISPLAY_DEBUG_LEVEL);
-}
-else if (window && window.DISPLAY_DEBUG_LEVEL) {
-    displayDebugLevel = parseInt(window.DISPLAY_DEBUG_LEVEL);
-}
 export function logger(level) {
     var args = [];
     for (var _i = 1; _i < arguments.length; _i++) {
         args[_i - 1] = arguments[_i];
     }
-    if (!displayDebugLevel || level > displayDebugLevel)
+    if (!window.DISPLAY_DEBUG_LEVEL || level > parseInt(window.DISPLAY_DEBUG_LEVEL))
         return;
     console.log.apply(console, __spreadArray([], __read(args), false));
 }

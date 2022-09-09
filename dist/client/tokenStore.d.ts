@@ -11,7 +11,7 @@ export declare class TokenStore {
     private autoEnableTokens;
     constructor(autoEnableTokens: boolean);
     updateIssuers(issuers: TokenConfig[]): void;
-    clearCachedTokens(): void;
+    clearCachedTokens(onChain?: boolean): void;
     hasOnChainTokens(): boolean;
     getCurrentIssuers(onChainFilter?: boolean): TokenLookup;
     getCurrentTokens(onChainFilter?: boolean): {

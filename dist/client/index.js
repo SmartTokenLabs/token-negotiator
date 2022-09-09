@@ -155,7 +155,10 @@ var Client = (function () {
     };
     Client.prototype.solanaAvailable = function () {
         return (typeof window.solana !== 'undefined' &&
-            this.config.issuers.filter(function (issuer) { var _a; return ((_a = issuer === null || issuer === void 0 ? void 0 : issuer.blockchain) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === 'solana'; }).length > 0);
+            this.config.issuers.filter(function (issuer) {
+                var _a;
+                return ((_a = issuer === null || issuer === void 0 ? void 0 : issuer.blockchain) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === 'solana';
+            }).length > 0);
     };
     Client.prototype.getWalletProvider = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -183,7 +186,7 @@ var Client = (function () {
                     case 1:
                         wp = _a.sent();
                         wp.deleteConnections();
-                        this.tokenStore.clearCachedTokens();
+                        this.tokenStore.clearCachedTokens(true);
                         this.ui.updateUI(SelectWallet);
                         return [2];
                 }
@@ -288,7 +291,7 @@ var Client = (function () {
                             this.tokenStore.updateIssuers(issuers);
                         requiredParams(Object.keys(this.tokenStore.getCurrentIssuers()).length, "issuers are missing.");
                         if (!(this.config.type === "active")) return [3, 1];
-                        this.issuersLoaded = false;
+                        this.issuersLoaded = !this.tokenStore.hasUnloadedIssuers();
                         this.activeNegotiationStrategy(openPopup);
                         return [3, 4];
                     case 1: return [4, this.enrichTokenLookupDataOnChainTokens()];

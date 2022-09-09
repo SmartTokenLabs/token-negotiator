@@ -74,7 +74,8 @@ export class SelectIssuers extends AbstractView {
 		this.tokenListView = new TokenList(this.client, this.ui, tokensListElem, {});
 
 		if (this.client.issuersLoaded) {
-			this.autoLoadTokens();
+			if (this.client.getTokenStore().hasUnloadedTokens())
+				this.autoLoadTokens();
 		} else {
 			this.issuersLoading();
 		}
@@ -97,10 +98,10 @@ export class SelectIssuers extends AbstractView {
 			let data = issuers[issuerKey];
 			let tokens = this.client.getTokenStore().getIssuerTokens(issuerKey);
 
-			if (!data.title)
-				data.title = data.collectionID.replace(/[-,_]+/g, " ");
+			let title = data.title ?
+				data.title : data.collectionID.replace(/[-,_]+/g, " ");
 
-			html += this.issuerConnectMarkup(data.title, data.image, issuerKey, tokens);
+			html += this.issuerConnectMarkup(title, data.image, issuerKey, tokens);
 		}
 
 		this.issuerListContainer.innerHTML = html;

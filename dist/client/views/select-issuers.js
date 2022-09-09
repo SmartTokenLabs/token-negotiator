@@ -97,7 +97,8 @@ var SelectIssuers = (function (_super) {
         var tokensListElem = this.tokensContainer.getElementsByClassName("token-list-container-tn")[0];
         this.tokenListView = new TokenList(this.client, this.ui, tokensListElem, {});
         if (this.client.issuersLoaded) {
-            this.autoLoadTokens();
+            if (this.client.getTokenStore().hasUnloadedTokens())
+                this.autoLoadTokens();
         }
         else {
             this.issuersLoading();
@@ -114,9 +115,9 @@ var SelectIssuers = (function (_super) {
         for (var issuerKey in issuers) {
             var data = issuers[issuerKey];
             var tokens = this.client.getTokenStore().getIssuerTokens(issuerKey);
-            if (!data.title)
-                data.title = data.collectionID.replace(/[-,_]+/g, " ");
-            html += this.issuerConnectMarkup(data.title, data.image, issuerKey, tokens);
+            var title = data.title ?
+                data.title : data.collectionID.replace(/[-,_]+/g, " ");
+            html += this.issuerConnectMarkup(title, data.image, issuerKey, tokens);
         }
         this.issuerListContainer.innerHTML = html;
         try {

@@ -146,7 +146,9 @@ export class Client {
 	public solanaAvailable(){
 		return  (
 			typeof window.solana !== 'undefined' &&
-			this.config.issuers.filter((issuer: any) => { return issuer?.blockchain?.toLowerCase() === 'solana' }).length > 0
+			this.config.issuers.filter((issuer: any) => {
+				return issuer?.blockchain?.toLowerCase() === 'solana'
+			}).length > 0
 		) 
 	}
 
@@ -163,7 +165,7 @@ export class Client {
 	public async disconnectWallet(){
 		let wp = await this.getWalletProvider();
 		wp.deleteConnections();
-		this.tokenStore.clearCachedTokens();
+		this.tokenStore.clearCachedTokens(true);
 		this.ui.updateUI(SelectWallet);
 	}
 
@@ -249,7 +251,7 @@ export class Client {
 
 		if (this.config.type === "active") {
 
-			this.issuersLoaded = false;
+			this.issuersLoaded = !this.tokenStore.hasUnloadedIssuers();
 
 			this.activeNegotiationStrategy(openPopup);
 

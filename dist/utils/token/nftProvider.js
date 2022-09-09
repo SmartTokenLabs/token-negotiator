@@ -34,12 +34,12 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var baseURL = "https://localhost:3000";
+var baseURL = "https://api.token-discovery.tokenscript.org";
 export var getNftCollection = function (issuer, ipfsBaseUrl) { return __awaiter(void 0, void 0, void 0, function () {
     var blockchain, query;
     var _a;
     return __generator(this, function (_b) {
-        blockchain = (_a = issuer === null || issuer === void 0 ? void 0 : issuer.blockchain) !== null && _a !== void 0 ? _a : "ethereum";
+        blockchain = (_a = issuer === null || issuer === void 0 ? void 0 : issuer.blockchain) !== null && _a !== void 0 ? _a : "evm";
         if (blockchain === "solana") {
             query = getSolanaNftCollectionUrl(issuer, ipfsBaseUrl);
         }
@@ -120,7 +120,7 @@ export var tokenRequest = function (query, silenceRequestError) { return __await
                 return [4, fetch(query)];
             case 1:
                 response = _a.sent();
-                ok = response.status >= 200 && response.status <= 299 ? true : false;
+                ok = response.status >= 200 && response.status <= 299;
                 if (!ok && silenceRequestError === true) {
                     console.warn("token api request failed: ", query);
                     return [2];

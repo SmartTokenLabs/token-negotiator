@@ -33,9 +33,11 @@ export class TokenStore {
 		this.prePopulateTokenLookupStore(issuers);
 	}
 
-	public clearCachedTokens(){
+	public clearCachedTokens(onChain?: boolean){
 
 		for (let i in this.tokens){
+			if (onChain !== undefined && onChain !== this.tokenLookup[i].onChain)
+				continue;
 			this.tokens[i] = [];
 		}
 		this.selectedTokens = {};
