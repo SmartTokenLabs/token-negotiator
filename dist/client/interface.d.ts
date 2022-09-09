@@ -18,13 +18,19 @@ export interface OnChainTokenConfig extends IssuerConfigInterface {
     openSeaSlug?: string;
     blockchain?: string;
 }
+export interface SolanaIssuerConfig extends OnChainTokenConfig {
+    blockchain: "solana";
+    collectionAddress?: string;
+    tokenProgram?: string;
+    updateAuthority?: string;
+}
 export interface IssuerConfigInterface {
     collectionID: string;
     onChain: boolean;
     title?: string;
     image?: string;
+    symbol?: string;
     filters?: {};
-    blockchain?: string;
 }
 export interface NegotiationInterface {
     type: string;

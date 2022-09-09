@@ -1,8 +1,8 @@
-import { OffChainTokenConfig, OnChainTokenConfig } from "./interface";
+import { OffChainTokenConfig, OnChainTokenConfig, SolanaIssuerConfig } from "./interface";
 interface TokenLookup {
     [collectionID: string]: OnChainTokenConfig | OffChainTokenConfig;
 }
-declare type TokenConfig = OnChainTokenConfig | OffChainTokenConfig;
+declare type TokenConfig = OnChainTokenConfig | OffChainTokenConfig | SolanaIssuerConfig;
 export declare class TokenStore {
     private currentIssuers;
     private tokens;

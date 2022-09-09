@@ -16,7 +16,14 @@ export interface OnChainTokenConfig extends IssuerConfigInterface {
     contract: string;
     chain: string;
     openSeaSlug?: string;
-    blockchain?: string;
+	blockchain?: string;
+}
+
+export interface SolanaIssuerConfig extends OnChainTokenConfig {
+	blockchain: "solana",
+	collectionAddress?: string;
+	tokenProgram?: string;
+	updateAuthority?: string;
 }
 
 export interface IssuerConfigInterface {
@@ -24,8 +31,8 @@ export interface IssuerConfigInterface {
     onChain: boolean;
     title?: string;
     image?: string;
+	symbol?: string;
     filters?: {};
-    blockchain?: string;
 }
 
 export interface NegotiationInterface {
