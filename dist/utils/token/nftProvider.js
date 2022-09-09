@@ -58,7 +58,7 @@ var getEvmNftCollectionUrl = function (issuer, ipfsBaseUrl) {
         query += "&ipfsBaseUrl=".concat(ipfsBaseUrl);
     return query;
 };
-var getSolanaNftCollectionUrl = function (issuer, ipfsBaseUrl) {
+export var getSolanaNftCollectionUrl = function (issuer, ipfsBaseUrl) {
     var collectionAddress = issuer.collectionAddress, chain = issuer.chain;
     var query = "".concat(baseURL, "/get-token-collection?collectionAddress=").concat(collectionAddress, "&chain=").concat(chain, "&blockchain=solana");
     if (ipfsBaseUrl)
@@ -77,10 +77,12 @@ export var getNftTokens = function (issuer, owner, ipfsBaseUrl) {
     }
     return tokenRequest(query, true);
 };
-var getEvmNftTokensUrl = function (issuer, owner, ipfsBaseUrl) {
+export var getEvmNftTokensUrl = function (issuer, owner, ipfsBaseUrl) {
     var _a;
     var contract = issuer.contract, chain = issuer.chain, openSeaSlug = issuer.openSeaSlug;
     var blockchain = (_a = issuer === null || issuer === void 0 ? void 0 : issuer.blockchain) !== null && _a !== void 0 ? _a : "evm";
+    if (!contract || !chain)
+        return undefined;
     var query = "".concat(baseURL, "/get-owner-tokens?smartContract=").concat(contract, "&chain=").concat(chain, "&owner=").concat(owner, "&blockchain=").concat(blockchain);
     if (openSeaSlug)
         query += "&openSeaSlug=".concat(openSeaSlug);
@@ -88,11 +90,15 @@ var getEvmNftTokensUrl = function (issuer, owner, ipfsBaseUrl) {
         query += "&ipfsBaseUrl=".concat(ipfsBaseUrl);
     return query;
 };
-var getSolanaNftTokensUrl = function (issuer, owner, ipfsBaseUrl) {
+export var getSolanaNftTokensUrl = function (issuer, owner, ipfsBaseUrl) {
     var _a;
     var chain = issuer.chain, symbol = issuer.symbol, tokenProgram = issuer.tokenProgram, collectionAddress = issuer.collectionAddress, updateAuthority = issuer.updateAuthority, symbol = issuer.symbol;
     var blockchain = (_a = issuer === null || issuer === void 0 ? void 0 : issuer.blockchain) !== null && _a !== void 0 ? _a : "evm";
-    var query = "".concat(baseURL, "/get-owner-tokens?chain=").concat(chain, "&owner=").concat(owner, "&blockchain=").concat(blockchain);
+    if (!chain && (!tokenProgram || !collectionAddress || !updateAuthority || !symbol))
+        return undefined;
+    var query = "".concat(baseURL, "/get-owner-tokens?chain=").concat(chain, "&blockchain=").concat(blockchain);
+    if (owner)
+        query += "&owner=".concat(owner);
     if (symbol)
         query += "&symbol=".concat(symbol);
     if (ipfsBaseUrl)

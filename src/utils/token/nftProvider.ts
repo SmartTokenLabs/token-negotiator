@@ -1,7 +1,8 @@
 // @ts-nocheck
 import { OnChainTokenConfig } from "../../client/interface";
 
-const baseURL = "https://api.token-discovery.tokenscript.org";
+// const baseURL = "https://api.token-discovery.tokenscript.org";
+const baseURL = "https://localhost:3000";
 
 export const getNftCollection = async (
   issuer: OnChainTokenConfig,
@@ -25,7 +26,7 @@ const getEvmNftCollectionUrl = (issuer: any, ipfsBaseUrl: string) => {
   return query;
 };
 
-const getSolanaNftCollectionUrl = (issuer: any, ipfsBaseUrl: string) => {
+export const getSolanaNftCollectionUrl = (issuer: any, ipfsBaseUrl: string) => {
   const { collectionAddress, chain } = issuer;
   let query = `${baseURL}/get-token-collection?collectionAddress=${collectionAddress}&chain=${chain}&blockchain=solana`;
   if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`;
@@ -47,20 +48,21 @@ export const getNftTokens = (
   return tokenRequest(query, true);
 };
 
-const getEvmNftTokensUrl = (
+export const getEvmNftTokensUrl = (
   issuer: any,
   owner: string,
   ipfsBaseUrl: string
 ) => {
   const { contract, chain, openSeaSlug } = issuer;
   const blockchain = issuer?.blockchain ?? "evm";
+  if(!contract || !chain) return undefined;
   let query = `${baseURL}/get-owner-tokens?smartContract=${contract}&chain=${chain}&owner=${owner}&blockchain=${blockchain}`;
   if (openSeaSlug) query += `&openSeaSlug=${openSeaSlug}`;
   if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`;
   return query;
 };
 
-const getSolanaNftTokensUrl = (
+export const getSolanaNftTokensUrl = (
   issuer: any,
   owner: string,
   ipfsBaseUrl: string
@@ -74,7 +76,9 @@ const getSolanaNftTokensUrl = (
     symbol,
   } = issuer;
   const blockchain = issuer?.blockchain ?? "evm";
-  let query = `${baseURL}/get-owner-tokens?chain=${chain}&owner=${owner}&blockchain=${blockchain}`;
+  if(!chain && (!tokenProgram || !collectionAddress || !updateAuthority || !symbol)) return undefined;
+  let query = `${baseURL}/get-owner-tokens?chain=${chain}&blockchain=${blockchain}`;
+  if (owner) query += `&owner=${owner}`;
   if (symbol) query += `&symbol=${symbol}`;
   if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`;
   if (tokenProgram) query += `&tokenProgram=${tokenProgram}`;
