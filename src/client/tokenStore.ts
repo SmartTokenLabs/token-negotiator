@@ -1,4 +1,4 @@
-import {OffChainTokenConfig, OnChainTokenConfig} from "./interface";
+import { OffChainTokenConfig, OnChainTokenConfig, Issuer } from './interface';
 import {logger} from "../utils";
 
 interface TokenLookup {
@@ -51,7 +51,7 @@ export class TokenStore {
 		return false;
 	}
 
-	public getCurrentIssuers(onChainFilter?: boolean){
+	public getCurrentIssuers(onChainFilter?: boolean) {
 		let current: TokenLookup = {};
 		for (let collectionId in this.currentIssuers){
 			if (onChainFilter === undefined || onChainFilter === this.currentIssuers[collectionId])

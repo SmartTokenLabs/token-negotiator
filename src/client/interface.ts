@@ -28,9 +28,10 @@ export interface IssuerConfigInterface {
     blockchain?: string;
 }
 
+export type Issuer = (OnChainTokenConfig | OffChainTokenConfig);
 export interface NegotiationInterface {
     type: string;
-    issuers?: (OnChainTokenConfig | OffChainTokenConfig)[];
+    issuers?: Issuer[];
     uiOptions?: UIOptionsInterface;
     autoLoadTokens?: number | boolean;
     autoEnableTokens?: boolean;

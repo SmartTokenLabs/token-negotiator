@@ -1,20 +1,21 @@
-// @ts-nocheck
+
 import {OutletAction, OutletResponseAction, Messaging} from "./messaging";
-import { Ui } from "./ui";
+import { Ui, UItheme } from './ui';
 import { logger, requiredParams } from "../utils";
 import {getNftCollection, getNftTokens} from "../utils/token/nftProvider";
 import "./../vendor/keyShape";
 import { Authenticator } from "@tokenscript/attestation";
 import {TokenStore} from "./tokenStore";
-import {OffChainTokenConfig, OnChainTokenConfig, AuthenticateInterface, NegotiationInterface} from "./interface";
+import { OffChainTokenConfig, OnChainTokenConfig, AuthenticateInterface, NegotiationInterface, Issuer } from './interface';
 import {SignedUNChallenge} from "./auth/signedUNChallenge";
 import {TicketZKProof} from "./auth/ticketZKProof";
 import {AuthenticationMethod} from "./auth/abstractAuthentication";
 import { isUserAgentSupported } from '../utils/support/isSupported';
 import {SelectWallet} from "./views/select-wallet";
 import {SelectIssuers} from "./views/select-issuers";
+import Web3WalletProvider from '../wallet/Web3WalletProvider';
 
-// @ts-ignore
+
 if(typeof window !== "undefined") window.tn = { version: "2.1.0" };
 
 declare global {
@@ -22,7 +23,8 @@ declare global {
 		KeyshapeJS?: any;
 		tokenToggleSelection: any;
 		ethereum: any;
-		solana;
+		solana: any;
+		tn: unknown;
 	}
 }
 
@@ -38,7 +40,7 @@ const defaultConfig: NegotiationInterface = {
 		openingHeading: "Validate your token ownership for access",
 		issuerHeading: "Detected tokens",
 		autoPopup: true,
-		position: "bottom-right"
+		position: "bottom-right",
 	},
 	autoLoadTokens: true,
 	autoEnableTokens: true,
@@ -68,6 +70,7 @@ export const enum UIUpdateEventType {
 	ISSUERS_LOADED
 }
 
+
 export enum ClientError {
 	POPUP_BLOCKED = "POPUP_BLOCKED",
 	USER_ABORT = "USER_ABORT"
@@ -88,7 +91,13 @@ export class Client {
 	private ui: Ui;
 	private clientCallBackEvents: {} = {};
 	private tokenStore: TokenStore;
-	private uiUpdateCallbacks: {[type: UIUpdateEventType]: (data?: {}) => {}} = {}
+	// private uiUpdateCallbacks: {[type: UIUpdateEventType]: (data?: {}) => {}} = {};
+	private uiUpdateCallbacks: {[type in UIUpdateEventType]} = {
+		[UIUpdateEventType.ISSUERS_LOADING]: undefined,
+		[UIUpdateEventType.ISSUERS_LOADED]: undefined
+	};
+	// private uiUpdateCallbacks: any = {}
+
 
 	static getKey(file: string){
 		return  Authenticator.decodePublicKey(file);
@@ -146,7 +155,9 @@ export class Client {
 	public solanaAvailable(){
 		return  (
 			typeof window.solana !== 'undefined' &&
-			this.config.issuers.filter((issuer: any) => { return issuer?.blockchain?.toLowerCase() === 'solana' }).length > 0
+			this.config.issuers.filter((issuer: (OffChainTokenConfig | OnChainTokenConfig)) => {
+				return issuer?.blockchain?.toLowerCase() === 'solana';
+			}).length > 0
 		) 
 	}
 
@@ -230,7 +241,7 @@ export class Client {
 		}
 	}
 
-	async negotiate(issuers?: OnChainTokenConfig | OffChainTokenConfig[], openPopup = false) {
+	async negotiate(issuers?: (OnChainTokenConfig | OffChainTokenConfig)[], openPopup = false) {
 
 		try {
 			this.checkUserAgentSupport("full");
@@ -373,7 +384,7 @@ export class Client {
 
 		for (let issuerKey in issuers){
 
-			let issuer = issuers[issuerKey];
+			let issuer: Issuer = issuers[issuerKey];
 
 			try {
 				const tokens = await getNftTokens(
@@ -395,7 +406,7 @@ export class Client {
 
 		await this.setPassiveNegotiationOnChainTokens();
 
-		let tokens = this.tokenStore.getCurrentTokens();
+		let tokens: any = this.tokenStore.getCurrentTokens();
 
 		logger(2, "Emit tokens");
 		logger(2, tokens);
@@ -512,7 +523,7 @@ export class Client {
 			if (!authRequest.options)
 				authRequest.options = {};
 
-			authRequest.options?.messagingForceTab = this.config.messagingForceTab;
+			authRequest.options.messagingForceTab = this.config.messagingForceTab;
 
 			res = await authenticator.getTokenProof(config, [authRequest.unsignedToken], authRequest);
 
@@ -636,7 +647,7 @@ export class Client {
 		}
 	}
 
-	switchTheme(newTheme: string) {
+	switchTheme(newTheme: UItheme) {
 		this.ui.switchTheme(newTheme);
 	}
 }

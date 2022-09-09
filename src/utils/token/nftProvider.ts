@@ -1,10 +1,10 @@
 // @ts-nocheck
-import { OnChainTokenConfig } from "../../client/interface";
+import { OnChainTokenConfig, Issuer } from '../../client/interface';
 
 const baseURL = "https://api.token-discovery.tokenscript.org";
 
 export const getNftCollection = async (
-  issuer: OnChainTokenConfig,
+  issuer: Issuer,
   ipfsBaseUrl?: string
 ) => {
   const blockchain = issuer?.blockchain ?? "ethereum";
@@ -33,7 +33,7 @@ const getSolanaNftCollectionUrl = (issuer: any, ipfsBaseUrl: string) => {
 };
 
 export const getNftTokens = (
-  issuer: OnChainTokenConfig,
+  issuer: Issuer,
   owner: string,
   ipfsBaseUrl?: string
 ) => {
