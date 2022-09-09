@@ -15,7 +15,7 @@ export const getNftCollection = async (
 	return tokenRequest(query, true);
 };
 
-const getEvmNftCollectionUrl = (issuer: OnChainTokenConfig, ipfsBaseUrl: string) => {
+export const getEvmNftCollectionUrl = (issuer: OnChainTokenConfig, ipfsBaseUrl: string) => {
 	const {contract, chain, openSeaSlug} = issuer;
 	let query = `${baseURL}/get-token-collection?smartContract=${contract}&chain=${chain}&blockchain=evm`;
 	if (openSeaSlug) query += `&openSeaSlug=${openSeaSlug}`;

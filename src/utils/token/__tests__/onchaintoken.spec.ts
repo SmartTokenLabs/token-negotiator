@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import { getNftCollection, tokenRequest, getNftTokens, getSolanaNftTokensUrl, getEvmNftTokensUrl } from "./../../../utils/token/nftProvider";
+import { getNftCollection, tokenRequest, getNftTokens, getSolanaNftTokensUrl, getEvmNftCollectionUrl, getSolanaNftCollectionUrl, getEvmNftTokensUrl } from "./../../../utils/token/nftProvider";
 
 const mockZedRunCollection = {
   assets: 
@@ -203,5 +203,13 @@ it("get correct nft tokens query string with undefined params solana", async () 
   expect(query).toEqual("https://api.token-discovery.tokenscript.org/get-owner-tokens?chain=mainnet&blockchain=solana&owner=0x1&collectionAddress=bf0aae3dd0078a9feb975f1e3242ddcb7774d551c7fd2a3f07a89c827ed606b2&updateAuthority=CCCUzWanUNegjGby11DjujDvPaNN68jd9Rimwk2MZzqZ");
 });
 
+it("get evm Nft Collection Url", async () => {
+  const output = getEvmNftCollectionUrl({ contract: "0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656", chain: 'eth' });
+  expect(output).toEqual("https://api.token-discovery.tokenscript.org/get-token-collection?smartContract=0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656&chain=eth&blockchain=evm");
+});
 
+it("get evm Nft Collection Url", async () => {
+  const output = getSolanaNftCollectionUrl({ collectionAddress: "bf0aae3dd0078a9feb975f1e3242ddcb7774d551c7fd2a3f07a89c827ed606b2", chain: 'eth' });
+  expect(output).toEqual("https://api.token-discovery.tokenscript.org/get-token-collection?collectionAddress=bf0aae3dd0078a9feb975f1e3242ddcb7774d551c7fd2a3f07a89c827ed606b2&chain=eth&blockchain=solana");
+});
 

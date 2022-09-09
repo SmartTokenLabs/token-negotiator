@@ -1,5 +1,6 @@
 import { OnChainTokenConfig, SolanaIssuerConfig } from "../../client/interface";
 export declare const getNftCollection: (issuer: OnChainTokenConfig | SolanaIssuerConfig, ipfsBaseUrl?: string) => Promise<any>;
+export declare const getEvmNftCollectionUrl: (issuer: OnChainTokenConfig, ipfsBaseUrl: string) => string;
 export declare const getSolanaNftCollectionUrl: (issuer: SolanaIssuerConfig, ipfsBaseUrl: string) => string;
 export declare const getNftTokens: (issuer: OnChainTokenConfig, owner: string, ipfsBaseUrl?: string) => Promise<any>;
 export declare const getEvmNftTokensUrl: (issuer: any, owner: string, ipfsBaseUrl: string) => string;

@@ -47,7 +47,7 @@ export var getNftCollection = function (issuer, ipfsBaseUrl) { return __awaiter(
         return [2, tokenRequest(query, true)];
     });
 }); };
-var getEvmNftCollectionUrl = function (issuer, ipfsBaseUrl) {
+export var getEvmNftCollectionUrl = function (issuer, ipfsBaseUrl) {
     var contract = issuer.contract, chain = issuer.chain, openSeaSlug = issuer.openSeaSlug;
     var query = "".concat(baseURL, "/get-token-collection?smartContract=").concat(contract, "&chain=").concat(chain, "&blockchain=evm");
     if (openSeaSlug)
