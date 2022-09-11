@@ -1,11 +1,12 @@
-import { OffChainTokenConfig, OnChainTokenConfig, Issuer } from './interface';
+import {OffChainTokenConfig, OnChainTokenConfig, SolanaIssuerConfig} from "./interface";
+
 import {logger} from "../utils";
 
 interface TokenLookup {
 	[collectionID: string]: OnChainTokenConfig | OffChainTokenConfig
 }
 
-type TokenConfig = OnChainTokenConfig | OffChainTokenConfig;
+type TokenConfig = OnChainTokenConfig | OffChainTokenConfig | SolanaIssuerConfig;
 
 export class TokenStore {
 
@@ -33,9 +34,11 @@ export class TokenStore {
 		this.prePopulateTokenLookupStore(issuers);
 	}
 
-	public clearCachedTokens(){
+	public clearCachedTokens(onChain?: boolean){
 
 		for (let i in this.tokens){
+			if (onChain !== undefined && onChain !== this.tokenLookup[i].onChain)
+				continue;
 			this.tokens[i] = [];
 		}
 		this.selectedTokens = {};

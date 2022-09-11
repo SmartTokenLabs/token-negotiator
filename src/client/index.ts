@@ -6,7 +6,7 @@ import {getNftCollection, getNftTokens} from "../utils/token/nftProvider";
 import "./../vendor/keyShape";
 import { Authenticator } from "@tokenscript/attestation";
 import {TokenStore} from "./tokenStore";
-import { OffChainTokenConfig, OnChainTokenConfig, AuthenticateInterface, NegotiationInterface, Issuer } from './interface';
+import { OffChainTokenConfig, OnChainTokenConfig, AuthenticateInterface, NegotiationInterface, Issuer, SolanaIssuerConfig, TokenNegotiatorEvents } from './interface';
 import {SignedUNChallenge} from "./auth/signedUNChallenge";
 import {TicketZKProof} from "./auth/ticketZKProof";
 import {AuthenticationMethod} from "./auth/abstractAuthentication";
@@ -91,12 +91,10 @@ export class Client {
 	private ui: Ui;
 	private clientCallBackEvents: {} = {};
 	private tokenStore: TokenStore;
-	// private uiUpdateCallbacks: {[type: UIUpdateEventType]: (data?: {}) => {}} = {};
 	private uiUpdateCallbacks: {[type in UIUpdateEventType]} = {
 		[UIUpdateEventType.ISSUERS_LOADING]: undefined,
 		[UIUpdateEventType.ISSUERS_LOADED]: undefined
 	};
-	// private uiUpdateCallbacks: any = {}
 
 
 	static getKey(file: string){
@@ -155,7 +153,7 @@ export class Client {
 	public solanaAvailable(){
 		return  (
 			typeof window.solana !== 'undefined' &&
-			this.config.issuers.filter((issuer: (OffChainTokenConfig | OnChainTokenConfig)) => {
+			this.config.issuers.filter((issuer: SolanaIssuerConfig ) => {
 				return issuer?.blockchain?.toLowerCase() === 'solana';
 			}).length > 0
 		) 
@@ -631,7 +629,7 @@ export class Client {
 		throw new Error(res.errors.join("\n"));
 	}
 
-	on(type: string, callback?: any, data?: any) {
+	on(type: TokenNegotiatorEvents, callback?: any, data?: any) {
 		requiredParams(type, "Event type is not defined");
 
 		if (callback) {

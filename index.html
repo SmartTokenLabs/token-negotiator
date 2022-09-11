@@ -21,43 +21,55 @@
             window.negotiator = new negotiator.Client({
                 type: 'active',
                 issuers: [
-                    {
-                    collectionID: 'devcon',
-                    title: "Devcon",
-                    onChain: false,
-                    tokenOrigin: "http://localhost:3002/",
-                    attestationOrigin: "https://attestation.id/",
-                    unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
-                    image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
-                    base64senderPublicKeys:
-                        {
-                            "AttestationDAO" : 'MFYwEAYHKoZIzj0CAQYFK...'
-                        },
-                    base64attestorPubKey: "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ="
-                    },
-                  //   {
-                  //   collectionID: "penthouse-panther-club",
-                  //   collectionAddress: "ff846ef2eed57e5367cf8826e63f4d53fe28d28aa67417accb6e4b48cbd19136",
+                  // {
+                  // collectionID: 'devcon',
+                  // title: "Devcon",
+                  // onChain: false,
+                  // tokenOrigin: "http://localhost:3002/",
+                  // attestationOrigin: "https://attestation.id/",
+                  // unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
+                  // image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
+                  // base64senderPublicKeys:
+                  //     {
+                  //         "AttestationDAO" : 'MFYwEAYHKoZIzj0CAQYFK...'
+                  //     },
+                  // base64attestorPubKey: "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ="
+                  // },
+                  // {
+                  //   collectionID: "crypto-cowboy-country",
+                  //   tokenProgram: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                  //   collectionAddress: "bf0aae3dd0078a9feb975f1e3242ddcb7774d551c7fd2a3f07a89c827ed606b2",
+                  //   updateAuthority: "CCCUzWanUNegjGby11DjujDvPaNN68jd9Rimwk2MZzqZ",
                   //   onChain: true,
-                  //   collectionSymbol: "PPC",
+                  //   symbol: "CCC",
                   //   chain: "mainnet",
                   //   blockchain: "solana",
                   // },
-                  // {
-                  //   collectionID: "pixel",
-                  //   collectionAddress: "166424b16c4c7f40eb852f9eb2d0d6869a9ed7ac54a8e6afbd516676bfbbeb19",
-                  //   onChain: true,
-                  //   collectionSymbol: "PIXEL",
-                  //   chain: "mainnet",
-                  //   blockchain: "solana",
-                  // },
-                  // {
-                  //   onChain: true, 
-                  //   collectionID: "expansion-punks", 
-                  //   contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', 
-                  //   chain: 'eth',
-                  //   blockchain: "ethereum",
-                  // },
+                  {
+                    collectionID: "penthouse-panther-club",
+                    collectionAddress: "ff846ef2eed57e5367cf8826e63f4d53fe28d28aa67417accb6e4b48cbd19136",
+                    updateAuthority: "92oYPmrr1BHznizuZmpKZ3MFRadMFYRTCxo9Pf34mZKX",
+                    tokenProgram: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                    onChain: true,
+                    symbol: "PPC",
+                    chain: "mainnet",
+                    blockchain: "solana",
+                  },
+                  {
+                    collectionID: "pixel",
+                    collectionAddress: "166424b16c4c7f40eb852f9eb2d0d6869a9ed7ac54a8e6afbd516676bfbbeb19",
+                    onChain: true,
+                    symbol: "PIXEL",
+                    chain: "mainnet",
+                    blockchain: "solana",
+                  },
+                  {
+                    onChain: true, 
+                    collectionID: "expansion-punks", 
+                    contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', 
+                    chain: 'eth',
+                    blockchain: "evm",
+                  },
                 ],
                 uiOptions: {
                     openingHeading: "Open a new world of discounts available with your tokens.",
@@ -95,6 +107,7 @@
             });
             window.negotiator.on("connected-wallet", (wallet) => {
                 console.log('connected wallet', wallet);
+                window.testingWallet = wallet;
             });
 
         window.negotiator.on("token-proof", (proof) => {

@@ -1,41 +1,38 @@
 import { UIOptionsInterface } from "./ui";
-import {AuthenticationMethod} from "./auth/abstractAuthentication";
-import {SafeConnectOptions} from "../wallet/SafeConnectProvider";
-import {BrowserDataInterface} from "../utils/support/isSupported";
-
+import { AuthenticationMethod } from "./auth/abstractAuthentication";
+import { SafeConnectOptions } from "../wallet/SafeConnectProvider";
+import { BrowserDataInterface } from "../utils/support/isSupported";
 export interface OffChainTokenConfig extends IssuerConfigInterface {
     onChain: false;
     tokenOrigin?: string;
     unEndPoint?: string;
-    base64senderPublicKeys: {[key: string]: string};
+    base64senderPublicKeys: {
+        [key: string]: string;
+    };
     base64attestorPubKey: string;
 }
-
 export interface OnChainTokenConfig extends IssuerConfigInterface {
     onChain: true;
     contract: string;
     chain: string;
     openSeaSlug?: string;
-	blockchain?: string;
+    blockchain?: string;
 }
-
 export interface SolanaIssuerConfig extends OnChainTokenConfig {
-	blockchain: "solana",
-	collectionAddress?: string;
-	tokenProgram?: string;
-	updateAuthority?: string;
+    blockchain: "solana";
+    collectionAddress?: string;
+    tokenProgram?: string;
+    updateAuthority?: string;
 }
-
 export interface IssuerConfigInterface {
     collectionID: string;
     onChain: boolean;
     title?: string;
     image?: string;
-	symbol?: string;
+    symbol?: string;
     filters?: {};
 }
-
-export type Issuer = OffChainTokenConfig | SolanaIssuerConfig | OnChainTokenConfig;
+export declare type Issuer = OffChainTokenConfig | SolanaIssuerConfig | OnChainTokenConfig;
 export interface NegotiationInterface {
     type: string;
     issuers?: Issuer[];
@@ -46,19 +43,16 @@ export interface NegotiationInterface {
     safeConnectOptions?: SafeConnectOptions;
     unSupportedUserAgent?: {
         authentication?: {
-            config: BrowserDataInterface,
-            errorMessage: string
-        },
+            config: BrowserDataInterface;
+            errorMessage: string;
+        };
         full?: {
-            config: BrowserDataInterface,
-            errorMessage: string
-        }
-    },
+            config: BrowserDataInterface;
+            errorMessage: string;
+        };
+    };
     noInternetErrorMessage?: string;
 }
-
-// TODO: Implement tokenId - each issuer token should have a unique ID (tokenId for instance).
-// webster should not be required to pass the whole object as it can lead to hard to solve errors for webster.
 export interface AuthenticateInterface {
     issuer: any;
     tokenId?: number | string;
@@ -69,5 +63,4 @@ export interface AuthenticateInterface {
     options?: any;
     blockchain?: string;
 }
-
-export type TokenNegotiatorEvents = 'token-proof' | 'connected-wallet' | 'tokens-selected' | 'tokens' | 'error';
+export declare type TokenNegotiatorEvents = 'token-proof' | 'connected-wallet' | 'tokens-selected' | 'tokens' | 'error';
