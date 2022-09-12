@@ -38,7 +38,7 @@ var baseURL = "https://api.token-discovery.tokenscript.org";
 export var getNftCollection = function (issuer, ipfsBaseUrl) { return __awaiter(void 0, void 0, void 0, function () {
     var query;
     return __generator(this, function (_a) {
-        if ((issuer === null || issuer === void 0 ? void 0 : issuer.blockchain) === "solana") {
+        if ('blockchain' in issuer && issuer.blockchain === "solana") {
             query = getSolanaNftCollectionUrl(issuer, ipfsBaseUrl);
         }
         else {
@@ -65,7 +65,7 @@ export var getSolanaNftCollectionUrl = function (issuer, ipfsBaseUrl) {
 };
 export var getNftTokens = function (issuer, owner, ipfsBaseUrl) {
     var query;
-    if ((issuer === null || issuer === void 0 ? void 0 : issuer.blockchain) === "solana") {
+    if ('blockchain' in issuer && issuer.blockchain === "solana") {
         query = getSolanaNftTokensUrl(issuer, owner, ipfsBaseUrl);
     }
     else {

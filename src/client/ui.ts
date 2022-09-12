@@ -5,15 +5,17 @@ import {Client, ClientError} from "./index";
 import {ViewInterface, ViewConstructor, AbstractView} from "./views/view-interface";
 
 export type UIType = "popup" | "inline"; // TODO: implement modal too
+export type PopupPosition = 'bottom-right' | 'bottom-left' | 'top-left' | 'top-right';
+export type UItheme = 'light' | 'dark';
 
 export interface UIOptionsInterface {
 	uiType?: UIType;
 	containerElement?: string;
-    openingHeading?: string;
-    issuerHeading?: string;
-    repeatAction?: string;
-    theme?: string;
-    position?: 'bottom-right' | 'bottom-left' | 'top-left' | 'top-right';
+  openingHeading?: string;
+  issuerHeading?: string;
+  repeatAction?: string;
+  theme?: UItheme;
+	position?: PopupPosition;
 	autoPopup?: boolean;
 }
 
@@ -241,7 +243,7 @@ export class Ui {
 		this.loadContainer.style.display = 'none';
 	}
 
-	private setTheme(theme: string) {
+	private setTheme(theme: UItheme) {
 		let refTokenSelector = document.querySelector(".overlay-tn");
 		if (refTokenSelector) {
 			refTokenSelector.classList.remove(this.options.theme + "-tn");
@@ -263,7 +265,7 @@ export class Ui {
 
 	}
 
-	private validateTheme(theme: string): string {
+	private validateTheme(theme: string): UItheme {
 		if (theme && theme === 'dark') {
 			return theme
 		}
@@ -271,7 +273,7 @@ export class Ui {
 		return 'light';
 	}
 
-	switchTheme(newTheme: string) {
+	switchTheme(newTheme: UItheme) {
 		this.setTheme(newTheme);
 	}
 }

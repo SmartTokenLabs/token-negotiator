@@ -32,9 +32,10 @@ export interface IssuerConfigInterface {
     symbol?: string;
     filters?: {};
 }
+export declare type Issuer = OffChainTokenConfig | SolanaIssuerConfig | OnChainTokenConfig;
 export interface NegotiationInterface {
     type: string;
-    issuers?: (OnChainTokenConfig | OffChainTokenConfig)[];
+    issuers?: Issuer[];
     uiOptions?: UIOptionsInterface;
     autoLoadTokens?: number | boolean;
     autoEnableTokens?: boolean;
@@ -62,3 +63,4 @@ export interface AuthenticateInterface {
     options?: any;
     blockchain?: string;
 }
+export declare type TokenNegotiatorEvents = 'token-proof' | 'connected-wallet' | 'tokens-selected' | 'tokens' | 'error';
