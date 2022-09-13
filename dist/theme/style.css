@@ -416,6 +416,7 @@
 .overlay-tn .overlay-content-tn .issuer-connect-title {
   margin: 0;
   max-width: 160px;
+  text-align: left;
 }
 
 .overlay-tn .overlay-content-tn .headline-tn {

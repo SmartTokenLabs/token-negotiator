@@ -342,6 +342,19 @@ Once connected to Token Negotiator, the wallet instance can be used.
 
 ````
 
+### Update component theme
+
+Changing the theme.
+
+````javascript
+
+  /**
+  * @param {String} theme 'light || dark'
+  */
+  negotiator.switchTheme('dark');
+
+````
+
 ### For projects where you are not using a Node.js work flow.
 
 1. Go to the following URL: https://github.com/TokenScript/token-negotiator
