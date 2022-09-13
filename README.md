@@ -493,12 +493,12 @@ Please reach out to us at <sayhi@smarttokenlabs.com>
 
 run `npm run test`
 
-## Development of this library
+## WIKI
 
-[Development WIKI](https://github.com/TokenScript/token-negotiator/wiki/developers)
+[Development](https://github.com/TokenScript/token-negotiator/wiki/developers)
 
 
-[FAQ WIKI](https://github.com/TokenScript/token-negotiator/wiki/faq)
+[FAQ](https://github.com/TokenScript/token-negotiator/wiki/faq)
 
 ### Help / Questions / Improvements
 
