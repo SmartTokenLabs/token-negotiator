@@ -398,12 +398,12 @@ Key values applied to all tokens. Use if you only wish for users to use a certai
 
 ````javascript
 
-  filter: {
-    'devconId': 6,
-    'ticketId': 417541561854,
-    'class': '7'
+  const issuer = { 
+    onChain: false, 
+    collectionID: "devcon",
+    filter: { 'class': '7' }
   }
-
+ 
 ````
 
 ## Token Issuers
