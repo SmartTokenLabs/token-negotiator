@@ -260,7 +260,7 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
   * @param {String} symbol smart contract collection symbol
   * @param {String} updateAuthority user authority to upgrade the collection
   */
- 
+
   const onChainIssuer = { 
     onChain: true,
     blockchain: 'solana', 
@@ -364,7 +364,7 @@ Changing the theme.
 
 ````
 
-### For projects where you are not using a Node.js work flow.
+### For projects where you are not using a Node.js work flow. Or would prefer to inject the library into the html (polyfills included).
 
 1. Go to the following URL: https://github.com/TokenScript/token-negotiator
 
