@@ -1,21 +1,37 @@
-## What's Changed
 
-Summary: 
+> Description
 
-This is a non breaking update to the Token Negotiator library. Providing fixes to the collection of API data.
+Further support for EVM networks and the blockchain Solana, screen reader accessiblitiy, fixes and enhancements.
 
-Added fix to locate NFT title:
+### Upgrade Steps
 
-- Titles can be found via the key title or name
+* Update NPM package to version 2.1.0
 
-API sequence fix, improvement to performance:
+### Breaking Changes
 
-- Correction to the validation check to resolve NFT's when the image is known. The title is permitted as an empty string.
+[none]
 
-Unit tests Updated:
+### New Features
 
-- Unit tests updated to ensure this logic works as intended. 
+* Wallet Persistance (wallet provider kept in local memory)
+* Expose web3 Wallet Connection (Wallet Provider)
+* Support added for Solana, Arbitrum, Fantom and BSC NFT's
+* Light and dark mode capabilitiy
+* Token Negotiator Active Mode Component Positioning into any corner of the window
+* Accessiblitiy for screen readers
+
+### Bug Fixes
+
+* Potential race condition when loading tokens
+
+### Performance Improvements
+
+* Sonar Cloud review with fixed items
  
-Automated dependency bot Updates:
+### Other Changes
 
-**Full Changelog**: https://github.com/TokenScript/token-negotiator/compare/v1.0.1...v1.0.2
+* General fixes and enhancements made ensuring the same functionality was kept
+
+**Full Changelog**: 
+
+To be added.
