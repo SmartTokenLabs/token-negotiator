@@ -496,6 +496,7 @@ run `npm run test`
 ## Development of this library
 
 [Development WIKI](https://github.com/TokenScript/token-negotiator/wiki/developers)
+[FAQ WIKI](https://github.com/TokenScript/token-negotiator/wiki/faq)
 
 ### Help / Questions / Improvements
 
