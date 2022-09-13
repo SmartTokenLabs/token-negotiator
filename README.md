@@ -152,20 +152,6 @@ Include the following Javascript to configure the Token Negotiator with issuers 
   const negotiator = new Client({
     type: 'active',
     issuers: [
-        {
-          collectionID: 'devcon', 
-          title: "Devcon",
-          onChain: false,
-          tokenOrigin: "http://localhost:3002/",
-          attestationOrigin: "https://attestation.id/",
-          unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
-          image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
-          base64senderPublicKeys: 
-              { 
-                  "AttestationDAO" : 'MFYwEAYHKoZIzj0CAQYFK...'
-              },
-          base64attestorPubKey: "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ="
-        },
         { blockchain: 'evm', onChain: true, collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
     ],
     uiOptions: {
