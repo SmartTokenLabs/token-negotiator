@@ -394,7 +394,7 @@ Configure the library using the following example.
 
 ## filters
 
-Key values applied to all tokens.
+Key values applied to all tokens. Use if you only wish for users to use a certain subclass of tokens.
 
 ````javascript
 
