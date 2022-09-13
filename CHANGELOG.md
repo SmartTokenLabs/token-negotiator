@@ -1,7 +1,7 @@
 
 > Description
 
-Further support for EVM networks and the blockchain Solana, screen reader accessiblitiy, fixes and enhancements.
+Further support for EVM networks and the blockchain Solana, screen reader accessiblitiy, applied fixes and enhancements.
 
 ### Upgrade Steps
 
@@ -14,7 +14,8 @@ Further support for EVM networks and the blockchain Solana, screen reader access
 ### New Features
 
 * Wallet Persistance (wallet provider kept in local memory)
-* Expose web3 Wallet Connection (Wallet Provider)
+* Connect and Disconnect Wallets (switching between blockchains and wallet types)
+* Exposed web3 Wallet Connection (Wallet Provider)
 * Support added for Solana, Arbitrum, Fantom and BSC NFT's
 * Light and dark mode capabilitiy
 * Token Negotiator Active Mode Component Positioning into any corner of the window
