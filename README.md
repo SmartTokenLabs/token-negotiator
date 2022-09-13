@@ -521,13 +521,7 @@ run `npm run test`
 Please contact us or open an issue via github:
 sayhi@smarttokenlabs.com
 
-### Quick Start examples with Vue and React
-
-https://github.com/TokenScript/token-negotiator-examples
-
-### Examples
-
-To review demo examples of the token negotiator please visit:
+### Quick Start examples with Vue, React and TypeScript
 
 [Token Negotiator Examples](https://github.com/TokenScript/token-negotiator-examples)
 
