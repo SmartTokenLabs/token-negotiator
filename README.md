@@ -12,7 +12,7 @@ The following types of tokens are supported:
 
 (for new token issuers who are interested in using TokenScript please visit the following WIKI page: https://github.com/TokenScript/token-negotiator/wiki/Token-Issuer-Page).
 
-### Token Negotiator supports Tokens across the following blockchains and networks:
+### Token Negotiator supports NFT Tokens across the following blockchains and networks:
 
 <table>
   <thead>
@@ -87,11 +87,6 @@ The following types of tokens are supported:
 	  <td>solana</td>
       <td>mainnet</td>
             <td>N</td>
-    </tr>
-    <tr>
-	  <td>solana</td>
-      <td>testnet</td>
-            <td>Y</td>
     </tr>
     <tr>
 	    <td>solana</td>
