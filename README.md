@@ -444,6 +444,8 @@ For off chain token issuers, there is an additional module within the Token Nego
 
 A mock token implementation can be found here: https://github.com/TokenScript/token-negotiator-examples/tree/main/token-outlet-website/src
 
+For any further information, please reach out to us at <sayhi@smarttokenlabs.com>
+
 ## Configuration Options
 
 This table lists all possible configuration options for Token Negotiator client.
