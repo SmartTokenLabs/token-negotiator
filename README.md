@@ -349,7 +349,7 @@ Changing the theme.
 ````javascript
 
   /**
-  * @param {String} theme 'light || dark'
+  * @param {String} theme 'light' || 'dark'
   */
   negotiator.switchTheme('dark');
 
@@ -512,7 +512,7 @@ Please reach out to us at <sayhi@smarttokenlabs.com>
 
 run `npm run test`
 
-## Development of this library.
+## Development of this library
 
 [Development WIKI](https://github.com/TokenScript/token-negotiator/wiki/developers)
 
@@ -521,13 +521,9 @@ run `npm run test`
 Please contact us or open an issue via github:
 sayhi@smarttokenlabs.com
 
-### Quick Start with Vue, React or Svelte
+### Quick Start examples with Vue and React
 
-https://github.com/TokenScript/token-negotiator/wiki/quick-start-Vue
-
-https://github.com/TokenScript/token-negotiator/wiki/quick-start-React
-
-https://github.com/TokenScript/token-negotiator/wiki/quick-start-Svelte
+https://github.com/TokenScript/token-negotiator-examples
 
 ### Examples
 
