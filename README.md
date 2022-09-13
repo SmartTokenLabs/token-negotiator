@@ -229,7 +229,7 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
   
 ````
 
-### Managing Issuers on chain
+### Managing Issuers on chain (EVM) 
 
 
 ````javascript
@@ -243,6 +243,34 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
   * @param {String} openSeaSlug (optional) add collection uri name if the collection features on Opensea
   */
   const onChainIssuer = { blockchain: 'evm', onChain: true, collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth', openSeaSlug: 'expansion-punks' }
+
+````
+
+### Managing Issuers on chain (Solana) 
+
+````javascript
+
+  /**
+  * @param {String} blockchain string of which blockchain is needed (optional input: default is 'evm')
+  * @param {Boolean} onChain boolean if this token is on / off chain 
+  * @param {String} collectionID your own reference key to identify the collection by.
+  * @param {String} collectionAddress collection identifier
+  * @param {String} chain smart contract address chain 
+  * @param {String} tokenProgram program address (also descibed as Owner Program) 
+  * @param {String} symbol smart contract collection symbol
+  * @param {String} updateAuthority user authority to upgrade the collection
+  */
+ 
+  const onChainIssuer = { 
+    onChain: true,
+    blockchain: 'solana', 
+    collectionID: 'crytpo-cowboys', 
+    collectionAddress: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', 
+    chain: 'mainnet',
+    tokenProgram: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+    symbol: 'CCC',
+    updateAuthority: 'CCCUzWanUNegjGby11DjujDvPaNN68jd9Rimwk2MZzqZ'
+  }
 
 ````
 
