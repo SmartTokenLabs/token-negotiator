@@ -79,7 +79,7 @@ The following types of tokens are supported:
             <td>Y</td>
     </tr>
     <tr>
-      <td>arbitrum</td>
+      <td>evm</td>
       <td>arbitrum</td>
             <td>N</td>
     </tr>
