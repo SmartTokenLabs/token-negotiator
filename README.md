@@ -12,7 +12,7 @@ The following types of tokens are supported:
 
 (for new token issuers who are interested in using TokenScript please visit the following WIKI page: https://github.com/TokenScript/token-negotiator/wiki/Token-Issuer-Page).
 
-### Token Negotiator supports Tokens across the following blockchains and networks:
+### Token Negotiator supports NFT Tokens across the following blockchains and networks:
 
 <table>
   <thead>
@@ -89,11 +89,6 @@ The following types of tokens are supported:
             <td>N</td>
     </tr>
     <tr>
-	  <td>solana</td>
-      <td>testnet</td>
-            <td>Y</td>
-    </tr>
-    <tr>
 	    <td>solana</td>
         <td>devnet</td>
             <td>Y</td>
@@ -157,20 +152,6 @@ Include the following Javascript to configure the Token Negotiator with issuers 
   const negotiator = new Client({
     type: 'active',
     issuers: [
-        {
-          collectionID: 'devcon', 
-          title: "Devcon",
-          onChain: false,
-          tokenOrigin: "http://localhost:3002/",
-          attestationOrigin: "https://attestation.id/",
-          unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
-          image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
-          base64senderPublicKeys: 
-              { 
-                  "AttestationDAO" : 'MFYwEAYHKoZIzj0CAQYFK...'
-              },
-          base64attestorPubKey: "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ="
-        },
         { blockchain: 'evm', onChain: true, collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
     ],
     uiOptions: {
@@ -248,7 +229,7 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
   
 ````
 
-### Managing Issuers on chain
+### Managing Issuers on chain (EVM) 
 
 
 ````javascript
@@ -262,6 +243,34 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
   * @param {String} openSeaSlug (optional) add collection uri name if the collection features on Opensea
   */
   const onChainIssuer = { blockchain: 'evm', onChain: true, collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth', openSeaSlug: 'expansion-punks' }
+
+````
+
+### Managing Issuers on chain (Solana) 
+
+````javascript
+
+  /**
+  * @param {String} blockchain string of which blockchain is needed (optional input: default is 'evm')
+  * @param {Boolean} onChain boolean if this token is on / off chain 
+  * @param {String} collectionID your own reference key to identify the collection by.
+  * @param {String} collectionAddress collection identifier
+  * @param {String} chain smart contract address chain 
+  * @param {String} tokenProgram program address (also descibed as Owner Program) 
+  * @param {String} symbol smart contract collection symbol
+  * @param {String} updateAuthority user authority to upgrade the collection
+  */
+
+  const onChainIssuer = { 
+    onChain: true,
+    blockchain: 'solana', 
+    collectionID: 'crytpo-cowboys', 
+    collectionAddress: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', 
+    chain: 'mainnet',
+    tokenProgram: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+    symbol: 'CCC',
+    updateAuthority: 'CCCUzWanUNegjGby11DjujDvPaNN68jd9Rimwk2MZzqZ'
+  }
 
 ````
 
@@ -342,7 +351,20 @@ Once connected to Token Negotiator, the wallet instance can be used.
 
 ````
 
-### For projects where you are not using a Node.js work flow.
+### Update component theme
+
+Changing the theme.
+
+````javascript
+
+  /**
+  * @param {String} theme 'light' || 'dark'
+  */
+  negotiator.switchTheme('dark');
+
+````
+
+### For projects where you are not using a Node.js work flow. Or would prefer to inject the library into the html (polyfills included).
 
 1. Go to the following URL: https://github.com/TokenScript/token-negotiator
 
@@ -400,16 +422,16 @@ Configure the library using the following example.
 
 ## filters
 
-Key values applied to all tokens.
+Key values applied to all tokens. Use if you only wish for users to use a certain subclass of tokens.
 
 ````javascript
 
-  filter: {
-    'devconId': 6,
-    'ticketId': 417541561854,
-    'class': '7'
+  const issuer = { 
+    onChain: false, 
+    collectionID: "devcon",
+    filter: { 'class': '7' }
   }
-
+ 
 ````
 
 ## Token Issuers
@@ -421,6 +443,8 @@ import { client, outlet } from '@tokenscript/token-negotiator';
 For off chain token issuers, there is an additional module within the Token Negotiator named { outlet } used to safely store, decode and dispatch token meta data to the client module (in page or cross origin).
 
 A mock token implementation can be found here: https://github.com/TokenScript/token-negotiator-examples/tree/main/token-outlet-website/src
+
+For any further information, please reach out to us at <sayhi@smarttokenlabs.com>
 
 ## Configuration Options
 
@@ -499,26 +523,19 @@ Please reach out to us at <sayhi@smarttokenlabs.com>
 
 run `npm run test`
 
-## Development of this library.
+## WIKI
 
-[Development WIKI](https://github.com/TokenScript/token-negotiator/wiki/developers)
+[Development](https://github.com/TokenScript/token-negotiator/wiki/developers)
+
+
+[FAQ](https://github.com/TokenScript/token-negotiator/wiki/faq)
 
 ### Help / Questions / Improvements
 
 Please contact us or open an issue via github:
 sayhi@smarttokenlabs.com
 
-### Quick Start with Vue, React or Svelte
-
-https://github.com/TokenScript/token-negotiator/wiki/quick-start-Vue
-
-https://github.com/TokenScript/token-negotiator/wiki/quick-start-React
-
-https://github.com/TokenScript/token-negotiator/wiki/quick-start-Svelte
-
-### Examples
-
-To review demo examples of the token negotiator please visit:
+### Quick Start examples with Vue, React and TypeScript
 
 [Token Negotiator Examples](https://github.com/TokenScript/token-negotiator-examples)
 
