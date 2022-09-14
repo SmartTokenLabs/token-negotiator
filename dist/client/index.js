@@ -35,7 +35,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 import { OutletAction, OutletResponseAction, Messaging } from "./messaging";
-import { Ui } from "./ui";
+import { Ui } from './ui';
 import { logger, requiredParams } from "../utils";
 import { getNftCollection, getNftTokens } from "../utils/token/nftProvider";
 import "./../vendor/keyShape";
@@ -59,7 +59,7 @@ var defaultConfig = {
         openingHeading: "Validate your token ownership for access",
         issuerHeading: "Detected tokens",
         autoPopup: true,
-        position: "bottom-right"
+        position: "bottom-right",
     },
     autoLoadTokens: true,
     autoEnableTokens: true,
@@ -90,10 +90,14 @@ export var ClientErrorMessage;
 })(ClientErrorMessage || (ClientErrorMessage = {}));
 var Client = (function () {
     function Client(config) {
-        var _this = this;
         var _a;
+        var _this = this;
+        var _b;
         this.clientCallBackEvents = {};
-        this.uiUpdateCallbacks = {};
+        this.uiUpdateCallbacks = (_a = {},
+            _a[0] = undefined,
+            _a[1] = undefined,
+            _a);
         this.cancelAutoload = true;
         this.eventSender = {
             emitAllTokensToClient: function (tokens) {
@@ -118,7 +122,7 @@ var Client = (function () {
         this.config = this.mergeConfig(defaultConfig, config);
         this.negotiateAlreadyFired = false;
         this.tokenStore = new TokenStore(this.config.autoEnableTokens);
-        if (((_a = this.config.issuers) === null || _a === void 0 ? void 0 : _a.length) > 0)
+        if (((_b = this.config.issuers) === null || _b === void 0 ? void 0 : _b.length) > 0)
             this.tokenStore.updateIssuers(this.config.issuers);
         this.messaging = new Messaging();
     }
@@ -162,15 +166,15 @@ var Client = (function () {
     };
     Client.prototype.getWalletProvider = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var Web3WalletProvider;
+            var Web3WalletProvider_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         if (!!this.web3WalletProvider) return [3, 2];
                         return [4, import("./../wallet/Web3WalletProvider")];
                     case 1:
-                        Web3WalletProvider = (_a.sent()).Web3WalletProvider;
-                        this.web3WalletProvider = new Web3WalletProvider(this, this.config.safeConnectOptions);
+                        Web3WalletProvider_1 = (_a.sent()).Web3WalletProvider;
+                        this.web3WalletProvider = new Web3WalletProvider_1(this, this.config.safeConnectOptions);
                         _a.label = 2;
                     case 2: return [2, this.web3WalletProvider];
                 }
@@ -186,7 +190,7 @@ var Client = (function () {
                     case 1:
                         wp = _a.sent();
                         wp.deleteConnections();
-                        this.tokenStore.clearCachedTokens(true);
+                        this.tokenStore.clearCachedTokens();
                         this.ui.updateUI(SelectWallet);
                         return [2];
                 }
@@ -291,7 +295,7 @@ var Client = (function () {
                             this.tokenStore.updateIssuers(issuers);
                         requiredParams(Object.keys(this.tokenStore.getCurrentIssuers()).length, "issuers are missing.");
                         if (!(this.config.type === "active")) return [3, 1];
-                        this.issuersLoaded = !this.tokenStore.hasUnloadedIssuers();
+                        this.issuersLoaded = false;
                         this.activeNegotiationStrategy(openPopup);
                         return [3, 4];
                     case 1: return [4, this.enrichTokenLookupDataOnChainTokens()];
@@ -541,11 +545,10 @@ var Client = (function () {
         this.eventSender.emitSelectedTokensToClient(selectedTokens);
     };
     Client.prototype.authenticate = function (authRequest) {
-        var _a;
         return __awaiter(this, void 0, void 0, function () {
             var issuer, unsignedToken, config, AuthType, authenticator, res, err_3;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
                         try {
                             this.checkUserAgentSupport("authentication");
@@ -575,20 +578,20 @@ var Client = (function () {
                             AuthType = config.onChain ? SignedUNChallenge : TicketZKProof;
                         }
                         authenticator = new AuthType(this);
-                        _b.label = 1;
+                        _a.label = 1;
                     case 1:
-                        _b.trys.push([1, 3, , 4]);
+                        _a.trys.push([1, 3, , 4]);
                         if (!authRequest.options)
                             authRequest.options = {};
-                        (_a = authRequest.options) === null || _a === void 0 ? void 0 : _a.messagingForceTab = this.config.messagingForceTab;
+                        authRequest.options.messagingForceTab = this.config.messagingForceTab;
                         return [4, authenticator.getTokenProof(config, [authRequest.unsignedToken], authRequest)];
                     case 2:
-                        res = _b.sent();
+                        res = _a.sent();
                         logger(2, "Ticket proof successfully validated.");
                         this.eventSender.emitProofToClient(res.data, issuer);
                         return [3, 4];
                     case 3:
-                        err_3 = _b.sent();
+                        err_3 = _a.sent();
                         logger(2, err_3);
                         if (err_3.message === "WALLET_REQUIRED") {
                             return [2, this.handleWalletRequired(authRequest)];

@@ -1,17 +1,21 @@
-import {OnChainTokenConfig, SolanaIssuerConfig} from "../../client/interface";
+
+import { OnChainTokenConfig, Issuer, SolanaIssuerConfig, IssuerConfigInterface } from '../../client/interface';
+
 
 const baseURL = "https://api.token-discovery.tokenscript.org";
 
 export const getNftCollection = async (
-	issuer: OnChainTokenConfig | SolanaIssuerConfig,
+	issuer: Issuer,
 	ipfsBaseUrl?: string
 ) => {
 	let query: string;
-	if (issuer?.blockchain === "solana") {
+  
+	if ('blockchain' in issuer && issuer.blockchain === "solana") {
 		query = getSolanaNftCollectionUrl(issuer as SolanaIssuerConfig, ipfsBaseUrl);
 	} else {
-		query = getEvmNftCollectionUrl(issuer, ipfsBaseUrl);
+		query = getEvmNftCollectionUrl(issuer as OnChainTokenConfig, ipfsBaseUrl);
 	}
+
 	return tokenRequest(query, true);
 };
 
@@ -31,12 +35,12 @@ export const getSolanaNftCollectionUrl = (issuer: SolanaIssuerConfig, ipfsBaseUr
 };
 
 export const getNftTokens = (
-	issuer: OnChainTokenConfig,
+	issuer: Issuer,
 	owner: string,
 	ipfsBaseUrl?: string
 ) => {
 	let query: string;
-	if (issuer?.blockchain === "solana") {
+	if ('blockchain' in issuer && issuer.blockchain === "solana") {
 		query = getSolanaNftTokensUrl(issuer as SolanaIssuerConfig, owner, ipfsBaseUrl);
 	} else {
 		query = getEvmNftTokensUrl(issuer, owner, ipfsBaseUrl);
@@ -45,17 +49,17 @@ export const getNftTokens = (
 };
 
 export const getEvmNftTokensUrl = (
-  issuer: any,
-  owner: string,
-  ipfsBaseUrl: string
+	issuer: any,
+	owner: string,
+	ipfsBaseUrl: string
 ) => {
-  const { contract, chain, openSeaSlug } = issuer;
-  const blockchain = issuer?.blockchain ?? "evm";
-  if(!contract || !chain) return undefined;
-  let query = `${baseURL}/get-owner-tokens?smartContract=${contract}&chain=${chain}&owner=${owner}&blockchain=${blockchain}`;
-  if (openSeaSlug) query += `&openSeaSlug=${openSeaSlug}`;
-  if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`;
-  return query;
+	const { contract, chain, openSeaSlug } = issuer;
+	const blockchain = issuer?.blockchain ?? "evm";
+	if(!contract || !chain) return undefined;
+	let query = `${baseURL}/get-owner-tokens?smartContract=${contract}&chain=${chain}&owner=${owner}&blockchain=${blockchain}`;
+	if (openSeaSlug) query += `&openSeaSlug=${openSeaSlug}`;
+	if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`;
+	return query;
 };
 
 export const getSolanaNftTokensUrl = (
@@ -63,23 +67,23 @@ export const getSolanaNftTokensUrl = (
 	owner: string,
 	ipfsBaseUrl: string
 ) => {
-  const {
-    chain,
-    tokenProgram,
-    collectionAddress,
-    updateAuthority,
-    symbol,
-  } = issuer;
-  const blockchain = issuer?.blockchain ?? "evm";
-  if(!chain && (!tokenProgram || !collectionAddress || !updateAuthority || !symbol)) return undefined;
-  let query = `${baseURL}/get-owner-tokens?chain=${chain}&blockchain=${blockchain}`;
-  if (owner) query += `&owner=${owner}`;
-  if (symbol) query += `&symbol=${symbol}`;
-  if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`;
-  if (tokenProgram) query += `&tokenProgram=${tokenProgram}`;
-  if (collectionAddress) query += `&collectionAddress=${collectionAddress}`;
-  if (updateAuthority) query += `&updateAuthority=${updateAuthority}`;
-  return query;
+	const {
+		chain,
+		tokenProgram,
+		collectionAddress,
+		updateAuthority,
+		symbol,
+	} = issuer;
+	const blockchain = issuer?.blockchain ?? "evm";
+	if(!chain && (!tokenProgram || !collectionAddress || !updateAuthority || !symbol)) return undefined;
+	let query = `${baseURL}/get-owner-tokens?chain=${chain}&blockchain=${blockchain}`;
+	if (owner) query += `&owner=${owner}`;
+	if (symbol) query += `&symbol=${symbol}`;
+	if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`;
+	if (tokenProgram) query += `&tokenProgram=${tokenProgram}`;
+	if (collectionAddress) query += `&collectionAddress=${collectionAddress}`;
+	if (updateAuthority) query += `&updateAuthority=${updateAuthority}`;
+	return query;
 };
 
 export const tokenRequest = async (
