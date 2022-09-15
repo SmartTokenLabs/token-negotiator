@@ -413,6 +413,11 @@
   margin: 0 auto;
 }
 
+.overlay-tn .overlay-content-tn .token-issuer-nav-tn  {
+  padding: 0;
+  margin: 0;
+}
+
 .overlay-tn .overlay-content-tn .issuer-connect-title {
   margin: 0;
   max-width: 160px;
