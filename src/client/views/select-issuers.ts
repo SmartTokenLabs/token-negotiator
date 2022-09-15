@@ -32,7 +32,7 @@ export class SelectIssuers extends AbstractView {
                   <p class="headline-tn">${this.params.options.issuerHeading}</p>
                   <button class="btn-tn dis-wallet-tn" aria-label="Disconnect Wallet">Disconnect</button>
                 </div>
-								<nav>
+								<nav class="token-issuer-nav-tn">
                 	<ul class="token-issuer-list-container-tn" role="menubar"></ul>
 								</nav>
               </div>
