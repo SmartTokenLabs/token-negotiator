@@ -477,7 +477,7 @@ This table lists all possible configuration options for Token Negotiator client.
 
 | Property Name          | Description                                                                       | On/Off Chain | Required | Type    |  
 |------------------------|-----------------------------------------------------------------------------------|--------------|----------|---------|
-| blockchain           | The blockchain technology the token issuer has published the tokens with ("ethereum" or "solana". When undefined, this option will default to "ethereum")                                                  | Both         | N        | string  |
+| blockchain           | The blockchain technology the token issuer has published the tokens with ("evm" or "solana". When undefined, this option will default to "evm")                                                  | Both         | N        | string  |
 | collectionID           | A unique ID for the token issuer. This is used as a reference key for you as a developer to use, where when the end user selected tokens you can identify them with this unique key e.g. "my-demo-tokens".                                                 | Both         | Y        | string  |
 | onChain                | Whether this is an on or off-chain token (defaults to true)                                        | Both         | N        | boolean |
 | title                  | Collection title: loaded from API if not specified                                | Both         | Y
