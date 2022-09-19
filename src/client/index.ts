@@ -258,7 +258,7 @@ export class Client {
 
 		if (this.config.type === "active") {
 
-			this.issuersLoaded = false;
+			this.issuersLoaded = !this.tokenStore.hasUnloadedIssuers();
 
 			this.activeNegotiationStrategy(openPopup);
 
