@@ -1,7 +1,5 @@
-examples
 test
 src
-_bundles
 docs
 token-negotiator-dist
 reports
@@ -15,4 +13,5 @@ mock-images
 tsconfig.build.json                           
 tsconfig.json                                 
 tslint.json                                   
-webpack.config.js 
+webpack.config.js
+sonar-project.properties

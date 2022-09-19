@@ -35,4 +35,4 @@ Further support for EVM networks and the blockchain Solana, screen reader access
 
 **Full Changelog**: 
 
-To be added.
+https://github.com/TokenScript/token-negotiator/compare/v2.0.0...v2.1.0
