@@ -1,11 +1,12 @@
-import {OffChainTokenConfig, OnChainTokenConfig} from "./interface";
+import {OffChainTokenConfig, OnChainTokenConfig, SolanaIssuerConfig} from "./interface";
+
 import {logger} from "../utils";
 
 interface TokenLookup {
 	[collectionID: string]: OnChainTokenConfig | OffChainTokenConfig
 }
 
-type TokenConfig = OnChainTokenConfig | OffChainTokenConfig;
+type TokenConfig = OnChainTokenConfig | OffChainTokenConfig | SolanaIssuerConfig;
 
 export class TokenStore {
 
@@ -33,6 +34,16 @@ export class TokenStore {
 		this.prePopulateTokenLookupStore(issuers);
 	}
 
+	public clearCachedTokens(onChain?: boolean){
+
+		for (let i in this.tokens){
+			if (onChain !== undefined && onChain !== this.tokenLookup[i].onChain)
+				continue;
+			this.tokens[i] = [];
+		}
+		this.selectedTokens = {};
+	}
+
 	public hasOnChainTokens() {
 
 		for (let i in this.currentIssuers){
@@ -43,7 +54,7 @@ export class TokenStore {
 		return false;
 	}
 
-	public getCurrentIssuers(onChainFilter?: boolean){
+	public getCurrentIssuers(onChainFilter?: boolean) {
 		let current: TokenLookup = {};
 		for (let collectionId in this.currentIssuers){
 			if (onChainFilter === undefined || onChainFilter === this.currentIssuers[collectionId])
@@ -59,6 +70,18 @@ export class TokenStore {
 				current[collectionId] = this.tokens[collectionId];
 		}
 		return current;
+	}
+
+	public hasUnloadedIssuers(){
+
+		let issuers = this.getCurrentIssuers(true);
+
+		for (let i in issuers){
+			if (!issuers[i].title)
+				return true;
+		}
+
+		return false;
 	}
 
 	public hasUnloadedTokens(){

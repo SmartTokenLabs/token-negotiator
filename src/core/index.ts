@@ -1,11 +1,7 @@
 import {
 	base64ToUint8array,
-	requiredParams,
 	compareObjects,
-	logger,
 } from "../utils/index";
-// @ts-ignore
-import { ethers } from "ethers";
 
 interface FilterInterface {
   [key: string]: any;
@@ -189,6 +185,9 @@ export const rawTokenCheck = async (unsignedToken: any, tokenIssuer: any) => {
 		tokenObj.magicLink = rawTokenData.magic_link;
 	}
 
+	// @ts-ignore
+	if (tokenIssuer.attestationInTab) tokenObj.attestationInTab = true;
+
 	return tokenObj;
 };
 
@@ -224,7 +223,7 @@ export const getRawToken = (unsignedToken: any, tokenIssuer: any) => {
 		}
 		
 		return token;
-	} else {
-		return null;
 	}
+
+	return null;
 };

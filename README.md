@@ -1,34 +1,100 @@
 # token-negotiator
 
-<!--
 [![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Ftokenscript%2Ftoken-negotiator%2Fbadge%3Fref%3Dmain&style=flat)](https://actions-badge.atrox.dev/tokenscript/token-negotiator/goto?ref=main)
--->
 
 The Token Negotiator is an open source tool designed towards building the tokenised web. Where new types of experience can be created based around the ownership and use of tokens.
 
 The following types of tokens are supported:
 
-- Cryptographically created Tokens (Off Chain)
+- Cryptographically created Tokens (Off Chain developed with TokenScript)
 
 - Web3 NFT Tokens (On Chain)
 
-(for new token issuers who are interested in using our technology please visit the following WIKI page: https://github.com/TokenScript/token-negotiator/wiki/Token-Issuer-Page).
+(for new token issuers who are interested in using TokenScript please visit the following WIKI page: https://github.com/TokenScript/token-negotiator/wiki/Token-Issuer-Page).
 
-### Token Negotiator supports Tokens across the following Chains
+### Token Negotiator supports NFT Tokens across the following blockchains and networks:
 
-- mainnet / eth
-- polygon
-- arbitrum 
-- optimism
-- rinkeby
-- ropsten
-- goerli
-- kovan
-- bsc
-- mumbai
-- avalanche
-- fantom
-- POAP via XDai
+<table>
+  <thead>
+    <tr>
+      <th>Blockchain</th>
+      <th>Chain</th>
+      <th>is testnet</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>evm</td>
+      <td>eth or mainnet</td>
+      <td>N</td>
+    </tr>
+    <tr>
+      <td>evm</td>
+      <td>polygon</td>
+      <td>N</td>
+    </tr>
+    <tr>
+      <td>evm</td>
+      <td>optimism</td>
+            <td>N</td>
+    </tr>
+    <tr>
+    <td>evm</td>
+      <td>bsc</td>
+            <td>N</td>
+    </tr>
+    <tr>
+	    <td>evm</td>
+      <td>avalanche</td>
+            <td>N</td>
+    </tr>
+    <tr>
+	    <td>evm</td>
+      <td>fantom</td>
+            <td>N</td>
+    </tr>
+        <tr>
+    <td>evm</td>
+      <td>rinkeby</td>
+            <td>Y</td>
+    </tr>
+    <tr>
+    <td>evm</td>
+      <td>ropsten</td>
+            <td>Y</td>
+    </tr>
+    <tr>
+    <td>evm</td>
+      <td>goerli</td>
+            <td>Y</td>
+    </tr>
+    <tr>
+    	<td>evm</td>
+      <td>kovan</td>
+            <td>Y</td>
+    </tr>
+    <tr>
+      <td>evm</td>
+      <td>mumbai</td>
+            <td>Y</td>
+    </tr>
+    <tr>
+      <td>evm</td>
+      <td>arbitrum</td>
+            <td>N</td>
+    </tr>
+    <tr>
+	  <td>solana</td>
+      <td>mainnet</td>
+            <td>N</td>
+    </tr>
+    <tr>
+	    <td>solana</td>
+        <td>devnet</td>
+            <td>Y</td>
+    </tr>
+  </tbody>
+</table>
 
 ## Installation
 
@@ -86,21 +152,7 @@ Include the following Javascript to configure the Token Negotiator with issuers 
   const negotiator = new Client({
     type: 'active',
     issuers: [
-        {
-          collectionID: 'devcon', 
-          title: "Devcon",
-          onChain: false,
-          tokenOrigin: "http://localhost:3002/",
-          attestationOrigin: "https://attestation.id/",
-          unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
-          image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
-          base64senderPublicKeys: 
-              { 
-                  "AttestationDAO" : 'MFYwEAYHKoZIzj0CAQYFK...'
-              },
-          base64attestorPubKey: "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ="
-        },
-        { onChain: true, collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
+        { blockchain: 'evm', onChain: true, collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
     ],
     uiOptions: {
         openingHeading: "Open a new world of discounts available with your tokens.",
@@ -108,18 +160,6 @@ Include the following Javascript to configure the Token Negotiator with issuers 
         repeatAction: "try again",
         theme: "light",
         position: "bottom-right"
-    },
-    unSupportedUserAgent: {
-      authentication: {
-        config: {
-            // all options: ["iE", "iE9", "edge", "chrome", "phantomJS", "fireFox", "safari", "android", "iOS", "mac", "windows", "webView", "touchDevice", "metaMask", "alphaWallet", "mew", "trust", "goWallet", "status", "imToken", "metaMaskAndroid", "alphaWalletAndroid", "mewAndroid", "imTokenAndroid"];
-            metaMaskAndroid: true,
-            alphaWalletAndroid: true,
-            mewAndroid: true,
-            imTokenAndroid: true,
-        },
-        warningMessage: "Cannot fully authenticate tokens using this user agent, please try Chrome, Firefox, Safari or Edge."
-      }
     }
   });
 
@@ -167,7 +207,7 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
             },
         base64attestorPubKey: "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ="
       },
-      { collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
+      { blockchain: 'evm', collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth' }
     ]
   });
 
@@ -189,19 +229,48 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
   
 ````
 
-### Managing Issuers on chain
+### Managing Issuers on chain (EVM) 
 
 
 ````javascript
 
   /**
+  * @param {String} blockchain string of which blockchain is needed (optional input: default is 'evm')
   * @param {Boolean} onChain boolean if this token is on / off chain 
   * @param {String} collectionID your own reference key to identify the collection by.
   * @param {String} contract smart contract address
   * @param {String} chain smart contract address chain 
   * @param {String} openSeaSlug (optional) add collection uri name if the collection features on Opensea
   */
-  const onChainIssuer = { onChain: true, collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth', openSeaSlug: 'expansion-punks' }
+  const onChainIssuer = { blockchain: 'evm', onChain: true, collectionID: 'expansion-punks', contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', chain: 'eth', openSeaSlug: 'expansion-punks' }
+
+````
+
+### Managing Issuers on chain (Solana) 
+
+````javascript
+
+  /**
+  * @param {String} blockchain string of which blockchain is needed (optional input: default is 'evm')
+  * @param {Boolean} onChain boolean if this token is on / off chain 
+  * @param {String} collectionID your own reference key to identify the collection by.
+  * @param {String} collectionAddress collection identifier
+  * @param {String} chain smart contract address chain 
+  * @param {String} tokenProgram program address (also descibed as Owner Program) 
+  * @param {String} symbol smart contract collection symbol
+  * @param {String} updateAuthority user authority to upgrade the collection
+  */
+
+  const onChainIssuer = { 
+    onChain: true,
+    blockchain: 'solana', 
+    collectionID: 'crytpo-cowboys', 
+    collectionAddress: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37', 
+    chain: 'mainnet',
+    tokenProgram: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+    symbol: 'CCC',
+    updateAuthority: 'CCCUzWanUNegjGby11DjujDvPaNN68jd9Rimwk2MZzqZ'
+  }
 
 ````
 
@@ -262,7 +331,40 @@ Authenticating ownership of the token will provide a proof with a limited expiry
 
 ````
 
-### For projects where you are not using a Node.js work flow.
+### Utilise the wallet provider instance
+
+Once connected to Token Negotiator, the wallet instance can be used.
+
+````javascript
+
+  /**
+  * @returns {String} blockchain
+  * @returns {String} wallet address
+  * @return {String} chain id
+  * @return {String} providerType 'MetaMask'
+  * @return {Object} provider instance
+  */
+  negotiator.on('connected-wallet', (connectedWallet) => {
+    // handle the wallet instance as required by your application
+    // { ... }
+  });
+
+````
+
+### Update component theme
+
+Changing the theme.
+
+````javascript
+
+  /**
+  * @param {String} theme 'light' || 'dark'
+  */
+  negotiator.switchTheme('dark');
+
+````
+
+### For projects where you are not using a Node.js work flow. Or would prefer to inject the library into the html (polyfills included).
 
 1. Go to the following URL: https://github.com/TokenScript/token-negotiator
 
@@ -286,11 +388,11 @@ Configure the library using the following example.
             window.negotiator = new negotiator.Client({
                 type: 'active',
                 issuers: [
-                    { onChain: true, collectionID: "rinkeby-punks", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'rinkeby-punk' },
-                    { onChain: true, collectionID: "stl-rnd-women-tribe", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'stl-rnd-women-tribe-nfts' },
-                    { onChain: true, collectionID: "stl-rnd-zed-run", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'stl-rnd-zed' },
-                    { onChain: true, collectionID: "stl-rnd-bayc-derivatives", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'stl-rnd-bayc-derivatives' },
-                    { onChain: true, collectionID: "stl-riot-racers", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'stl-rnd-riot-racers' }
+                    { blockchain: 'evm', onChain: true, collectionID: "rinkeby-punks", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'rinkeby-punk' },
+                    { blockchain: 'evm', onChain: true, collectionID: "stl-rnd-women-tribe", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'stl-rnd-women-tribe-nfts' },
+                    { blockchain: 'evm', onChain: true, collectionID: "stl-rnd-zed-run", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'stl-rnd-zed' },
+                    { blockchain: 'evm', onChain: true, collectionID: "stl-rnd-bayc-derivatives", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'stl-rnd-bayc-derivatives' },
+                    { blockchain: 'evm', onChain: true, collectionID: "stl-riot-racers", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'stl-rnd-riot-racers' }
                 ],
                 uiOptions: {
                     openingHeading: "Open a new world of discounts available with your tokens.",
@@ -320,16 +422,16 @@ Configure the library using the following example.
 
 ## filters
 
-Key values applied to all tokens.
+Key values applied to all tokens. Use if you only wish for users to use a certain subclass of tokens.
 
 ````javascript
 
-  filter: {
-    'devconId': 6,
-    'ticketId': 417541561854,
-    'class': '7'
+  const issuer = { 
+    onChain: false, 
+    collectionID: "devcon",
+    filter: { 'class': '7' }
   }
-
+ 
 ````
 
 ## Token Issuers
@@ -341,6 +443,8 @@ import { client, outlet } from '@tokenscript/token-negotiator';
 For off chain token issuers, there is an additional module within the Token Negotiator named { outlet } used to safely store, decode and dispatch token meta data to the client module (in page or cross origin).
 
 A mock token implementation can be found here: https://github.com/TokenScript/token-negotiator-examples/tree/main/token-outlet-website/src
+
+For any further information, please reach out to us at <sayhi@smarttokenlabs.com>
 
 ## Configuration Options
 
@@ -367,34 +471,51 @@ This table lists all possible configuration options for Token Negotiator client.
 | unSupportedUserAgent.type.config       | Browsers that are unsupported.                                                                                                                                                                                                                                 | Y        | BrowserDataInterface                          |                                          |
 | unSupportedUserAgent.type.errorMessage | Error message to show for unsupported browsers.                                                                                                                                                                                                                | Y        | string                                        |                                          |
 
-### Issuer Configuration
+## Issuer Configurations
+
+### On Chain
 
 | Property Name          | Description                                                                       | On/Off Chain | Required | Type    |  
 |------------------------|-----------------------------------------------------------------------------------|--------------|----------|---------|
-| collectionID           | A unique ID for the token issuer                                                  | Both         | Y        | string  |
-| onChain                | Whether this is an on or off-chain token                                          | Both         | Y        | boolean |
-| title                  | Collection title: loaded from API if not specified                                | Both         | OffChain | string  |
+| blockchain           | The blockchain technology the token issuer has published the tokens with ("ethereum" or "solana". When undefined, this option will default to "ethereum")                                                  | Both         | N        | string  |
+| collectionID           | A unique ID for the token issuer. This is used as a reference key for you as a developer to use, where when the end user selected tokens you can identify them with this unique key e.g. "my-demo-tokens".                                                 | Both         | Y        | string  |
+| onChain                | Whether this is an on or off-chain token (defaults to true)                                        | Both         | N        | boolean |
+| title                  | Collection title: loaded from API if not specified                                | Both         | Y
+OffChain | string  |
 | image                  | Collection image URL: loaded from API if not specified                            | Both         | OffChain | string  |
 | contract               | Ethereum contract address for the collection                                      | OnChain      | Y        | string  |
+| collectionAddress               | Solana contract address for the collection (required when using Solana tokens)                                                | OnChain      | Y        | string  |
+| tokenProgram               | Solana token program for the collection (required when using Solana tokens)                                                | OnChain      | Y        | string  |
+| updateAuthority               | Solana update authority for the collection (required when using Solana tokens)                                                | OnChain      | Y        | string  |
+| symbol               | Solana symbol for the collection (required when using Solana tokens)                                                  | OnChain      | Y        | string  |
 | chain                  | Ethereum chain for the collection                                                 | OnChain      | Y        | string  |
 | openSeaSlug            | The collection name for OpenSea listing. Improves performance for token fetching. | OnChain      | N        | string  |
+
+### Off Chain
+
+| Property Name          | Description                                                                       | On/Off Chain | Required | Type    |  
+|------------------------|-----------------------------------------------------------------------------------|--------------|----------|---------
+| onChain                | Whether this is an on or off-chain token (defaults to true)                                        | Both         | N        | boolean |
+| title                  | Collection title: loaded from API if not specified   | Both         | Y | string
+| image                  | Collection image URL: loaded from API if not specified                            | Both         | N | string  |
 | filters                | Filters for off-chain token properties                                            | OffChain     | N        | object  |
 | tokenOrigin            | The origin URL for off-chain tokens                                               | OffChain     | Y        | string  |
 | unEndPoint             | URL for the unpredictable number service                                          | OffChain     | Y        | string  |
 | base64senderPublicKeys | An array of base64 encoded ticket issuer public keys, indexed by conference ID    | OffChain     | Y        | object  |
 | base64attestorPubKey   | The base64 encoded public key of the identity attestation issuer                  | OffChain     | Y        | string  |
 
-### Outlet Configuration
+### Outlet Configuration 
+(Applicable to TokenScript off chain token issuers)
 
 | Property Name          | Description                                                                        | Required | Type           |  
 |------------------------|------------------------------------------------------------------------------------|----------|----------------|
-| collectionID           | A unique ID for the token issuer. This should match the issuer config collectionID |          |                |
+| collectionID           | A unique ID for the token issuer. This should match the issuer config collectionID |      Y    |     string           |
 | attestationOrigin      | The attestation origin URL for the off-chain token                                 | Y        | string         |
 | tokenParser            | A custom token parser used for decoding attestations                               | N        | decoding class |
 | base64senderPublicKeys | An array of base64 encoded ticket issuer public keys, indexed by conference ID     | Y        | object         |
 | base64attestorPubKey   | The base64 encoded public key of the identity attestation issuer                   | Y        | string         |
 
-## New Token Issuers
+## New TokenScript Token Issuers
 
 Please reach out to us at <sayhi@smarttokenlabs.com>
 
@@ -402,29 +523,23 @@ Please reach out to us at <sayhi@smarttokenlabs.com>
 
 run `npm run test`
 
-## Development of this library.
+## WIKI
 
-[Development WIKI](https://github.com/TokenScript/token-negotiator/wiki/developers)
+[Development](https://github.com/TokenScript/token-negotiator/wiki/developers)
+
+
+[FAQ](https://github.com/TokenScript/token-negotiator/wiki/faq)
 
 ### Help / Questions / Improvements
 
 Please contact us or open an issue via github:
 sayhi@smarttokenlabs.com
 
-### Quick Start with Vue, React or Svelte
-
-https://github.com/TokenScript/token-negotiator/wiki/quick-start-Vue
-
-https://github.com/TokenScript/token-negotiator/wiki/quick-start-React
-
-https://github.com/TokenScript/token-negotiator/wiki/quick-start-Svelte
-
-### Examples
-
-To review demo examples of the token negotiator please visit:
+### Quick Start examples with Vue, React and TypeScript
 
 [Token Negotiator Examples](https://github.com/TokenScript/token-negotiator-examples)
 
 ### Roadmap of this library
 
 [Our Roadmap](https://github.com/TokenScript/token-negotiator/wiki/road-map)
+

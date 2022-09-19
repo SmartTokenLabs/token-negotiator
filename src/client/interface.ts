@@ -16,6 +16,14 @@ export interface OnChainTokenConfig extends IssuerConfigInterface {
     contract: string;
     chain: string;
     openSeaSlug?: string;
+	blockchain?: string;
+}
+
+export interface SolanaIssuerConfig extends OnChainTokenConfig {
+	blockchain: "solana",
+	collectionAddress?: string;
+	tokenProgram?: string;
+	updateAuthority?: string;
 }
 
 export interface IssuerConfigInterface {
@@ -23,12 +31,14 @@ export interface IssuerConfigInterface {
     onChain: boolean;
     title?: string;
     image?: string;
+	symbol?: string;
     filters?: {};
 }
 
+export type Issuer = OffChainTokenConfig | SolanaIssuerConfig | OnChainTokenConfig;
 export interface NegotiationInterface {
     type: string;
-    issuers?: (OnChainTokenConfig | OffChainTokenConfig)[];
+    issuers?: Issuer[];
     uiOptions?: UIOptionsInterface;
     autoLoadTokens?: number | boolean;
     autoEnableTokens?: boolean;
@@ -43,7 +53,8 @@ export interface NegotiationInterface {
             config: BrowserDataInterface,
             errorMessage: string
         }
-    }
+    },
+    noInternetErrorMessage?: string;
 }
 
 // TODO: Implement tokenId - each issuer token should have a unique ID (tokenId for instance).
@@ -56,4 +67,7 @@ export interface AuthenticateInterface {
     wallet?: string;
     type?: AuthenticationMethod;
     options?: any;
+    blockchain?: string;
 }
+
+export type TokenNegotiatorEvents = 'token-proof' | 'connected-wallet' | 'tokens-selected' | 'tokens' | 'error';

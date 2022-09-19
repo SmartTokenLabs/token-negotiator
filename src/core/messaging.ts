@@ -14,7 +14,9 @@ export interface ResponseInterfaceBase {
     evtid: any,
     evt: string,
     data?: any,
-	errors?: string[]
+	errors?: string[],
+	max_width?: string,
+	min_height?: string,
 }
 
 export enum ResponseActionBase {
@@ -34,6 +36,8 @@ declare global {
 export class Messaging {
 
 	iframeStorageSupport: null|boolean = null;
+	iframe: any = null;
+	listenerSet: boolean = false;
 
 	async sendMessage(request: RequestInterfaceBase, forceTab = false): Promise<ResponseInterfaceBase> {
 
@@ -68,19 +72,21 @@ export class Messaging {
 			let id = Messaging.getUniqueEventId();
 			let url = this.constructUrl(id, request);
 
-			let iframe = this.createIframe(() => {
+			this.iframe = this.createIframe(() => {
 				this.removeModal();
 				reject(ClientError.USER_ABORT);
 			});
 
-			this.setResponseListener(id, request.origin, request.timeout, resolve, reject,
-				() => {
-					this.removeModal();
-				},
-				iframe
-			);
+			if (!this.listenerSet){
+				this.listenerSet = true;
+				this.setResponseListener(id, request.origin, request.timeout, resolve, reject,
+					() => {
+						this.removeModal();
+					}
+				);
+			}
 
-			iframe.src = url;
+			this.iframe.src = url;
 
 		});
 	}
@@ -116,34 +122,34 @@ export class Messaging {
 
 	}
 
-	private setResponseListener(id: any, origin: string, timeout: number|undefined, resolve: any, reject: any, cleanUpCallback: any, iframe: any = null){
+	private setResponseListener(id: any, origin: string, timeout: number|undefined, resolve: any, reject: any, cleanUpCallback: any){
 
 		let received = false;
 		let timer: any = null;
 
 		let listener = (event: any) => {
 
+			if (event.data.target) {
+				// we dont use this field at the moment
+				return;
+			}
+
 			let response: ResponseInterfaceBase = event.data;
 			let requestUrl = new URL(origin);
-
+			
 			if (response.evtid === id) {
-
-				if (requestUrl.origin === event.origin){
-
+				
+				if (requestUrl.origin === event.origin && response.evt){
+					
 					logger(2,"event response received");
 					logger(2,event.data);
 
 					received = true;
 
 					if (response.evt === ResponseActionBase.COOKIE_CHECK){
-						if (!iframe || this.iframeStorageSupport === true)
-							return;
+						// if (!iframe || this.iframeStorageSupport === true)
+						// 	return;
 
-						/* this.iframeStorageSupport = !!response?.data?.thirdPartyCookies;
-						if (!this.iframeStorageSupport){
-							afterResolveOrError();
-							reject("IFRAME_STORAGE");
-						}*/
 						return;
 					}
 
@@ -151,9 +157,23 @@ export class Messaging {
 						reject(new Error(response.errors.join(". ")));
 					} else if (response.evt === ResponseActionBase.SHOW_FRAME){
 
-						if (iframe) {
+						if (this.iframe) {
 							let modal = this.getModal();
 							modal.style.display = "block";
+
+							if (response.max_width) {
+								let modalContent:HTMLElement = modal.querySelector(".modal-content-tn");
+								if (modalContent){
+									modalContent.style.maxWidth = response.max_width;
+								}
+							}
+
+							if (response.min_height) {
+								let iframe:HTMLElement = modal.querySelector("iframe");
+								if (iframe){
+									iframe.style.minHeight = response.min_height;
+								}
+							}
 						}
 
 						return;

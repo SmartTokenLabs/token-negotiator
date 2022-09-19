@@ -1,12 +1,12 @@
 import {ResponseInterfaceBase} from "../core/messaging";
 import {Messaging} from "../client/messaging";
-import {uint8tohex} from "@tokenscript/attestation/dist/libs/utils";
 import {KeyStore} from "@tokenscript/attestation/dist/safe-connect/KeyStore";
 import {AbstractAuthentication, AuthenticationResult} from "../client/auth/abstractAuthentication";
 import {AttestedAddress} from "../client/auth/attestedAddress";
 import {UNInterface} from "../client/auth/util/UN";
 import {SafeConnectChallenge} from "../client/auth/safeConnectChallenge";
 import {Ui} from "../client/ui";
+import {SafeConnect} from "../client/auth/util/SafeConnect";
 
 export enum SafeConnectAction {
 	CONNECT = "connect",
@@ -26,8 +26,6 @@ export class SafeConnectProvider {
 	private keyStore = new KeyStore();
 	private readonly options: SafeConnectOptions;
 	private messaging = new Messaging();
-
-	public static HOLDING_KEY_ALGORITHM = "RSASSA-PKCS1-v1_5";
 
 	constructor(ui: Ui, options: SafeConnectOptions) {
 		this.ui = ui;
@@ -67,8 +65,8 @@ export class SafeConnectProvider {
 			proofData = {
 				type: proofModel.TYPE,
 				data: {
-					attestation: attest.data.attestation,
-					address: attest.data.address
+					expiry: attest.expiry,
+					...attest.data
 				},
 				target: {
 					address: attest.data.address
@@ -107,8 +105,7 @@ export class SafeConnectProvider {
 		request.type = this.options.initialProof;
 
 		if (this.options.initialProof !== "simple_challenge"){
-			let holdingKey = await this.keyStore.getOrCreateKey(SafeConnectProvider.HOLDING_KEY_ALGORITHM);
-			request.subject = uint8tohex(holdingKey.holdingPubKey)
+			request.subject = await SafeConnect.getLinkPublicKey();
 		}
 
 		return request;
@@ -127,11 +124,6 @@ export class SafeConnectProvider {
 		}, true, this.ui);
 
 		return res.data.data.signature;
-	}
-
-	public async getLinkSigningKey(){
-		let keys = await this.keyStore.getOrCreateKey(SafeConnectProvider.HOLDING_KEY_ALGORITHM);
-		return keys.attestHoldingKey.privateKey;
 	}
 
 }

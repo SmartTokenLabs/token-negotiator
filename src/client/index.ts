@@ -1,31 +1,35 @@
-// @ts-nocheck
+
 import {OutletAction, OutletResponseAction, Messaging} from "./messaging";
-import { Ui } from "./ui";
+import { Ui, UItheme } from './ui';
 import { logger, requiredParams } from "../utils";
 import {getNftCollection, getNftTokens} from "../utils/token/nftProvider";
 import "./../vendor/keyShape";
 import { Authenticator } from "@tokenscript/attestation";
 import {TokenStore} from "./tokenStore";
-import {OffChainTokenConfig, OnChainTokenConfig, AuthenticateInterface, NegotiationInterface} from "./interface";
+import { OffChainTokenConfig, OnChainTokenConfig, AuthenticateInterface, NegotiationInterface, Issuer, SolanaIssuerConfig, TokenNegotiatorEvents } from './interface';
 import {SignedUNChallenge} from "./auth/signedUNChallenge";
 import {TicketZKProof} from "./auth/ticketZKProof";
 import {AuthenticationMethod} from "./auth/abstractAuthentication";
 import { isUserAgentSupported } from '../utils/support/isSupported';
 import {SelectWallet} from "./views/select-wallet";
 import {SelectIssuers} from "./views/select-issuers";
+import Web3WalletProvider from '../wallet/Web3WalletProvider';
 
-// @ts-ignore
-if(typeof window !== "undefined") window.tn = { version: "2.0.0" };
+
+if(typeof window !== "undefined") window.tn = { version: "2.1.0" };
 
 declare global {
 	interface Window {
 		KeyshapeJS?: any;
 		tokenToggleSelection: any;
 		ethereum: any;
+		solana: any;
+		tn: unknown;
 	}
 }
 
 const NOT_SUPPORTED_ERROR = "This browser is not supported. Please try using Chrome, Edge, FireFox or Safari.";
+const NO_INTERNET_ERROR_MESSAGE = "No internet connection. Please check your internet connection and try again";
 
 const defaultConfig: NegotiationInterface = {
 	type: "active",
@@ -35,7 +39,8 @@ const defaultConfig: NegotiationInterface = {
 		containerElement: ".overlay-tn",
 		openingHeading: "Validate your token ownership for access",
 		issuerHeading: "Detected tokens",
-		autoPopup: true
+		autoPopup: true,
+		position: "bottom-right",
 	},
 	autoLoadTokens: true,
 	autoEnableTokens: true,
@@ -43,10 +48,10 @@ const defaultConfig: NegotiationInterface = {
 	unSupportedUserAgent: {
 		authentication: {
 			config: {
-				metaMaskAndroid: true,
-				alphaWalletAndroid: true,
-				mewAndroid: true,
-				imTokenAndroid: true,
+				// metaMaskAndroid: true,
+				// alphaWalletAndroid: true,
+				// mewAndroid: true,
+				// imTokenAndroid: true,
 			},
 			errorMessage: NOT_SUPPORTED_ERROR
 		},
@@ -57,13 +62,14 @@ const defaultConfig: NegotiationInterface = {
 			},
 			errorMessage: NOT_SUPPORTED_ERROR
 		}
-	}
+	},
 }
 
 export const enum UIUpdateEventType {
 	ISSUERS_LOADING,
 	ISSUERS_LOADED
 }
+
 
 export enum ClientError {
 	POPUP_BLOCKED = "POPUP_BLOCKED",
@@ -85,7 +91,11 @@ export class Client {
 	private ui: Ui;
 	private clientCallBackEvents: {} = {};
 	private tokenStore: TokenStore;
-	private uiUpdateCallbacks: {[type: UIUpdateEventType]: (data?: {}) => {}} = {}
+	private uiUpdateCallbacks: {[type in UIUpdateEventType]} = {
+		[UIUpdateEventType.ISSUERS_LOADING]: undefined,
+		[UIUpdateEventType.ISSUERS_LOADED]: undefined
+	};
+
 
 	static getKey(file: string){
 		return  Authenticator.decodePublicKey(file);
@@ -139,6 +149,15 @@ export class Client {
 	public safeConnectAvailable(){
 		return this.config.safeConnectOptions !== undefined;
 	}
+	
+	public solanaAvailable(){
+		return  (
+			typeof window.solana !== 'undefined' &&
+			this.config.issuers.filter((issuer: SolanaIssuerConfig ) => {
+				return issuer?.blockchain?.toLowerCase() === 'solana';
+			}).length > 0
+		) 
+	}
 
 	public async getWalletProvider(){
 
@@ -148,6 +167,13 @@ export class Client {
 		}
 
 		return this.web3WalletProvider;
+	}
+
+	public async disconnectWallet(){
+		let wp = await this.getWalletProvider();
+		wp.deleteConnections();
+		this.tokenStore.clearCachedTokens();
+		this.ui.updateUI(SelectWallet);
 	}
 
 	async negotiatorConnectToWallet(walletType: string) {
@@ -194,7 +220,7 @@ export class Client {
 		this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADED);
 	}
 
-	private checkUserAgentSupport(type: string){
+	public checkUserAgentSupport(type: string){
 
 		if (!isUserAgentSupported(this.config.unSupportedUserAgent?.[type]?.config)){
 
@@ -213,9 +239,18 @@ export class Client {
 		}
 	}
 
-	async negotiate(issuers?: OnChainTokenConfig | OffChainTokenConfig[], openPopup = false) {
+	async negotiate(issuers?: (OnChainTokenConfig | OffChainTokenConfig)[], openPopup = false) {
 
-		this.checkUserAgentSupport("full");
+		try {
+			this.checkUserAgentSupport("full");
+		} catch(err){
+			logger(2,err);
+			err.name = "NOT_SUPPORTED_ERROR";
+			console.log("browser not supported");
+			this.eventSender.emitErrorToClient(err);
+			return;
+		}
+		
 
 		if (issuers) this.tokenStore.updateIssuers(issuers);
 
@@ -223,11 +258,10 @@ export class Client {
 
 		if (this.config.type === "active") {
 
-			this.issuersLoaded = false;
+			this.issuersLoaded = !this.tokenStore.hasUnloadedIssuers();
 
 			this.activeNegotiationStrategy(openPopup);
 
-			await this.enrichTokenLookupDataOnChainTokens();
 		} else {
 			// TODO build logic to allow to connect with wallectConnect, Torus etc.
 			// Logic to ask user to connect to wallet when they have provided web3 tokens to negotiate with.
@@ -237,6 +271,8 @@ export class Client {
 
 			await this.passiveNegotiationStrategy();
 		}
+
+		window.addEventListener('offline', () => this.checkInternetConnectivity());
 	}
 
 	activeNegotiationStrategy(openPopup: boolean) {
@@ -245,6 +281,10 @@ export class Client {
 
 		if (this.ui) {
 			autoOpenPopup = this.tokenStore.hasUnloadedTokens();
+
+			if (this.ui.viewIsNotStart() && this.tokenStore.hasUnloadedIssuers())
+				this.enrichTokenLookupDataOnChainTokens();
+
 		} else {
 			this.ui = new Ui(this.config.uiOptions, this);
 			this.ui.initialize();
@@ -342,7 +382,7 @@ export class Client {
 
 		for (let issuerKey in issuers){
 
-			let issuer = issuers[issuerKey];
+			let issuer: Issuer = issuers[issuerKey];
 
 			try {
 				const tokens = await getNftTokens(
@@ -351,8 +391,8 @@ export class Client {
 				);
 
 				this.tokenStore.setTokens(issuerKey, tokens);
-			} catch (e){
-				logger(2,err);
+			} catch (err) {
+				logger(2, err);
 				this.eventSender.emitErrorToClient(err, issuerKey);
 			}
 		}
@@ -364,7 +404,7 @@ export class Client {
 
 		await this.setPassiveNegotiationOnChainTokens();
 
-		let tokens = this.tokenStore.getCurrentTokens();
+		let tokens: any = this.tokenStore.getCurrentTokens();
 
 		logger(2, "Emit tokens");
 		logger(2, tokens);
@@ -434,7 +474,16 @@ export class Client {
 
 	async authenticate(authRequest: AuthenticateInterface) {
 
-		this.checkUserAgentSupport("authentication")
+		try {
+			this.checkUserAgentSupport("authentication")
+		} catch(err){
+			logger(2,err);
+			err.name = "NOT_SUPPORTED_ERROR";
+			console.log("browser not supported");
+			this.eventSender.emitErrorToClient(err);
+			return;
+		}
+
 
 		const { issuer, unsignedToken } = authRequest;
 		requiredParams(
@@ -472,7 +521,7 @@ export class Client {
 			if (!authRequest.options)
 				authRequest.options = {};
 
-			authRequest.options?.messagingForceTab = this.config.messagingForceTab;
+			authRequest.options.messagingForceTab = this.config.messagingForceTab;
 
 			res = await authenticator.getTokenProof(config, [authRequest.unsignedToken], authRequest);
 
@@ -541,9 +590,26 @@ export class Client {
 			this.on("token-proof", null, { data, issuer, error });
 		},
 		emitErrorToClient: (error: Error, issuer = "none") => {
+
+			this.checkInternetConnectivity();
+
 			this.on("error", null, {error, issuer});
+		},
+		emitConnectedWalletInstance: (connectedWallet: any) => {
+			this.on("connected-wallet", null, connectedWallet);
 		}
 	};
+
+	checkInternetConnectivity(): void {
+		if (!navigator.onLine) {
+			if (this.config.type === 'active') {
+				setTimeout(() => {
+					this.ui.showError(this.config.noInternetErrorMessage ?? NO_INTERNET_ERROR_MESSAGE);
+				}, 1000);
+			}
+			throw new Error(this.config.noInternetErrorMessage ?? NO_INTERNET_ERROR_MESSAGE)
+		}
+	}
 
 	async addTokenViaMagicLink(magicLink: any) {
 		let url = new URL(magicLink);
@@ -563,7 +629,7 @@ export class Client {
 		throw new Error(res.errors.join("\n"));
 	}
 
-	on(type: string, callback?: any, data?: any) {
+	on(type: TokenNegotiatorEvents, callback?: any, data?: any) {
 		requiredParams(type, "Event type is not defined");
 
 		if (callback) {
@@ -577,5 +643,9 @@ export class Client {
 				return this.clientCallBackEvents[type].call(type, data);
 			}
 		}
+	}
+
+	switchTheme(newTheme: UItheme) {
+		this.ui.switchTheme(newTheme);
 	}
 }

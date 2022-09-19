@@ -5,22 +5,24 @@ import {Client, ClientError} from "./index";
 import {ViewInterface, ViewConstructor, AbstractView} from "./views/view-interface";
 
 export type UIType = "popup" | "inline"; // TODO: implement modal too
+export type PopupPosition = 'bottom-right' | 'bottom-left' | 'top-left' | 'top-right';
+export type UItheme = 'light' | 'dark';
 
 export interface UIOptionsInterface {
 	uiType?: UIType;
 	containerElement?: string;
-    openingHeading?: string;
-    issuerHeading?: string;
-    repeatAction?: string;
-    theme?: string;
-    position?: string;
+  openingHeading?: string;
+  issuerHeading?: string;
+  repeatAction?: string;
+  theme?: UItheme;
+	position?: PopupPosition;
 	autoPopup?: boolean;
 }
 
 export class Ui {
 
 	private static UI_CONTAINER_HTML = `
-		<div class="overlay-content-tn">
+		<div class="overlay-content-tn" aria-label="Token negotiator overlay">
 			<div class="load-container-tn" style="display: none;">
 				<div class="lds-ellipsis loader-tn"><div></div><div></div><div></div><div></div></div>
 				<div class="loader-msg-tn"></div>
@@ -62,7 +64,7 @@ export class Ui {
 
 				this.initializeUIType();
 
-				this.addTheme();
+				this.setTheme(this.options?.theme ?? 'light');
 
 				this.viewContainer = this.popupContainer.querySelector(".view-content-tn");
 				this.loadContainer = this.popupContainer.querySelector(".load-container-tn");
@@ -92,6 +94,9 @@ export class Ui {
 		switch (this.options.uiType){
 
 		case "popup":
+			this.options.position
+				? this.popupContainer.classList.add(this.options.position)
+				: this.popupContainer.classList.add('bottom-right');
 
 			this.popupContainer.innerHTML = Ui.UI_CONTAINER_HTML + Ui.FAB_BUTTON_HTML;
 
@@ -169,6 +174,10 @@ export class Ui {
 
 	}
 
+	viewIsNotStart(){
+		return !(this.currentView instanceof Start);
+	}
+
 	showError(error: string | Error, canDismiss = true){
 
 		this.cancelDelayedLoader();
@@ -234,9 +243,14 @@ export class Ui {
 		this.loadContainer.style.display = 'none';
 	}
 
-	private addTheme() {
+	private setTheme(theme: UItheme) {
 		let refTokenSelector = document.querySelector(".overlay-tn");
-		if (refTokenSelector) refTokenSelector.classList.add((this.options?.theme ?? 'light') + "-tn");
+		if (refTokenSelector) {
+			refTokenSelector.classList.remove(this.options.theme + "-tn");
+			theme = this.validateTheme(theme);
+			refTokenSelector.classList.add(theme + "-tn");
+			this.options.theme = theme;
+		}
 	}
 
 	private assignFabButtonAnimation() {
@@ -249,5 +263,17 @@ export class Ui {
 
 		}
 
+	}
+
+	private validateTheme(theme: string): UItheme {
+		if (theme && theme === 'dark') {
+			return theme
+		}
+
+		return 'light';
+	}
+
+	switchTheme(newTheme: UItheme) {
+		this.setTheme(newTheme);
 	}
 }

@@ -30,12 +30,15 @@ export class SelectIssuers extends AbstractView {
                 <div class="brand-tn"></div>
                 <div class="headline-container-tn">
                   <p class="headline-tn">${this.params.options.issuerHeading}</p>
+                  <button class="btn-tn dis-wallet-tn" aria-label="Disconnect Wallet">Disconnect</button>
                 </div>
-                <ul class="token-issuer-list-container-tn" role="menubar"></ul>
+								<nav class="token-issuer-nav-tn">
+                	<ul class="token-issuer-list-container-tn" role="menubar"></ul>
+								</nav>
               </div>
               <div class="token-view-tn scroll-tn" style="display: none;">
                 <div class="brand-tn"></div>
-                <div style="display: flex">
+                <div style="display: flex; align-items: center;">
                   <button aria-label="back to token issuer menu" class="back-to-menu-tn">
                     <svg style="position: relative; top: 1px;" width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
                         <g fill="none" fill-rule="evenodd">
@@ -52,6 +55,10 @@ export class SelectIssuers extends AbstractView {
 
 		this.viewContainer.querySelector('.back-to-menu-tn').addEventListener('click', this.backToIssuers.bind(this));
 
+		this.viewContainer.querySelector('.dis-wallet-tn').addEventListener('click', () => {
+			this.client.disconnectWallet();
+		});
+
 		this.issuerListContainer = document.querySelector(".token-issuer-list-container-tn");
 		this.tokensContainer = document.getElementsByClassName("token-view-tn")[0];
 
@@ -67,7 +74,8 @@ export class SelectIssuers extends AbstractView {
 		this.tokenListView = new TokenList(this.client, this.ui, tokensListElem, {});
 
 		if (this.client.issuersLoaded) {
-			this.autoLoadTokens();
+			if (this.client.getTokenStore().hasUnloadedTokens())
+				this.autoLoadTokens();
 		} else {
 			this.issuersLoading();
 		}
@@ -90,10 +98,10 @@ export class SelectIssuers extends AbstractView {
 			let data = issuers[issuerKey];
 			let tokens = this.client.getTokenStore().getIssuerTokens(issuerKey);
 
-			if (!data.title)
-				data.title = data.collectionID.replace(/[-,_]+/g, " ");
+			let title = data.title ?
+				data.title : data.collectionID.replace(/[-,_]+/g, " ");
 
-			html += this.issuerConnectMarkup(data.title, data.image, issuerKey, tokens);
+			html += this.issuerConnectMarkup(title, data.image, issuerKey, tokens);
 		}
 
 		this.issuerListContainer.innerHTML = html;
@@ -122,7 +130,7 @@ export class SelectIssuers extends AbstractView {
 	issuerConnectMarkup(title: string, image: string|undefined, issuer: string, tokens: []|null){
 		return `
             <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
-              <div style="display: flex; align-items: center;">
+              <div tabindex="0" style="display: flex; align-items: center;">
                 <div class="img-container-tn issuer-icon-tn shimmer-tn" data-image-src="${image}" data-token-title="${title}"></div>
                 <p class="issuer-connect-title">${title}</p>
               </div>
@@ -140,25 +148,7 @@ export class SelectIssuers extends AbstractView {
 
 		this.viewContainer.querySelector(".issuer-slider-tn").classList.toggle("open");
 
-		// TODO - Review and uplift this logic. Its not working as expected from tests.
-
-		// const connectBtns = this.viewContainer.querySelectorAll(`.connect-btn-tn`);
-		// const tokenBtns = this.viewContainer.querySelectorAll(`.tokens-btn-tn`);
-
-		// connectBtns.forEach(function (userItem:any) {
-		//     userItem.setAttribute('aria-expanded', false);
-		// });
-
-		// tokenBtns.forEach(function (userItem:any) {
-		//     userItem.setAttribute('aria-expanded', false);
-		// });
-
-		// const issuerViewEl = this.viewContainer.querySelector(`.issuer-view-tn`);
-		// const tokenViewEl = this.viewContainer.querySelector(`.token-view-tn`);
-
-		// issuerViewEl.setAttribute('aria-hidden', true);
-		// tokenViewEl.setAttribute('aria-hidden', false);
-
+		// TODO - Review and uplift this logic. Its not working as expected from tests
 	}
 
 	async autoLoadTokens(){

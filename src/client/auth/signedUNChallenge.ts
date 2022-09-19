@@ -1,6 +1,5 @@
 import {AbstractAuthentication, AuthenticationMethod, AuthenticationResult} from "./abstractAuthentication";
 import {AuthenticateInterface, OffChainTokenConfig, OnChainTokenConfig} from "../interface";
-import Web3WalletProvider from "../../wallet/Web3WalletProvider";
 import {SafeConnectProvider} from "../../wallet/SafeConnectProvider";
 import {UN, UNInterface} from "./util/UN";
 
@@ -34,7 +33,7 @@ export class SignedUNChallenge extends AbstractAuthentication implements Authent
 
 		if (!currentProof){
 
-			let walletConnection = web3WalletProvider.getConnectedWalletData()[0].provider;
+			let walletConnection = web3WalletProvider.getWalletProvider(address);
 
 			currentProof = {
 				type: this.TYPE,
@@ -55,9 +54,9 @@ export class SignedUNChallenge extends AbstractAuthentication implements Authent
 
 			} else {
 
-				signature = await web3WalletProvider.signWith(
-					challenge.messageToSign,
-					walletConnection
+				signature = await web3WalletProvider.signMessage(
+					address,
+					challenge.messageToSign
 				);
 			}
 
