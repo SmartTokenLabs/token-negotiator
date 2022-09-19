@@ -68,7 +68,8 @@ export const readTokens = (itemStorageKey: any) => {
 export const decodeTokens = (
 	rawTokens: any,
 	tokenParser: any,
-	unsignedTokenDataName: string
+	unsignedTokenDataName: string,
+	includeSignedToken = false
 ) => {
 	const x = JSON.parse(rawTokens);
 
@@ -81,8 +82,10 @@ export const decodeTokens = (
 
 				if (decodedToken && decodedToken[unsignedTokenDataName]){
 					let token = decodedToken[unsignedTokenDataName];
-					
-					return propsArrayBufferToArray(token);
+
+					token = propsArrayBufferToArray(token);
+
+					return includeSignedToken ? {signedToken: tokenData.token, ...token} : token;
 				}
 			}
 		});
