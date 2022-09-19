@@ -256,7 +256,7 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
   * @param {String} collectionID your own reference key to identify the collection by.
   * @param {String} collectionAddress collection identifier
   * @param {String} chain smart contract address chain 
-  * @param {String} tokenProgram program address (also descibed as Owner Program) 
+  * @param {String} tokenProgram program address (also described as Owner Program) 
   * @param {String} symbol smart contract collection symbol
   * @param {String} updateAuthority user authority to upgrade the collection
   */
