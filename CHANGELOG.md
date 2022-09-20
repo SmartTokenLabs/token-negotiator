@@ -15,7 +15,7 @@ Further support for EVM networks and added support for the Solana blockchain, sc
 * Wallet Persistence (wallet provider kept in local memory)
 * Connect and Disconnect Wallets (switching between blockchains and wallet types)
 * Exposed web3 Wallet Connection (Wallet Provider)
-* NFT Support added for Solana, Arbitrum, Fantom and BSC NFT's
+* NFT Support added for Solana, Arbitrum, Fantom and BSC
 * Light and dark mode capability
 * Token Negotiator Active Mode Component Positioning into any corner of the window
 * Accessibility for screen readers
