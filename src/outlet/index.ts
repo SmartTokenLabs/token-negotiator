@@ -153,7 +153,7 @@ export class Outlet {
 		if ((!window.parent && !window.opener) || !document.referrer)
 			return;
 
-		const accessWhitelist = JSON.parse(localStorage.getItem("tn-whitelist-" + whiteListType)) ?? [];
+		let accessWhitelist = JSON.parse(localStorage.getItem("tn-whitelist-" + whiteListType)) ?? [];
 		const storageRequestNeeded = window.parent && !(await document.hasStorageAccess());
 		const origin = new URL(document.referrer).origin;
 
@@ -173,9 +173,6 @@ export class Outlet {
 
 				document.getElementById("tn-access-accept").addEventListener("click", async () => {
 
-					accessWhitelist.push(origin);
-					localStorage.setItem("tn-whitelist-" + whiteListType, JSON.stringify(accessWhitelist));
-
 					if (storageRequestNeeded){
 						try {
 							await document.requestStorageAccess();
@@ -183,7 +180,12 @@ export class Outlet {
 							console.error(e);
 							//reject();
 						}
+						// Ensure whitelist is appended from top-level storage context
+						accessWhitelist = JSON.parse(localStorage.getItem("tn-whitelist-" + whiteListType)) ?? [];
 					}
+
+					accessWhitelist.push(origin);
+					localStorage.setItem("tn-whitelist-" + whiteListType, JSON.stringify(accessWhitelist));
 
 					resolve();
 				});

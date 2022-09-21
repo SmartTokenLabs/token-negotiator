@@ -42,7 +42,8 @@ export class Messaging {
 	async sendMessage(request: RequestInterfaceBase, forceTab = false): Promise<ResponseInterfaceBase> {
 
 		if (!forceTab && this.iframeStorageSupport === null) {
-			this.iframeStorageSupport = !window.safari;
+			// TODO: temp to test safari top level context access.
+			//this.iframeStorageSupport = !window.safari;
 		}
 
 		// Uncomment to test popup mode
@@ -130,8 +131,6 @@ export class Messaging {
 		let timer: any = null;
 
 		let listener = (event: any) => {
-
-			console.log(event);
 
 			if (event.data.target) {
 				// we dont use this field at the moment
