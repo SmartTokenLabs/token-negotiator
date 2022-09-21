@@ -184,8 +184,10 @@ export class Outlet {
 						accessWhitelist = JSON.parse(localStorage.getItem("tn-whitelist-" + whiteListType)) ?? [];
 					}
 
-					accessWhitelist.push(origin);
-					localStorage.setItem("tn-whitelist-" + whiteListType, JSON.stringify(accessWhitelist));
+					if (accessWhitelist.indexOf(origin) === -1) {
+						accessWhitelist.push(origin);
+						localStorage.setItem("tn-whitelist-" + whiteListType, JSON.stringify(accessWhitelist));
+					}
 
 					resolve();
 				});
