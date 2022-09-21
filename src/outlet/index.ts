@@ -21,6 +21,7 @@ interface OutletInterface {
 	tokenIdName?: string;
 	unsignedTokenDataName?: string;
 	itemStorageKey?: string;
+	whitelistDialogRenderer?: (permissionTxt: string, acceptBtn: string, denyBtn: string) => string;
 }
 
 const defaultConfig = {
@@ -162,14 +163,21 @@ export class Outlet {
 			return new Promise<void>((resolve, reject) => {
 
 				const typeTxt = whiteListType === "read" ? "read" : "read & write";
+				const permissionTxt = `${origin} is requesting ${typeTxt} access to your ${this.tokenConfig.title} tickets`;
+				const acceptBtn = '<button id="tn-access-accept">Accept</button>';
+				const denyBtn = '<button id="tn-access-deny">Deny</button>';
 
-				document.body.innerHTML += `
-					<div>
-						<p>${origin} is requesting ${typeTxt} access to your ${this.tokenConfig.title} tickets</p>
-						<button id='tn-access-accept'>Accept</button>
-						<button id='tn-access-deny'>Deny</button>
-					</div>
-				`;
+				const content = this.tokenConfig.whitelistDialogRenderer ?
+					this.tokenConfig.whitelistDialogRenderer(permissionTxt, acceptBtn, denyBtn) :
+					`
+						<div style="font-family: sans-serif; text-align: center; position: absolute; width: 100vw; min-height: 100vh;">
+							<p>${permissionTxt}</p>
+							${acceptBtn}
+							${denyBtn}
+						</div>
+					`;
+
+				document.body.innerHTML += content;
 
 				document.getElementById("tn-access-accept").addEventListener("click", async () => {
 
