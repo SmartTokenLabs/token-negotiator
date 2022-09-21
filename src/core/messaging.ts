@@ -73,6 +73,7 @@ export class Messaging {
 			let url = this.constructUrl(id, request);
 
 			this.iframe = this.createIframe(() => {
+				this.listenerSet = false;
 				this.removeModal();
 				reject(ClientError.USER_ABORT);
 			});
@@ -81,6 +82,7 @@ export class Messaging {
 				this.listenerSet = true;
 				this.setResponseListener(id, request.origin, request.timeout, resolve, reject,
 					() => {
+						this.listenerSet = false;
 						this.removeModal();
 					}
 				);
@@ -129,6 +131,8 @@ export class Messaging {
 
 		let listener = (event: any) => {
 
+			console.log(event);
+
 			if (event.data.target) {
 				// we dont use this field at the moment
 				return;
@@ -162,14 +166,14 @@ export class Messaging {
 							modal.style.display = "block";
 
 							if (response.max_width) {
-								let modalContent:HTMLElement = modal.querySelector(".modal-content-tn");
+								let modalContent: HTMLElement = modal.querySelector(".modal-content-tn");
 								if (modalContent){
 									modalContent.style.maxWidth = response.max_width;
 								}
 							}
 
 							if (response.min_height) {
-								let iframe:HTMLElement = modal.querySelector("iframe");
+								let iframe: HTMLElement = modal.querySelector("iframe");
 								if (iframe){
 									iframe.style.minHeight = response.min_height;
 								}
