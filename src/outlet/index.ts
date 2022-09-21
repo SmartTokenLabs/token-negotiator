@@ -70,7 +70,7 @@ export class Outlet {
 		return filter ? JSON.parse(filter) : {};
 	}
 
-	pageOnLoadEventHandler() {
+	async pageOnLoadEventHandler() {
 		let params =
 			window.location.hash.length > 1
 				? "?" + window.location.hash.substring(1)
@@ -89,35 +89,35 @@ export class Outlet {
 
 		// TODO: should issuer be validated against requested issuer?
 
-		// Wait until cookie is set for magic URL action
-		if (action !== OutletAction.MAGIC_URL){
-			this.sendCookieCheck(evtid);
-		}
 
-		switch (action) {
-		case OutletAction.GET_ISSUER_TOKENS: {
-			this.sendTokens(evtid);
+		try {
 
-			break;
-		}
-		case OutletAction.GET_PROOF: {
-			const token: string = this.getDataFromQuery("token");
-			const wallet: string = this.getDataFromQuery("wallet");
-			const address: string = this.getDataFromQuery("address");
-			requiredParams(token, "unsigned token is missing");
-			this.sendTokenProof(evtid, token, address, wallet);
-			break;
-		}
-		default: {
-			// store local storage item that can be later used to check if third party cookies are allowed.
-			// Note: This test can only be performed when the localstorage / cookie is assigned, then later requested.
-			localStorage.setItem("cookie-support-check", "test");
-			this.sendCookieCheck(evtid);
+			switch (action) {
+			case OutletAction.GET_ISSUER_TOKENS: {
 
-			const { tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey } =
-				this.tokenConfig;
+				await this.whitelistCheck(evtid, "read");
 
-			try {
+				this.sendTokens(evtid);
+
+				break;
+			}
+			case OutletAction.GET_PROOF: {
+				const token: string = this.getDataFromQuery("token");
+				const wallet: string = this.getDataFromQuery("wallet");
+				const address: string = this.getDataFromQuery("address");
+				requiredParams(token, "unsigned token is missing");
+				this.sendTokenProof(evtid, token, address, wallet);
+				break;
+			}
+			default: {
+				// store local storage item that can be later used to check if third party cookies are allowed.
+				// Note: This test can only be performed when the localstorage / cookie is assigned, then later requested.
+				localStorage.setItem("cookie-support-check", "test");
+				this.sendCookieCheck(evtid);
+
+				const {tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey} =
+					this.tokenConfig;
+
 				const tokens = readMagicUrl(
 					tokenUrlName,
 					tokenSecretName,
@@ -125,6 +125,8 @@ export class Outlet {
 					itemStorageKey,
 					this.urlParams
 				);
+
+				await this.whitelistCheck(evtid, "write");
 
 				storeMagicURL(tokens, itemStorageKey);
 
@@ -135,12 +137,68 @@ export class Outlet {
 				document.body.dispatchEvent(event);
 
 				this.sendTokens(evtid);
-			} catch (e: any) {
-				this.sendErrorResponse(evtid, e.message);
+
+				break;
+			}
 			}
 
-			break;
+		} catch (e: any){
+			console.error(e);
+			this.sendErrorResponse(evtid, e.message);
 		}
+	}
+
+	private async whitelistCheck(evtid, whiteListType: "read" | "write"){
+
+		if ((!window.parent && !window.opener) || !document.referrer)
+			return;
+
+		const accessWhitelist = JSON.parse(localStorage.getItem("tn-whitelist-" + whiteListType)) ?? [];
+		const storageRequestNeeded = window.parent && !(await document.hasStorageAccess());
+		const origin = new URL(document.referrer).origin;
+
+		if (storageRequestNeeded || accessWhitelist.indexOf(origin) === -1){
+
+			return new Promise<void>((resolve, reject) => {
+
+				const typeTxt = whiteListType === "read" ? "read" : "read & write";
+
+				document.body.innerHTML += `
+					<div>
+						<p>${origin} is requesting ${typeTxt} access to your ${this.tokenConfig.title} tickets</p>
+						<button id='tn-access-accept'>Accept</button>
+						<button id='tn-access-deny'>Deny</button>
+					</div>
+				`;
+
+				document.getElementById("tn-access-accept").addEventListener("click", async () => {
+
+					accessWhitelist.push(origin);
+					localStorage.setItem("tn-whitelist-" + whiteListType, JSON.stringify(accessWhitelist));
+
+					if (storageRequestNeeded){
+						try {
+							await document.requestStorageAccess();
+						} catch (e) {
+							console.error(e);
+							//reject();
+						}
+					}
+
+					resolve();
+				});
+
+				document.getElementById("tn-access-deny").addEventListener("click", () => {
+					reject("USER_ABORT");
+				});
+
+				this.sendMessageResponse({
+					evtid,
+					evt: ResponseActionBase.SHOW_FRAME,
+					// max_width: "700px",
+					// min_height: "600px"
+				});
+			});
 		}
 	}
 

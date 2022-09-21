@@ -37,7 +37,7 @@ export class Messaging {
 
 	iframeStorageSupport: null|boolean = null;
 	iframe: any = null;
-	listenerSet: boolean = false;
+	listenerSet = false;
 
 	async sendMessage(request: RequestInterfaceBase, forceTab = false): Promise<ResponseInterfaceBase> {
 
@@ -150,11 +150,16 @@ export class Messaging {
 
 					received = true;
 
+					// TODO: revert to tab when requestStorageAccess error is encountered in outlet - but only for browsers that support new tabs (no wallet dapp browsers)
 					if (response.evt === ResponseActionBase.COOKIE_CHECK){
-						// if (!iframe || this.iframeStorageSupport === true)
-						// 	return;
+						if (!this.iframe || this.iframeStorageSupport === true)
+							return;
 
-						return;
+						/* this.iframeStorageSupport = !!response?.data?.thirdPartyCookies;
+						if (!this.iframeStorageSupport){
+							afterResolveOrError();
+							reject("IFRAME_STORAGE");
+						}*/
 					}
 
 					if (response.evt === ResponseActionBase.ERROR) {
