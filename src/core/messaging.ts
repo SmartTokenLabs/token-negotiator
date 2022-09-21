@@ -160,6 +160,7 @@ export class Messaging {
 							afterResolveOrError();
 							reject("IFRAME_STORAGE");
 						}*/
+						return;
 					}
 
 					if (response.evt === ResponseActionBase.ERROR) {
