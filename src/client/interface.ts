@@ -9,6 +9,7 @@ export interface OffChainTokenConfig extends IssuerConfigInterface {
     unEndPoint?: string;
     base64senderPublicKeys: {[key: string]: string};
     base64attestorPubKey: string;
+	accessRequestType?: "read"|"write";
 }
 
 export interface OnChainTokenConfig extends IssuerConfigInterface {

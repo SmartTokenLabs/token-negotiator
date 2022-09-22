@@ -15,13 +15,14 @@ interface OutletInterface {
 	base64senderPublicKeys: {[key: string]: string};
 	base64attestorPubKey: string;
 
+	whitelistDialogRenderer?: (permissionTxt: string, acceptBtn: string, denyBtn: string) => string;
+
 	// Possibly deprecated parameters which have defaults
 	tokenUrlName?: string;
 	tokenSecretName?: string;
 	tokenIdName?: string;
 	unsignedTokenDataName?: string;
 	itemStorageKey?: string;
-	whitelistDialogRenderer?: (permissionTxt: string, acceptBtn: string, denyBtn: string) => string;
 }
 
 const defaultConfig = {
@@ -80,6 +81,7 @@ export class Outlet {
 
 		const evtid = this.getDataFromQuery("evtid");
 		const action = this.getDataFromQuery("action");
+		const access = this.getDataFromQuery("access");
 
 		// disable this check, because mostly user will open MagicLink from QR code reader or by MagicLink click at email, so document.referrer will be empty
 		// if (!document.referrer && !this.getDataFromQuery('DEBUG'))
@@ -96,7 +98,7 @@ export class Outlet {
 			switch (action) {
 			case OutletAction.GET_ISSUER_TOKENS: {
 
-				await this.whitelistCheck(evtid, "read");
+				await this.whitelistCheck(evtid, access === "write" ? "write" : "read");
 
 				this.sendTokens(evtid);
 
@@ -154,11 +156,13 @@ export class Outlet {
 		if ((!window.parent && !window.opener) || !document.referrer)
 			return;
 
-		let accessWhitelist = JSON.parse(localStorage.getItem("tn-whitelist-" + whiteListType)) ?? [];
+		let accessWhitelist = JSON.parse(localStorage.getItem("tn-whitelist")) ?? {};
 		const storageRequestNeeded = window.parent && !(await document.hasStorageAccess());
 		const origin = new URL(document.referrer).origin;
 
-		if (storageRequestNeeded || accessWhitelist.indexOf(origin) === -1){
+		const needsPermission = !accessWhitelist[origin] || (accessWhitelist[origin].type === "read" && whiteListType === "write")
+
+		if (storageRequestNeeded || needsPermission){
 
 			return new Promise<void>((resolve, reject) => {
 
@@ -186,15 +190,17 @@ export class Outlet {
 							await document.requestStorageAccess();
 						} catch (e) {
 							console.error(e);
-							//reject();
+							// reject();
 						}
 						// Ensure whitelist is appended from top-level storage context
-						accessWhitelist = JSON.parse(localStorage.getItem("tn-whitelist-" + whiteListType)) ?? [];
+						accessWhitelist = JSON.parse(localStorage.getItem("tn-whitelist")) ?? {};
 					}
 
-					if (accessWhitelist.indexOf(origin) === -1) {
-						accessWhitelist.push(origin);
-						localStorage.setItem("tn-whitelist-" + whiteListType, JSON.stringify(accessWhitelist));
+					if (!accessWhitelist[origin] || whiteListType !== accessWhitelist[origin].type) {
+						accessWhitelist[origin] = {
+							type: whiteListType
+						};
+						localStorage.setItem("tn-whitelist", JSON.stringify(accessWhitelist));
 					}
 
 					resolve();

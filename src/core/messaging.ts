@@ -43,7 +43,7 @@ export class Messaging {
 
 		if (!forceTab && this.iframeStorageSupport === null) {
 			// TODO: temp to test safari top level context access.
-			//this.iframeStorageSupport = !window.safari;
+			// this.iframeStorageSupport = !window.safari;
 		}
 
 		// Uncomment to test popup mode
@@ -165,6 +165,9 @@ export class Messaging {
 					if (response.evt === ResponseActionBase.ERROR) {
 						reject(new Error(response.errors.join(". ")));
 					} else if (response.evt === ResponseActionBase.SHOW_FRAME){
+
+						if (timer)
+							clearTimeout(timer);
 
 						if (this.iframe) {
 							let modal = this.getModal();
