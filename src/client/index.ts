@@ -354,13 +354,19 @@ export class Client {
 			const issuerConfig = this.tokenStore.getCurrentIssuers()[issuer] as OffChainTokenConfig;
 
 			try {
+
+				const data: any = {
+					issuer: issuer,
+					filter: issuerConfig.filters,
+				}
+
+				if (issuerConfig.accessRequestType)
+					data.access = issuerConfig.accessRequestType;
+
 				res = await this.messaging.sendMessage({
 					action: OutletAction.GET_ISSUER_TOKENS,
 					origin: issuerConfig.tokenOrigin,
-					data: {
-						issuer: issuer,
-						filter: issuerConfig.filters
-					}
+					data: data
 				}, this.config.messagingForceTab);
 			} catch (err) {
 				logger(2,err);
@@ -449,13 +455,19 @@ export class Client {
 
 		} else {
 
+			const data: any = {
+				issuer: issuer,
+				filter: config.filters,
+			}
+
+			if (config.accessRequestType)
+				data.access = config.accessRequestType;
+
 			let res = await this.messaging.sendMessage({
 				action: OutletAction.GET_ISSUER_TOKENS,
 				origin: config.tokenOrigin,
-				data : {
-					issuer: issuer,
-					filter: config.filters
-				},
+				timeout: 0,
+				data: data,
 			}, this.config.messagingForceTab, this.ui);
 
 			tokens = res.data.tokens;

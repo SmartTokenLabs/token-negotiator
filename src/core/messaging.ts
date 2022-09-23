@@ -37,12 +37,13 @@ export class Messaging {
 
 	iframeStorageSupport: null|boolean = null;
 	iframe: any = null;
-	listenerSet: boolean = false;
+	listenerSet = false;
 
 	async sendMessage(request: RequestInterfaceBase, forceTab = false): Promise<ResponseInterfaceBase> {
 
 		if (!forceTab && this.iframeStorageSupport === null) {
-			this.iframeStorageSupport = !window.safari;
+			// TODO: temp to test safari top level context access.
+			// this.iframeStorageSupport = !window.safari;
 		}
 
 		// Uncomment to test popup mode
@@ -131,8 +132,6 @@ export class Messaging {
 
 		let listener = (event: any) => {
 
-			console.log(event);
-
 			if (event.data.target) {
 				// we dont use this field at the moment
 				return;
@@ -150,16 +149,25 @@ export class Messaging {
 
 					received = true;
 
+					// TODO: revert to tab when requestStorageAccess error is encountered in outlet - but only for browsers that support new tabs (no wallet dapp browsers)
 					if (response.evt === ResponseActionBase.COOKIE_CHECK){
-						// if (!iframe || this.iframeStorageSupport === true)
-						// 	return;
+						if (!this.iframe || this.iframeStorageSupport === true)
+							return;
 
+						/* this.iframeStorageSupport = !!response?.data?.thirdPartyCookies;
+						if (!this.iframeStorageSupport){
+							afterResolveOrError();
+							reject("IFRAME_STORAGE");
+						}*/
 						return;
 					}
 
 					if (response.evt === ResponseActionBase.ERROR) {
 						reject(new Error(response.errors.join(". ")));
 					} else if (response.evt === ResponseActionBase.SHOW_FRAME){
+
+						if (timer)
+							clearTimeout(timer);
 
 						if (this.iframe) {
 							let modal = this.getModal();

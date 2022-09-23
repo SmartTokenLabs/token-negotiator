@@ -16,6 +16,8 @@ interface OutletInterface {
 	base64attestorPubKey: string;
 	signedTokenWhitelist?: string[];
 
+	whitelistDialogRenderer?: (permissionTxt: string, acceptBtn: string, denyBtn: string) => string;
+
 	// Possibly deprecated parameters which have defaults
 	tokenUrlName?: string;
 	tokenSecretName?: string;
@@ -81,7 +83,7 @@ export class Outlet {
 		return filter ? JSON.parse(filter) : {};
 	}
 
-	pageOnLoadEventHandler() {
+	async pageOnLoadEventHandler() {
 		let params =
 			window.location.hash.length > 1
 				? "?" + window.location.hash.substring(1)
@@ -90,6 +92,7 @@ export class Outlet {
 
 		const evtid = this.getDataFromQuery("evtid");
 		const action = this.getDataFromQuery("action");
+		const access = this.getDataFromQuery("access");
 
 		// disable this check, because mostly user will open MagicLink from QR code reader or by MagicLink click at email, so document.referrer will be empty
 		// if (!document.referrer && !this.getDataFromQuery('DEBUG'))
@@ -100,35 +103,35 @@ export class Outlet {
 
 		// TODO: should issuer be validated against requested issuer?
 
-		// Wait until cookie is set for magic URL action
-		if (action !== OutletAction.MAGIC_URL){
-			this.sendCookieCheck(evtid);
-		}
 
-		switch (action) {
-		case OutletAction.GET_ISSUER_TOKENS: {
-			this.sendTokens(evtid);
+		try {
 
-			break;
-		}
-		case OutletAction.GET_PROOF: {
-			const token: string = this.getDataFromQuery("token");
-			const wallet: string = this.getDataFromQuery("wallet");
-			const address: string = this.getDataFromQuery("address");
-			requiredParams(token, "unsigned token is missing");
-			this.sendTokenProof(evtid, token, address, wallet);
-			break;
-		}
-		default: {
-			// store local storage item that can be later used to check if third party cookies are allowed.
-			// Note: This test can only be performed when the localstorage / cookie is assigned, then later requested.
-			localStorage.setItem("cookie-support-check", "test");
-			this.sendCookieCheck(evtid);
+			switch (action) {
+			case OutletAction.GET_ISSUER_TOKENS: {
 
-			const { tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey } =
-				this.tokenConfig;
+				await this.whitelistCheck(evtid, access === "write" ? "write" : "read");
 
-			try {
+				this.sendTokens(evtid);
+
+				break;
+			}
+			case OutletAction.GET_PROOF: {
+				const token: string = this.getDataFromQuery("token");
+				const wallet: string = this.getDataFromQuery("wallet");
+				const address: string = this.getDataFromQuery("address");
+				requiredParams(token, "unsigned token is missing");
+				this.sendTokenProof(evtid, token, address, wallet);
+				break;
+			}
+			default: {
+				// store local storage item that can be later used to check if third party cookies are allowed.
+				// Note: This test can only be performed when the localstorage / cookie is assigned, then later requested.
+				localStorage.setItem("cookie-support-check", "test");
+				this.sendCookieCheck(evtid);
+
+				const {tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey} =
+					this.tokenConfig;
+
 				const tokens = readMagicUrl(
 					tokenUrlName,
 					tokenSecretName,
@@ -136,6 +139,8 @@ export class Outlet {
 					itemStorageKey,
 					this.urlParams
 				);
+
+				await this.whitelistCheck(evtid, "write");
 
 				storeMagicURL(tokens, itemStorageKey);
 
@@ -146,12 +151,83 @@ export class Outlet {
 				document.body.dispatchEvent(event);
 
 				this.sendTokens(evtid);
-			} catch (e: any) {
-				this.sendErrorResponse(evtid, e.message);
+
+				break;
+			}
 			}
 
-			break;
+		} catch (e: any){
+			console.error(e);
+			this.sendErrorResponse(evtid, e.message);
 		}
+	}
+
+	private async whitelistCheck(evtid, whiteListType: "read" | "write"){
+
+		if ((!window.parent && !window.opener) || !document.referrer)
+			return;
+
+		let accessWhitelist = JSON.parse(localStorage.getItem("tn-whitelist")) ?? {};
+		const storageRequestNeeded = window.parent && !(await document.hasStorageAccess());
+		const origin = new URL(document.referrer).origin;
+
+		const needsPermission = !accessWhitelist[origin] || (accessWhitelist[origin].type === "read" && whiteListType === "write")
+
+		if (storageRequestNeeded || needsPermission){
+
+			return new Promise<void>((resolve, reject) => {
+
+				const typeTxt = whiteListType === "read" ? "read" : "read & write";
+				const permissionTxt = `${origin} is requesting ${typeTxt} access to your ${this.tokenConfig.title} tickets`;
+				const acceptBtn = '<button id="tn-access-accept">Accept</button>';
+				const denyBtn = '<button id="tn-access-deny">Deny</button>';
+
+				const content = this.tokenConfig.whitelistDialogRenderer ?
+					this.tokenConfig.whitelistDialogRenderer(permissionTxt, acceptBtn, denyBtn) :
+					`
+						<div style="font-family: sans-serif; text-align: center; position: absolute; width: 100vw; min-height: 100vh;">
+							<p>${permissionTxt}</p>
+							${acceptBtn}
+							${denyBtn}
+						</div>
+					`;
+
+				document.body.innerHTML += content;
+
+				document.getElementById("tn-access-accept").addEventListener("click", async () => {
+
+					if (storageRequestNeeded){
+						try {
+							await document.requestStorageAccess();
+						} catch (e) {
+							console.error(e);
+							// reject();
+						}
+						// Ensure whitelist is appended from top-level storage context
+						accessWhitelist = JSON.parse(localStorage.getItem("tn-whitelist")) ?? {};
+					}
+
+					if (!accessWhitelist[origin] || whiteListType !== accessWhitelist[origin].type) {
+						accessWhitelist[origin] = {
+							type: whiteListType
+						};
+						localStorage.setItem("tn-whitelist", JSON.stringify(accessWhitelist));
+					}
+
+					resolve();
+				});
+
+				document.getElementById("tn-access-deny").addEventListener("click", () => {
+					reject("USER_ABORT");
+				});
+
+				this.sendMessageResponse({
+					evtid,
+					evt: ResponseActionBase.SHOW_FRAME,
+					// max_width: "700px",
+					// min_height: "600px"
+				});
+			});
 		}
 	}
 
