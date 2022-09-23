@@ -130,6 +130,9 @@
                 console.log('connected wallet', wallet);
                 window.testingWallet = wallet;
             });
+            window.negotiator.on("disconnected-wallet", () => {
+                console.log('wallet successfully disconnected');
+            });
 
         window.negotiator.on("token-proof", (proof) => {
           console.log(proof);

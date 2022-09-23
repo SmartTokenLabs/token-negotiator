@@ -173,7 +173,9 @@ export class Client {
 		let wp = await this.getWalletProvider();
 		wp.deleteConnections();
 		this.tokenStore.clearCachedTokens();
-		this.ui.updateUI(SelectWallet);
+		if(this.ui?.updateUI) this.ui.updateUI(SelectWallet);
+		this.eventSender.emitConnectedWalletInstance(null);
+		this.eventSender.emitDisconnectedWalletInstance();
 	}
 
 	async negotiatorConnectToWallet(walletType: string) {
@@ -601,6 +603,9 @@ export class Client {
 		},
 		emitConnectedWalletInstance: (connectedWallet: any) => {
 			this.on("connected-wallet", null, connectedWallet);
+		},
+		emitDisconnectedWalletInstance: () => {
+			this.on("disconnected-wallet", null, null);
 		}
 	};
 

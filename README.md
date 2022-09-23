@@ -351,6 +351,19 @@ Once connected to Token Negotiator, the wallet instance can be used.
 
 ````
 
+### Wallet disconnection
+
+This event is triggered when the user disconnects their wallet from Token Negotiator.
+
+````javascript
+
+  negotiator.on('disconnected-wallet', () => {
+    // handle the wallet disconnection event as required by your application
+    // { ... }
+  });
+
+````
+
 ### Update component theme
 
 Changing the theme.
