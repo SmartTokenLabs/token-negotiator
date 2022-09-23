@@ -227,6 +227,13 @@ describe('client spec', () => {
 		expect(tokenNegotiatorClient.getTokenStore().getIssuerTokens()).toBeDefined();
 	});
 
+	test('tokenNegotiatorClient disconnect Wallet', async () => {
+		const tokenNegotiatorClient = getOffChainConfigClient();
+		await tokenNegotiatorClient.disconnectWallet();
+		const providerInstance = await tokenNegotiatorClient.getWalletProvider();
+		expect(Object.keys(providerInstance.connections).length).toEqual(0);
+	});
+
 	test('tokenNegotiatorClient method setPassiveNegotiationOnChainTokens', async () => {
 		const tokenNegotiatorClient = getOnChainConfigClient();
 		await tokenNegotiatorClient.setPassiveNegotiationOnChainTokens();
