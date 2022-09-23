@@ -484,12 +484,16 @@ export class Client {
 			return;
 		}
 
-
 		const { issuer, unsignedToken } = authRequest;
+
 		requiredParams(
 			issuer && unsignedToken,
-			"Issuer and signed token required."
+			"Issuer and unsigned token required."
 		);
+
+		if (unsignedToken.signedToken){
+			delete unsignedToken.signedToken;
+		}
 
 		const config = this.tokenStore.getCurrentIssuers()[issuer];
 

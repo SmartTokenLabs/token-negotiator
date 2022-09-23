@@ -14,6 +14,7 @@ interface OutletInterface {
 	tokenParser?: any;
 	base64senderPublicKeys: {[key: string]: string};
 	base64attestorPubKey: string;
+	signedTokenWhitelist?: string[];
 
 	// Possibly deprecated parameters which have defaults
 	tokenUrlName?: string;
@@ -28,7 +29,8 @@ const defaultConfig = {
 	tokenSecretName: "secret",
 	tokenIdName: "id",
 	unsignedTokenDataName: "ticket",
-	itemStorageKey: "dcTokens"
+	itemStorageKey: "dcTokens",
+	signedTokenWhitelist: []
 };
 
 export class readSignedTicket {
@@ -46,7 +48,8 @@ export class readSignedTicket {
 }
 
 export class Outlet {
-	tokenConfig: any;
+
+	tokenConfig: OutletInterface;
 	urlParams?: URLSearchParams;
 
 	constructor(config: OutletInterface) {
@@ -56,6 +59,14 @@ export class Outlet {
 		if (!this.tokenConfig.tokenParser) {
 			this.tokenConfig.tokenParser = readSignedTicket;
 		}
+
+		this.tokenConfig.signedTokenWhitelist = this.tokenConfig.signedTokenWhitelist.map((origin) => {
+			try {
+				return new URL(origin).origin;
+			} catch (e){
+				logger(2, "Failed to validate whitelist origin: " + e.message)
+			}
+		});
 
 		this.pageOnLoadEventHandler();
 	}
@@ -159,10 +170,18 @@ export class Outlet {
 
 		if (!storageTokens) return [];
 
+		let includeSigned = false;
+
+		if (this.tokenConfig.signedTokenWhitelist?.length &&
+			this.tokenConfig.signedTokenWhitelist.indexOf(this.getRequestOrigin()) > -1){
+			includeSigned = true;
+		}
+
 		const decodedTokens = decodeTokens(
 			storageTokens,
 			this.tokenConfig.tokenParser,
-			this.tokenConfig.unsignedTokenDataName
+			this.tokenConfig.unsignedTokenDataName,
+			includeSigned
 		);
 
 		return filterTokens(decodedTokens, filter);
@@ -201,6 +220,20 @@ export class Outlet {
 			logger(2,e);
 
 			this.sendErrorResponse(evtid, e.message);
+		}
+	}
+
+	private getRequestOrigin(){
+
+		const requester = document.referrer;
+
+		if (!requester)
+			return null;
+
+		try {
+			return new URL(requester).origin;
+		} catch (e){
+			return null;
 		}
 	}
 
