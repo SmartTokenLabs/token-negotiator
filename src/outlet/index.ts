@@ -127,8 +127,8 @@ export class Outlet {
 			default: {
 				// store local storage item that can be later used to check if third party cookies are allowed.
 				// Note: This test can only be performed when the localstorage / cookie is assigned, then later requested.
-				localStorage.setItem("cookie-support-check", "test");
-				this.sendCookieCheck(evtid);
+				/* localStorage.setItem("cookie-support-check", "test");
+				this.sendCookieCheck(evtid);*/
 
 				const {tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey} =
 					this.tokenConfig;
@@ -168,9 +168,13 @@ export class Outlet {
 		if ((!window.parent && !window.opener) || !document.referrer)
 			return;
 
-		let accessWhitelist = JSON.parse(localStorage.getItem("tn-whitelist")) ?? {};
-		const storageRequestNeeded = window.parent && !(await document.hasStorageAccess());
 		const origin = new URL(document.referrer).origin;
+
+		if (origin === document.location.origin)
+			return;
+
+		let accessWhitelist = JSON.parse(localStorage.getItem("tn-whitelist")) ?? {};
+		const storageRequestNeeded = window.parent && (document.hasStorageAccess && !(await document.hasStorageAccess()));
 
 		const needsPermission = !accessWhitelist[origin] || (accessWhitelist[origin].type === "read" && whiteListType === "write")
 
@@ -232,7 +236,7 @@ export class Outlet {
 		}
 	}
 
-	sendCookieCheck(evtid: string){
+	/* sendCookieCheck(evtid: string){
 		this.sendMessageResponse({
 			evtid: evtid,
 			evt: ResponseActionBase.COOKIE_CHECK,
@@ -240,7 +244,7 @@ export class Outlet {
 				thirdPartyCookies: localStorage.getItem("cookie-support-check"),
 			}
 		});
-	}
+	}*/
 
 	prepareTokenOutput(filter: any) {
 		const storageTokens = localStorage.getItem(this.tokenConfig.itemStorageKey);

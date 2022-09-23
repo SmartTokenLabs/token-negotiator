@@ -150,17 +150,17 @@ export class Messaging {
 					received = true;
 
 					// TODO: revert to tab when requestStorageAccess error is encountered in outlet - but only for browsers that support new tabs (no wallet dapp browsers)
-					if (response.evt === ResponseActionBase.COOKIE_CHECK){
+					/* if (response.evt === ResponseActionBase.COOKIE_CHECK){
 						if (!this.iframe || this.iframeStorageSupport === true)
 							return;
 
-						/* this.iframeStorageSupport = !!response?.data?.thirdPartyCookies;
+						this.iframeStorageSupport = !!response?.data?.thirdPartyCookies;
 						if (!this.iframeStorageSupport){
 							afterResolveOrError();
 							reject("IFRAME_STORAGE");
-						}*/
+						}
 						return;
-					}
+					}*/
 
 					if (response.evt === ResponseActionBase.ERROR) {
 						reject(new Error(response.errors.join(". ")));
