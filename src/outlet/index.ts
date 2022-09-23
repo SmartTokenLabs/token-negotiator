@@ -9,6 +9,7 @@ import { ResponseActionBase, ResponseInterfaceBase } from "../core/messaging";
 
 interface OutletInterface {
 	collectionID: string;
+	title?: string;
 	attestationOrigin: string;
 	attestationInTab?: boolean;
 	tokenParser?: any;
@@ -201,7 +202,7 @@ export class Outlet {
 							await document.requestStorageAccess();
 						} catch (e) {
 							console.error(e);
-							// reject();
+							reject("IFRAME_STORAGE");
 						}
 						// Ensure whitelist is appended from top-level storage context
 						accessWhitelist = JSON.parse(localStorage.getItem("tn-whitelist")) ?? {};
