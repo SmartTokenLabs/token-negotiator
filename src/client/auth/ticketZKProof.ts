@@ -18,6 +18,8 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 		if (issuerConfig.onChain === true)
 			throw new Error(this.TYPE + " is not available for off-chain tokens.");
 
+		const redirectMode = true;
+
 		let useEthKey: UNInterface|null = null;
 
 		if (issuerConfig.unEndPoint) {
@@ -55,7 +57,15 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 					address: request.address ? request.address : useEthKeyAddress,
 					wallet: request.wallet ? request.wallet : ""
 				}
-			}, request.options.messagingForceTab, this.client.getUi());
+			}, request.options.messagingForceTab, this.client.getUi(), redirectMode);
+
+			if (redirectMode) {
+				return new Promise((resolve, reject) => {
+					setTimeout(() => {
+						reject(new Error("The outlet failed to load."));
+					}, 20000);
+				});
+			}
 
 			data = res.data;
 		}

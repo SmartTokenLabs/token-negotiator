@@ -93,7 +93,8 @@ export class AuthHandler {
 		tokenDef: Item,
 		tokenObj: DevconToken | any,
 		address: string, 
-		wallet: string
+		wallet: string,
+		private redirectMode: boolean
 	) {
 		this.outlet = outlet;
 		this.evtid = evtid;
@@ -243,7 +244,26 @@ export class AuthHandler {
 		return new Promise((resolve, reject) => {
 			this.rejectHandler = reject;
 
-			// dont do it for brawe, brawe doesn't support access to indexDB through iframe
+			if (this.redirectMode){
+				let sendData: PostMessageData = { force: false };
+
+				if (this.email) sendData.email = this.email;
+				if (this.wallet) sendData.wallet = this.wallet;
+				if (this.address) sendData.address = this.address;
+
+				const params = new URLSearchParams();
+				params.set("force", false);
+				params.set("email", this.email);
+				params.set("wallet", this.wallet);
+				params.set("address", this.address);
+				params.set("callbackUrl", document.referrer);
+
+				document.location.href = this.attestationOrigin + "#" + params.toString();
+
+				return;
+			}
+
+			// don't do it for brave, brawe doesn't support access to indexDB through iframe
 			if (this.attestationInTab && !isBrave()){
 				this.tryingToGetAttestationInBackground = true;
 			}

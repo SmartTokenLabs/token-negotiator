@@ -306,7 +306,8 @@ export class Outlet {
 				this.tokenConfig,
 				tokenObj,
 				address,
-				wallet
+				wallet,
+				this.urlParams.get("redirect") === "true"
 			);
 
 			let tokenProof = await authHandler.authenticate();
@@ -354,6 +355,12 @@ export class Outlet {
 	}
 
 	public sendErrorResponse(evtid: any, error: string) {
+
+		if (this.urlParams.get("redirect")){
+			document.location.href = document.referrer + "#error=" + error;
+			return;
+		}
+
 		this.sendMessageResponse({
 			evtid: evtid,
 			evt: ResponseActionBase.ERROR,

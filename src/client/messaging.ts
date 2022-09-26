@@ -17,10 +17,10 @@ export class Messaging {
 
 	public core = new CoreMessaging();
 
-	async sendMessage(request: RequestInterfaceBase, forceTab = false, ui?: Ui): Promise<ResponseInterfaceBase> {
+	async sendMessage(request: RequestInterfaceBase, forceTab = false, ui?: Ui, redirectMode = false): Promise<ResponseInterfaceBase> {
 
 		try {
-			return await this.core.sendMessage(request, forceTab);
+			return await this.core.sendMessage(request, forceTab, redirectMode);
 		} catch (e) {
 
 			if (e === ClientError.POPUP_BLOCKED){

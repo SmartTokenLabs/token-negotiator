@@ -40,7 +40,7 @@ export class Messaging {
 	iframe: any = null;
 	listenerSet = false;
 
-	async sendMessage(request: RequestInterfaceBase, forceTab = false): Promise<ResponseInterfaceBase> {
+	async sendMessage(request: RequestInterfaceBase, forceTab = false, redirectMode = false): Promise<ResponseInterfaceBase> {
 
 		if (!forceTab && this.iframeStorageSupport === null) {
 			// TODO: temp to test safari top level context access.
@@ -54,6 +54,11 @@ export class Messaging {
 		logger(2,"Send request: ");
 		logger(2,request);
 
+		if (redirectMode){
+			this.sendRedirect(request);
+			return;
+		}
+
 		if (!forceTab && this.iframeStorageSupport !== false){
 			try {
 				return await this.sendIframe(request);
@@ -66,6 +71,14 @@ export class Messaging {
 		} else {
 			return this.sendPopup(request);
 		}
+	}
+
+	private sendRedirect(request: RequestInterfaceBase){
+
+		let id = Messaging.getUniqueEventId();
+		const url = this.constructUrl(id, request);
+
+		document.location.href = url + "&redirect=true";
 	}
 
 	private sendIframe(request: RequestInterfaceBase): Promise<ResponseInterfaceBase>{
