@@ -16,7 +16,7 @@ import {SelectIssuers} from "./views/select-issuers";
 import Web3WalletProvider from '../wallet/Web3WalletProvider';
 
 
-if(typeof window !== "undefined") window.tn = { version: "2.1.0" };
+if(typeof window !== "undefined") window.tn = { version: "2.2.0-dc.1" };
 
 declare global {
 	interface Window {
