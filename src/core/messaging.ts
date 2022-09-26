@@ -43,7 +43,7 @@ export class Messaging {
 
 		if (!forceTab && this.iframeStorageSupport === null) {
 			// TODO: temp to test safari top level context access.
-			// this.iframeStorageSupport = !window.safari;
+			this.iframeStorageSupport = !window.safari;
 		}
 
 		// Uncomment to test popup mode
@@ -163,7 +163,14 @@ export class Messaging {
 					}*/
 
 					if (response.evt === ResponseActionBase.ERROR) {
-						reject(new Error(response.errors.join(". ")));
+
+						if (response.errors[0] === "IFRAME_STORAGE") {
+							this.iframeStorageSupport = false;
+							reject("IFRAME_STORAGE");
+						} else {
+							reject(new Error(response.errors.join(". ")));
+						}
+
 					} else if (response.evt === ResponseActionBase.SHOW_FRAME){
 
 						if (timer)
