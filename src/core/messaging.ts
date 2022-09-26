@@ -43,7 +43,8 @@ export class Messaging {
 
 		if (!forceTab && this.iframeStorageSupport === null) {
 			// TODO: temp to test safari top level context access.
-			this.iframeStorageSupport = !window.safari;
+			if (document.location.hash !== "#safari-iframe-test")
+				this.iframeStorageSupport = !window.safari;
 		}
 
 		// Uncomment to test popup mode
