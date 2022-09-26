@@ -260,6 +260,10 @@ export class AuthHandler {
 
 				document.location.href = this.attestationOrigin + "#" + params.toString();
 
+				if(!document.location.href.includes(this.attestationOrigin)) { 
+					localStorage.setItem('attesation-referrer', document.referrer);
+				}
+
 				return;
 			}
 

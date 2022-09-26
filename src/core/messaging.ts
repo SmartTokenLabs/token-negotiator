@@ -17,7 +17,7 @@ export interface ResponseInterfaceBase {
     data?: any,
 	errors?: string[],
 	max_width?: string,
-	min_height?: string,
+	min_height?: string
 }
 
 export enum ResponseActionBase {
