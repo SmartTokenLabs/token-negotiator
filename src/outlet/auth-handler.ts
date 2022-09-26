@@ -258,7 +258,7 @@ export class AuthHandler {
 				params.set("address", this.address);
 				params.set("callbackUrl", document.referrer);
 
-				if(!document.location.href.includes(this.attestationOrigin)) { 
+				if(!document.location.href.includes(this.attestationOrigin)) {
 					localStorage.setItem('attestation-referrer', document.referrer);
 				}
 
