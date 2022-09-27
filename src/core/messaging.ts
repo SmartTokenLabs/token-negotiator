@@ -78,7 +78,7 @@ export class Messaging {
 		let id = Messaging.getUniqueEventId();
 		const url = this.constructUrl(id, request);
 
-		document.location.href = url + "&redirect=true";
+		document.location.href = `${url}&redirect=true`;
 	}
 
 	private sendIframe(request: RequestInterfaceBase): Promise<ResponseInterfaceBase>{

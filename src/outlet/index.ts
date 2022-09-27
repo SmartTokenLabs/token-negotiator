@@ -6,6 +6,7 @@ import { AuthHandler } from "./auth-handler";
 import { SignedDevconTicket } from "@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket";
 import { AsnParser } from "@peculiar/asn1-schema";
 import { ResponseActionBase, ResponseInterfaceBase } from "../core/messaging";
+import { Authenticator } from "@tokenscript/attestation";
 
 export interface OutletInterface {
 	collectionID: string;
@@ -118,7 +119,23 @@ export class Outlet {
 			case OutletAction.GET_PROOF_REDIRECT: {
 				
 				// handle re-direct request
+
+				const originReferrer = localStorage.getItem('attestation-referrer');
+
+				// let useToken = await Authenticator.getUseTicket(
+				// 	this.signedTokenSecret,
+				// 	this.attestationSecret,
+				// 	this.signedTokenBlob,
+				// 	this.attestationBlob,
+				// 	this.base64attestorPubKey,
+				// 	this.base64senderPublicKeys
+				// );
+				// params += `{ useToken: ${useToken} }`;
+
 				// re-direct back to origin
+				if(originReferrer) {
+					document.location.href = `${originReferrer}#${params.toString()}`;
+				}
 
 				break;
 			}

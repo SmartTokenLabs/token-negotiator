@@ -262,7 +262,7 @@ export class AuthHandler {
 					localStorage.setItem('attestation-referrer', document.referrer);
 				}
 
-				document.location.href = this.attestationOrigin + "#" + params.toString();
+				document.location.href = `${this.attestationOrigin}#${params.toString()}`;
 
 				return;
 			}
