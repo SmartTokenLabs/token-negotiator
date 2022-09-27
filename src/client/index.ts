@@ -18,7 +18,7 @@ import {LocalOutlet} from "../outlet/localOutlet";
 import {OutletInterface} from "../outlet";
 
 
-if(typeof window !== "undefined") window.tn = { version: "2.2.0-dc.1" };
+if(typeof window !== "undefined") window.tn = { version: "2.2.0-dc.3" };
 
 declare global {
 	interface Window {
