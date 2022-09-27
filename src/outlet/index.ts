@@ -7,7 +7,7 @@ import { SignedDevconTicket } from "@tokenscript/attestation/dist/asn1/shemas/Si
 import { AsnParser } from "@peculiar/asn1-schema";
 import { ResponseActionBase, ResponseInterfaceBase } from "../core/messaging";
 
-interface OutletInterface {
+export interface OutletInterface {
 	collectionID: string;
 	title?: string;
 	attestationOrigin: string;
@@ -27,7 +27,7 @@ interface OutletInterface {
 	itemStorageKey?: string;
 }
 
-const defaultConfig = {
+export const defaultConfig = {
 	tokenUrlName: "ticket",
 	tokenSecretName: "secret",
 	tokenIdName: "id",

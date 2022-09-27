@@ -14,6 +14,8 @@ import { isUserAgentSupported } from '../utils/support/isSupported';
 import {SelectWallet} from "./views/select-wallet";
 import {SelectIssuers} from "./views/select-issuers";
 import Web3WalletProvider from '../wallet/Web3WalletProvider';
+import {LocalOutlet} from "../outlet/localOutlet";
+import {OutletInterface} from "../outlet";
 
 
 if(typeof window !== "undefined") window.tn = { version: "2.2.0-dc.1" };
@@ -349,25 +351,16 @@ export class Client {
 
 		for (let issuer in issuers){
 
-			let res;
+			let tokens;
 
 			const issuerConfig = this.tokenStore.getCurrentIssuers()[issuer] as OffChainTokenConfig;
 
 			try {
-
-				const data: any = {
-					issuer: issuer,
-					filter: issuerConfig.filters,
+				if ((new URL(issuerConfig.tokenOrigin)).origin === document.location.origin){
+					tokens = this.loadLocalOutletTokens(issuerConfig);
+				} else {
+					tokens = await this.loadRemoteOutletTokens(issuerConfig);
 				}
-
-				if (issuerConfig.accessRequestType)
-					data.access = issuerConfig.accessRequestType;
-
-				res = await this.messaging.sendMessage({
-					action: OutletAction.GET_ISSUER_TOKENS,
-					origin: issuerConfig.tokenOrigin,
-					data: data
-				}, this.config.messagingForceTab);
 			} catch (err) {
 				logger(2,err);
 				console.log("popup error");
@@ -376,9 +369,9 @@ export class Client {
 			}
 
 			logger(2,"tokens:");
-			logger(2,res.data.tokens);
+			logger(2, tokens);
 
-			this.tokenStore.setTokens(issuer, res.data.tokens);
+			this.tokenStore.setTokens(issuer, tokens);
 
 		}
 	}
@@ -451,34 +444,47 @@ export class Client {
 
 			tokens = await getNftTokens(config, walletAddress);
 
-			this.tokenStore.setTokens(issuer,  tokens);
-
 		} else {
 
-			const data: any = {
-				issuer: issuer,
-				filter: config.filters,
+			if ((new URL(config.tokenOrigin)).origin === document.location.origin){
+				tokens = this.loadLocalOutletTokens(config);
+			} else {
+				tokens = await this.loadRemoteOutletTokens(config);
 			}
-
-			if (config.accessRequestType)
-				data.access = config.accessRequestType;
-
-			let res = await this.messaging.sendMessage({
-				action: OutletAction.GET_ISSUER_TOKENS,
-				origin: config.tokenOrigin,
-				timeout: 0,
-				data: data,
-			}, this.config.messagingForceTab, this.ui);
-
-			tokens = res.data.tokens;
-
-			this.tokenStore.setTokens(issuer, res.data.tokens);
 		}
+
+		this.tokenStore.setTokens(issuer,  tokens);
 
 		if (this.config.autoEnableTokens)
 			this.eventSender.emitSelectedTokensToClient(this.tokenStore.getSelectedTokens())
 
 		return tokens;
+	}
+
+	private async loadRemoteOutletTokens(issuer: OffChainTokenConfig){
+
+		const data: any = {
+			issuer: issuer,
+			filter: issuer.filters,
+		}
+
+		if (issuer.accessRequestType)
+			data.access = issuer.accessRequestType;
+
+		const res = await this.messaging.sendMessage({
+			action: OutletAction.GET_ISSUER_TOKENS,
+			origin: issuer.tokenOrigin,
+			data: data
+		}, this.config.messagingForceTab, this.config.type === "active" ? this.ui : null);
+
+		return res.data?.tokens ?? [];
+	}
+
+	private loadLocalOutletTokens(issuer: OffChainTokenConfig){
+
+		const localOutlet = new LocalOutlet((issuer as OutletInterface & OffChainTokenConfig));
+
+		return localOutlet.getTokens();
 	}
 
 	updateSelectedTokens(selectedTokens) {

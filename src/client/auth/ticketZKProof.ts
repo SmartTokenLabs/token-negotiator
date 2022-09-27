@@ -4,6 +4,8 @@ import {OutletAction, Messaging} from "../messaging";
 import {Authenticator} from "@tokenscript/attestation";
 import {SignedUNChallenge} from "./signedUNChallenge";
 import {UNInterface} from "./util/UN";
+import {LocalOutlet} from "../../outlet/localOutlet";
+import {OutletInterface} from "../../outlet";
 
 export class TicketZKProof extends AbstractAuthentication implements AuthenticationMethod {
 
@@ -29,24 +31,41 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 		}
 
 		const useEthKeyAddress = useEthKey ? useEthKey.address : "";
-		let res = await this.messaging.sendMessage({
-			action: OutletAction.GET_PROOF,
-			origin: issuerConfig.tokenOrigin,
-			timeout: 0, // Don't time out on this event as it needs active input from the user
-			data: {
-				issuer: issuerConfig.collectionID,
-				token: tokens[0],
-				address: request.address ? request.address : useEthKeyAddress,
-				wallet: request.wallet ? request.wallet : ""
-			}
-		}, request.options.messagingForceTab, this.client.getUi());
+		const address = request.address ? request.address : useEthKeyAddress;
+		const wallet = request.wallet ? request.wallet : "";
 
-		if (!res.data.proof)
+		let data;
+
+		if ((new URL(issuerConfig.tokenOrigin)).origin === document.location.origin){
+
+			const localOutlet = new LocalOutlet(issuerConfig as OffChainTokenConfig & OutletInterface);
+
+			data = {};
+			data.proof = await localOutlet.authenticate(tokens[0], address, wallet);
+
+		} else {
+
+			let res = await this.messaging.sendMessage({
+				action: OutletAction.GET_PROOF,
+				origin: issuerConfig.tokenOrigin,
+				timeout: 0, // Don't time out on this event as it needs active input from the user
+				data: {
+					issuer: issuerConfig.collectionID,
+					token: tokens[0],
+					address: request.address ? request.address : useEthKeyAddress,
+					wallet: request.wallet ? request.wallet : ""
+				}
+			}, request.options.messagingForceTab, this.client.getUi());
+
+			data = res.data;
+		}
+
+		if (!data.proof)
 			throw new Error("Failed to get proof from the outlet.");
 
 		let proof: AuthenticationResult = {
 			type: this.TYPE,
-			data: res.data,
+			data: data,
 			target: {
 				tokens: []
 			}
@@ -54,7 +73,7 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 
 		if (useEthKey) {
 			Authenticator.validateUseTicket(
-				res.data.proof,
+				data.proof,
 				issuerConfig.base64attestorPubKey,
 				issuerConfig.base64senderPublicKeys,
 				useEthKey.address ?? ""
