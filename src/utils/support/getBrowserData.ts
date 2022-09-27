@@ -79,3 +79,8 @@ export const getBrowserData = () => {
 		imTokenAndroid: isAndroid && isImToken,
 	};
 };
+
+export function isMacOrIOS() {
+	return !!window.safari ||
+		/iphone|ipad|ipod|ios/.test(window.navigator.userAgent ? window.navigator.userAgent.toLowerCase() : "");
+}
