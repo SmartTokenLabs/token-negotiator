@@ -111,7 +111,7 @@ export class Outlet {
 			case OutletAction.GET_ISSUER_TOKENS: {
 
 				await this.whitelistCheck(evtid, access === "write" ? "write" : "read");
-
+				
 				this.sendTokens(evtid);
 
 				break;
@@ -133,24 +133,30 @@ export class Outlet {
 				const {tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey} =
 					this.tokenConfig;
 
-				const tokens = readMagicUrl(
-					tokenUrlName,
-					tokenSecretName,
-					tokenIdName,
-					itemStorageKey,
-					this.urlParams
-				);
+				try {
 
-				await this.whitelistCheck(evtid, "write");
+					const tokens = readMagicUrl(
+						tokenUrlName,
+						tokenSecretName,
+						tokenIdName,
+						itemStorageKey,
+						this.urlParams
+					);
 
-				storeMagicURL(tokens, itemStorageKey);
+					await this.whitelistCheck(evtid, "write");
 
-				const event = new Event("tokensupdated");
+					storeMagicURL(tokens, itemStorageKey);
 
-				// Dispatch the event to force negotiator to reread tokens.
-				// MagicLinkReader part of Outlet usually works in the parent window, same as Client, so it use same document
-				document.body.dispatchEvent(event);
+					const event = new Event("tokensupdated");
 
+					// Dispatch the event to force negotiator to reread tokens.
+					// MagicLinkReader part of Outlet usually works in the parent window, same as Client, so it use same document
+					document.body.dispatchEvent(event);
+
+				} catch (e){
+					// no-op
+				}
+				
 				this.sendTokens(evtid);
 
 				break;
@@ -167,21 +173,21 @@ export class Outlet {
 
 		if ((!window.parent && !window.opener) || !document.referrer)
 			return;
-
+		
 		const origin = new URL(document.referrer).origin;
-
+		
 		if (origin === document.location.origin)
 			return;
-
+		
 		let accessWhitelist = JSON.parse(localStorage.getItem("tn-whitelist")) ?? {};
-		const storageRequestNeeded = window.parent && (document.hasStorageAccess && !(await document.hasStorageAccess()));
 
+		const storageAccessRequired = document.hasStorageAccess && !(await document.hasStorageAccess());
 		const needsPermission = !accessWhitelist[origin] || (accessWhitelist[origin].type === "read" && whiteListType === "write")
 
-		if (storageRequestNeeded || needsPermission){
-
+		if (needsPermission || storageAccessRequired){
+			
 			return new Promise<void>((resolve, reject) => {
-
+				
 				const typeTxt = whiteListType === "read" ? "read" : "read & write";
 				const permissionTxt = `${origin} is requesting ${typeTxt} access to your ${this.tokenConfig.title} tickets`;
 				const acceptBtn = '<button id="tn-access-accept">Accept</button>';
@@ -190,18 +196,32 @@ export class Outlet {
 				const content = this.tokenConfig.whitelistDialogRenderer ?
 					this.tokenConfig.whitelistDialogRenderer(permissionTxt, acceptBtn, denyBtn) :
 					`
-						<div style="font-family: sans-serif; text-align: center; position: absolute; width: 100vw; min-height: 100vh;">
+						<div style="font-family: sans-serif; text-align: center; position: absolute; width: 100vw; min-height: 100vh;top: 0;
+						left: 0;
+						background: #0C0A50;
+						z-index: 99999;
+						display: flex;
+						flex-direction: column;
+						justify-content: center;
+						align-items: center;
+						color: #fff;
+						padding: 30px;
+						font-size: 24px;
+						line-height: 1.2;">
 							<p>${permissionTxt}</p>
+							<div>
 							${acceptBtn}
 							${denyBtn}
+							</div>
 						</div>
 					`;
 
-				document.body.innerHTML += content;
+
+				document.body.insertAdjacentHTML("beforeend", content);
 
 				document.getElementById("tn-access-accept").addEventListener("click", async () => {
 
-					if (storageRequestNeeded){
+					if (storageAccessRequired) {
 						try {
 							await document.requestStorageAccess();
 						} catch (e) {
@@ -209,10 +229,11 @@ export class Outlet {
 							reject(new Error("IFRAME_STORAGE"));
 							return;
 						}
-						// Ensure whitelist is appended from top-level storage context
+						// Ensure whitelist is loaded from top-level storage context
+						// this is not required if already granted or using a browser without the storageAccess API
 						accessWhitelist = JSON.parse(localStorage.getItem("tn-whitelist")) ?? {};
 					}
-
+				
 					if (!accessWhitelist[origin] || whiteListType !== accessWhitelist[origin].type) {
 						accessWhitelist[origin] = {
 							type: whiteListType
