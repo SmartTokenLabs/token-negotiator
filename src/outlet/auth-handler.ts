@@ -258,11 +258,11 @@ export class AuthHandler {
 				params.set("address", this.address);
 				params.set("callbackUrl", document.referrer);
 
-				document.location.href = this.attestationOrigin + "#" + params.toString();
-
 				if(!document.location.href.includes(this.attestationOrigin)) { 
 					localStorage.setItem('attestation-referrer', document.referrer);
 				}
+
+				document.location.href = this.attestationOrigin + "#" + params.toString();
 
 				return;
 			}
