@@ -220,7 +220,7 @@ export class Messaging {
 		attachPostMessageListener(listener);
 
 		if (timeout === undefined)
-			timeout = 10000;
+			timeout = 20000;
 
 		if (timeout > 0)
 			timer = setTimeout(()=>{
