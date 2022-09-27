@@ -104,7 +104,6 @@ export class Outlet {
 
 		// TODO: should issuer be validated against requested issuer?
 
-
 		try {
 
 			switch (action) {
@@ -116,7 +115,16 @@ export class Outlet {
 
 				break;
 			}
+			case OutletAction.GET_PROOF_REDIRECT: {
+				
+				// handle re-direct request
+				
+				// re-direct back to origin
+
+				break;
+			}
 			case OutletAction.GET_PROOF: {
+				// This will re-direct with the params
 				const token: string = this.getDataFromQuery("token");
 				const wallet: string = this.getDataFromQuery("wallet");
 				const address: string = this.getDataFromQuery("address");

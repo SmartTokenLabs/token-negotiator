@@ -267,7 +267,7 @@ export class AuthHandler {
 				return;
 			}
 
-			// don't do it for brave, brawe doesn't support access to indexDB through iframe
+			// don't do it for brave, brave doesn't support access to indexDB through iframe
 			if (this.attestationInTab && !isBrave()){
 				this.tryingToGetAttestationInBackground = true;
 			}
