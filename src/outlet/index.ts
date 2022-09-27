@@ -153,7 +153,9 @@ export class Outlet {
 					// MagicLinkReader part of Outlet usually works in the parent window, same as Client, so it use same document
 					document.body.dispatchEvent(event);
 
-				} catch (e){}
+				} catch (e){
+					// no-op
+				}
 				
 				this.sendTokens(evtid);
 
@@ -175,21 +177,14 @@ export class Outlet {
 		const origin = new URL(document.referrer).origin;
 		
 		if (origin === document.location.origin)
-		return;
+			return;
 		
 		let accessWhitelist = JSON.parse(localStorage.getItem("tn-whitelist")) ?? {};
-		// window.parent always defined, so no need to check
-		if (!document.hasStorageAccess) {
-			return;
-		}
 
-		if (await document.hasStorageAccess()) {
-			return;
-		}
-		
+		const storageAccessRequired = document.hasStorageAccess && !(await document.hasStorageAccess());
 		const needsPermission = !accessWhitelist[origin] || (accessWhitelist[origin].type === "read" && whiteListType === "write")
 
-		if ( needsPermission){
+		if (needsPermission || storageAccessRequired){
 			
 			return new Promise<void>((resolve, reject) => {
 				
@@ -226,16 +221,18 @@ export class Outlet {
 
 				document.getElementById("tn-access-accept").addEventListener("click", async () => {
 
-					
-					try {
-						await document.requestStorageAccess();
-					} catch (e) {
-						console.error(e);
-						reject(new Error("IFRAME_STORAGE"));
-						return;
+					if (storageAccessRequired) {
+						try {
+							await document.requestStorageAccess();
+						} catch (e) {
+							console.error(e);
+							reject(new Error("IFRAME_STORAGE"));
+							return;
+						}
+						// Ensure whitelist is loaded from top-level storage context
+						// this is not required if already granted or using a browser without the storageAccess API
+						accessWhitelist = JSON.parse(localStorage.getItem("tn-whitelist")) ?? {};
 					}
-					// Ensure whitelist is appended from top-level storage context
-					accessWhitelist = JSON.parse(localStorage.getItem("tn-whitelist")) ?? {};
 				
 					if (!accessWhitelist[origin] || whiteListType !== accessWhitelist[origin].type) {
 						accessWhitelist[origin] = {
