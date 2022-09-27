@@ -94,7 +94,7 @@ export class AuthHandler {
 		tokenObj: DevconToken | any,
 		address: string, 
 		wallet: string,
-		private redirectMode: boolean
+		private redirectMode?: boolean
 	) {
 		this.outlet = outlet;
 		this.evtid = evtid;
