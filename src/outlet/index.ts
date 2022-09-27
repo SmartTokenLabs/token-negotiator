@@ -118,7 +118,6 @@ export class Outlet {
 			case OutletAction.GET_PROOF_REDIRECT: {
 				
 				// handle re-direct request
-				
 				// re-direct back to origin
 
 				break;

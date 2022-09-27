@@ -492,10 +492,9 @@ export class Client {
 		this.eventSender.emitSelectedTokensToClient(selectedTokens);
 	}
 
-	async authenticate(authRequest: AuthenticateInterface) {
-
+	checkUserAgentSupportHandler () {
 		try {
-			this.checkUserAgentSupport("authentication")
+			return this.checkUserAgentSupport("authentication")
 		} catch(err){
 			logger(2,err);
 			err.name = "NOT_SUPPORTED_ERROR";
@@ -503,6 +502,11 @@ export class Client {
 			this.eventSender.emitErrorToClient(err);
 			return;
 		}
+	}
+
+	async authenticate(authRequest: AuthenticateInterface) {
+
+		this.checkUserAgentSupportHandler();
 
 		const { issuer, unsignedToken } = authRequest;
 
