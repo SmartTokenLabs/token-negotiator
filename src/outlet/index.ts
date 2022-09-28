@@ -115,36 +115,42 @@ export class Outlet {
 
 				break;
 			}
-			case OutletAction.GET_PROOF_REDIRECT: {
+			case OutletAction.GET_PROOF_CALLBACK: {
 				
-				// handle re-direct request
+				// TODO: Check for error & pass back to callback URL
 
-				const originReferrer = localStorage.getItem('attestation-referrer');
-				const token: string = this.getDataFromQuery("token");
-				const wallet: string = this.getDataFromQuery("wallet");
-				const address: string = this.getDataFromQuery("address");
-				requiredParams(token, "unsigned token is missing");
-				const unsignedToken = JSON.parse(token);
-				const tokenObj = await rawTokenCheck(unsignedToken, this.tokenConfig);
+				let callbackParams: any = localStorage.getItem('attestation-callback');
+
+				if (!callbackParams)
+					return;
+
+				callbackParams = JSON.parse(callbackParams);
+
+				if (!callbackParams)
+					return;
+
+				localStorage.removeItem('attestation-callback')
+
 				const attestationBlob = this.getDataFromQuery("attestation");
-				const attestationSecret = this.getDataFromQuery("requestSecret");;
+				const attestationSecret = this.getDataFromQuery("requestSecret");
 
 				let authHandler = new AuthHandler(
 					this,
 					evtid,
 					this.tokenConfig,
-					tokenObj,
-					address,
-					wallet,
+					callbackParams.token,
+					null,
+					null,
 					this.urlParams.get("redirect") === "true"
 				);
 
 				const useToken = await authHandler.getUseToken(attestationBlob, attestationSecret);
 
 				// re-direct back to origin
-				if(originReferrer) {
-					document.location.href = `${originReferrer}#${useToken}`;
-				}
+				const params = new URLSearchParams();
+				params.set("action", "proof-callback");
+				params.set("attestation", useToken as string);
+				document.location.href = `${callbackParams.url}#${params.toString()}`;
 
 				break;
 			}

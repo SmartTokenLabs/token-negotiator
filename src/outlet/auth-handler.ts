@@ -91,9 +91,9 @@ export class AuthHandler {
 		outlet?: Outlet,
 		evtid?: any,
 		tokenDef: Item,
-		tokenObj: DevconToken | any,
-		address: string, 
-		wallet: string,
+		private tokenObj: DevconToken | any,
+		address?: string,
+		wallet?: string,
 		private redirectMode?: boolean
 	) {
 		this.outlet = outlet;
@@ -256,11 +256,14 @@ export class AuthHandler {
 				params.set("email", this.email);
 				params.set("wallet", this.wallet);
 				params.set("address", this.address);
-				params.set("callbackUrl", document.referrer);
 
-				if(!document.location.href.includes(this.attestationOrigin)) {
-					localStorage.setItem('attestation-referrer', document.referrer);
-				}
+				if (!document.referrer)
+					throw new Error("document.referrer is undefined");
+
+				localStorage.setItem('attestation-callback', JSON.stringify({
+					url: document.referrer,
+					token: this.tokenObj
+				}));
 
 				document.location.href = `${this.attestationOrigin}#${params.toString()}`;
 
@@ -349,7 +352,7 @@ export class AuthHandler {
 
 			if (useToken) {
 				logger(2,'this.authResultCallback( useToken ): ');
-				resolve(useToken);
+				return useToken;
 			} else {
 				console.log("this.authResultCallback( empty ): ");
 				throw new Error("Empty useToken");
