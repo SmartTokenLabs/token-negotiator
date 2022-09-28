@@ -6,7 +6,6 @@ import { AuthHandler } from "./auth-handler";
 import { SignedDevconTicket } from "@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket";
 import { AsnParser } from "@peculiar/asn1-schema";
 import { ResponseActionBase, ResponseInterfaceBase } from "../core/messaging";
-import { Authenticator } from "@tokenscript/attestation";
 
 export interface OutletInterface {
 	collectionID: string;
@@ -121,20 +120,30 @@ export class Outlet {
 				// handle re-direct request
 
 				const originReferrer = localStorage.getItem('attestation-referrer');
+				const token: string = this.getDataFromQuery("token");
+				const wallet: string = this.getDataFromQuery("wallet");
+				const address: string = this.getDataFromQuery("address");
+				requiredParams(token, "unsigned token is missing");
+				const unsignedToken = JSON.parse(token);
+				const tokenObj = await rawTokenCheck(unsignedToken, this.tokenConfig);
+				const attestationBlob = this.getDataFromQuery("attestation");
+				const attestationSecret = this.getDataFromQuery("requestSecret");;
 
-				// let useToken = await Authenticator.getUseTicket(
-				// 	this.signedTokenSecret,
-				// 	this.attestationSecret,
-				// 	this.signedTokenBlob,
-				// 	this.attestationBlob,
-				// 	this.base64attestorPubKey,
-				// 	this.base64senderPublicKeys
-				// );
-				// params += `{ useToken: ${useToken} }`;
+				let authHandler = new AuthHandler(
+					this,
+					evtid,
+					this.tokenConfig,
+					tokenObj,
+					address,
+					wallet,
+					this.urlParams.get("redirect") === "true"
+				);
+
+				const useToken = await authHandler.getUseToken(attestationBlob, attestationSecret);
 
 				// re-direct back to origin
 				if(originReferrer) {
-					document.location.href = `${originReferrer}#${params.toString()}`;
+					document.location.href = `${originReferrer}#${useToken}`;
 				}
 
 				break;

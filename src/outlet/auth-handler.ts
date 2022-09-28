@@ -316,6 +316,58 @@ export class AuthHandler {
 		document.body.appendChild(iframeWrap);
 	}
 
+	public async getUseToken(attestationBlob:any, attestationSecret:any) {
+
+		try {
+			if (!this.signedTokenSecret) {
+				throw new Error("signedTokenSecret required");
+			}
+			if (!attestationSecret) {
+				throw new Error("attestationSecret required");
+			}
+			if (!this.signedTokenBlob) {
+				throw new Error("signedTokenBlob required");
+			}
+			if (!attestationBlob) {
+				throw new Error("attestationBlob required");
+			}
+			if (!this.base64attestorPubKey) {
+				throw new Error("base64attestorPubKey required");
+			}
+			if (!this.base64senderPublicKeys) {
+				throw new Error("base64senderPublicKeys required");
+			}
+
+			let useToken = await Authenticator.getUseTicket(
+				this.signedTokenSecret,
+				attestationSecret,
+				this.signedTokenBlob,
+				attestationBlob,
+				this.base64attestorPubKey,
+				this.base64senderPublicKeys
+			);
+
+			if (useToken) {
+				logger(2,'this.authResultCallback( useToken ): ');
+				resolve(useToken);
+			} else {
+				console.log("this.authResultCallback( empty ): ");
+				throw new Error("Empty useToken");
+			}
+
+			if (this.buttonOverlay)
+				this.buttonOverlay.remove();
+
+		} catch (e) {
+			logger(2,`UseDevconTicket failed.`, e.message);
+			logger(3, e);
+			reject(new Error("Failed to create UseTicket. " + e.message));
+			if (this.buttonOverlay)
+				this.buttonOverlay.remove();
+		}
+
+	}
+
 	async postMessageAttestationListener(
 		event: MessageEvent,
 		resolve: Function,
@@ -395,58 +447,11 @@ export class AuthHandler {
 			this.iframeWrap.remove();
 		}
 
-		
-
 		this.attestationBlob = event.data?.attestation;
 		this.attestationSecret = event.data?.requestSecret;
 
-		try {
-			if (!this.signedTokenSecret) {
-				throw new Error("signedTokenSecret required");
-			}
-			if (!this.attestationSecret) {
-				throw new Error("attestationSecret required");
-			}
-			if (!this.signedTokenBlob) {
-				throw new Error("signedTokenBlob required");
-			}
-			if (!this.attestationBlob) {
-				throw new Error("attestationBlob required");
-			}
-			if (!this.base64attestorPubKey) {
-				throw new Error("base64attestorPubKey required");
-			}
-			if (!this.base64senderPublicKeys) {
-				throw new Error("base64senderPublicKeys required");
-			}
+		return getUseToken(this.attestationBlob, this.attestationSecret);
 
-			let useToken = await Authenticator.getUseTicket(
-				this.signedTokenSecret,
-				this.attestationSecret,
-				this.signedTokenBlob,
-				this.attestationBlob,
-				this.base64attestorPubKey,
-				this.base64senderPublicKeys
-			);
-
-			if (useToken) {
-				logger(2,'this.authResultCallback( useToken ): ');
-				resolve(useToken);
-			} else {
-				console.log("this.authResultCallback( empty ): ");
-				throw new Error("Empty useToken");
-			}
-
-			if (this.buttonOverlay)
-				this.buttonOverlay.remove();
-
-		} catch (e) {
-			logger(2,`UseDevconTicket failed.`, e.message);
-			logger(3, e);
-			reject(new Error("Failed to create UseTicket. " + e.message));
-			if (this.buttonOverlay)
-				this.buttonOverlay.remove();
-		}
 		// construct UseDevconTicket, see
 		// https://github.com/TokenScript/attestation/blob/main/data-modules/src/UseDevconTicket.asd
 
