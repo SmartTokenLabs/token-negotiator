@@ -4,7 +4,6 @@ import {SafeConnectOptions} from "../wallet/SafeConnectProvider";
 import {BrowserDataInterface} from "../utils/support/isSupported";
 
 export interface OffChainTokenConfig extends IssuerConfigInterface {
-	options: any;
     onChain: false;
     tokenOrigin?: string;
     unEndPoint?: string;
@@ -39,7 +38,6 @@ export interface IssuerConfigInterface {
 
 export type Issuer = OffChainTokenConfig | SolanaIssuerConfig | OnChainTokenConfig;
 export interface NegotiationInterface {
-		messagingUseRedirect: any;
     type: string;
     issuers?: Issuer[];
     uiOptions?: UIOptionsInterface;

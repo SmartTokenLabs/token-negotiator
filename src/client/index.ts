@@ -45,7 +45,6 @@ const defaultConfig: NegotiationInterface = {
 	},
 	autoLoadTokens: true,
 	autoEnableTokens: true,
-	messagingUseRedirect: false,
 	messagingForceTab: false,
 	unSupportedUserAgent: {
 		authentication: {
@@ -550,7 +549,6 @@ export class Client {
 				authRequest.options = {};
 
 			authRequest.options.messagingForceTab = this.config.messagingForceTab;
-			authRequest.options.messagingUseRedirect = this.config.messagingUseRedirect;
 
 			res = await authenticator.getTokenProof(config, [authRequest.unsignedToken], authRequest);
 
