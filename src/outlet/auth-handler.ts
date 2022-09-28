@@ -5,7 +5,7 @@ import { ResponseActionBase } from "../core/messaging";
 import { Outlet } from "./index";
 import { Authenticator } from "@tokenscript/attestation";
 import { logger } from "../utils";
-import { getBrowserData } from "../utils/support/getBrowserData";
+import {getBrowserData, isMacOrIOS} from "../utils/support/getBrowserData";
 
 export interface DevconToken {
 	ticketBlob: string;
@@ -106,7 +106,7 @@ export class AuthHandler {
 		this.signedTokenSecret = tokenObj.ticketSecret;
 
 		this.attestationOrigin = tokenObj.attestationOrigin;
-		this.attestationInTab = tokenObj.attestationInTab;
+		this.attestationInTab = tokenObj.attestationInTab !== undefined ? tokenObj.attestationInTab : isMacOrIOS();
 
 		this.address = address;
 		this.wallet = wallet;
