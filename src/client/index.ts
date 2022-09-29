@@ -243,7 +243,8 @@ export class Client {
 	}
 
 	public getNoTokenMsg (collectionID:string) {
-		const collectionNoTokenMsg = this.tokenStore.getTokenLookUpData(collectionID)?.noTokenMsg;
+		const store = this.getTokenStore().getCurrentIssuers();
+		const collectionNoTokenMsg = store[collectionID]?.noTokenMsg;
 		return collectionNoTokenMsg ? collectionNoTokenMsg : '';
 	}
 
