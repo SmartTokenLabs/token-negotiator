@@ -119,16 +119,23 @@ export class Client {
 		// this.readProofFromUrl();
 	}
 
-	public readProofFromUrl(){
-		if (!window.location.hash) return;
+	public readProofCallback(){
+
+		if (!window.location.hash)
+			return false;
 		
 		let params = new URLSearchParams(window.location.hash.substring(1));
-		let attest = params.get("attestation");
+		let action = params.get("action");
 		
-		if (!attest) return;
+		if (action !== "proof-callback")
+			return false;
+
+		const issuer = params.get("issuer");
+		const attest = params.get("attestation");
+		const error = params.get("error");
 
 		// TODO pass correct issuer
-		this.eventSender.emitProofToClient(attest, "issuer");
+		this.eventSender.emitProofToClient(attest, issuer, error);
 	}
 
 	private mergeConfig(defaultConfig, config){

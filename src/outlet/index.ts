@@ -122,6 +122,7 @@ export class Outlet {
 
 				const requestorURL = this.getDataFromQuery("requestor");
 				const tokenString = this.getDataFromQuery("token");
+				const issuer = this.getDataFromQuery("issuer");
 				let token = JSON.parse(tokenString);
 				const attestationBlob = this.getDataFromQuery("attestation");
 				const attestationSecret = "0x"+this.getDataFromQuery("requestSecret");
@@ -142,6 +143,7 @@ export class Outlet {
 				// re-direct back to origin
 				const params = new URLSearchParams();
 				params.set("action", "proof-callback");
+				params.set("issuer", issuer)
 				params.set("attestation", useToken as string);
 
 				let urlToRedirect = `${requestorURL}#${params.toString()}`;
