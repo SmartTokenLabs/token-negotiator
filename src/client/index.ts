@@ -16,7 +16,7 @@ import {SelectIssuers} from "./views/select-issuers";
 import Web3WalletProvider from '../wallet/Web3WalletProvider';
 import {LocalOutlet} from "../outlet/localOutlet";
 import {OutletInterface} from "../outlet";
-
+import {getBrowserData} from "../utils/support/getBrowserData";
 
 if(typeof window !== "undefined") window.tn = { version: "2.2.0-dc.4" };
 
@@ -106,6 +106,8 @@ export class Client {
 	constructor(config: NegotiationInterface) {
 
 		this.config = this.mergeConfig(defaultConfig, config);
+
+		if(getBrowserData().brave) this.config.messagingForceTab = true;
 
 		this.negotiateAlreadyFired = false;
 
