@@ -243,8 +243,8 @@ export class AuthHandler {
 		return new Promise((resolve, reject) => {
 			this.rejectHandler = reject;
 
-			// dont do it for brawe, brawe doesnt support access to indexDB through iframe
-			if (this.attestationInTab && !getBrowserData().brave){
+			// dont do it for brawe, brawe doesn't support access to indexDB through iframe
+			if (this.attestationInTab && !isBrave()){
 				this.tryingToGetAttestationInBackground = true;
 			}
 
