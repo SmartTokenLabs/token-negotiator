@@ -1,9 +1,8 @@
 // @ts-nocheck
 
-import { Item } from "../tokenLookup";
 import { ResponseActionBase } from "../core/messaging";
 import { OutletAction } from "../client/messaging";
-import { Outlet } from "./index";
+import {Outlet, OutletInterface} from "./index";
 import { Authenticator } from "@tokenscript/attestation";
 import { logger } from "../utils";
 import {isBrave, isMacOrIOS} from "../utils/support/getBrowserData";
@@ -91,11 +90,12 @@ export class AuthHandler {
 	constructor(
 		outlet?: Outlet,
 		evtid?: any,
-		tokenDef: Item,
+		private tokenDef: OutletInterface,
 		private tokenObj: DevconToken | any,
-		address?: string,
-		wallet?: string,
-		private redirectMode?: boolean
+		private address?: string,
+		private wallet?: string,
+		private redirectMode?: boolean,
+		private unsignedToken?: any
 	) {
 		this.outlet = outlet;
 		this.evtid = evtid;
@@ -110,9 +110,6 @@ export class AuthHandler {
 		this.attestationOrigin = tokenObj.attestationOrigin;
 
 		this.attestationInTab = tokenObj.attestationInTab !== undefined ? tokenObj.attestationInTab : (isBrave() || isMacOrIOS());
-
-		this.address = address;
-		this.wallet = wallet;
 	}
 
 	openAttestationApp(){
@@ -246,16 +243,22 @@ export class AuthHandler {
 			this.rejectHandler = reject;
 
 			if (this.redirectMode){
-				let sendData: PostMessageData = { force: false };
 
-				if (this.email) sendData.email = this.email;
-				if (this.wallet) sendData.wallet = this.wallet;
-				if (this.address) sendData.address = this.address;
+				const curParams = new URLSearchParams(document.location.hash.substring(1));
 
-				const params = new URLSearchParams(document.location.hash.substring(1));
+				const params = new URLSearchParams();
 				params.set("action", OutletAction.EMAIL_ATTEST_CALLBACK);
 				params.set("email", this.email);
+				params.set("address", this.address);
+				params.set("wallet", this.wallet);
+				params.set("issuer", this.tokenDef.collectionID);
+				params.set("token", JSON.stringify(this.unsignedToken));
 				params.set("email-attestation-callback", document.location.origin + document.location.pathname + document.location.search);
+
+				const requestor = curParams.get("requestor");
+
+				if (requestor)
+					params.set("requestor", requestor);
 
 				const goto = `${this.attestationOrigin}#${params.toString()}`
 				logger(2, "authenticate. go to: ", goto);
@@ -314,7 +317,7 @@ export class AuthHandler {
 		document.body.appendChild(iframeWrap);
 	}
 
-	public async getUseToken(attestationBlob:any, attestationSecret:any) {
+	public async getUseToken(attestationBlob: any, attestationSecret: any) {
 
 		try {
 			if (!this.signedTokenSecret) {

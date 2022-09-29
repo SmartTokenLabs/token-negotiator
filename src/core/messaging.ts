@@ -78,7 +78,10 @@ export class Messaging {
 		let id = Messaging.getUniqueEventId();
 		const url = this.constructUrl(id, request);
 
-		let newLocation = `${url}&redirect=true&requestor=${encodeURIComponent(document.location.href)}`;
+		// TODO: Pass in callback URL as authentication option
+		const callbackUrl = document.location.origin + document.location.pathname + document.location.search;
+
+		let newLocation = `${url}&redirect=true&requestor=${encodeURIComponent(callbackUrl)}`;
 
 		logger(2, `redirect from ${document.location.href} to ${newLocation}`);
 

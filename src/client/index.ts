@@ -134,8 +134,9 @@ export class Client {
 		const attest = params.get("attestation");
 		const error = params.get("error");
 
-		// TODO pass correct issuer
 		this.eventSender.emitProofToClient(attest, issuer, error);
+
+		document.location.hash = "";
 	}
 
 	private mergeConfig(defaultConfig, config){

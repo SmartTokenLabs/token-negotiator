@@ -46,7 +46,7 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 			const localOutlet = new LocalOutlet(issuerConfig as OffChainTokenConfig & OutletInterface);
 
 			data = {};
-			data.proof = await localOutlet.authenticate(tokens[0], address, wallet);
+			data.proof = await localOutlet.authenticate(tokens[0], address, wallet, redirectMode);
 
 		} else {
 			logger(2, "run OutletAction.GET_PROOF at ", window.location.href);
@@ -62,8 +62,8 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 				}
 			}, request.options.messagingForceTab, this.client.getUi(), redirectMode);
 
-			// does it work in redirect mode? this app will be closed, so timeout never reached
-			// TODO fix
+			// Since sendMessage is an async function, we need to add a delay here to prevent an exception
+			// from being thrown as redirect code-path returns void
 			if (redirectMode) {
 				return new Promise((resolve, reject) => {
 					setTimeout(() => {

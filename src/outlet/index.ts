@@ -118,7 +118,7 @@ export class Outlet {
 			}
 			case OutletAction.EMAIL_ATTEST_CALLBACK: {
 				
-				// TODO: Check for error & pass back to callback URL
+				// TODO: Check for error & pass back to requestorURL
 
 				const requestorURL = this.getDataFromQuery("requestor");
 				const tokenString = this.getDataFromQuery("token");
@@ -141,18 +141,33 @@ export class Outlet {
 				const useToken = await authHandler.getUseToken(attestationBlob, attestationSecret);
 
 				// re-direct back to origin
-				const params = new URLSearchParams();
-				params.set("action", "proof-callback");
-				params.set("issuer", issuer)
-				params.set("attestation", useToken as string);
+				if (requestorURL) {
 
-				let urlToRedirect = `${requestorURL}#${params.toString()}`;
-				console.log("urlToRedirect from OutletAction.EMAIL_ATTEST_CALLBACK: " , urlToRedirect)
+					const params = new URLSearchParams();
+					params.set("action", "proof-callback");
+					params.set("issuer", issuer)
+					params.set("attestation", useToken as string);
 
-				// TODO implement same origin flow without redirect
+					let urlToRedirect = `${requestorURL}#${params.toString()}`;
+					console.log("urlToRedirect from OutletAction.EMAIL_ATTEST_CALLBACK: ", urlToRedirect)
 
-				document.location.href = urlToRedirect;
+					document.location.href = urlToRedirect;
 
+					return;
+				}
+
+				// Same origin request, emit event
+				const event = new CustomEvent("auth-callback", {
+					detail: {
+						proof: (useToken as string),
+						issuer: issuer,
+						error: ""
+					}
+				});
+
+				window.dispatchEvent(event);
+
+				document.location.hash = "";
 
 				break;
 			}
@@ -348,7 +363,8 @@ export class Outlet {
 				tokenObj,
 				address,
 				wallet,
-				this.urlParams.get("redirect") === "true"
+				this.urlParams.get("redirect") === "true",
+				unsignedToken
 			);
 
 			let tokenProof = await authHandler.authenticate();
