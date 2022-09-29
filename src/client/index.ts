@@ -114,6 +114,21 @@ export class Client {
 			this.tokenStore.updateIssuers(this.config.issuers);
 
 		this.messaging = new Messaging();
+
+		// need to fire it when listeners attached
+		// this.readProofFromUrl();
+	}
+
+	public readProofFromUrl(){
+		if (!window.location.hash) return;
+		
+		let params = new URLSearchParams(window.location.hash.substring(1));
+		let attest = params.get("attestation");
+		
+		if (!attest) return;
+
+		// TODO pass correct issuer
+		this.eventSender.emitProofToClient(attest, "issuer");
 	}
 
 	private mergeConfig(defaultConfig, config){
@@ -549,8 +564,13 @@ export class Client {
 				authRequest.options = {};
 
 			authRequest.options.messagingForceTab = this.config.messagingForceTab;
-
+			
+			logger(2, "authRequest", authRequest);
+			logger(2, "get proof at ", window.location.href);
+			
 			res = await authenticator.getTokenProof(config, [authRequest.unsignedToken], authRequest);
+
+			logger(2, "proof received at ", window.location.href);
 
 			logger(2,"Ticket proof successfully validated.");
 

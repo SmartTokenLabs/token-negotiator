@@ -6,7 +6,8 @@ export enum OutletAction {
 	MAGIC_URL = "magic-url",
 	GET_ISSUER_TOKENS = "get-issuer-tokens",
 	GET_PROOF = "get-proof",
-	GET_PROOF_CALLBACK = "proof-callback"
+	GET_PROOF_CALLBACK = "proof-callback",
+	EMAIL_ATTEST_CALLBACK = "email-callback",
 }
 
 export enum OutletResponseAction {

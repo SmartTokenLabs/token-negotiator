@@ -99,7 +99,8 @@ export class Outlet {
 		// if (!document.referrer && !this.getDataFromQuery('DEBUG'))
 		//   return;
 
-		logger(2,"Outlet received event ID " + evtid + " action " + action);
+		
+		logger(2,"Outlet received event ID " + evtid + " action " + action + " at " + document.location.href);
 		// Outlet Page OnLoad Event Handler
 
 		// TODO: should issuer be validated against requested issuer?
@@ -115,30 +116,22 @@ export class Outlet {
 
 				break;
 			}
-			case OutletAction.GET_PROOF_CALLBACK: {
+			case OutletAction.EMAIL_ATTEST_CALLBACK: {
 				
 				// TODO: Check for error & pass back to callback URL
 
-				let callbackParams: any = localStorage.getItem('attestation-callback');
-
-				if (!callbackParams)
-					return;
-
-				callbackParams = JSON.parse(callbackParams);
-
-				if (!callbackParams)
-					return;
-
-				localStorage.removeItem('attestation-callback')
-
+				const requestorURL = this.getDataFromQuery("requestor");
+				const tokenString = this.getDataFromQuery("token");
+				let token = JSON.parse(tokenString);
 				const attestationBlob = this.getDataFromQuery("attestation");
-				const attestationSecret = this.getDataFromQuery("requestSecret");
+				const attestationSecret = "0x"+this.getDataFromQuery("requestSecret");
 
 				let authHandler = new AuthHandler(
 					this,
 					evtid,
 					this.tokenConfig,
-					callbackParams.token,
+					// callbackParams.token,
+					await rawTokenCheck(token, this.tokenConfig),
 					null,
 					null,
 					this.urlParams.get("redirect") === "true"
@@ -150,7 +143,14 @@ export class Outlet {
 				const params = new URLSearchParams();
 				params.set("action", "proof-callback");
 				params.set("attestation", useToken as string);
-				document.location.href = `${callbackParams.url}#${params.toString()}`;
+
+				let urlToRedirect = `${requestorURL}#${params.toString()}`;
+				console.log("urlToRedirect from OutletAction.EMAIL_ATTEST_CALLBACK: " , urlToRedirect)
+
+				// TODO implement same origin flow without redirect
+
+				document.location.href = urlToRedirect;
+
 
 				break;
 			}

@@ -2,6 +2,7 @@
 
 import { Item } from "../tokenLookup";
 import { ResponseActionBase } from "../core/messaging";
+import { OutletAction } from "../client/messaging";
 import { Outlet } from "./index";
 import { Authenticator } from "@tokenscript/attestation";
 import { logger } from "../utils";
@@ -251,21 +252,15 @@ export class AuthHandler {
 				if (this.wallet) sendData.wallet = this.wallet;
 				if (this.address) sendData.address = this.address;
 
-				const params = new URLSearchParams();
-				params.set("force", false);
+				const params = new URLSearchParams(document.location.hash.substring(1));
+				params.set("action", OutletAction.EMAIL_ATTEST_CALLBACK);
 				params.set("email", this.email);
-				params.set("wallet", this.wallet);
-				params.set("address", this.address);
+				params.set("email-attestation-callback", document.location.origin + document.location.pathname + document.location.search);
 
-				if (!document.referrer)
-					throw new Error("document.referrer is undefined");
+				const goto = `${this.attestationOrigin}#${params.toString()}`
+				logger(2, "authenticate. go to: ", goto);
 
-				localStorage.setItem('attestation-callback', JSON.stringify({
-					url: document.referrer,
-					token: this.tokenObj
-				}));
-
-				document.location.href = `${this.attestationOrigin}#${params.toString()}`;
+				document.location.href = goto;
 
 				return;
 			}

@@ -78,7 +78,11 @@ export class Messaging {
 		let id = Messaging.getUniqueEventId();
 		const url = this.constructUrl(id, request);
 
-		document.location.href = `${url}&redirect=true`;
+		let newLocation = `${url}&redirect=true&requestor=${encodeURIComponent(document.location.href)}`;
+
+		logger(2, `redirect from ${document.location.href} to ${newLocation}`);
+
+		document.location.href = newLocation;
 	}
 
 	private sendIframe(request: RequestInterfaceBase): Promise<ResponseInterfaceBase>{
@@ -284,7 +288,7 @@ export class Messaging {
 
 	private constructUrl(id: any, request: RequestInterfaceBase){
 
-		let url = `${request.origin}#evtid=${id}&action=${request.action}`;
+		let url = `${request.origin}#evtid=${id}&action=${request.action}&token=${encodeURIComponent(JSON.stringify(request.data.token))}`;
 
 		for (let i in request.data){
 			let value = request.data[i];
