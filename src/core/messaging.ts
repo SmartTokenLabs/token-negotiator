@@ -1,6 +1,6 @@
 import {attachPostMessageListener, logger, removePostMessageListener} from "../utils";
 import {ClientError} from "../client";
-import {isMacOrIOS} from "../utils/support/getBrowserData";
+import {isMacOrIOS, isBrave} from "../utils/support/getBrowserData";
 
 // TODO move Message related interfaces/enum in to shared location /core 
 
@@ -45,7 +45,7 @@ export class Messaging {
 		if (!forceTab && this.iframeStorageSupport === null) {
 			// TODO: temp to test safari top level context access.
 			if (document.location.hash !== "#safari-iframe-test")
-				this.iframeStorageSupport = !isMacOrIOS();
+				this.iframeStorageSupport = !isMacOrIOS() && !isBrave();
 		}
 
 		// Uncomment to test popup mode

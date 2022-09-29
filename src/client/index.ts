@@ -17,7 +17,6 @@ import Web3WalletProvider from '../wallet/Web3WalletProvider';
 import {LocalOutlet} from "../outlet/localOutlet";
 import {OutletInterface} from "../outlet";
 
-
 if(typeof window !== "undefined") window.tn = { version: "2.2.0-dc.4" };
 
 declare global {
