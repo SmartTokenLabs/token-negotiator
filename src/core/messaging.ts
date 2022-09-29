@@ -1,6 +1,6 @@
 import {attachPostMessageListener, logger, removePostMessageListener} from "../utils";
 import {ClientError} from "../client";
-import {isMacOrIOS} from "../utils/support/getBrowserData";
+import {isMacOrIOS, isBrave} from "../utils/support/getBrowserData";
 
 // TODO move Message related interfaces/enum in to shared location /core 
 
@@ -41,6 +41,8 @@ export class Messaging {
 	listenerSet = false;
 
 	async sendMessage(request: RequestInterfaceBase, forceTab = false): Promise<ResponseInterfaceBase> {
+
+		if(isBrave) forceTab = true;
 
 		if (!forceTab && this.iframeStorageSupport === null) {
 			// TODO: temp to test safari top level context access.
