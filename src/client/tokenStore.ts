@@ -34,6 +34,10 @@ export class TokenStore {
 		this.prePopulateTokenLookupStore(issuers);
 	}
 
+	public getTokenLookUpData (collectionID:string) {
+		return this.tokenLookup[collectionID];
+	}
+
 	public clearCachedTokens(onChain?: boolean){
 
 		for (let i in this.tokens){

@@ -190,7 +190,7 @@ export class SelectIssuers extends AbstractView {
 		this.ui.dismissLoader();
 
 		if (!tokens?.length){
-			this.ui.showError("No tokens found!");
+			this.ui.showError(`No tokens found! ${this.client.getNoTokenMsg(issuer)}`);
 			return;
 		}
 

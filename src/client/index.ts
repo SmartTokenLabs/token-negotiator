@@ -242,6 +242,11 @@ export class Client {
 		}
 	}
 
+	public getNoTokenMsg (collectionID:string) {
+		const collectionNoTokenMsg = this.tokenStore.getTokenLookUpData(collectionID)?.noTokenMsg;
+		return collectionNoTokenMsg ? collectionNoTokenMsg : '';
+	}
+
 	async negotiate(issuers?: (OnChainTokenConfig | OffChainTokenConfig)[], openPopup = false) {
 
 		try {
