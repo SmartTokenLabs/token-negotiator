@@ -42,12 +42,10 @@ export class Messaging {
 
 	async sendMessage(request: RequestInterfaceBase, forceTab = false): Promise<ResponseInterfaceBase> {
 
-		if(isBrave) forceTab = true;
-
 		if (!forceTab && this.iframeStorageSupport === null) {
 			// TODO: temp to test safari top level context access.
 			if (document.location.hash !== "#safari-iframe-test")
-				this.iframeStorageSupport = !isMacOrIOS();
+				this.iframeStorageSupport = !isMacOrIOS() && !isBrave();
 		}
 
 		// Uncomment to test popup mode

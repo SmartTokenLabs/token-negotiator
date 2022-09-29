@@ -86,5 +86,5 @@ export function isMacOrIOS() {
 }
 
 export function isBrave() {
-	return (getBrowserData().brave) ? true : false;
+	return !!window.navigator["brave"];
 }

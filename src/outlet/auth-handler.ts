@@ -106,10 +106,8 @@ export class AuthHandler {
 		this.signedTokenSecret = tokenObj.ticketSecret;
 
 		this.attestationOrigin = tokenObj.attestationOrigin;
-		
-		const isMacIosOrBrave = isBrave || isMacOrIOS;
 
-		this.attestationInTab = tokenObj.attestationInTab !== undefined ? tokenObj.attestationInTab : isMacIosOrBrave;
+		this.attestationInTab = tokenObj.attestationInTab !== undefined ? tokenObj.attestationInTab : (isBrave() || isMacOrIOS());
 
 		this.address = address;
 		this.wallet = wallet;
