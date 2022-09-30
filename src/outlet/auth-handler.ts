@@ -362,9 +362,9 @@ export class AuthHandler {
 		} catch (e) {
 			logger(2,`UseDevconTicket failed.`, e.message);
 			logger(3, e);
-			throw new Error("Failed to create UseTicket. " + e.message);
 			if (this.buttonOverlay)
 				this.buttonOverlay.remove();
+			throw new Error("Failed to create UseTicket. " + e.message);
 		}
 
 	}
