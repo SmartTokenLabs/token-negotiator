@@ -10,6 +10,7 @@ export interface OffChainTokenConfig extends IssuerConfigInterface {
     base64senderPublicKeys: {[key: string]: string};
     base64attestorPubKey: string;
 	accessRequestType?: "read"|"write";
+    noTokenMsg?:string;
 }
 
 export interface OnChainTokenConfig extends IssuerConfigInterface {
@@ -18,6 +19,7 @@ export interface OnChainTokenConfig extends IssuerConfigInterface {
     chain: string;
     openSeaSlug?: string;
 	blockchain?: string;
+    noTokenMsg?:string;
 }
 
 export interface SolanaIssuerConfig extends OnChainTokenConfig {

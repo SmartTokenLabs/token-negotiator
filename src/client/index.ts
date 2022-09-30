@@ -242,6 +242,12 @@ export class Client {
 		}
 	}
 
+	public getNoTokenMsg (collectionID:string) {
+		const store = this.getTokenStore().getCurrentIssuers();
+		const collectionNoTokenMsg = store[collectionID]?.noTokenMsg;
+		return collectionNoTokenMsg ? collectionNoTokenMsg : '';
+	}
+
 	async negotiate(issuers?: (OnChainTokenConfig | OffChainTokenConfig)[], openPopup = false) {
 
 		try {
