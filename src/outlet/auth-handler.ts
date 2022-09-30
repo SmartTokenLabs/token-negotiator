@@ -94,7 +94,7 @@ export class AuthHandler {
 		private tokenObj: DevconToken | any,
 		private address?: string,
 		private wallet?: string,
-		private redirectMode?: boolean,
+		private redirectUrl?: false|string,
 		private unsignedToken?: any
 	) {
 		this.outlet = outlet;
@@ -242,7 +242,7 @@ export class AuthHandler {
 		return new Promise((resolve, reject) => {
 			this.rejectHandler = reject;
 
-			if (this.redirectMode){
+			if (this.redirectUrl){
 
 				const curParams = new URLSearchParams(document.location.hash.substring(1));
 
@@ -253,7 +253,7 @@ export class AuthHandler {
 				params.set("wallet", this.wallet);
 				params.set("issuer", this.tokenDef.collectionID);
 				params.set("token", JSON.stringify(this.unsignedToken));
-				params.set("email-attestation-callback", document.location.origin + document.location.pathname + document.location.search);
+				params.set("email-attestation-callback", this.redirectUrl);
 
 				const requestor = curParams.get("requestor");
 

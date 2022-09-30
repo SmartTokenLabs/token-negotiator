@@ -40,7 +40,7 @@ export class Messaging {
 	iframe: any = null;
 	listenerSet = false;
 
-	async sendMessage(request: RequestInterfaceBase, forceTab = false, redirectMode = false): Promise<ResponseInterfaceBase> {
+	async sendMessage(request: RequestInterfaceBase, forceTab = false, redirectUrl: false|string = false): Promise<ResponseInterfaceBase> {
 
 		if (!forceTab && this.iframeStorageSupport === null) {
 			// TODO: temp to test safari top level context access.
@@ -54,8 +54,8 @@ export class Messaging {
 		logger(2,"Send request: ");
 		logger(2,request);
 
-		if (redirectMode){
-			this.sendRedirect(request);
+		if (redirectUrl){
+			this.sendRedirect(request, redirectUrl);
 			return;
 		}
 
@@ -73,15 +73,12 @@ export class Messaging {
 		}
 	}
 
-	private sendRedirect(request: RequestInterfaceBase){
+	private sendRedirect(request: RequestInterfaceBase, redirectUrl: string){
 
 		let id = Messaging.getUniqueEventId();
 		const url = this.constructUrl(id, request);
 
-		// TODO: Pass in callback URL as authentication option
-		const callbackUrl = document.location.origin + document.location.pathname + document.location.search;
-
-		let newLocation = `${url}&redirect=true&requestor=${encodeURIComponent(callbackUrl)}`;
+		let newLocation = `${url}&redirect=true&requestor=${encodeURIComponent(redirectUrl)}`;
 
 		logger(2, `redirect from ${document.location.href} to ${newLocation}`);
 

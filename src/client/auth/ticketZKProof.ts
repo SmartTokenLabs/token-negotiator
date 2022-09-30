@@ -21,7 +21,10 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 		if (issuerConfig.onChain === true)
 			throw new Error(this.TYPE + " is not available for off-chain tokens.");
 
-		const redirectMode = request?.options?.useRedirect || false;
+		let redirectMode: false|string = request?.options?.useRedirect || false;
+
+		if (redirectMode)
+			redirectMode = request?.options?.redirectUrl || document.location.origin + document.location.pathname + document.location.search;
 
 		let useEthKey: UNInterface|null = null;
 

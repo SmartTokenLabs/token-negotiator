@@ -135,7 +135,7 @@ export class Outlet {
 					await rawTokenCheck(token, this.tokenConfig),
 					null,
 					null,
-					this.urlParams.get("redirect") === "true"
+					false
 				);
 
 				const useToken = await authHandler.getUseToken(attestationBlob, attestationSecret);
@@ -363,7 +363,7 @@ export class Outlet {
 				tokenObj,
 				address,
 				wallet,
-				this.urlParams.get("redirect") === "true",
+				this.urlParams.get("redirect") === "true" ? this.urlParams.get("requestor") : false,
 				unsignedToken
 			);
 

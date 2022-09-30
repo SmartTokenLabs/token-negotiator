@@ -32,7 +32,7 @@ export class LocalOutlet {
 		return filterTokens(decodedTokens, this.tokenConfig.filter);
 	}
 
-	async authenticate(unsignedToken: any, address: string, wallet: string, redirectMode?: boolean){
+	async authenticate(unsignedToken: any, address: string, wallet: string, redirectMode: false|string = false){
 
 		// check if token issuer
 		let tokenObj = await rawTokenCheck(unsignedToken, this.tokenConfig);
