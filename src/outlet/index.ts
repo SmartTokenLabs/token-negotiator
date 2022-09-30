@@ -17,6 +17,8 @@ export interface OutletInterface {
 	base64attestorPubKey: string;
 	signedTokenWhitelist?: string[];
 
+	whitelistDialogWidth: string,
+	whitelistDialogHeight: string,
 	whitelistDialogRenderer?: (permissionTxt: string, acceptBtn: string, denyBtn: string) => string;
 
 	// Possibly deprecated parameters which have defaults
@@ -33,7 +35,9 @@ export const defaultConfig = {
 	tokenIdName: "id",
 	unsignedTokenDataName: "ticket",
 	itemStorageKey: "dcTokens",
-	signedTokenWhitelist: []
+	signedTokenWhitelist: [],
+	whitelistDialogWidth: "450px",
+	whitelistDialogHeight: "350px"
 };
 
 export class readSignedTicket {
@@ -321,8 +325,8 @@ export class Outlet {
 				this.sendMessageResponse({
 					evtid,
 					evt: ResponseActionBase.SHOW_FRAME,
-					// max_width: "700px",
-					// min_height: "600px"
+					max_width: this.tokenConfig.whitelistDialogWidth,
+					min_height: this.tokenConfig.whitelistDialogHeight
 				});
 			});
 		}
