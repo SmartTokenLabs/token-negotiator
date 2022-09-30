@@ -17,7 +17,7 @@ export interface ResponseInterfaceBase {
     data?: any,
 	errors?: string[],
 	max_width?: string,
-	min_height?: string,
+	min_height?: string
 }
 
 export enum ResponseActionBase {
@@ -40,7 +40,7 @@ export class Messaging {
 	iframe: any = null;
 	listenerSet = false;
 
-	async sendMessage(request: RequestInterfaceBase, forceTab = false): Promise<ResponseInterfaceBase> {
+	async sendMessage(request: RequestInterfaceBase, forceTab = false, redirectUrl: false|string = false): Promise<ResponseInterfaceBase> {
 
 		if (!forceTab && this.iframeStorageSupport === null) {
 			// TODO: temp to test safari top level context access.
@@ -54,6 +54,11 @@ export class Messaging {
 		logger(2,"Send request: ");
 		logger(2,request);
 
+		if (redirectUrl){
+			this.sendRedirect(request, redirectUrl);
+			return;
+		}
+
 		if (!forceTab && this.iframeStorageSupport !== false){
 			try {
 				return await this.sendIframe(request);
@@ -66,6 +71,18 @@ export class Messaging {
 		} else {
 			return this.sendPopup(request);
 		}
+	}
+
+	private sendRedirect(request: RequestInterfaceBase, redirectUrl: string){
+
+		let id = Messaging.getUniqueEventId();
+		const url = this.constructUrl(id, request);
+
+		let newLocation = `${url}&redirect=true&requestor=${encodeURIComponent(redirectUrl)}`;
+
+		logger(2, `redirect from ${document.location.href} to ${newLocation}`);
+
+		document.location.href = newLocation;
 	}
 
 	private sendIframe(request: RequestInterfaceBase): Promise<ResponseInterfaceBase>{
@@ -271,7 +288,7 @@ export class Messaging {
 
 	private constructUrl(id: any, request: RequestInterfaceBase){
 
-		let url = `${request.origin}#evtid=${id}&action=${request.action}`;
+		let url = `${request.origin}#evtid=${id}&action=${request.action}&token=${encodeURIComponent(JSON.stringify(request.data.token))}`;
 
 		for (let i in request.data){
 			let value = request.data[i];
