@@ -362,7 +362,7 @@ export class AuthHandler {
 		} catch (e) {
 			logger(2,`UseDevconTicket failed.`, e.message);
 			logger(3, e);
-			reject(new Error("Failed to create UseTicket. " + e.message));
+			throw new Error("Failed to create UseTicket. " + e.message);
 			if (this.buttonOverlay)
 				this.buttonOverlay.remove();
 		}
@@ -451,9 +451,12 @@ export class AuthHandler {
 		this.attestationBlob = event.data?.attestation;
 		this.attestationSecret = event.data?.requestSecret;
 
-		const useToken = this.getUseToken(this.attestationBlob, this.attestationSecret);
-
-		resolve(useToken);
+		try {
+			const useToken = this.getUseToken(this.attestationBlob, this.attestationSecret);
+			resolve(useToken);
+		} catch (e: any){
+			reject(e);
+		}
 
 		// construct UseDevconTicket, see
 		// https://github.com/TokenScript/attestation/blob/main/data-modules/src/UseDevconTicket.asd
