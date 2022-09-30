@@ -17,7 +17,7 @@ import Web3WalletProvider from '../wallet/Web3WalletProvider';
 import {LocalOutlet} from "../outlet/localOutlet";
 import {OutletInterface} from "../outlet";
 
-if(typeof window !== "undefined") window.tn = { version: "2.2.0-dc.10" };
+if(typeof window !== "undefined") window.tn = { version: "2.2.0-dc.11" };
 
 declare global {
 	interface Window {
@@ -150,7 +150,7 @@ export class Client {
 			if (error){
 				this.handleProofError(new Error(error), issuer);
 			} else {
-				this.eventSender.emitProofToClient(proof, issuer, null);
+				this.eventSender.emitProofToClient({proof}, issuer, null);
 			}
 		}, 500);
 	}
