@@ -451,7 +451,9 @@ export class AuthHandler {
 		this.attestationBlob = event.data?.attestation;
 		this.attestationSecret = event.data?.requestSecret;
 
-		return getUseToken(this.attestationBlob, this.attestationSecret);
+		const useToken = this.getUseToken(this.attestationBlob, this.attestationSecret);
+
+		resolve(useToken);
 
 		// construct UseDevconTicket, see
 		// https://github.com/TokenScript/attestation/blob/main/data-modules/src/UseDevconTicket.asd

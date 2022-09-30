@@ -117,55 +117,56 @@ export class Outlet {
 				break;
 			}
 			case OutletAction.EMAIL_ATTEST_CALLBACK: {
-				
-				// TODO: Check for error & pass back to requestorURL
 
 				const requestorURL = this.getDataFromQuery("requestor");
-				const tokenString = this.getDataFromQuery("token");
 				const issuer = this.getDataFromQuery("issuer");
-				let token = JSON.parse(tokenString);
-				const attestationBlob = this.getDataFromQuery("attestation");
-				const attestationSecret = "0x"+this.getDataFromQuery("requestSecret");
 
-				let authHandler = new AuthHandler(
-					this,
-					evtid,
-					this.tokenConfig,
-					// callbackParams.token,
-					await rawTokenCheck(token, this.tokenConfig),
-					null,
-					null,
-					false
-				);
+				try {
 
-				const useToken = await authHandler.getUseToken(attestationBlob, attestationSecret);
+					const tokenString = this.getDataFromQuery("token");
+					let token = JSON.parse(tokenString);
+					const attestationBlob = this.getDataFromQuery("attestation");
+					const attestationSecret = "0x" + this.getDataFromQuery("requestSecret");
 
-				// re-direct back to origin
-				if (requestorURL) {
+					let authHandler = new AuthHandler(
+						this,
+						evtid,
+						this.tokenConfig,
+						// callbackParams.token,
+						await rawTokenCheck(token, this.tokenConfig),
+						null,
+						null,
+						false
+					);
 
-					const params = new URLSearchParams();
-					params.set("action", "proof-callback");
-					params.set("issuer", issuer)
-					params.set("attestation", useToken as string);
+					const useToken = await authHandler.getUseToken(attestationBlob, attestationSecret);
 
-					let urlToRedirect = `${requestorURL}#${params.toString()}`;
-					console.log("urlToRedirect from OutletAction.EMAIL_ATTEST_CALLBACK: ", urlToRedirect)
+					// re-direct back to origin
+					if (requestorURL) {
 
-					document.location.href = urlToRedirect;
+						const params = new URLSearchParams();
+						params.set("action", "proof-callback");
+						params.set("issuer", issuer)
+						params.set("attestation", useToken as string);
 
-					return;
-				}
+						let urlToRedirect = `${requestorURL}#${params.toString()}`;
+						console.log("urlToRedirect from OutletAction.EMAIL_ATTEST_CALLBACK: ", urlToRedirect)
 
-				// Same origin request, emit event
-				const event = new CustomEvent("auth-callback", {
-					detail: {
-						proof: (useToken as string),
-						issuer: issuer,
-						error: ""
+						document.location.href = urlToRedirect;
+
+						return;
 					}
-				});
 
-				window.dispatchEvent(event);
+					// Same origin request, emit event
+					this.dispatchAuthCallbackEvent(issuer, useToken, null);
+
+				} catch (e: any){
+
+					if (requestorURL)
+						return this.proofRedirectError(issuer, e.message);
+
+					this.dispatchAuthCallbackEvent(issuer, null, e.message);
+				}
 
 				document.location.hash = "";
 
@@ -223,6 +224,19 @@ export class Outlet {
 			console.error(e);
 			this.sendErrorResponse(evtid, e.message);
 		}
+	}
+
+	private dispatchAuthCallbackEvent(issuer: string, proof?: string, error?: string){
+
+		const event = new CustomEvent("auth-callback", {
+			detail: {
+				proof: proof,
+				issuer: issuer,
+				error: error
+			}
+		});
+
+		window.dispatchEvent(event);
 	}
 
 	private async whitelistCheck(evtid, whiteListType: "read" | "write"){
@@ -352,6 +366,9 @@ export class Outlet {
 
 		const unsignedToken = JSON.parse(token);
 
+		const redirect = this.urlParams.get("redirect") === "true" ?
+			(document.location.origin + document.location.pathname + document.location.search) : false;
+
 		try {
 			// check if token issuer
 			let tokenObj = await rawTokenCheck(unsignedToken, this.tokenConfig);
@@ -363,7 +380,7 @@ export class Outlet {
 				tokenObj,
 				address,
 				wallet,
-				this.urlParams.get("redirect") === "true" ? this.urlParams.get("requestor") : false,
+				redirect,
 				unsignedToken
 			);
 
@@ -379,6 +396,9 @@ export class Outlet {
 			});
 		} catch (e: any) {
 			logger(2,e);
+
+			if (redirect)
+				return this.proofRedirectError(this.getDataFromQuery("issuer"), e.message);
 
 			this.sendErrorResponse(evtid, e.message);
 		}
@@ -413,16 +433,23 @@ export class Outlet {
 
 	public sendErrorResponse(evtid: any, error: string) {
 
-		if (this.urlParams.get("redirect")){
-			document.location.href = document.referrer + "#error=" + error;
-			return;
-		}
-
 		this.sendMessageResponse({
 			evtid: evtid,
 			evt: ResponseActionBase.ERROR,
 			errors: [error],
 		});
+	}
+
+	public proofRedirectError(issuer: string, error: string){
+
+		const requestorURL = this.getDataFromQuery("requestor");
+
+		const params = new URLSearchParams();
+		params.set("action", "proof-callback");
+		params.set("issuer", issuer);
+		params.set("error", error);
+
+		document.location.href = requestorURL + "#" + params.toString();
 	}
 
 	public sendMessageResponse(response: ResponseInterfaceBase) {

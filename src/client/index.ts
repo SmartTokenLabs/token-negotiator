@@ -17,7 +17,7 @@ import Web3WalletProvider from '../wallet/Web3WalletProvider';
 import {LocalOutlet} from "../outlet/localOutlet";
 import {OutletInterface} from "../outlet";
 
-if(typeof window !== "undefined") window.tn = { version: "2.2.0-dc.4" };
+if(typeof window !== "undefined") window.tn = { version: "2.2.0-dc.8" };
 
 declare global {
 	interface Window {
@@ -115,8 +115,7 @@ export class Client {
 
 		this.messaging = new Messaging();
 
-		// need to fire it when listeners attached
-		// this.readProofFromUrl();
+		this.registerOutletProofEventListener();
 	}
 
 	public readProofCallback(){
@@ -134,9 +133,26 @@ export class Client {
 		const attest = params.get("attestation");
 		const error = params.get("error");
 
-		this.eventSender.emitProofToClient(attest, issuer, error);
+		this.emitRedirectProofEvent(issuer, attest, error);
 
 		document.location.hash = "";
+	}
+
+	private registerOutletProofEventListener(){
+		window.addEventListener("auth-callback", (e: CustomEvent) => {
+			this.emitRedirectProofEvent(e.detail.issuer, e.detail.proof, e.detail.error);
+		});
+	}
+
+	private emitRedirectProofEvent(issuer: string, proof?: string, error?: string){
+		// Wait to ensure UI is initialized
+		setTimeout(() => {
+			if (error){
+				this.handleProofError(new Error(error), issuer);
+			} else {
+				this.eventSender.emitProofToClient(proof, issuer, null);
+			}
+		}, 500);
 	}
 
 	private mergeConfig(defaultConfig, config){
@@ -641,7 +657,7 @@ export class Client {
 		emitSelectedTokensToClient: (tokens: any) => {
 			this.on("tokens-selected", null, { selectedTokens: tokens });
 		},
-		emitProofToClient: (data: any, issuer: any, error = "") => {
+		emitProofToClient: (data: any, issuer: any, error: Error|string = "") => {
 			this.on("token-proof", null, { data, issuer, error });
 		},
 		emitErrorToClient: (error: Error, issuer = "none") => {
