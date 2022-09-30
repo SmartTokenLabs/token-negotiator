@@ -350,14 +350,13 @@ export class AuthHandler {
 
 			if (useToken) {
 				logger(2,'this.authResultCallback( useToken ): ');
+				if (this.buttonOverlay)
+					this.buttonOverlay.remove();
 				return useToken;
 			} else {
-				console.log("this.authResultCallback( empty ): ");
+				logger(2,"this.authResultCallback( empty ): ");
 				throw new Error("Empty useToken");
 			}
-
-			if (this.buttonOverlay)
-				this.buttonOverlay.remove();
 
 		} catch (e) {
 			logger(2,`UseDevconTicket failed.`, e.message);
