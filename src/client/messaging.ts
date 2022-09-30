@@ -5,7 +5,9 @@ import {ClientError, ClientErrorMessage} from "./index";
 export enum OutletAction {
 	MAGIC_URL = "magic-url",
 	GET_ISSUER_TOKENS = "get-issuer-tokens",
-	GET_PROOF = "get-proof"
+	GET_PROOF = "get-proof",
+	GET_PROOF_CALLBACK = "proof-callback",
+	EMAIL_ATTEST_CALLBACK = "email-callback",
 }
 
 export enum OutletResponseAction {
@@ -17,10 +19,10 @@ export class Messaging {
 
 	public core = new CoreMessaging();
 
-	async sendMessage(request: RequestInterfaceBase, forceTab = false, ui?: Ui): Promise<ResponseInterfaceBase> {
+	async sendMessage(request: RequestInterfaceBase, forceTab = false, ui?: Ui, redirectMode: false|string = false): Promise<ResponseInterfaceBase> {
 
 		try {
-			return await this.core.sendMessage(request, forceTab);
+			return await this.core.sendMessage(request, forceTab, redirectMode);
 		} catch (e) {
 
 			if (e === ClientError.POPUP_BLOCKED){

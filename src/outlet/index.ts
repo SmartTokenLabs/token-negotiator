@@ -99,11 +99,11 @@ export class Outlet {
 		// if (!document.referrer && !this.getDataFromQuery('DEBUG'))
 		//   return;
 
-		logger(2,"Outlet received event ID " + evtid + " action " + action);
+		
+		logger(2,"Outlet received event ID " + evtid + " action " + action + " at " + document.location.href);
 		// Outlet Page OnLoad Event Handler
 
 		// TODO: should issuer be validated against requested issuer?
-
 
 		try {
 
@@ -116,7 +116,64 @@ export class Outlet {
 
 				break;
 			}
+			case OutletAction.EMAIL_ATTEST_CALLBACK: {
+
+				const requestorURL = this.getDataFromQuery("requestor");
+				const issuer = this.getDataFromQuery("issuer");
+
+				try {
+
+					const tokenString = this.getDataFromQuery("token");
+					let token = JSON.parse(tokenString);
+					const attestationBlob = this.getDataFromQuery("attestation");
+					const attestationSecret = "0x" + this.getDataFromQuery("requestSecret");
+
+					let authHandler = new AuthHandler(
+						this,
+						evtid,
+						this.tokenConfig,
+						// callbackParams.token,
+						await rawTokenCheck(token, this.tokenConfig),
+						null,
+						null,
+						false
+					);
+
+					const useToken = await authHandler.getUseToken(attestationBlob, attestationSecret);
+
+					// re-direct back to origin
+					if (requestorURL) {
+
+						const params = new URLSearchParams();
+						params.set("action", "proof-callback");
+						params.set("issuer", issuer)
+						params.set("attestation", useToken as string);
+
+						let urlToRedirect = `${requestorURL}#${params.toString()}`;
+						console.log("urlToRedirect from OutletAction.EMAIL_ATTEST_CALLBACK: ", urlToRedirect)
+
+						document.location.href = urlToRedirect;
+
+						return;
+					}
+
+					// Same origin request, emit event
+					this.dispatchAuthCallbackEvent(issuer, useToken, null);
+
+				} catch (e: any){
+
+					if (requestorURL)
+						return this.proofRedirectError(issuer, e.message);
+
+					this.dispatchAuthCallbackEvent(issuer, null, e.message);
+				}
+
+				document.location.hash = "";
+
+				break;
+			}
 			case OutletAction.GET_PROOF: {
+				// This will re-direct with the params
 				const token: string = this.getDataFromQuery("token");
 				const wallet: string = this.getDataFromQuery("wallet");
 				const address: string = this.getDataFromQuery("address");
@@ -167,6 +224,19 @@ export class Outlet {
 			console.error(e);
 			this.sendErrorResponse(evtid, e.message);
 		}
+	}
+
+	private dispatchAuthCallbackEvent(issuer: string, proof?: string, error?: string){
+
+		const event = new CustomEvent("auth-callback", {
+			detail: {
+				proof: proof,
+				issuer: issuer,
+				error: error
+			}
+		});
+
+		window.dispatchEvent(event);
 	}
 
 	private async whitelistCheck(evtid, whiteListType: "read" | "write"){
@@ -296,6 +366,9 @@ export class Outlet {
 
 		const unsignedToken = JSON.parse(token);
 
+		const redirect = this.urlParams.get("redirect") === "true" ?
+			(document.location.origin + document.location.pathname + document.location.search) : false;
+
 		try {
 			// check if token issuer
 			let tokenObj = await rawTokenCheck(unsignedToken, this.tokenConfig);
@@ -306,7 +379,9 @@ export class Outlet {
 				this.tokenConfig,
 				tokenObj,
 				address,
-				wallet
+				wallet,
+				redirect,
+				unsignedToken
 			);
 
 			let tokenProof = await authHandler.authenticate();
@@ -321,6 +396,9 @@ export class Outlet {
 			});
 		} catch (e: any) {
 			logger(2,e);
+
+			if (redirect)
+				return this.proofRedirectError(this.getDataFromQuery("issuer"), e.message);
 
 			this.sendErrorResponse(evtid, e.message);
 		}
@@ -354,11 +432,24 @@ export class Outlet {
 	}
 
 	public sendErrorResponse(evtid: any, error: string) {
+
 		this.sendMessageResponse({
 			evtid: evtid,
 			evt: ResponseActionBase.ERROR,
 			errors: [error],
 		});
+	}
+
+	public proofRedirectError(issuer: string, error: string){
+
+		const requestorURL = this.getDataFromQuery("requestor");
+
+		const params = new URLSearchParams();
+		params.set("action", "proof-callback");
+		params.set("issuer", issuer);
+		params.set("error", error);
+
+		document.location.href = requestorURL + "#" + params.toString();
 	}
 
 	public sendMessageResponse(response: ResponseInterfaceBase) {
