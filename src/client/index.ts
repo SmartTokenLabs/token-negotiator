@@ -150,7 +150,7 @@ export class Client {
 			if (error){
 				this.handleProofError(new Error(error), issuer);
 			} else {
-				this.eventSender.emitProofToClient(proof, issuer, null);
+				this.eventSender.emitProofToClient({proof}, issuer, null);
 			}
 		}, 500);
 	}
