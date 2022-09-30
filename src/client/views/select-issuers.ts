@@ -30,7 +30,7 @@ export class SelectIssuers extends AbstractView {
                 <div class="brand-tn"></div>
                 <div class="headline-container-tn">
                   <p class="headline-tn">${this.params.options.issuerHeading}</p>
-                  <button class="btn-tn dis-wallet-tn" aria-label="Disconnect Wallet">Disconnect</button>
+                  <button class="btn-tn dis-wallet-tn" style="display: none;" aria-label="Disconnect Wallet">Disconnect</button>
                 </div>
 								<nav class="token-issuer-nav-tn">
                 	<ul class="token-issuer-list-container-tn" role="menubar"></ul>
@@ -55,9 +55,7 @@ export class SelectIssuers extends AbstractView {
 
 		this.viewContainer.querySelector('.back-to-menu-tn').addEventListener('click', this.backToIssuers.bind(this));
 
-		this.viewContainer.querySelector('.dis-wallet-tn').addEventListener('click', () => {
-			this.client.disconnectWallet();
-		});
+		this.setupWalletButton();
 
 		this.issuerListContainer = document.querySelector(".token-issuer-list-container-tn");
 		this.tokensContainer = document.getElementsByClassName("token-view-tn")[0];
@@ -80,6 +78,22 @@ export class SelectIssuers extends AbstractView {
 			this.issuersLoading();
 		}
 
+	}
+
+	async setupWalletButton(){
+
+		const provider = await this.client.getWalletProvider();
+
+		if (provider.getConnectedWalletData().length > 0){
+
+			const walletBtn = this.viewContainer.querySelector('.dis-wallet-tn');
+
+			walletBtn.style.display = "block";
+
+			walletBtn.addEventListener('click', () => {
+				this.client.disconnectWallet();
+			});
+		}
 	}
 
 	issuersLoading(){
