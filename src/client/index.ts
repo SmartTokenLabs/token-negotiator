@@ -17,7 +17,7 @@ import Web3WalletProvider from '../wallet/Web3WalletProvider';
 import {LocalOutlet} from "../outlet/localOutlet";
 import {OutletInterface} from "../outlet";
 
-if(typeof window !== "undefined") window.tn = { version: "2.2.0-dc.4" };
+if(typeof window !== "undefined") window.tn = { version: "2.2.0-dc.6" };
 
 declare global {
 	interface Window {
@@ -240,6 +240,12 @@ export class Client {
 			throw new Error(err);
 
 		}
+	}
+
+	public getNoTokenMsg (collectionID:string) {
+		const store = this.getTokenStore().getCurrentIssuers();
+		const collectionNoTokenMsg = store[collectionID]?.noTokenMsg;
+		return collectionNoTokenMsg ? collectionNoTokenMsg : '';
 	}
 
 	async negotiate(issuers?: (OnChainTokenConfig | OffChainTokenConfig)[], openPopup = false) {
