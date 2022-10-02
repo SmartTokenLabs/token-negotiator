@@ -155,20 +155,18 @@ export class TokenList extends AbstractView {
 			(index.substring(0, 5) + "..." + index.substring(index.length-5, index.length))
 			: index;
 
-		const toggleVisiblity = hideToggle ? 'hidden' : 'visible';
-
 		return `
             <li class='token-tn'>
               <div class="img-container-tn image-tn shimmer-tn" data-image-src="${image}" data-token-title="${title}"></div>
               <div class='data-tn'>
                   <p class='token-title-tn'>${title}</p>
                   <p class='detail-tn' title="${index}">#${(tokenId)}</p>
-                </div>
-              <div class='toggle-tn' style='visibility:${toggleVisiblity}'>
+                </div>` + 
+			(hideToggle ? "" : `<div class='toggle-tn'>
                 <input ${toggleState ? 'checked' : '' } data-key='${tokenIssuerKey}' data-token='${JSON.stringify(data)}' data-index='${index}' type='checkbox' name='toggle${index}' class='mobileToggle-tn toggle-tn' id='toggle${index}'>
                 <label for='toggle${index}'></label>
-              </div>
-            </li>
+              </div>`) +
+            `</li>
         `;
 	}
 }
