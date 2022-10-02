@@ -20,6 +20,7 @@ export interface OnChainTokenConfig extends IssuerConfigInterface {
     openSeaSlug?: string;
 	blockchain?: string;
     noTokenMsg?:string;
+    hideToggle ?: boolean;
 }
 
 export interface SolanaIssuerConfig extends OnChainTokenConfig {
@@ -27,6 +28,7 @@ export interface SolanaIssuerConfig extends OnChainTokenConfig {
 	collectionAddress?: string;
 	tokenProgram?: string;
 	updateAuthority?: string;
+    hideToggle ?: boolean;
 }
 
 export interface IssuerConfigInterface {
@@ -36,6 +38,7 @@ export interface IssuerConfigInterface {
     image?: string;
 	symbol?: string;
     filters?: {};
+    hideToggle ?: boolean;
 }
 
 export type Issuer = OffChainTokenConfig | SolanaIssuerConfig | OnChainTokenConfig;
