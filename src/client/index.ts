@@ -41,7 +41,7 @@ const defaultConfig: NegotiationInterface = {
 		openingHeading: "Validate your token ownership for access",
 		issuerHeading: "Detected tokens",
 		autoPopup: true,
-		position: "bottom-right",
+		position: "bottom-right"
 	},
 	autoLoadTokens: true,
 	autoEnableTokens: true,
