@@ -284,7 +284,8 @@ export class SelectIssuers extends AbstractView {
 					index: (t.tiketIdNumber ?? t.ticketIdNumber) ?? i,
 					title: title,
 					image: image,
-					toggleState: isSelected
+					toggleState: isSelected,
+					hideToggle: config?.hideToggle
 				});
 
 			} else {
@@ -297,7 +298,8 @@ export class SelectIssuers extends AbstractView {
 					index: tokenId,
 					title: t.title,
 					image: t.image,
-					toggleState: isSelected
+					toggleState: isSelected,
+					hideToggle: config?.hideToggle
 				});
 
 			}

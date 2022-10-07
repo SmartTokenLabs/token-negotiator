@@ -504,6 +504,7 @@ OffChain | string  |
 | chain                  | Chain for the collection                                                 | OnChain      | Y        | string  |
 | openSeaSlug            | The collection name for OpenSea listing. Improves performance for token fetching. | OnChain      | N        | string  |
 | noTokenMsg           | A token issuer message to assist users when they have no tokens |    both    |     N           | string
+| hideToggle           | Hide the Toggle Buttons for the collection |    both    |     N           | boolean
 
 
 ### Off Chain
@@ -519,7 +520,7 @@ OffChain | string  |
 | base64senderPublicKeys | An array of base64 encoded ticket issuer public keys, indexed by conference ID    | OffChain     | Y        | object  |
 | base64attestorPubKey   | The base64 encoded public key of the identity attestation issuer                  | OffChain     | Y        | string  |
 | noTokenMsg           | A token issuer message to assist users when they have no tokens |    both    |     N           | string
-
+| hideToggle           | Hide the Toggle Buttons for the collection |    both    |     N           | boolean
 
 ### Outlet Configuration 
 (Applicable to TokenScript off chain token issuers)

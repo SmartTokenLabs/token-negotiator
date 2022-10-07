@@ -256,7 +256,8 @@ export class Outlet {
 		let accessWhitelist = JSON.parse(localStorage.getItem("tn-whitelist")) ?? {};
 
 		const storageAccessRequired = document.hasStorageAccess && !(await document.hasStorageAccess());
-		const needsPermission = !accessWhitelist[origin] || (accessWhitelist[origin].type === "read" && whiteListType === "write")
+		const needsPermission = this.tokenConfig.signedTokenWhitelist.indexOf(origin) === -1 &&
+			(!accessWhitelist[origin] || (accessWhitelist[origin].type === "read" && whiteListType === "write"));
 
 		if (needsPermission || storageAccessRequired){
 			
