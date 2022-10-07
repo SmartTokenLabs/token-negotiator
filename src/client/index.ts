@@ -281,7 +281,7 @@ export class Client {
 		}
 	}
 
-	public getNoTokenMsg (collectionID:string) {
+	public getNoTokenMsg (collectionID: string) {
 		const store = this.getTokenStore().getCurrentIssuers();
 		const collectionNoTokenMsg = store[collectionID]?.noTokenMsg;
 		return collectionNoTokenMsg ? collectionNoTokenMsg : '';
@@ -320,7 +320,7 @@ export class Client {
 			await this.passiveNegotiationStrategy();
 		}
 
-		window.addEventListener('offline', () => this.checkInternetConnectivity());
+		// window.addEventListener('offline', () => this.checkInternetConnectivity());
 	}
 
 	activeNegotiationStrategy(openPopup: boolean) {
@@ -668,7 +668,7 @@ export class Client {
 		},
 		emitErrorToClient: (error: Error, issuer = "none") => {
 
-			this.checkInternetConnectivity();
+			// this.checkInternetConnectivity();
 
 			this.on("error", null, {error, issuer});
 		},
@@ -680,7 +680,7 @@ export class Client {
 		}
 	};
 
-	checkInternetConnectivity(): void {
+	/* checkInternetConnectivity(): void {
 		if (!navigator.onLine) {
 			if (this.config.type === 'active') {
 				setTimeout(() => {
@@ -689,7 +689,7 @@ export class Client {
 			}
 			throw new Error(this.config.noInternetErrorMessage ?? NO_INTERNET_ERROR_MESSAGE)
 		}
-	}
+	}*/
 
 	async addTokenViaMagicLink(magicLink: any) {
 		let url = new URL(magicLink);
