@@ -17,7 +17,7 @@ import Web3WalletProvider from '../wallet/Web3WalletProvider';
 import {LocalOutlet} from "../outlet/localOutlet";
 import {OutletInterface} from "../outlet";
 
-if(typeof window !== "undefined") window.tn = { version: "2.2.0-dc.10" };
+if(typeof window !== "undefined") window.tn = { version: "2.2.0-dc.11" };
 
 declare global {
 	interface Window {
@@ -41,7 +41,7 @@ const defaultConfig: NegotiationInterface = {
 		openingHeading: "Validate your token ownership for access",
 		issuerHeading: "Detected tokens",
 		autoPopup: true,
-		position: "bottom-right",
+		position: "bottom-right"
 	},
 	autoLoadTokens: true,
 	autoEnableTokens: true,
@@ -150,7 +150,7 @@ export class Client {
 			if (error){
 				this.handleProofError(new Error(error), issuer);
 			} else {
-				this.eventSender.emitProofToClient(proof, issuer, null);
+				this.eventSender.emitProofToClient({proof}, issuer, null);
 			}
 		}, 500);
 	}
@@ -281,7 +281,7 @@ export class Client {
 		}
 	}
 
-	public getNoTokenMsg (collectionID:string) {
+	public getNoTokenMsg (collectionID: string) {
 		const store = this.getTokenStore().getCurrentIssuers();
 		const collectionNoTokenMsg = store[collectionID]?.noTokenMsg;
 		return collectionNoTokenMsg ? collectionNoTokenMsg : '';
@@ -320,7 +320,7 @@ export class Client {
 			await this.passiveNegotiationStrategy();
 		}
 
-		window.addEventListener('offline', () => this.checkInternetConnectivity());
+		// window.addEventListener('offline', () => this.checkInternetConnectivity());
 	}
 
 	activeNegotiationStrategy(openPopup: boolean) {
@@ -668,7 +668,7 @@ export class Client {
 		},
 		emitErrorToClient: (error: Error, issuer = "none") => {
 
-			this.checkInternetConnectivity();
+			// this.checkInternetConnectivity();
 
 			this.on("error", null, {error, issuer});
 		},
@@ -680,7 +680,7 @@ export class Client {
 		}
 	};
 
-	checkInternetConnectivity(): void {
+	/* checkInternetConnectivity(): void {
 		if (!navigator.onLine) {
 			if (this.config.type === 'active') {
 				setTimeout(() => {
@@ -689,7 +689,7 @@ export class Client {
 			}
 			throw new Error(this.config.noInternetErrorMessage ?? NO_INTERNET_ERROR_MESSAGE)
 		}
-	}
+	}*/
 
 	async addTokenViaMagicLink(magicLink: any) {
 		let url = new URL(magicLink);
