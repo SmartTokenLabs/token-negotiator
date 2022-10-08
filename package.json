@@ -1,6 +1,6 @@
 {
   "name": "@tokenscript/token-negotiator",
-  "version": "2.2.0-dc.11",
+  "version": "2.2.0-dc.13",
   "description": "Token-negotiator a token attestation bridge between web 2.0 and 3.0.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -31,7 +31,7 @@
   "homepage": "https://github.com/TokenScript/token-negotiator#readme",
   "dependencies": {
     "@peculiar/asn1-schema": "^2.2.0",
-    "@tokenscript/attestation": "^0.3.9-sc.6",
+    "@tokenscript/attestation": "0.3.9-dc.4",
     "@toruslabs/torus-embed": "^1.25.0",
     "@walletconnect/web3-provider": "^1.7.1",
     "ethers": "^5.4.0",
