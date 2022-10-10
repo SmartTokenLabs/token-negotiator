@@ -1,7 +1,7 @@
 // @ts-nocheck
 window.DISPLAY_DEBUG_LEVEL = 1
 
-import { logger, requiredParams, compareObjects, base64ToUint8array } from './../index';
+import { logger, requiredParams, compareObjects, base64ToUint8array, waitForElementToExist } from './../index';
 
 // TODO: add unit tests for the following functions:
 // logger, requiredParams, asyncHandle, attachPostMessageListener.
@@ -56,5 +56,13 @@ describe('util logging and errors', () => {
 		logger(1, msg);
 		// The first argument of the first call to the function was 'hello'
 		expect(console.log).toHaveBeenCalledWith(msg);
+	});
+});
+
+describe('util Spec waitForElementToExist', async () => {
+	const newDiv = document.createElement('div').classList.add('test_element');
+	const elemToCheck = await waitForElementToExist('.test_element');
+	test('expect element to exist', () => {
+		expect(elemToCheck).toBe(newDiv);
 	});
 });

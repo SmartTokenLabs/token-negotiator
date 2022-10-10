@@ -16,7 +16,6 @@ import {SelectIssuers} from "./views/select-issuers";
 import Web3WalletProvider from '../wallet/Web3WalletProvider';
 import {LocalOutlet} from "../outlet/localOutlet";
 import { OutletInterface } from "../outlet";
-import { ethers } from "ethers";
 import { waitForElementToExist } from '../utils/index';
 
 if(typeof window !== "undefined") window.tn = { version: "2.2.0-dc.11" };
