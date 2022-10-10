@@ -15,7 +15,9 @@ import {SelectWallet} from "./views/select-wallet";
 import {SelectIssuers} from "./views/select-issuers";
 import Web3WalletProvider from '../wallet/Web3WalletProvider';
 import {LocalOutlet} from "../outlet/localOutlet";
-import {OutletInterface} from "../outlet";
+import { OutletInterface } from "../outlet";
+import { ethers } from "ethers";
+import { waitForElementToExist } from '../utils/index';
 
 if(typeof window !== "undefined") window.tn = { version: "2.2.0-dc.11" };
 
@@ -549,7 +551,6 @@ export class Client {
 	}
 
 	async authenticate(authRequest: AuthenticateInterface) {
-
 		this.checkUserAgentSupportHandler();
 
 		const { issuer, unsignedToken } = authRequest;
@@ -573,8 +574,18 @@ export class Client {
 		if (this.ui) {
 			this.ui.showLoaderDelayed([
 				"<h4>Authenticating...</h4>",
-				"<small>You may need to sign a new challenge in your wallet</small>"
+				"<small>You may need to sign a new challenge in your wallet</small>",
+				"<button class='cancel-auth-btn' aria-label='Cancel authentication'>Cancel</button>"
 			], 600, true);
+
+			waitForElementToExist('.cancel-auth-btn').then((cancelAuthButton) => {
+				cancelAuthButton.addEventListener('click', () => {
+					const err = 'User cancelled authentication';
+					this.ui.showError(err);
+					this.eventSender.emitProofToClient(null, issuer, err);
+					return;
+				});
+			});
 		}
 
 		let AuthType;

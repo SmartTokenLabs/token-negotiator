@@ -116,6 +116,18 @@
   color: black;
 }
 
+.overlay-tn .cancel-auth-btn {
+    display: block;
+    margin: 10px auto;
+    cursor: pointer;
+    background: transparent;
+    outline: none;
+    color: inherit;
+    box-shadow: none;
+    border: none;
+    text-decoration: underline;
+}
+
 /* dark theme */
 
 .overlay-tn.dark-tn .retry {
