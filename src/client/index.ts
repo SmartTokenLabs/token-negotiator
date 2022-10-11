@@ -574,16 +574,16 @@ export class Client {
 			this.ui.showLoaderDelayed([
 				"<h4>Authenticating...</h4>",
 				"<small>You may need to sign a new challenge in your wallet</small>",
-				"<button class='cancel-auth-btn' aria-label='Cancel authentication'>Cancel</button>"
+				"<button class='cancel-auth-btn btn-tn' aria-label='Cancel authentication'>Cancel</button>"
 			], 600, true);
 
-			waitForElementToExist('.cancel-auth-btn').then((cancelAuthButton) => {
-				cancelAuthButton.addEventListener('click', () => {
+			waitForElementToExist('.cancel-auth-btn').then((cancelAuthButton: HTMLElement) => {
+				cancelAuthButton.onclick = () => {
 					const err = 'User cancelled authentication';
 					this.ui.showError(err);
 					this.eventSender.emitProofToClient(null, issuer, err);
 					return;
-				});
+				}
 			});
 		}
 

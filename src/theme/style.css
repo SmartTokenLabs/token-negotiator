@@ -120,12 +120,6 @@
     display: block;
     margin: 10px auto;
     cursor: pointer;
-    background: transparent;
-    outline: none;
-    color: inherit;
-    box-shadow: none;
-    border: none;
-    text-decoration: underline;
 }
 
 /* dark theme */
