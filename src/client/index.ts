@@ -168,12 +168,14 @@ export class Client {
 		}
 
 		// Check if blockchain is supported one
-		for(const issuer of defaultConfig.issuers) {
-			if (issuer.onChain === true) {
-				validateBlockchain(issuer.blockchain ?? "");
+		if (defaultConfig.issuers && defaultConfig.issuers.length) {
+			for(const issuer of defaultConfig.issuers) {
+				if (issuer.onChain === true) {
+					validateBlockchain(issuer.blockchain ?? "");
+				}
 			}
+	
 		}
-
 		return defaultConfig;
 	}
 
