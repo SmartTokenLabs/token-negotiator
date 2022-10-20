@@ -111,6 +111,13 @@
                     chain: 'eth',
                     blockchain: "evm",
                   },
+                  {
+                    onChain: true, 
+                    collectionID: "Perion", 
+                    contract: '0x96af92ae2d822a0f191455ceca4d4e7ee227668e', 
+                    chain: 'mumbai',
+                    blockchain: "evm",
+                  },
                 ],
                 uiOptions: {
                     openingHeading: "Open a new world of discounts available with your tokens.",
@@ -144,7 +151,7 @@
             });
 
             window.negotiator.on("tokens-selected", (tokens) => {
-                console.log(tokens);
+                console.log("tokens-selected", tokens);
             });
             window.negotiator.on("connected-wallet", (wallet) => {
                 console.log('connected wallet', wallet);
