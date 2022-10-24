@@ -59,10 +59,12 @@ describe('util logging and errors', () => {
 	});
 });
 
-describe('util Spec waitForElementToExist', async () => {
-	const newDiv = document.createElement('div').classList.add('test_element');
-	const elemToCheck = await waitForElementToExist('.test_element');
+describe('util Spec waitForElementToExist', () => {
 	test('expect element to exist', () => {
-		expect(elemToCheck).toBe(newDiv);
+		const newDiv = document.createElement('div');
+		newDiv.classList.add('test_element');
+		waitForElementToExist('.test_element').then(el => {
+			expect(el).toBe(newDiv)
+		});
 	});
 });
