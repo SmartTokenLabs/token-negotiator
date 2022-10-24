@@ -85,6 +85,8 @@ export enum ClientErrorMessage {
 export class Client {
 
 	private negotiateAlreadyFired: boolean;
+	private negotiateAlreadyFired2: boolean;
+	private negotiateAlreadyFired3: boolean;
 	public issuersLoaded: boolean;
 	private config: NegotiationInterface;
 	private web3WalletProvider: Web3WalletProvider;
