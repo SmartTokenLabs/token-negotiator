@@ -10,7 +10,7 @@ import { OffChainTokenConfig, OnChainTokenConfig, AuthenticateInterface, Negotia
 import {SignedUNChallenge} from "./auth/signedUNChallenge";
 import {TicketZKProof} from "./auth/ticketZKProof";
 import {AuthenticationMethod} from "./auth/abstractAuthentication";
-import { isUserAgentSupported } from '../utils/support/isSupported';
+import { isUserAgentSupported, validateBlockchain } from '../utils/support/isSupported';
 import {SelectWallet} from "./views/select-wallet";
 import {SelectIssuers} from "./views/select-issuers";
 import Web3WalletProvider from '../wallet/Web3WalletProvider';
@@ -103,7 +103,6 @@ export class Client {
 	}
 
 	constructor(config: NegotiationInterface) {
-
 		this.config = this.mergeConfig(defaultConfig, config);
 
 		this.negotiateAlreadyFired = false;
@@ -155,7 +154,7 @@ export class Client {
 		}, 500);
 	}
 
-	private mergeConfig(defaultConfig, config){
+	private mergeConfig(defaultConfig: NegotiationInterface, config: NegotiationInterface){
 
 		for (let key in config){
 
@@ -166,6 +165,15 @@ export class Client {
 			}
 		}
 
+		// Check if blockchain is supported one
+		if (defaultConfig.issuers && defaultConfig.issuers.length) {
+			for(const issuer of defaultConfig.issuers) {
+				if (issuer.onChain === true) {
+					validateBlockchain(issuer.blockchain ?? "");
+				}
+			}
+	
+		}
 		return defaultConfig;
 	}
 
