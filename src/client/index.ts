@@ -103,8 +103,6 @@ export class Client {
 	}
 
 	constructor(config: NegotiationInterface) {
-		// TODO Henderson
-
 		this.config = this.mergeConfig(defaultConfig, config);
 
 		this.negotiateAlreadyFired = false;
