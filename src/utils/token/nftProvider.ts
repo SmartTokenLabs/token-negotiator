@@ -1,5 +1,6 @@
 
 import { OnChainTokenConfig, Issuer, SolanaIssuerConfig, IssuerConfigInterface } from '../../client/interface';
+import { validateBlockchain } from '../support/isSupported';
 
 
 const baseURL = "https://api.token-discovery.tokenscript.org";
@@ -54,7 +55,7 @@ export const getEvmNftTokensUrl = (
 	ipfsBaseUrl: string
 ) => {
 	const { contract, chain, openSeaSlug } = issuer;
-	const blockchain = issuer?.blockchain ?? "evm";
+	const blockchain = validateBlockchain(issuer?.blockchain ?? "");
 	if(!contract || !chain) return undefined;
 	let query = `${baseURL}/get-owner-tokens?smartContract=${contract}&chain=${chain}&owner=${owner}&blockchain=${blockchain}`;
 	if (openSeaSlug) query += `&openSeaSlug=${openSeaSlug}`;
@@ -74,7 +75,7 @@ export const getSolanaNftTokensUrl = (
 		updateAuthority,
 		symbol,
 	} = issuer;
-	const blockchain = issuer?.blockchain ?? "evm";
+	const blockchain = validateBlockchain(issuer?.blockchain ?? "");
 	if(!chain && (!tokenProgram || !collectionAddress || !updateAuthority || !symbol)) return undefined;
 	let query = `${baseURL}/get-owner-tokens?chain=${chain}&blockchain=${blockchain}`;
 	if (owner) query += `&owner=${owner}`;
