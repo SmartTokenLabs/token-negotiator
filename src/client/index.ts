@@ -576,15 +576,7 @@ export class Client {
 				"<small>You may need to sign a new challenge in your wallet</small>",
 				"<button class='cancel-auth-btn btn-tn' aria-label='Cancel authentication'>Cancel</button>"
 			], 600, true);
-
-			waitForElementToExist('.cancel-auth-btn').then((cancelAuthButton: HTMLElement) => {
-				cancelAuthButton.onclick = () => {
-					const err = 'User cancelled authentication';
-					this.ui.showError(err);
-					this.eventSender.emitProofToClient(null, issuer, err);
-					return;
-				}
-			});
+			this.enableAuthCancel(issuer);
 		}
 
 		let AuthType;
@@ -633,6 +625,17 @@ export class Client {
 		}
 
 		return res.data;
+	}
+
+	private enableAuthCancel(issuer): void {
+		waitForElementToExist('.cancel-auth-btn').then((cancelAuthButton: HTMLElement) => {
+			cancelAuthButton.onclick = () => {
+				const err = 'User cancelled authentication';
+				this.ui.showError(err);
+				this.eventSender.emitProofToClient(null, issuer, err);
+				return;
+			}
+		});
 	}
 
 	private async handleWalletRequired(authRequest){

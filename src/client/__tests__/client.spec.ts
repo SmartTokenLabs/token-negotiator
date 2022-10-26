@@ -363,6 +363,27 @@ describe('client spec', () => {
 		}
 	});
 
+	test('tokenNegotiatorClient method showCancelAuthentication', async () => {
+		const issuer = {
+			"collectionID": "devcon",
+			"onChain": false,
+			"title": "Devcon",
+			"image": "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
+			"tokenOrigin": "http://localhost:3002/",
+			"attestationOrigin": "https://attestation.id/",
+			"unEndPoint": "https://crypto-verify.herokuapp.com/use-devcon-ticket",
+			"base64senderPublicKeys": {
+				"6": "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABGMxHraqggr2keTXszIcchTjYjH5WXpDaBOYgXva82mKcGnKgGRORXSmcjWN2suUCMkLQj3UNlZCFWF10wIrrlw="
+			},
+			"base64attestorPubKey": "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ="
+		};
+		const tokenNegotiatorClient = getOffChainConfigClient();
+		const spy = jest.spyOn(tokenNegotiatorClient, 'enableAuthCancel');
+		tokenNegotiatorClient.enableAuthCancel()
+		expect(spy).toHaveBeenCalledTimes(1);
+		
+	});
+
 
 	test('tokenNegotiatorClient method formatCollectionChain chain with uppercase chars', async () => {
 			const tokenNegotiatorClient = new Client({
