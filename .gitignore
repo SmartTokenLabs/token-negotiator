@@ -6,5 +6,3 @@ dist-common-js
 dist/
 bundles
 .idea
-
-token-negotiator-dist/
