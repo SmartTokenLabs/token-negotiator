@@ -25,15 +25,30 @@ describe('select issuers spec', () => {
 		});
 	}
 
-	test('selectIssuers render issuers', () => {
-		console.log("Select issuers test")
+	// test('selectIssuers render list issuers', () => {
+	// 	document.body.innerHTML =  `
+	//     <div class="view-content-tn"></div>
+	//   `
+	// 	const client = getOnChainConfigClient()
+	// 	client.negotiate()
+
+	// 	const viewContainer = document.querySelector(".view-content-tn")
+	// 	const selectIssuers = new SelectIssuers(client, client.getUi(), viewContainer, {options: {issuerHeading: "issuerHeading"}})
+
+	// 	selectIssuers.render()
+
+	// 	expect(selectIssuers.viewContainer.innerHTML).not.toEqual("")
+	// });
+
+	test('selectIssuers generating token list markup', () => {
 		const client = getOnChainConfigClient()
-		const selectIssuers = new SelectIssuers(client, client.getUi(), "<div></div>", "options" )
+		client.negotiate()
+		const selectIssuers = new SelectIssuers(client, client.getUi(), {}, "options" )
 
 		const title = "title"
 		const image = "image"
 		const issuer = "issuer"
 		const tokens = ["1", "2"]
-		selectIssuers.issuerConnectMarkup(title, image, issuer, tokens)
+		expect(selectIssuers.issuerConnectMarkup(title, image, issuer, tokens)).not.toEqual("")
 	});
 })
