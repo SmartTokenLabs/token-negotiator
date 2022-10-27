@@ -365,25 +365,25 @@ describe('client spec', () => {
 
 
 	test('tokenNegotiatorClient method formatCollectionChain chain with uppercase chars', async () => {
-			const tokenNegotiatorClient = new Client({
-				type: "active",
-				issuers: [
-					{ collectionID: "bayc", contract: '0x26472AA24D795AbcB687bddb44d733ef55Ebdf09', chain: 'RINKEBY' }
-				],
-				options: {}
-			});
-			expect(tokenNegotiatorClient.getNoTokenMsg("bayc")).toEqual("");
+		const tokenNegotiatorClient = new Client({
+			type: "active",
+			issuers: [
+				{ collectionID: "bayc", contract: '0x26472AA24D795AbcB687bddb44d733ef55Ebdf09', chain: 'RINKEBY' }
+			],
+			options: {}
 		});
+		expect(tokenNegotiatorClient.getNoTokenMsg("bayc")).toEqual("");
+	});
 	
 	test('tokenNegotiatorClient method formatCollectionChain chain with uppercase chars', async () => {
-			const tokenNegotiatorClient = new Client({
-				type: "active",
-				issuers: [
-					{ noTokenMsg: "please visit the bayc club to purchase a ticket", collectionID: "bayc", contract: '0x26472AA24D795AbcB687bddb44d733ef55Ebdf09', chain: 'RINKEBY' }
-				],
-				options: {}
-			});
-			expect(tokenNegotiatorClient.getNoTokenMsg("bayc")).toEqual("please visit the bayc club to purchase a ticket");
+		const tokenNegotiatorClient = new Client({
+			type: "active",
+			issuers: [
+				{ noTokenMsg: "please visit the bayc club to purchase a ticket", collectionID: "bayc", contract: '0x26472AA24D795AbcB687bddb44d733ef55Ebdf09', chain: 'RINKEBY' }
+			],
+			options: {}
 		});
+		expect(tokenNegotiatorClient.getNoTokenMsg("bayc")).toEqual("please visit the bayc club to purchase a ticket");
+	});
 
 });
