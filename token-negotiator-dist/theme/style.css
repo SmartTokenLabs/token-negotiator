@@ -116,15 +116,12 @@
   color: black;
 }
 
-<<<<<<< HEAD
 .overlay-tn .cancel-auth-btn {
     display: block;
     margin: 10px auto;
     cursor: pointer;
 }
 
-=======
->>>>>>> 0f747f4506388fd91292964cbd18318e27ba483a
 /* dark theme */
 
 .overlay-tn.dark-tn .retry {
@@ -322,12 +319,9 @@
   cursor: pointer;
   z-index: 999;
   position: absolute;
-<<<<<<< HEAD
   display: flex;
   align-items: center;
   justify-content: center;
-=======
->>>>>>> 0f747f4506388fd91292964cbd18318e27ba483a
 }
 
 .overlay-tn.popup-tn.bottom-right .overlay-fab-button-tn {
@@ -456,10 +450,6 @@
 
 .overlay-tn .overlay-content-tn .token-tn {
   display: flex;
-<<<<<<< HEAD
-=======
-  justify-content: space-between;
->>>>>>> 0f747f4506388fd91292964cbd18318e27ba483a
   align-items: center;
   padding: 12px 0;
 }
@@ -488,11 +478,7 @@
 .overlay-tn .overlay-content-tn .token-tn .data-tn {
   width: 175px;
   text-align: left;
-<<<<<<< HEAD
   flex-grow: 1;
-=======
-  height: calc(1.3rem + 1.12rem);
->>>>>>> 0f747f4506388fd91292964cbd18318e27ba483a
 }
 
 .overlay-tn .token-title-tn {
@@ -501,10 +487,7 @@
   padding: 0;
   margin: 0;
   font-weight: 400;
-<<<<<<< HEAD
   overflow-wrap: anywhere;
-=======
->>>>>>> 0f747f4506388fd91292964cbd18318e27ba483a
 }
 
 .overlay-tn .overlay-content-tn .token-tn .detail-tn {
@@ -1011,7 +994,6 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
 }
 
 .modal-close-tn {
-<<<<<<< HEAD
     color: #000;
     float: right;
     font-size: 24px;
@@ -1025,12 +1007,6 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
     margin-bottom: 5px;
     margin-left: 2px;
     box-sizing: border-box;
-=======
-  color: #ffffff;
-  float: right;
-  font-size: 50px;
-  font-weight: bold;
->>>>>>> 0f747f4506388fd91292964cbd18318e27ba483a
 }
 
 .modal-close-tn:hover,
