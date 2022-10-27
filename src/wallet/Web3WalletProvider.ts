@@ -60,6 +60,18 @@ export class Web3WalletProvider {
 			return null;
 		}
 	}
+	
+	emitNetworkChange(chainId: string) {
+
+		if(chainId) {
+
+			this.client.eventSender.emitNetworkChange(chainId);
+
+			return chainId;
+			
+		}
+
+	}
 
 	deleteConnections(){
 		this.connections = {};
@@ -167,8 +179,6 @@ export class Web3WalletProvider {
 			if (curAccount === accounts[0])
 				return;
 
-			console.log("Account changed: " + accounts[0]);
-
 			delete this.connections[curAccount.toLowerCase()];
 
 			curAccount = accounts[0];
@@ -181,6 +191,17 @@ export class Web3WalletProvider {
 
 			this.client.getTokenStore().clearCachedTokens();
 			this.client.enrichTokenLookupDataOnChainTokens();
+		});
+
+		// @ts-ignore
+		provider.provider.on("chainChanged", (_chainId: any) => {
+			
+			this.registerNewWalletAddress(accounts[0], _chainId, providerName, provider);
+
+			this.saveConnections();
+
+			this.emitNetworkChange(_chainId);
+			
 		});
 
 		return accounts[0];
@@ -247,6 +268,14 @@ export class Web3WalletProvider {
 		return this.registerProvider(provider, "Torus");
 
 	}
+
+	// TODO Solana add logic for account changes.
+	// window.solana.on('accountChanged', (publicKey) => {
+	// 	if (publicKey) {
+	// 			// Set new public key and continue as usual
+	// 			console.log(`Switched to account ${publicKey.toBase58()}`);
+	// 	} 
+	// });
 
 	async Phantom () {
 

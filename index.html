@@ -146,9 +146,16 @@
             window.negotiator.on("tokens-selected", (tokens) => {
                 console.log(tokens);
             });
+            window.negotiator.on("tokens-selected", (tokens) => {
+                console.log(tokens);
+            });
             window.negotiator.on("connected-wallet", (wallet) => {
                 console.log('connected wallet', wallet);
                 window.testingWallet = wallet;
+            });
+            window.negotiator.on("network-change", (chain) => {
+                console.log('network change', chain);
+                window.testingChain = chain;
             });
             window.negotiator.on("disconnected-wallet", () => {
                 console.log('wallet successfully disconnected');

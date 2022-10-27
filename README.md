@@ -331,7 +331,7 @@ Authenticating ownership of the token will provide a proof with a limited expiry
 
 ````
 
-### Utilise the wallet provider instance
+### Utilise the wallet provider instance hook
 
 Once connected to Token Negotiator, the wallet instance can be used.
 
@@ -351,7 +351,7 @@ Once connected to Token Negotiator, the wallet instance can be used.
 
 ````
 
-### Wallet disconnection
+### Wallet disconnection hook
 
 This event is triggered when the user disconnects their wallet from Token Negotiator.
 
@@ -359,6 +359,22 @@ This event is triggered when the user disconnects their wallet from Token Negoti
 
   negotiator.on('disconnected-wallet', () => {
     // handle the wallet disconnection event as required by your application
+    // { ... }
+  });
+
+````
+
+### Wallet network change hook
+
+This event is triggered when the user changes their current connected wallets network
+
+````javascript
+
+  /**
+  * @returns {String|Number} chain
+  */
+  negotiator.on('network-change', (chain) => {
+    // handle the wallet network change as required by your application
     // { ... }
   });
 
