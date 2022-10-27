@@ -56,7 +56,7 @@ describe('wallet spec', () => {
 		web3WalletProvider.emitSavedConnection('0x1263b90F4e1DFe89A8f9E623FF57adb252851fC3');
 	});
 	
-	test('web3WalletProvider emit emit Network Change with data', async () => {
+	test('web3WalletProvider emit Network Change with data', async () => {
 		const walletConnectProvider = await import("../WalletConnectProvider");
 		const walletConnect = await walletConnectProvider.getWalletConnectProviderInstance();
 		web3WalletProvider.registerNewWalletAddress('0x1263b90F4e1DFe89A8f9E623FF57adb252851fC3'.toLocaleLowerCase(), '1', 'MetaMask', walletConnect);
