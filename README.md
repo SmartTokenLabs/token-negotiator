@@ -364,7 +364,7 @@ This event is triggered when the user disconnects their wallet from Token Negoti
 
 ````
 
-### Wallet network change hook
+### Wallet network change hook (evm wallets only at this time)
 
 This event is triggered when the user changes their current connected wallets network
 
