@@ -269,14 +269,6 @@ export class Web3WalletProvider {
 
 	}
 
-	// TODO Solana add logic for account changes.
-	// window.solana.on('accountChanged', (publicKey) => {
-	// 	if (publicKey) {
-	// 			// Set new public key and continue as usual
-	// 			console.log(`Switched to account ${publicKey.toBase58()}`);
-	// 	} 
-	// });
-
 	async Phantom () {
 
 		logger(2, 'connect Phantom');
