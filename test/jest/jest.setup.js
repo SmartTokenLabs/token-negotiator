@@ -7,6 +7,8 @@ jest.spyOn(global.console, 'error').mockImplementation((message) => {
 
 import crypto from "crypto";
 
+import "jest-canvas-mock";
+
 Object.defineProperty(global.self, "crypto", {
 	value: {
 		subtle: crypto.webcrypto.subtle,

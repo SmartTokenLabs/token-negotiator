@@ -8,8 +8,8 @@ describe('select issuers spec', () => {
 		return new Client({
 			type: "active",
 			issuers: [
-				{ onChain:true, collectionID: "bayc", contract: '0x26472AA24D795AbcB687bddb44d733ef55Ebdf09', chain: 'rinkeby' },
-				{ onChain:true, collectionID: "mayc", contract: '0x2F6F12b68165aBb483484927919D0d3fE450462E', chain: 'rinkeby' }
+				{ onChain:true, collectionID: "bayc", contract: '0x26472AA24D795AbcB687bddb44d733ef55Ebdf09', chain: 'rinkeby', blockchain: 'evm' },
+				{ onChain:true, collectionID: "mayc", contract: '0x2F6F12b68165aBb483484927919D0d3fE450462E', chain: 'rinkeby', blockchain: 'evm' }
 			],
 			options: {}
 		});
@@ -25,20 +25,25 @@ describe('select issuers spec', () => {
 		});
 	}
 
-	// test('selectIssuers render list issuers', () => {
-	// 	document.body.innerHTML =  `
-	//     <div class="view-content-tn"></div>
-	//   `
-	// 	const client = getOnChainConfigClient()
-	// 	client.negotiate()
+	test('selectIssuers render list issuers', async () => {
+		document.body.innerHTML =  `
+    <div class="overlay-tn">
+    </div>
+	  `
+		const client = getOnChainConfigClient()
+		client.negotiate()
+		client.getUi().initialize()
 
-	// 	const viewContainer = document.querySelector(".view-content-tn")
-	// 	const selectIssuers = new SelectIssuers(client, client.getUi(), viewContainer, {options: {issuerHeading: "issuerHeading"}})
+		setTimeout(() => {
 
-	// 	selectIssuers.render()
+			const selectIssuers = new SelectIssuers(client, client.getUi(), client.getUi().viewContainer, {options: {issuerHeading: "issuerHeading"}})
 
-	// 	expect(selectIssuers.viewContainer.innerHTML).not.toEqual("")
-	// });
+			selectIssuers.render()
+
+			expect(selectIssuers.viewContainer.innerHTML).not.toEqual("")
+		}, 0)
+		
+	});
 
 	test('selectIssuers generating token list markup', () => {
 		const client = getOnChainConfigClient()
