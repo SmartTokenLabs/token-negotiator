@@ -150,8 +150,12 @@ export class SelectIssuers extends AbstractView {
               </div>
               <button aria-label="connect with the token issuer ${issuer}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" 
 					class="connect-btn-tn"
-					style="${(tokens?.length ? "display: none;" : "")} ${this.client.issuersLoaded === true ? "" : "visibility: hidden"}"
-					data-issuer="${issuer}">Load</button>
+					style="${(tokens?.length ? "display: none;" : "")}"
+					data-issuer="${issuer}"
+					${this.client.issuersLoaded === true ? "" : "disabled"}
+				>
+				${this.client.issuersLoaded === true ? "Load" : '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'}
+			  </button>
               <button aria-label="tokens available from token issuer ${issuer}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" 
               			class="tokens-btn-tn" style="${(tokens?.length ? "display: block;" : "")}" data-issuer="${issuer}">${tokens?.length} token${(tokens?.length ? "s" : "")} available</button>
             </li>
