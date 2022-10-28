@@ -15,7 +15,8 @@ import {SelectWallet} from "./views/select-wallet";
 import {SelectIssuers} from "./views/select-issuers";
 import Web3WalletProvider from '../wallet/Web3WalletProvider';
 import {LocalOutlet} from "../outlet/localOutlet";
-import {OutletInterface} from "../outlet";
+import {Outlet, OutletInterface} from "../outlet";
+import { isBrave, isSafari } from "../utils/support/getBrowserData";
 
 if(typeof window !== "undefined") window.tn = { version: "2.2.0-dc.11" };
 
@@ -37,6 +38,7 @@ const defaultConfig: NegotiationInterface = {
 	issuers: [],
 	uiOptions: {
 		uiType: "popup",
+		// value ".overlay-tn" hardcoded in ui.ts
 		containerElement: ".overlay-tn",
 		openingHeading: "Validate your token ownership for access",
 		issuerHeading: "Detected tokens",
@@ -96,7 +98,6 @@ export class Client {
 		[UIUpdateEventType.ISSUERS_LOADING]: undefined,
 		[UIUpdateEventType.ISSUERS_LOADED]: undefined
 	};
-
 
 	static getKey(file: string){
 		return  Authenticator.decodePublicKey(file);
@@ -276,7 +277,7 @@ export class Client {
 
 			let err = this.config.unSupportedUserAgent[type].errorMessage;
 
-			if (this.config.type === 'active') {
+			if (this.activeNegotiateRequired()) {
 				this.ui = new Ui(this.config.uiOptions, this);
 				this.ui.initialize();
 				this.ui.openOverlay();
@@ -289,6 +290,10 @@ export class Client {
 		}
 	}
 
+	private activeNegotiateRequired(): boolean {
+		return this.config.type === "active" || ((isSafari() || isBrave()) && !this.onlySameOrigin());
+	}
+
 	public getNoTokenMsg (collectionID: string) {
 		const store = this.getTokenStore().getCurrentIssuers();
 		const collectionNoTokenMsg = store[collectionID]?.noTokenMsg;
@@ -296,6 +301,14 @@ export class Client {
 	}
 
 	async negotiate(issuers?: (OnChainTokenConfig | OffChainTokenConfig)[], openPopup = false) {
+
+		let currentIssuer = this.getOutletConfigForCurrentOrigin();
+		if (currentIssuer){
+			logger(2, "Sync Outlet fired in Client to read MagicLink before negotiate().");
+			let outlet = new Outlet(currentIssuer, true);
+			await outlet.readMagicLink();
+			outlet = null;
+		}
 
 		try {
 			this.checkUserAgentSupport("full");
@@ -312,7 +325,7 @@ export class Client {
 
 		requiredParams(Object.keys(this.tokenStore.getCurrentIssuers()).length, "issuers are missing.");
 
-		if (this.config.type === "active") {
+		if (this.activeNegotiateRequired()) {
 
 			this.issuersLoaded = !this.tokenStore.hasUnloadedIssuers();
 
@@ -690,7 +703,7 @@ export class Client {
 
 	/* checkInternetConnectivity(): void {
 		if (!navigator.onLine) {
-			if (this.config.type === 'active') {
+			if (this.activeNegotiateRequired()) {
 				setTimeout(() => {
 					this.ui.showError(this.config.noInternetErrorMessage ?? NO_INTERNET_ERROR_MESSAGE);
 				}, 1000);
@@ -717,8 +730,90 @@ export class Client {
 		throw new Error(res.errors.join("\n"));
 	}
 
+	getOutletConfigForCurrentOrigin(){
+		let allIssuers = this.tokenStore.getCurrentIssuers();
+		let currentIssuers = [];
+
+		Object.keys(allIssuers).forEach(key => {
+			let issuerConfig = allIssuers[key] as OffChainTokenConfig;
+
+			try {
+
+				if (
+					(new URL(issuerConfig.tokenOrigin)).origin === document.location.origin 
+					// should not be 2 tokens with same origin
+					// && issuerConfig.collectionID == issuer
+				){
+					currentIssuers.push(issuerConfig);
+				} 
+			} catch (err) {
+				logger(2,err);
+				console.log("issuer config error");
+			}
+		})
+
+		if (currentIssuers.length){
+			return currentIssuers[0];
+		}
+		return false;
+	}
+
+	onlySameOrigin(){
+		let allIssuers = this.tokenStore.getCurrentIssuers();
+		let onlySameOriginFlag = true;
+
+		Object.keys(allIssuers).forEach(key => {
+			let issuerConfig = allIssuers[key] as OffChainTokenConfig;
+			let thisOneSameOrigin = false;
+			try {
+				if (
+					(new URL(issuerConfig.tokenOrigin)).origin === document.location.origin 
+				){
+					thisOneSameOrigin = true;
+				} 
+			} catch (err) {
+				logger(2,err);
+				console.log("issuer config error");
+			}
+
+			// if any issuerConfig missing tokenOrigin or something wrong then skip sameOrigin flow
+			if (!thisOneSameOrigin) {
+				onlySameOriginFlag = false;
+			}
+		})
+
+		return onlySameOriginFlag;
+	}
+
 	on(type: TokenNegotiatorEvents, callback?: any, data?: any) {
 		requiredParams(type, "Event type is not defined");
+
+		if(type == 'token-proof') {
+			logger(2, "token-proof listener atteched. check URL HASH for proof callbacks.");
+			let params =
+			window.location.hash.length > 1
+			? "?" + window.location.hash.substring(1)
+			: window.location.search;
+			let urlParams = new URLSearchParams(params);
+			
+			const action = urlParams.get("action");
+						
+			if (action == "proof-callback") {
+				this.readProofCallback();
+			} else if (action == "email-callback") {
+
+				let currentIssuer = this.getOutletConfigForCurrentOrigin();
+
+				if (currentIssuer){
+					logger(2, "Outlet fired to parse URL hash params.");
+
+					let outlet = new Outlet(currentIssuer, true);
+					outlet.pageOnLoadEventHandler().then(()=>{
+						outlet = null;
+					});
+				}
+			}
+		}
 
 		if (callback) {
 			// assign callback reference to web developers event e.g. negotiator.on('tokens', (tokensForWebPage) => { ... }));
