@@ -1,6 +1,5 @@
 import {AbstractAuthentication, AuthenticationMethod, AuthenticationResult} from "./abstractAuthentication";
 import {AuthenticateInterface, OffChainTokenConfig, OnChainTokenConfig} from "../interface";
-import {EthereumKeyLinkingAttestation} from "@tokenscript/attestation/dist/safe-connect/EthereumKeyLinkingAttestation";
 import {SafeConnectProvider} from "../../wallet/SafeConnectProvider";
 import {ProofRequestInterface, SafeConnect} from "./util/SafeConnect";
 

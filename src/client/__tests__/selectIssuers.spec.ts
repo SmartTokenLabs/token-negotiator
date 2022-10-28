@@ -49,11 +49,11 @@ describe('select issuers spec', () => {
 		const client = getOnChainConfigClient()
 		client.negotiate()
 		const selectIssuers = new SelectIssuers(client, client.getUi(), {}, "options" )
-
-		const title = "title"
-		const image = "image"
-		const issuer = "issuer"
-		const tokens = ["1", "2"]
-		expect(selectIssuers.issuerConnectMarkup(title, image, issuer, tokens)).not.toEqual("")
+		const title = "title";
+		const image = "image";
+		const issuer = "issuer";
+		const tokens = ["1", "2"];
+		expect(selectIssuers.issuerConnectMarkup(title, image, issuer, tokens).replace(/\s/g, "")).toBe("<liclass=\"issuer-connect-banner-tn\"data-issuer=\"issuer\"role=\"menuitem\"><divtabindex=\"0\"style=\"display:flex;align-items:center;\"><divclass=\"img-container-tnissuer-icon-tnshimmer-tn\"data-image-src=\"image\"data-token-title=\"title\"></div><pclass=\"issuer-connect-title\">title</p></div><buttonaria-label=\"connectwiththetokenissuerissuer\"aria-haspopup=\"true\"aria-expanded=\"false\"aria-controls=\"token-list-container-tn\"class=\"connect-btn-tn\"style=\"display:none;\"data-issuer=\"issuer\"disabled><divclass=\"lds-ellipsislds-ellipsis-sm\"style=\"\"><div></div><div></div><div></div><div></div></div></button><buttonaria-label=\"tokensavailablefromtokenissuerissuer\"aria-haspopup=\"true\"aria-expanded=\"false\"aria-controls=\"token-list-container-tn\"class=\"tokens-btn-tn\"style=\"display:block;\"data-issuer=\"issuer\">2tokensavailable</button></li>");
 	});
+	
 })

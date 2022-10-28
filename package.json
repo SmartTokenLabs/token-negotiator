@@ -60,7 +60,6 @@
     "file-loader": "^6.2.0",
     "https-browserify": "^1.0.0",
     "jest": "^28.1.0",
-    "jest-canvas-mock": "^2.4.0",
     "jest-environment-jsdom": "^28.1.0",
     "jest-junit": "^14.0.0",
     "os-browserify": "^0.3.0",
