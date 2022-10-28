@@ -641,7 +641,6 @@ export class Client {
 				const err = 'User cancelled authentication';
 				this.ui.showError(err);
 				this.eventSender.emitProofToClient(null, issuer, err);
-				return;
 			}
 		});
 	}

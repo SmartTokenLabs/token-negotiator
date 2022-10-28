@@ -384,7 +384,25 @@ describe('client spec', () => {
 		const spy = jest.spyOn(tokenNegotiatorClient, 'enableAuthCancel');
 		tokenNegotiatorClient.enableAuthCancel()
 		expect(spy).toHaveBeenCalledTimes(1);
-		
+	});
+
+	test('tokenNegotiatorClient method showCancelAuthentication', async () => {
+		new Client({
+			type: "active",
+			issuers: [
+				{
+					collectionID: 'devcon', 
+					title: "Devcon",
+					onChain: false,
+					tokenOrigin: "http://localhost:3002/",
+					attestationOrigin: "https://stage.attestation.id/",
+					unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
+					image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
+					base64senderPublicKey: "",
+					base64attestorPubKey: ""
+				}
+			]
+		})['enableAuthCancel']();
 	});
 
 
