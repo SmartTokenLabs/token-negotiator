@@ -116,6 +116,12 @@
   color: black;
 }
 
+.overlay-tn .cancel-auth-btn {
+    display: block;
+    margin: 10px auto;
+    cursor: pointer;
+}
+
 /* dark theme */
 
 .overlay-tn.dark-tn .retry {
