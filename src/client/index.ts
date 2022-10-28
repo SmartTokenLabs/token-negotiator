@@ -635,7 +635,7 @@ export class Client {
 		return res.data;
 	}
 
-	private enableAuthCancel(issuer): void {
+	public enableAuthCancel(issuer): void {
 		waitForElementToExist('.cancel-auth-btn').then((cancelAuthButton: HTMLElement) => {
 			cancelAuthButton.onclick = () => {
 				const err = 'User cancelled authentication';
