@@ -788,7 +788,7 @@ export class Client {
 	on(type: TokenNegotiatorEvents, callback?: any, data?: any) {
 		requiredParams(type, "Event type is not defined");
 
-		if(type == 'token-proof') {
+		if(type === 'token-proof') {
 			logger(2, "token-proof listener atteched. check URL HASH for proof callbacks.");
 			let params =
 			window.location.hash.length > 1
@@ -798,9 +798,9 @@ export class Client {
 			
 			const action = urlParams.get("action");
 						
-			if (action == "proof-callback") {
+			if (action === "proof-callback") {
 				this.readProofCallback();
-			} else if (action == "email-callback") {
+			} else if (action === "email-callback") {
 
 				let currentIssuer = this.getOutletConfigForCurrentOrigin();
 
