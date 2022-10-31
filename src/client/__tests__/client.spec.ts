@@ -1,5 +1,8 @@
 // @ts-nocheck
+import { AbstractAuthentication } from "../auth/abstractAuthentication";
+import { AttestedAddress } from "../auth/attestedAddress";
 import { Client } from "../index";
+import { TicketZKProof } from '../auth/ticketZKProof';
 
 function getOffChainConfigClient() {
 	return new Client({
@@ -137,7 +140,7 @@ describe('client spec', () => {
 
 	test('tokenNegotiatorClient method getWalletProvider', async () => {
 		const tokenNegotiatorClient = getOffChainConfigClient();
-		const {Web3WalletProvider} = await import("../../wallet/Web3WalletProvider");
+		const { Web3WalletProvider } = await import("../../wallet/Web3WalletProvider");
 		expect(await tokenNegotiatorClient.getWalletProvider()).toStrictEqual(new Web3WalletProvider(tokenNegotiatorClient, tokenNegotiatorClient.config.safeConnectOptions));
 	});
 
@@ -156,7 +159,7 @@ describe('client spec', () => {
 		const tokenNegotiatorClient = getOnChainConfigClient();
 		try {
 			await tokenNegotiatorClient.enrichTokenLookupDataOnChainTokens();
-		} catch(err) {
+		} catch (err) {
 			expect(err).toEqual(new Error('HTTP error.'));
 		}
 		expect(tokenNegotiatorClient.getTokenStore().getCurrentIssuers(true)).toBeDefined();
@@ -165,7 +168,7 @@ describe('client spec', () => {
 	test('tokenNegotiatorClient method negotiate', async () => {
 		let offChainIssuer = [
 			{
-				collectionID: 'devcon', 
+				collectionID: 'devcon',
 				title: "Devcon",
 				onChain: false,
 				tokenOrigin: "http://localhost:3002/",
@@ -222,7 +225,7 @@ describe('client spec', () => {
 	});
 
 	test('tokenNegotiatorClient method setPassiveNegotiationWebTokens', async () => {
-		const tokenNegotiatorClient = getOffChainConfigClient();		
+		const tokenNegotiatorClient = getOffChainConfigClient();
 		await tokenNegotiatorClient.setPassiveNegotiationWebTokens();
 		expect(tokenNegotiatorClient.getTokenStore().getIssuerTokens()).toBeDefined();
 	});
@@ -308,8 +311,8 @@ describe('client spec', () => {
 	});
   
 	test('tokenNegotiatorClient method updateSelectedTokens', async () => {
-		const tokenNegotiatorClient = getOffChainConfigClient(); 
-		tokenNegotiatorClient.updateSelectedTokens({'devcon': { "a": 'true' }});
+		const tokenNegotiatorClient = getOffChainConfigClient();
+		tokenNegotiatorClient.updateSelectedTokens({ 'devcon': { "a": 'true' } });
 	});
 	
 	test('tokenNegotiatorClient method formatCollectionID collection with uppercase chars and spaces', async () => {
@@ -350,11 +353,11 @@ describe('client spec', () => {
 			"base64attestorPubKey": "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ="
 		};
 		const tokenNegotiatorClient = getOffChainConfigClient();
-		tokenNegotiatorClient.getTokenStore().setTokens("devcon", [{'devcon': { "a": 'true' }}]);
+		tokenNegotiatorClient.getTokenStore().setTokens("devcon", [{ 'devcon': { "a": 'true' } }]);
 		
 		const authRequest = {
 			issuer: issuer,
-			unsignedToken: {'devcon': { "a": 'true' }},
+			unsignedToken: { 'devcon': { "a": 'true' } },
 		};
 		try {
 			await tokenNegotiatorClient.authenticate(authRequest);
@@ -363,6 +366,25 @@ describe('client spec', () => {
 		}
 	});
 
+	test('tokenNegotiatorClient method showCancelAuthentication', async () => {
+		const issuer = {
+			"collectionID": "devcon",
+			"onChain": false,
+			"title": "Devcon",
+			"image": "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
+			"tokenOrigin": "http://localhost:3002/",
+			"attestationOrigin": "https://attestation.id/",
+			"unEndPoint": "https://crypto-verify.herokuapp.com/use-devcon-ticket",
+			"base64senderPublicKeys": {
+				"6": "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABGMxHraqggr2keTXszIcchTjYjH5WXpDaBOYgXva82mKcGnKgGRORXSmcjWN2suUCMkLQj3UNlZCFWF10wIrrlw="
+			},
+			"base64attestorPubKey": "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ="
+		};
+		const tokenNegotiatorClient = getOffChainConfigClient();
+		const spy = jest.spyOn(tokenNegotiatorClient, 'enableAuthCancel');
+		tokenNegotiatorClient.enableAuthCancel('devcon');
+		expect(spy).toHaveBeenCalledTimes(1);
+	});
 
 	test('tokenNegotiatorClient method formatCollectionChain chain with uppercase chars', async () => {
 		const tokenNegotiatorClient = new Client({
@@ -385,5 +407,63 @@ describe('client spec', () => {
 		});
 		expect(tokenNegotiatorClient.getNoTokenMsg("bayc")).toEqual("please visit the bayc club to purchase a ticket");
 	});
+
+	test('tokenNegotiatorClient abstractAuth saveProof', async () => {
+		const abstractAuth = new AbstractAuthentication();
+		const spyLoStoRemove = jest.spyOn(localStorage, 'setItem');
+		await abstractAuth.saveProof('tn-proof', null);
+		expect(spyLoStoRemove).toHaveBeenCalled();
+	});
+
+	test('tokenNegotiatorClient abstractAuth getSavedProof', () => {
+		const abstractAuth = new AbstractAuthentication();
+		jest.spyOn(abstractAuth, 'getSavedProof');
+		expect(abstractAuth.getSavedProof('tn-proof')).toBe(null);
+	});
+
+	test('tokenNegotiatorClient abstractAuth getFullKey', () => {
+		const abstractAuth = new AbstractAuthentication();
+		abstractAuth.TYPE = 'address_attest'
+		jest.spyOn(abstractAuth, 'getFullKey');
+		expect(abstractAuth.getFullKey('TN-proof')).toBe('address_attest-tn-proof');
+	});
+
+	test('tokenNegotiatorClient abstractAuth deletePRoof', async () => {
+		const abstractAuth = new AbstractAuthentication();
+		const spyLoStoRemove = jest.spyOn(localStorage, 'setItem');
+		await abstractAuth.deleteProof('tn-proof');
+		expect(spyLoStoRemove).toHaveBeenCalled();
+	});
+
+	test('tokenNegotiatorClient ticketZKProof', async () => {
+		const ticketZKProof = new TicketZKProof();
+		const issuer = {
+			"collectionID": "devcon",
+			"onChain": false,
+			"title": "Devcon",
+			"image": "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
+			"tokenOrigin": "http://localhost:3002/",
+			"attestationOrigin": "https://attestation.id/",
+			"unEndPoint": "https://crypto-verify.herokuapp.com/use-devcon-ticket",
+			"base64senderPublicKeys": {
+				"6": "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABGMxHraqggr2keTXszIcchTjYjH5WXpDaBOYgXva82mKcGnKgGRORXSmcjWN2suUCMkLQj3UNlZCFWF10wIrrlw="
+			},
+			"base64attestorPubKey": "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ="
+		};
+		const tokenNegotiatorClient = getOnChainConfigClient();
+		
+		const authRequest = {
+			issuer: issuer,
+			unsignedToken: { 'devcon': { "a": 'true' } },
+		};
+		jest.spyOn(ticketZKProof, "getTokenProof");
+		ticketZKProof.client = tokenNegotiatorClient;
+		try {
+			await ticketZKProof.getTokenProof(issuer, tokenNegotiatorClient, authRequest);
+		} catch (err) {
+			expect(err).toEqual(new Error("WALLET_REQUIRED"));
+		}
+	})
+
 
 });
