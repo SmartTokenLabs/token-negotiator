@@ -60,8 +60,6 @@ export interface NegotiationInterface {
     noInternetErrorMessage?: string;
 }
 
-// TODO: Implement tokenId - each issuer token should have a unique ID (tokenId for instance).
-// webster should not be required to pass the whole object as it can lead to hard to solve errors for webster.
 export interface AuthenticateInterface {
     issuer: any;
     tokenId?: number | string;

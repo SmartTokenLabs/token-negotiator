@@ -21,7 +21,7 @@ export class Start extends AbstractView {
 	}
 
 	async goToWalletSelection() {
-
+	
 		// TODO: Enable skipping of start screen when wallet is already connected?
 		this.ui.showLoaderDelayed(["Initializing wallet.."], 500);
 

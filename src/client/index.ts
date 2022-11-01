@@ -31,7 +31,6 @@ declare global {
 }
 
 const NOT_SUPPORTED_ERROR = "This browser is not supported. Please try using Chrome, Edge, FireFox or Safari.";
-const NO_INTERNET_ERROR_MESSAGE = "No internet connection. Please check your internet connection and try again";
 
 const defaultConfig: NegotiationInterface = {
 	type: "active",
@@ -329,7 +328,6 @@ export class Client {
 			await this.passiveNegotiationStrategy();
 		}
 
-		// window.addEventListener('offline', () => this.checkInternetConnectivity());
 	}
 
 	activeNegotiationStrategy(openPopup: boolean) {
