@@ -687,9 +687,6 @@ export class Client {
 			this.on("token-proof", null, { data, issuer, error });
 		},
 		emitErrorToClient: (error: Error, issuer = "none") => {
-
-			// this.checkInternetConnectivity();
-
 			this.on("error", null, {error, issuer});
 		},
 		emitConnectedWalletInstance: (connectedWallet: any) => {
@@ -697,19 +694,11 @@ export class Client {
 		},
 		emitDisconnectedWalletInstance: () => {
 			this.on("disconnected-wallet", null, null);
+		},
+		emitNetworkChange: (chain: any) => {
+			this.on("network-change", null, chain);
 		}
 	};
-
-	/* checkInternetConnectivity(): void {
-		if (!navigator.onLine) {
-			if (this.config.type === 'active') {
-				setTimeout(() => {
-					this.ui.showError(this.config.noInternetErrorMessage ?? NO_INTERNET_ERROR_MESSAGE);
-				}, 1000);
-			}
-			throw new Error(this.config.noInternetErrorMessage ?? NO_INTERNET_ERROR_MESSAGE)
-		}
-	}*/
 
 	async addTokenViaMagicLink(magicLink: any) {
 		let url = new URL(magicLink);
