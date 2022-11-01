@@ -289,18 +289,13 @@ describe('client spec', () => {
 		}).toThrow('Event type is not defined');
 	});
   
-	/* test('tokenNegotiatorClient method checkPublicAddressMatch to throw error', async () => {
-		const tokenNegotiatorClient = getOffChainConfigClient();
-		return tokenNegotiatorClient.getAddressChallenge(Challenge.DEFAULT_ENDPOINT).catch(err => {
-			expect(err).toEqual(new Error("MetaMask is not available. Please check the extension is supported and active."));
-		});
-	});*/
-
+	// TODO include logic to detect the event recieved from triggering hooks
 	test('tokenNegotiatorClient method eventSender event hook functions', async () => {
 		const tokenNegotiatorClient = getOffChainConfigClient();
 		tokenNegotiatorClient.eventSender.emitAllTokensToClient([]);
 		tokenNegotiatorClient.eventSender.emitSelectedTokensToClient();
 		tokenNegotiatorClient.eventSender.emitProofToClient('test', 'devcon');
+		tokenNegotiatorClient.eventSender.emitNetworkChange('0x1');
 	});
   
 	test('tokenNegotiatorClient method connectTokenIssuer with unknown issuer', async () => {

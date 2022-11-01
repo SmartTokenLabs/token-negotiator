@@ -692,6 +692,9 @@ export class Client {
 		},
 		emitDisconnectedWalletInstance: () => {
 			this.on("disconnected-wallet", null, null);
+		},
+		emitNetworkChange: (chain: any) => {
+			this.on("network-change", null, chain);
 		}
 	};
 

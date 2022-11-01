@@ -60,6 +60,18 @@ export class Web3WalletProvider {
 			return null;
 		}
 	}
+	
+	emitNetworkChange(chainId: string) {
+
+		if(chainId) {
+
+			this.client.eventSender.emitNetworkChange(chainId);
+
+			return chainId;
+			
+		}
+
+	}
 
 	deleteConnections(){
 		this.connections = {};
@@ -167,8 +179,6 @@ export class Web3WalletProvider {
 			if (curAccount === accounts[0])
 				return;
 
-			console.log("Account changed: " + accounts[0]);
-
 			delete this.connections[curAccount.toLowerCase()];
 
 			curAccount = accounts[0];
@@ -181,6 +191,17 @@ export class Web3WalletProvider {
 
 			this.client.getTokenStore().clearCachedTokens();
 			this.client.enrichTokenLookupDataOnChainTokens();
+		});
+
+		// @ts-ignore
+		provider.provider.on("chainChanged", (_chainId: any) => {
+			
+			this.registerNewWalletAddress(accounts[0], _chainId, providerName, provider);
+
+			this.saveConnections();
+
+			this.emitNetworkChange(_chainId);
+			
 		});
 
 		return accounts[0];
