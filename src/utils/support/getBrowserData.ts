@@ -9,7 +9,7 @@ export const getBrowserData = () => {
 	const isEdge = UA && UA.indexOf("edg/") > 0;
 	const isChrome = UA && /chrome\/\d+/.test(UA) && !isEdge;
 	const isPhantomJS = UA && /phantomjs/.test(UA);
-	const isFireFox = UA && /firefox\/\d+/.test(UA);
+	const isFireFox = UA && /firefox|fxios\/\d+/.test(UA);
 	const isSafari = isMacSafari() || isIosSafari();
 	const isBrave = !!window.navigator["brave"];
 

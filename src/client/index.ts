@@ -16,7 +16,7 @@ import {SelectIssuers} from "./views/select-issuers";
 import Web3WalletProvider from '../wallet/Web3WalletProvider';
 import {LocalOutlet} from "../outlet/localOutlet";
 import {Outlet, OutletInterface} from "../outlet";
-import { isBrave, isSafari } from "../utils/support/getBrowserData";
+import { isBrave, isSafari, getBrowserData } from "../utils/support/getBrowserData";
 
 if(typeof window !== "undefined") window.tn = { version: "2.2.0-dc.11" };
 
@@ -291,7 +291,17 @@ export class Client {
 	}
 
 	private activeNegotiateRequired(): boolean {
-		return this.config.type === "active" || ((isSafari() || isBrave()) && !this.onlySameOrigin());
+		let osAndBrowser = getBrowserData();
+		return (
+			this.config.type === "active" 
+			|| (
+				// any Safari browser and Brave and iOSFirefox require click 
+				// to open new tab to get tokens, so passive flow will not work,
+				// fallback to active
+				(isSafari() || isBrave() || (osAndBrowser.fireFox && osAndBrowser.iOS) ) 
+				&& !this.onlySameOrigin()
+				)
+		);
 	}
 
 	public getNoTokenMsg (collectionID: string) {
