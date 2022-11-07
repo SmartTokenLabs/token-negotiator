@@ -204,7 +204,11 @@ export class Outlet {
 						this.urlParams
 					);
 
-					await this.whitelistCheck(evtid, "write");
+					// Temp fix for coscon
+					// TODO: Fix - when magic link is accessed via qq email (https://wx.mail.qq.com/) the permission dialog is erroneously shown
+					// 		 This is likely since referrer and window.opener is set. We need another way of determining whether the page is being accessed directly or via a third party integration.
+					//		 Or better still, remove the ability to add magic links via third party iframe/tab - this is never used in production.
+					// await this.whitelistCheck(evtid, "write");
 
 					storeMagicURL(tokens, itemStorageKey);
 
