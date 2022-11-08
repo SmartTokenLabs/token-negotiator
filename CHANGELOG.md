@@ -1,5 +1,8 @@
 > Description
 
+This release introduces enhancements to impove the user experience that can be created with Token Negotiator
+for both on and off chain tokens.
+
 ### Upgrade Steps
 
 * Update NPM package to version 2.2.0
