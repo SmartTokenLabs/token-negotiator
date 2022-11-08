@@ -15,9 +15,9 @@ for both on and off chain tokens.
 
 * RPC end points added for all supported networks
 * UX smooth loading sequence auto load animation of tokens  
-* UX use evm config when config network is not found
-* UX cancel authentication process button
-* UX modal with user options added for off chain flow
+* UX use evm config when developer config network is not found for on chain tokens
+* UX cancel authentication process button (signing of wallet)
+* UX modal with user options added for off chain flow (connecting with cross origin site to learn tokens)
 * UX hide toggle switches to simplify the active flow
 * White listing functionality added for off chain flow
 * New library hooks for wallet network change
