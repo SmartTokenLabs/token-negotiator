@@ -26,6 +26,7 @@ for both on and off chain tokens.
 ### Bug Fixes
 
 * CSS vertical alignment for multi-line token title
+* Safari token title fix
 * Code Quality, non functionality changing updates made
 * Off chain attestation browser support fixes
 
