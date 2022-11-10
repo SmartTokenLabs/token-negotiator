@@ -413,7 +413,7 @@ export class Client {
 				// logger(2,err);
 				// console.log("popup error");
 				// this.eventSender.emitErrorToClient(err, issuer);
-				errorHandler('error', 'error', this.eventSender.emitErrorToClient(err, issuer), null, true, true);
+				errorHandler('popup error', 'error', this.eventSender.emitErrorToClient(err, issuer), null, true, false);
 				continue;
 			}
 
