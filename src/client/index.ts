@@ -16,7 +16,7 @@ import {SelectIssuers} from "./views/select-issuers";
 import Web3WalletProvider from '../wallet/Web3WalletProvider';
 import {LocalOutlet} from "../outlet/localOutlet";
 import { OutletInterface } from "../outlet";
-import { waitForElementToExist } from '../utils/index';
+import { waitForElementToExist, errorHandler } from '../utils/index';
 
 if(typeof window !== "undefined") window.tn = { version: "2.2.0-dc.11" };
 
@@ -284,7 +284,7 @@ export class Client {
 				this.ui.viewContainer.style.display = 'none';
 			}
 
-			throw new Error(err);
+			errorHandler(err, 'error', null, null, true, true);
 
 		}
 	}
@@ -300,10 +300,7 @@ export class Client {
 		try {
 			this.checkUserAgentSupport("full");
 		} catch(err){
-			logger(2,err);
-			err.name = "NOT_SUPPORTED_ERROR";
-			console.log("browser not supported");
-			this.eventSender.emitErrorToClient(err);
+			errorHandler(NOT_SUPPORTED_ERROR, 'error', this.eventSender.emitErrorToClient(err), null, true, true);
 			return;
 		}
 		
@@ -413,9 +410,10 @@ export class Client {
 					tokens = await this.loadRemoteOutletTokens(issuerConfig);
 				}
 			} catch (err) {
-				logger(2,err);
-				console.log("popup error");
-				this.eventSender.emitErrorToClient(err, issuer);
+				// logger(2,err);
+				// console.log("popup error");
+				// this.eventSender.emitErrorToClient(err, issuer);
+				errorHandler('popup error', 'error', this.eventSender.emitErrorToClient(err, issuer), null, true, false);
 				continue;
 			}
 
@@ -480,7 +478,7 @@ export class Client {
 		const config = this.tokenStore.getCurrentIssuers()[issuer];
 
 		if (!config)
-			throw new Error("Undefined token issuer")
+			errorHandler('Undefined token issuer', 'error', null, null, true, true);
 
 		let tokens;
 
@@ -547,10 +545,7 @@ export class Client {
 		try {
 			return this.checkUserAgentSupport("authentication")
 		} catch(err){
-			logger(2,err);
-			err.name = "NOT_SUPPORTED_ERROR";
-			console.log("browser not supported");
-			this.eventSender.emitErrorToClient(err);
+			errorHandler(err, 'error', this.eventSender.emitErrorToClient(err), null, true, false);
 			return;
 		}
 	}
@@ -572,7 +567,7 @@ export class Client {
 		const config = this.tokenStore.getCurrentIssuers()[issuer];
 
 		if (!config)
-			throw new Error("Provided issuer was not found.");
+			errorHandler("Provided issuer was not found.", 'error', null, null, true, true);
 
 		// TODO: How to handle error display in passive negotiation? Use optional UI or emit errors to listener?
 
@@ -621,8 +616,7 @@ export class Client {
 				return this.handleWalletRequired(authRequest);
 			}
 
-			this.handleProofError(err, issuer);
-			throw err;
+			errorHandler(err, 'error', this.handleProofError(err, issuer), null, false, true);
 		}
 
 		if (this.ui) {
@@ -713,7 +707,7 @@ export class Client {
 
 		if (res.evt === OutletResponseAction.ISSUER_TOKENS) return res.data.tokens;
 
-		throw new Error(res.errors.join("\n"));
+		errorHandler(res.errors.join("\n"), 'error', null, false, true);
 	}
 
 	on(type: TokenNegotiatorEvents, callback?: any, data?: any) {
