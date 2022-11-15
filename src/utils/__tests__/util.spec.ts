@@ -1,7 +1,9 @@
 // @ts-nocheck
 window.DISPLAY_DEBUG_LEVEL = 1
 
-import { logger, requiredParams, compareObjects, base64ToUint8array } from './../index';
+import { hasUncaughtExceptionCaptureCallback } from 'process';
+import { logger, requiredParams, compareObjects, base64ToUint8array, waitForElementToExist } from './../index';
+import { errorHandler } from '../index';
 
 // TODO: add unit tests for the following functions:
 // logger, requiredParams, asyncHandle, attachPostMessageListener.
@@ -56,5 +58,22 @@ describe('util logging and errors', () => {
 		logger(1, msg);
 		// The first argument of the first call to the function was 'hello'
 		expect(console.log).toHaveBeenCalledWith(msg);
+	});
+});
+
+describe('util Spec waitForElementToExist', () => {
+	test('expect element to exist', () => {
+		const newDiv = document.createElement('div');
+		newDiv.classList.add('test_element');
+		waitForElementToExist('.test_element').then(el => {
+			expect(el).toBe(newDiv)
+		});
+	});
+});
+
+describe('util Spec errorHandler', () => {
+	test('expect to handle error', () => {
+		const err = 'Error exception';
+		expect(errorHandler(err, 'error', null, null, false, false)).toEqual({message: err, data: null, type: 'error'})
 	});
 });

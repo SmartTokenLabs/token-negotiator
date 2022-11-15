@@ -17,6 +17,7 @@ import Web3WalletProvider from '../wallet/Web3WalletProvider';
 import {LocalOutlet} from "../outlet/localOutlet";
 import {Outlet, OutletInterface} from "../outlet";
 import { isBrave, isSafari, getBrowserData } from "../utils/support/getBrowserData";
+import { waitForElementToExist, errorHandler } from '../utils/index';
 
 if(typeof window !== "undefined") window.tn = { version: "2.2.0-dc.11" };
 
@@ -31,7 +32,6 @@ declare global {
 }
 
 const NOT_SUPPORTED_ERROR = "This browser is not supported. Please try using Chrome, Edge, FireFox or Safari.";
-const NO_INTERNET_ERROR_MESSAGE = "No internet connection. Please check your internet connection and try again";
 
 const defaultConfig: NegotiationInterface = {
 	type: "active",
@@ -285,7 +285,7 @@ export class Client {
 				this.ui.viewContainer.style.display = 'none';
 			}
 
-			throw new Error(err);
+			errorHandler(err, 'error', null, null, true, true);
 
 		}
 	}
@@ -323,10 +323,7 @@ export class Client {
 		try {
 			this.checkUserAgentSupport("full");
 		} catch(err){
-			logger(2,err);
-			err.name = "NOT_SUPPORTED_ERROR";
-			console.log("browser not supported");
-			this.eventSender.emitErrorToClient(err);
+			errorHandler(NOT_SUPPORTED_ERROR, 'error', this.eventSender.emitErrorToClient(err), null, true, true);
 			return;
 		}
 		
@@ -351,7 +348,6 @@ export class Client {
 			await this.passiveNegotiationStrategy();
 		}
 
-		// window.addEventListener('offline', () => this.checkInternetConnectivity());
 	}
 
 	activeNegotiationStrategy(openPopup: boolean) {
@@ -437,9 +433,10 @@ export class Client {
 					tokens = await this.loadRemoteOutletTokens(issuerConfig);
 				}
 			} catch (err) {
-				logger(2,err);
-				console.log("popup error");
-				this.eventSender.emitErrorToClient(err, issuer);
+				// logger(2,err);
+				// console.log("popup error");
+				// this.eventSender.emitErrorToClient(err, issuer);
+				errorHandler('popup error', 'error', this.eventSender.emitErrorToClient(err, issuer), null, true, false);
 				continue;
 			}
 
@@ -504,7 +501,7 @@ export class Client {
 		const config = this.tokenStore.getCurrentIssuers()[issuer];
 
 		if (!config)
-			throw new Error("Undefined token issuer")
+			errorHandler('Undefined token issuer', 'error', null, null, true, true);
 
 		let tokens;
 
@@ -571,16 +568,12 @@ export class Client {
 		try {
 			return this.checkUserAgentSupport("authentication")
 		} catch(err){
-			logger(2,err);
-			err.name = "NOT_SUPPORTED_ERROR";
-			console.log("browser not supported");
-			this.eventSender.emitErrorToClient(err);
+			errorHandler(err, 'error', this.eventSender.emitErrorToClient(err), null, true, false);
 			return;
 		}
 	}
 
 	async authenticate(authRequest: AuthenticateInterface) {
-
 		this.checkUserAgentSupportHandler();
 
 		const { issuer, unsignedToken } = authRequest;
@@ -597,15 +590,17 @@ export class Client {
 		const config = this.tokenStore.getCurrentIssuers()[issuer];
 
 		if (!config)
-			throw new Error("Provided issuer was not found.");
+			errorHandler("Provided issuer was not found.", 'error', null, null, true, true);
 
 		// TODO: How to handle error display in passive negotiation? Use optional UI or emit errors to listener?
 
 		if (this.ui) {
 			this.ui.showLoaderDelayed([
 				"<h4>Authenticating...</h4>",
-				"<small>You may need to sign a new challenge in your wallet</small>"
+				"<small>You may need to sign a new challenge in your wallet</small>",
+				"<button class='cancel-auth-btn btn-tn' aria-label='Cancel authentication'>Cancel</button>"
 			], 600, true);
+			this.enableAuthCancel(issuer);
 		}
 
 		let AuthType;
@@ -644,8 +639,7 @@ export class Client {
 				return this.handleWalletRequired(authRequest);
 			}
 
-			this.handleProofError(err, issuer);
-			throw err;
+			errorHandler(err, 'error', this.handleProofError(err, issuer), null, false, true);
 		}
 
 		if (this.ui) {
@@ -654,6 +648,16 @@ export class Client {
 		}
 
 		return res.data;
+	}
+
+	public enableAuthCancel(issuer): void {
+		waitForElementToExist('.cancel-auth-btn').then((cancelAuthButton: HTMLElement) => {
+			cancelAuthButton.onclick = () => {
+				const err = 'User cancelled authentication';
+				this.ui.showError(err);
+				this.eventSender.emitProofToClient(null, issuer, err);
+			}
+		});
 	}
 
 	private async handleWalletRequired(authRequest){
@@ -698,9 +702,6 @@ export class Client {
 			this.on("token-proof", null, { data, issuer, error });
 		},
 		emitErrorToClient: (error: Error, issuer = "none") => {
-
-			// this.checkInternetConnectivity();
-
 			this.on("error", null, {error, issuer});
 		},
 		emitConnectedWalletInstance: (connectedWallet: any) => {
@@ -708,19 +709,11 @@ export class Client {
 		},
 		emitDisconnectedWalletInstance: () => {
 			this.on("disconnected-wallet", null, null);
+		},
+		emitNetworkChange: (chain: any) => {
+			this.on("network-change", null, chain);
 		}
 	};
-
-	/* checkInternetConnectivity(): void {
-		if (!navigator.onLine) {
-			if (this.activeNegotiateRequired()) {
-				setTimeout(() => {
-					this.ui.showError(this.config.noInternetErrorMessage ?? NO_INTERNET_ERROR_MESSAGE);
-				}, 1000);
-			}
-			throw new Error(this.config.noInternetErrorMessage ?? NO_INTERNET_ERROR_MESSAGE)
-		}
-	}*/
 
 	async addTokenViaMagicLink(magicLink: any) {
 		let url = new URL(magicLink);
@@ -737,7 +730,7 @@ export class Client {
 
 		if (res.evt === OutletResponseAction.ISSUER_TOKENS) return res.data.tokens;
 
-		throw new Error(res.errors.join("\n"));
+		errorHandler(res.errors.join("\n"), 'error', null, false, true);
 	}
 
 	getOutletConfigForCurrentOrigin(){

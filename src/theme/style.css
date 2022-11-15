@@ -1,7 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@200;400&display=swap.css');
+.overlay-tn button:disabled {
+  cursor: not-allowed !important;
+}
 
 /* light theme */
-
 .overlay-tn.light-tn .overlay-fab-button-tn {
   background: black;
   box-shadow: 0 2px 5px 0 #676767;
@@ -114,6 +116,12 @@
 
 .overlay-tn.light-tn .opening-heading-tn, .overlay-tn.dark-tn .wallet-button-tn p {
   color: black;
+}
+
+.overlay-tn .cancel-auth-btn {
+    display: block;
+    margin: 10px auto;
+    cursor: pointer;
 }
 
 /* dark theme */

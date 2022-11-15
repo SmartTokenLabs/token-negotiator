@@ -36,62 +36,47 @@ The following types of tokens are supported:
     <tr>
       <td>evm</td>
       <td>optimism</td>
-            <td>N</td>
+      <td>N</td>
     </tr>
     <tr>
     <td>evm</td>
       <td>bsc</td>
-            <td>N</td>
+      <td>N</td>
     </tr>
     <tr>
 	    <td>evm</td>
       <td>avalanche</td>
-            <td>N</td>
+      <td>N</td>
     </tr>
     <tr>
 	    <td>evm</td>
       <td>fantom</td>
-            <td>N</td>
-    </tr>
-        <tr>
-    <td>evm</td>
-      <td>rinkeby</td>
-            <td>Y</td>
+      <td>N</td>
     </tr>
     <tr>
-    <td>evm</td>
-      <td>ropsten</td>
-            <td>Y</td>
-    </tr>
-    <tr>
-    <td>evm</td>
+      <td>evm</td>
       <td>goerli</td>
-            <td>Y</td>
-    </tr>
-    <tr>
-    	<td>evm</td>
-      <td>kovan</td>
-            <td>Y</td>
+      <td>Y</td>
     </tr>
     <tr>
       <td>evm</td>
       <td>mumbai</td>
-            <td>Y</td>
+      <td>Y</td>
     </tr>
     <tr>
       <td>evm</td>
       <td>arbitrum</td>
-            <td>N</td>
+      <td>N</td>
     </tr>
     <tr>
 	  <td>solana</td>
       <td>mainnet</td>
-            <td>N</td>
+      <td>N</td>
     </tr>
     <tr>
 	    <td>solana</td>
-        <td>devnet</td>
-            <td>Y</td>
+      <td>devnet</td>
+      <td>Y</td>
     </tr>
   </tbody>
 </table>
@@ -331,7 +316,7 @@ Authenticating ownership of the token will provide a proof with a limited expiry
 
 ````
 
-### Utilise the wallet provider instance
+### Utilise the wallet provider instance hook
 
 Once connected to Token Negotiator, the wallet instance can be used.
 
@@ -351,7 +336,7 @@ Once connected to Token Negotiator, the wallet instance can be used.
 
 ````
 
-### Wallet disconnection
+### Wallet disconnection hook
 
 This event is triggered when the user disconnects their wallet from Token Negotiator.
 
@@ -359,6 +344,22 @@ This event is triggered when the user disconnects their wallet from Token Negoti
 
   negotiator.on('disconnected-wallet', () => {
     // handle the wallet disconnection event as required by your application
+    // { ... }
+  });
+
+````
+
+### Wallet network change hook (evm wallets only at this time)
+
+This event is triggered when the user changes their current connected wallets network
+
+````javascript
+
+  /**
+  * @returns {String|Number} chain
+  */
+  negotiator.on('network-change', (chain) => {
+    // handle the wallet network change as required by your application
     // { ... }
   });
 
@@ -401,11 +402,23 @@ Configure the library using the following example.
             window.negotiator = new negotiator.Client({
                 type: 'active',
                 issuers: [
-                    { blockchain: 'evm', onChain: true, collectionID: "rinkeby-punks", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'rinkeby-punk' },
-                    { blockchain: 'evm', onChain: true, collectionID: "stl-rnd-women-tribe", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'stl-rnd-women-tribe-nfts' },
-                    { blockchain: 'evm', onChain: true, collectionID: "stl-rnd-zed-run", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'stl-rnd-zed' },
-                    { blockchain: 'evm', onChain: true, collectionID: "stl-rnd-bayc-derivatives", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'stl-rnd-bayc-derivatives' },
-                    { blockchain: 'evm', onChain: true, collectionID: "stl-riot-racers", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'stl-rnd-riot-racers' }
+                  {
+                    onChain: true, 
+                    collectionID: "tt", 
+                    contract: '0x76be3b62873462d2142405439777e971754e8e77', 
+                    chain: 'eth',
+                    blockchain: "evm",
+                  },
+                  {
+                    hideToggle : true,
+                    noTokenMsg: "<p>If you have a token please:</p><p>1. Open your magic link inside this browser.<br/>2. Refresh this page.</p>",
+                    onChain: true, 
+                    collectionID: "bsc-collection-test", 
+                    contract: '0xF5db804101d8600c26598A1Ba465166c33CdAA4b', 
+                    chain: 'bsc',
+                    blockchain: "evm",
+                  },
+                  { onChain: true, collectionID: "Perion", contract: '0x96af92ae2d822a0f191455ceca4d4e7ee227668e', chain: 'mumbai', blockchain: "evm" }
                 ],
                 uiOptions: {
                     openingHeading: "Open a new world of discounts available with your tokens.",

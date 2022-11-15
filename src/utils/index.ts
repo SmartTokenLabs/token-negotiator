@@ -85,3 +85,34 @@ export const removePostMessageListener = (listener: any) => {
 	}
 }
 
+/**
+ * Function to wait for element to exist.
+ * @param selector query selector
+ * @returns 
+ */
+export const waitForElementToExist = (selector: string): Promise<Element> => {
+	return new Promise(resolve => {
+		if (document.querySelector(selector)) {
+			return resolve(document.querySelector(selector));
+		}
+
+		const observer = new MutationObserver(() => {
+			if (document.querySelector(selector)) {
+				resolve(document.querySelector(selector));
+				observer.disconnect();
+			}
+		});
+		observer.observe(document.body, {childList: true, subtree: true });
+	});
+
+}
+
+export type ErrorType = 'warning' | 'info' | 'error';
+
+export const errorHandler = (message: string, type: ErrorType, action?: Function | void, data?: unknown, log = true, throwError = false) => {
+	if (log) logger(2, type + ': ' + message);
+	if (action) action();
+	if (throwError) throw new Error(message);
+	return {type, message, data}
+}
+
