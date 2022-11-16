@@ -109,7 +109,7 @@ export const waitForElementToExist = (selector: string): Promise<Element> => {
 
 export type ErrorType = 'warning' | 'info' | 'error';
 
-export const errorHandler = (message: string, type: ErrorType, action?: Function | void, data?: unknown, log = true, throwError = false) => {
+export const errorHandler = (message: string, type: ErrorType, action?: Function | null, data?: unknown, log = true, throwError = false) => {
 	if (log) logger(2, type + ': ' + message);
 	if (action) action();
 	if (throwError) throw new Error(message);

@@ -323,7 +323,7 @@ export class Client {
 		try {
 			this.checkUserAgentSupport("full");
 		} catch(err){
-			errorHandler(NOT_SUPPORTED_ERROR, 'error', this.eventSender.emitErrorToClient(err), null, true, true);
+			errorHandler(NOT_SUPPORTED_ERROR, 'error', () => this.eventSender.emitErrorToClient(err), null, true, true);
 			return;
 		}
 		
@@ -433,10 +433,7 @@ export class Client {
 					tokens = await this.loadRemoteOutletTokens(issuerConfig);
 				}
 			} catch (err) {
-				// logger(2,err);
-				// console.log("popup error");
-				// this.eventSender.emitErrorToClient(err, issuer);
-				errorHandler('popup error', 'error', this.eventSender.emitErrorToClient(err, issuer), null, true, false);
+				errorHandler('popup error', 'error', () => this.eventSender.emitErrorToClient(err, issuer), null, true, false);
 				continue;
 			}
 
@@ -568,7 +565,7 @@ export class Client {
 		try {
 			return this.checkUserAgentSupport("authentication")
 		} catch(err){
-			errorHandler(err, 'error', this.eventSender.emitErrorToClient(err), null, true, false);
+			errorHandler(err, 'error', () => this.eventSender.emitErrorToClient(err), null, true, false);
 			return;
 		}
 	}
@@ -639,7 +636,7 @@ export class Client {
 				return this.handleWalletRequired(authRequest);
 			}
 
-			errorHandler(err, 'error', this.handleProofError(err, issuer), null, false, true);
+			errorHandler(err, 'error', () => this.handleProofError(err, issuer), null, false, true);
 		}
 
 		if (this.ui) {
