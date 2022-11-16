@@ -18,7 +18,7 @@ import {LocalOutlet} from "../outlet/localOutlet";
 import { OutletInterface } from "../outlet";
 import { waitForElementToExist, errorHandler } from '../utils/index';
 
-if(typeof window !== "undefined") window.tn = { version: "2.2.0-dc.11" };
+if(typeof window !== "undefined") window.tn = { version: "2.2.0" };
 
 declare global {
 	interface Window {
