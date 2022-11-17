@@ -19,7 +19,7 @@ import {Outlet, OutletInterface} from "../outlet";
 import { isBrave, isSafari, getBrowserData } from "../utils/support/getBrowserData";
 import { waitForElementToExist, errorHandler } from '../utils/index';
 
-if(typeof window !== "undefined") window.tn = { version: "2.2.0-dc.11" };
+if(typeof window !== "undefined") window.tn = { version: "2.2.0" };
 
 declare global {
 	interface Window {
