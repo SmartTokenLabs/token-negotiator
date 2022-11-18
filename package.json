@@ -8,15 +8,17 @@
     "dist/"
   ],
   "scripts": {
-    "build": "npm run clean && tsc --outDir dist && npm run copy-assets",
-    "build-umd": "shx rm -rf token-negotiator-dist && webpack && npm run copy-assets-umd",
+    "build": "npm run clean && tsc --outDir dist && npm run compile-scss && npm run copy-assets",
+    "build-umd": "shx rm -rf token-negotiator-dist && webpack && npm run compile-scss-umd && npm run copy-assets-umd",
     "clean": "shx rm -rf dist",
-    "copy-assets": "copyfiles ./src/theme/*.css dist/theme -V --flat && copyfiles ./src/vendor/*.js dist/vendor -V --flat",
-    "copy-assets-umd": "copyfiles ./src/theme/*.css token-negotiator-dist/theme -V --flat && copyfiles ./src/vendor/*.js token-negotiator-dist/vendor -V --flat",
+    "copy-assets": "copyfiles ./src/vendor/*.js dist/vendor -V --flat",
+    "copy-assets-umd": "copyfiles ./src/vendor/*.js token-negotiator-dist/vendor -V --flat",
     "prepare": "npm run build",
     "lint": "eslint . --quiet",
     "test": "jest",
-    "test-watch": "jest --watch"
+    "test-watch": "jest --watch",
+    "compile-scss": "sass ./src/theme/style.scss dist/theme/style.css",
+    "compile-scss-umd": "sass ./src/theme/style.scss token-negotiator-dist/theme/style.css"
   },
   "repository": {
     "type": "git",
@@ -64,6 +66,7 @@
     "jest-junit": "^14.0.0",
     "os-browserify": "^0.3.0",
     "process": "^0.11.10",
+    "sass": "^1.56.1",
     "shx": "^0.3.3",
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
