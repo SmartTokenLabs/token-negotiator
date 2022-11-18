@@ -104,3 +104,9 @@ export function isMacSafari() {
 export function isSafari() {
 	return isMacSafari() || isIosSafari();
 }
+
+export function browserBlocksIframeStorage(): boolean {
+	let browserData = getBrowserData();
+	// TODO remove Chrome from list
+	return browserData.iOS || isSafari() || isBrave();
+}

@@ -109,7 +109,9 @@ export class AuthHandler {
 
 		this.attestationOrigin = tokenObj.attestationOrigin;
 
-		this.attestationInTab = tokenObj.attestationInTab !== undefined ? tokenObj.attestationInTab : (isBrave() || isMacOrIOS());
+		// disable attestationInTab by default
+		this.attestationInTab = tokenObj.attestationInTab; 
+		//!== undefined ? tokenObj.attestationInTab : (isBrave() || isMacOrIOS());
 	}
 
 	openAttestationApp(){

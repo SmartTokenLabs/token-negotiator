@@ -62,7 +62,7 @@ export class Outlet {
 
 	singleUse = false;
 
-	constructor(config: OutletInterface, singleUse = false) {
+	constructor(config: OutletInterface, singleUse = false, urlParams:any = null) {
 		this.tokenConfig = Object.assign(defaultConfig, config);
 		this.singleUse = singleUse;
 
@@ -79,12 +79,16 @@ export class Outlet {
 			}
 		});
 
-		let params =
+		if (urlParams) {
+			this.urlParams = urlParams;
+		} else {
+			let params =
 			window.location.hash.length > 1
 				? "?" + window.location.hash.substring(1)
 				: window.location.search;
-		this.urlParams = new URLSearchParams(params);
-
+			this.urlParams = new URLSearchParams(params);
+		}
+		
 		// to avoid duplicate run in syncOutlet()
 		if (!this.singleUse) {
 			this.pageOnLoadEventHandler();
@@ -161,6 +165,16 @@ export class Outlet {
 						params.set("action", "proof-callback");
 						params.set("issuer", issuer)
 						params.set("attestation", useToken as string);
+
+						// add tokens to avoid redirect loop
+						// when use redirect to get tokens
+
+						let outlet = new Outlet(this.tokenConfig, true);
+						let issuerTokens = outlet.prepareTokenOutput({});
+		
+						logger(2, "issuerTokens: ", issuerTokens);
+		
+						params.set("tokens", JSON.stringify(issuerTokens));
 
 						let urlToRedirect = `${requestorURL}#${params.toString()}`;
 						console.log("urlToRedirect from OutletAction.EMAIL_ATTEST_CALLBACK: ", urlToRedirect)
@@ -444,6 +458,32 @@ export class Outlet {
 	private sendTokens(evtid: any) {
 		let issuerTokens = this.prepareTokenOutput(this.getFilter());
 
+		logger(2, "issuerTokens: (Outlet.sendTokens)", issuerTokens);
+		
+		let requestor = this.getDataFromQuery("requestor");
+		
+		if (requestor){
+			try {
+			let url = new URL(requestor);
+			
+				const params = new URLSearchParams();
+				params.set("action", OutletAction.GET_ISSUER_TOKENS + "-response");
+				params.set("issuer", this.tokenConfig.collectionID);
+				params.set("tokens", JSON.stringify(issuerTokens));
+
+				let requestorURL = url.origin + url.pathname + (url.search ? ("?" + url.search ) : "");
+
+				const goto = `${requestorURL}#${params.toString()}`
+				logger(2, "tokens ready. go to: ", goto);
+
+				document.location.href = goto;
+
+				return;
+			} catch(e){
+				console.log("Requestor redirect Error. ", e);
+			}
+		}
+		
 		this.sendMessageResponse({
 			evtid: evtid,
 			evt: OutletResponseAction.ISSUER_TOKENS,
