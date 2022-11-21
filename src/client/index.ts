@@ -16,10 +16,10 @@ import {SelectIssuers} from "./views/select-issuers";
 import Web3WalletProvider from '../wallet/Web3WalletProvider';
 import {LocalOutlet} from "../outlet/localOutlet";
 import {Outlet, OutletInterface} from "../outlet";
-import { isBrave, isSafari, getBrowserData } from "../utils/support/getBrowserData";
+import { browserBlocksIframeStorage } from "../utils/support/getBrowserData";
 import { waitForElementToExist, errorHandler } from '../utils/index';
 
-if(typeof window !== "undefined") window.tn = { version: "2.2.0" };
+if(typeof window !== "undefined") window.tn = { version: "2.2.1" };
 
 declare global {
 	interface Window {
@@ -99,11 +99,20 @@ export class Client {
 		[UIUpdateEventType.ISSUERS_LOADED]: undefined
 	};
 
+	private urlParams: URLSearchParams;
+
 	static getKey(file: string){
 		return  Authenticator.decodePublicKey(file);
 	}
 
 	constructor(config: NegotiationInterface) {
+		if (window.location.hash) {
+			this.urlParams = new URLSearchParams(window.location.hash.substring(1));
+			document.location.hash = "";
+			let action = this.getDataFromQuery("action");
+			logger(2, `Client() fired. Action = "${action}"`);
+		}
+
 		this.config = this.mergeConfig(defaultConfig, config);
 
 		this.negotiateAlreadyFired = false;
@@ -118,24 +127,25 @@ export class Client {
 		this.registerOutletProofEventListener();
 	}
 
+	getDataFromQuery(itemKey: any): string {
+		return this.urlParams ? this.urlParams.get(itemKey) : "";
+	}
+
 	public readProofCallback(){
 
-		if (!window.location.hash)
+		if (!this.getDataFromQuery)
 			return false;
 
-		let params = new URLSearchParams(window.location.hash.substring(1));
-		let action = params.get("action");
+		let action = this.getDataFromQuery("action");
 
 		if (action !== "proof-callback")
 			return false;
 
-		const issuer = params.get("issuer");
-		const attest = params.get("attestation");
-		const error = params.get("error");
+		const issuer = this.getDataFromQuery("issuer");
+		const attest = this.getDataFromQuery("attestation");
+		const error = this.getDataFromQuery("error");
 
 		this.emitRedirectProofEvent(issuer, attest, error);
-
-		document.location.hash = "";
 	}
 
 	private registerOutletProofEventListener(){
@@ -272,9 +282,10 @@ export class Client {
 	}
 
 	public checkUserAgentSupport(type: string){
-
+		
 		if (!isUserAgentSupported(this.config.unSupportedUserAgent?.[type]?.config)){
-
+			
+			// TODO do we check browser support in passive mode? looks like we just save "errorMessage"
 			let err = this.config.unSupportedUserAgent[type].errorMessage;
 
 			if (this.activeNegotiateRequired()) {
@@ -285,23 +296,21 @@ export class Client {
 				this.ui.viewContainer.style.display = 'none';
 			}
 
+			// TODO what the sense of this handler?
 			errorHandler(err, 'error', null, null, true, true);
 
 		}
 	}
 
 	private activeNegotiateRequired(): boolean {
-		let osAndBrowser = getBrowserData();
+		
 		return (
 			this.config.type === "active" 
-			|| (
-				// any Safari browser and Brave and iOSFirefox require click 
-				// to open new tab to get tokens, so passive flow will not work,
-				// fallback to active
-				(isSafari() || isBrave() || (osAndBrowser.fireFox && osAndBrowser.iOS) ) 
-				&& !this.onlySameOrigin()
-				)
 		);
+	}
+
+	private createCurrentUrlWithoutHash(): string {
+		return window.location.origin + window.location.pathname + window.location.search??("?" + window.location.search);
 	}
 
 	public getNoTokenMsg (collectionID: string) {
@@ -321,6 +330,7 @@ export class Client {
 		}
 
 		try {
+			// TODO full for emailAttestation. isnt it?
 			this.checkUserAgentSupport("full");
 		} catch(err){
 			errorHandler(NOT_SUPPORTED_ERROR, 'error', () => this.eventSender.emitErrorToClient(err), null, true, true);
@@ -420,6 +430,8 @@ export class Client {
 
 		let issuers = this.tokenStore.getCurrentIssuers(false);
 
+		let action = this.getDataFromQuery("action");
+
 		for (let issuer in issuers){
 
 			let tokens;
@@ -430,7 +442,28 @@ export class Client {
 				if ((new URL(issuerConfig.tokenOrigin)).origin === document.location.origin){
 					tokens = this.loadLocalOutletTokens(issuerConfig);
 				} else {
-					tokens = await this.loadRemoteOutletTokens(issuerConfig);
+					// TODO make solution:
+					// in case if we have multiple tokens then redirect flow will not work
+					// because page will reload on first remote token
+					let resposeIssuer = this.getDataFromQuery("issuer");
+
+					if (
+						(
+							action === OutletAction.GET_ISSUER_TOKENS + "-response" 
+							// have to read tokens from "proof-callback" action,
+							// in other way page will be redirected in loop
+							|| action === "proof-callback"
+						)
+					&& issuer == resposeIssuer) {
+						let resposeTokensEncoded = this.getDataFromQuery("tokens");
+						try {
+							tokens = JSON.parse(resposeTokensEncoded);
+						} catch (e){
+							logger(2, "Error parse tokens from Response. ", e);
+						}
+					} else {						
+						tokens = await this.loadRemoteOutletTokens(issuerConfig);
+					}
 				}
 			} catch (err) {
 				errorHandler('popup error', 'error', () => this.eventSender.emitErrorToClient(err, issuer), null, true, false);
@@ -534,17 +567,22 @@ export class Client {
 
 		const data: any = {
 			issuer: issuer,
-			filter: issuer.filters,
+			filter: issuer.filters
 		}
 
 		if (issuer.accessRequestType)
 			data.access = issuer.accessRequestType;
 
-		const res = await this.messaging.sendMessage({
-			action: OutletAction.GET_ISSUER_TOKENS,
-			origin: issuer.tokenOrigin,
-			data: data
-		}, this.config.messagingForceTab, this.config.type === "active" ? this.ui : null);
+		const res = await this.messaging.sendMessage(
+			{
+				action: OutletAction.GET_ISSUER_TOKENS,
+				origin: issuer.tokenOrigin,
+				data: data
+			}, 
+			this.config.messagingForceTab, 
+			this.config.type === "active" ? this.ui : null,
+			( browserBlocksIframeStorage() && this.config.type === "passive" )? this.createCurrentUrlWithoutHash() : false
+		);
 
 		return res.data?.tokens ?? [];
 	}
@@ -712,6 +750,8 @@ export class Client {
 		}
 	};
 
+	// is it useful? better remove it, we never use it
+	/*
 	async addTokenViaMagicLink(magicLink: any) {
 		let url = new URL(magicLink);
 		let params =
@@ -728,7 +768,7 @@ export class Client {
 		if (res.evt === OutletResponseAction.ISSUER_TOKENS) return res.data.tokens;
 
 		errorHandler(res.errors.join("\n"), 'error', null, false, true);
-	}
+	}*/
 
 	getOutletConfigForCurrentOrigin(){
 		let allIssuers = this.tokenStore.getCurrentIssuers();
@@ -785,18 +825,29 @@ export class Client {
 		return onlySameOriginFlag;
 	}
 
+	async addTokenViaMagicLink(magicLink: any) {
+		let url = new URL(magicLink);
+		let params =
+			url.hash.length > 1 ? url.hash.substring(1) : url.search.substring(1);
+		let res = await this.messaging.sendMessage({
+			action: OutletAction.MAGIC_URL,
+			origin: url.origin + url.pathname,
+			data: {
+				urlParams: params
+			}
+		}, this.config.messagingForceTab);
+		if (res.evt === OutletResponseAction.ISSUER_TOKENS) return res.data.tokens;
+		errorHandler(res.errors.join("\n"), 'error', null, false, true);
+	}
+
 	on(type: TokenNegotiatorEvents, callback?: any, data?: any) {
 		requiredParams(type, "Event type is not defined");
 
-		if(type === 'token-proof') {
+		// read token-proof only when callback attached ( init listener by user )
+		if(type === 'token-proof' && callback) {
 			logger(2, "token-proof listener atteched. check URL HASH for proof callbacks.");
-			let params =
-			window.location.hash.length > 1
-			? "?" + window.location.hash.substring(1)
-			: window.location.search;
-			let urlParams = new URLSearchParams(params);
 			
-			const action = urlParams.get("action");
+			const action = this.getDataFromQuery("action");
 						
 			if (action === "proof-callback") {
 				this.readProofCallback();
@@ -807,7 +858,7 @@ export class Client {
 				if (currentIssuer){
 					logger(2, "Outlet fired to parse URL hash params.");
 
-					let outlet = new Outlet(currentIssuer, true);
+					let outlet = new Outlet(currentIssuer, true, this.urlParams);
 					outlet.pageOnLoadEventHandler().then(()=>{
 						outlet = null;
 					});
