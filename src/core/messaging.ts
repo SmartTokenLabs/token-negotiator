@@ -288,7 +288,7 @@ export class Messaging {
 
 	private constructUrl(id: any, request: RequestInterfaceBase){
 
-		let url = `${request.origin}#evtid=${id}&action=${request.action}&token=${encodeURIComponent(JSON.stringify(request.data.token))}`;
+		let url = `${request.origin}#evtid=${id}&action=${request.action}`;
 
 		for (let i in request.data){
 			let value = request.data[i];
@@ -297,7 +297,7 @@ export class Messaging {
 				continue;
 
 			if (value instanceof Array || value instanceof Object){
-				url += `&${i}=${JSON.stringify(value)}`;
+				url += `&${i}=${encodeURIComponent(JSON.stringify(value))}`;
 			} else {
 				if (i === "urlParams"){
 					url += `&${value}`;
