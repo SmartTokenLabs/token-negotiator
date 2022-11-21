@@ -48,6 +48,8 @@ const defaultConfig: NegotiationInterface = {
 	autoLoadTokens: true,
 	autoEnableTokens: true,
 	messagingForceTab: false,
+	// by default use redirect flow for active negotiation()
+	forceRedirect: true,
 	unSupportedUserAgent: {
 		authentication: {
 			config: {
@@ -478,6 +480,57 @@ export class Client {
 		}
 	}
 
+	readTokensFromUrl(){
+		let issuers = this.tokenStore.getCurrentIssuers(false);
+		let issuer = this.getDataFromQuery("issuer");
+
+		if (!issuer) {
+			logger(3, "No issuer in URL.")
+			return;
+		}
+
+		const issuerConfig = issuers[issuer] as OffChainTokenConfig;
+		if (!issuerConfig) {
+			logger(3, `No issuer config for "${issuer}" in URL.`)
+			return;
+		}
+
+		let tokens;
+
+
+		try {
+			if ((new URL(issuerConfig.tokenOrigin)).origin !== document.location.origin){
+				// TODO make solution:
+				// in case if we have multiple tokens then redirect flow will not work
+				// because page will reload on first remote token
+				
+
+				let resposeTokensEncoded = this.getDataFromQuery("tokens");
+				try {
+					tokens = JSON.parse(resposeTokensEncoded);
+				} catch (e){
+					logger(2, "Error parse tokens from Response. ", e);
+				}
+
+			}
+		} catch (err) {
+			logger(1, "Error read tokens from URL");
+			return;
+		}
+
+		if (!tokens) {
+			logger(2, `No tokens for "${issuer}" in URL.`)
+			return;
+		}
+
+		logger(2,"readTokensFromUrl tokens:");
+		logger(2, tokens);
+
+		this.tokenStore.setTokens(issuer, tokens);
+
+
+	}
+
 	async setPassiveNegotiationOnChainTokens() {
 
 		let issuers = this.tokenStore.getCurrentIssuers(true);
@@ -573,6 +626,10 @@ export class Client {
 		if (issuer.accessRequestType)
 			data.access = issuer.accessRequestType;
 
+		let redirectRequired = 
+			(browserBlocksIframeStorage() && this.config.type === "passive") 
+			|| this.config.forceRedirect;
+
 		const res = await this.messaging.sendMessage(
 			{
 				action: OutletAction.GET_ISSUER_TOKENS,
@@ -581,7 +638,7 @@ export class Client {
 			}, 
 			this.config.messagingForceTab, 
 			this.config.type === "active" ? this.ui : null,
-			( browserBlocksIframeStorage() && this.config.type === "passive" )? this.createCurrentUrlWithoutHash() : false
+			redirectRequired ? this.createCurrentUrlWithoutHash() : false
 		);
 
 		return res.data?.tokens ?? [];
@@ -843,6 +900,11 @@ export class Client {
 	on(type: TokenNegotiatorEvents, callback?: any, data?: any) {
 		requiredParams(type, "Event type is not defined");
 
+		// try to read tokens when listener attached
+		if((type === 'tokens' || type === 'tokens-selected') && callback){
+			this.readTokensFromUrl();
+		}
+
 		// read token-proof only when callback attached ( init listener by user )
 		if(type === 'token-proof' && callback) {
 			logger(2, "token-proof listener atteched. check URL HASH for proof callbacks.");
@@ -858,7 +920,7 @@ export class Client {
 				if (currentIssuer){
 					logger(2, "Outlet fired to parse URL hash params.");
 
-					let outlet = new Outlet(currentIssuer, true, this.urlParams);
+					let outlet = new Outlet(currentIssuer, true, this.urlParams);			
 					outlet.pageOnLoadEventHandler().then(()=>{
 						outlet = null;
 					});
