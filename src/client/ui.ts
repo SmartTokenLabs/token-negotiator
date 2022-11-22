@@ -27,7 +27,26 @@ export interface UIOptionsInterface {
 	}
 }
 
-export class Ui {
+export interface UiInterface {
+	viewContainer: HTMLElement,
+	initialize(): void;
+	updateUI(ViewClass: ViewConstructor<ViewInterface>, data?: any);
+	getStartView(): ViewConstructor<ViewInterface>
+	closeOverlay(): void;
+	openOverlay(): void;
+	togglePopup(): void;
+	viewIsNotStart(): boolean;
+	showError(error: string | Error);
+	showError(error: string | Error, canDismiss: boolean);
+	setErrorRetryCallback(retryCallback?: Function);
+	showLoader(...message: string[]);
+	showLoaderDelayed(messages: string[], delay: number);
+	showLoaderDelayed(messages: string[], delay: number, openOverlay: boolean);
+	dismissLoader();
+	switchTheme(newTheme: UItheme);
+}
+
+export class Ui implements UiInterface {
 
 	private static UI_CONTAINER_HTML = `
 		<div class="overlay-content-tn" aria-label="Token negotiator overlay">
@@ -95,7 +114,7 @@ export class Ui {
 
 			this.updateUI(await this.getStartScreen());
 
-		
+
 		}, 0);
 
 	}
@@ -229,7 +248,7 @@ export class Ui {
 	}
 
 	viewIsNotStart(){
-		return !(this.currentView instanceof Start);
+		return !(this.currentView instanceof this.getViewClass("start"));
 	}
 
 	showError(error: string | Error, canDismiss = true){
@@ -273,7 +292,7 @@ export class Ui {
 		}, delay);
 	}
 
-	cancelDelayedLoader(){
+	private cancelDelayedLoader(){
 		if (this.loadTimer){
 			clearTimeout(this.loadTimer);
 			this.loadTimer = null;
