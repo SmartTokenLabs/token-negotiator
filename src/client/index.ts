@@ -19,7 +19,7 @@ import {Outlet, OutletInterface} from "../outlet";
 import { browserBlocksIframeStorage } from "../utils/support/getBrowserData";
 import { waitForElementToExist, errorHandler } from '../utils/index';
 
-if(typeof window !== "undefined") window.tn = { version: "2.2.1" };
+if(typeof window !== "undefined") window.tn = { version: "2.2.0" };
 
 declare global {
 	interface Window {
@@ -806,26 +806,6 @@ export class Client {
 			this.on("network-change", null, chain);
 		}
 	};
-
-	// is it useful? better remove it, we never use it
-	/*
-	async addTokenViaMagicLink(magicLink: any) {
-		let url = new URL(magicLink);
-		let params =
-			url.hash.length > 1 ? url.hash.substring(1) : url.search.substring(1);
-
-		let res = await this.messaging.sendMessage({
-			action: OutletAction.MAGIC_URL,
-			origin: url.origin + url.pathname,
-			data: {
-				urlParams: params
-			}
-		}, this.config.messagingForceTab);
-
-		if (res.evt === OutletResponseAction.ISSUER_TOKENS) return res.data.tokens;
-
-		errorHandler(res.errors.join("\n"), 'error', null, false, true);
-	}*/
 
 	getOutletConfigForCurrentOrigin(){
 		let allIssuers = this.tokenStore.getCurrentIssuers();

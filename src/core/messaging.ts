@@ -311,7 +311,7 @@ export class Messaging {
 				continue;
 
 			if (value instanceof Array || value instanceof Object){
-				url += `&${key}=${encodeURIComponent(JSON.stringify(value))}`;
+				url += `&${key}=${JSON.stringify(value)}`;
 			} else {
 				if (key === "urlParams"){
 					url += `&${value}`;
