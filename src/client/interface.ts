@@ -47,6 +47,8 @@ export interface NegotiationInterface {
     autoEnableTokens?: boolean;
     messagingForceTab?: boolean;
     safeConnectOptions?: SafeConnectOptions;
+    // force redirect flow in "active" mode on negotiate()
+    forceRedirect?: boolean;
     unSupportedUserAgent?: {
         authentication?: {
             config: BrowserDataInterface,

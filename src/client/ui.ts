@@ -58,31 +58,36 @@ export class Ui {
 
 			this.popupContainer = document.querySelector(this.options.containerElement);
 
-			requiredParams(this.popupContainer, 'No entry point element with the class name of ' + this.options.containerElement + ' found.');
-
-			if (this.popupContainer) {
-
-				this.initializeUIType();
-
-				this.setTheme(this.options?.theme ?? 'light');
-
-				this.viewContainer = this.popupContainer.querySelector(".view-content-tn");
-				this.loadContainer = this.popupContainer.querySelector(".load-container-tn");
-				this.retryButton = this.loadContainer.querySelector('.dismiss-error-tn');
-
-				this.retryButton.addEventListener('click', () => {
-					this.dismissLoader();
-					if (this.retryCallback) {
-						this.retryCallback();
-						this.retryCallback = undefined;
-						this.retryButton.innerText = "Dismiss";
-					}
-				});
-
-				this.updateUI(Start);
-
+			if (!this.popupContainer){
+				this.popupContainer = document.createElement("div");
+				this.popupContainer.className = "overlay-tn";
+				document.body.appendChild(this.popupContainer);
 			}
 
+			// requiredParams(this.popupContainer, 'No entry point element with the class name of ' + this.options.containerElement + ' found.');
+
+
+
+			this.initializeUIType();
+
+			this.setTheme(this.options?.theme ?? 'light');
+
+			this.viewContainer = this.popupContainer.querySelector(".view-content-tn");
+			this.loadContainer = this.popupContainer.querySelector(".load-container-tn");
+			this.retryButton = this.loadContainer.querySelector('.dismiss-error-tn');
+
+			this.retryButton.addEventListener('click', () => {
+				this.dismissLoader();
+				if (this.retryCallback) {
+					this.retryCallback();
+					this.retryCallback = undefined;
+					this.retryButton.innerText = "Dismiss";
+				}
+			});
+
+			this.updateUI(Start);
+
+		
 		}, 0);
 
 	}
