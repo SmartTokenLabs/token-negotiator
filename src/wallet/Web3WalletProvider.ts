@@ -13,6 +13,7 @@ interface WalletConnection {
 	providerType: string,
 	blockchain: string,
 	provider?: ethers.providers.Web3Provider,
+	ethers?: any
 }
 
 export class Web3WalletProvider {
@@ -40,7 +41,8 @@ export class Web3WalletProvider {
 				address: con.address,
 				chainId: con.chainId,
 				providerType: con.providerType,
-				blockchain: con.blockchain
+				blockchain: con.blockchain,
+				ethers: ethers
 			};
 			
 		}
@@ -155,7 +157,7 @@ export class Web3WalletProvider {
 
 	registerNewWalletAddress ( address: string, chainId: number|string, providerType: string, provider: any, blockchain = 'evm' ) {
 
-		this.connections[address.toLowerCase()] = { address, chainId, providerType, provider, blockchain };
+		this.connections[address.toLowerCase()] = { address, chainId, providerType, provider, blockchain, ethers };
 
 		return address;
 	}
