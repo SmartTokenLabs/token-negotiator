@@ -6,11 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
 
-    <script
-      type="text/javascript"
-      src="./token-negotiator-dist/negotiator.js"
-    ></script>
-    <link rel="stylesheet" href="./token-negotiator-dist/theme/style.css" />
+    <script defer type="text/javascript" src="./token-negotiator-dist/negotiator.js.gz"></script>
+    <!-- <link rel="stylesheet" href="./token-negotiator-dist/theme/style.css" /> -->
+    <link rel="preload" href="./token-negotiator-dist/theme/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="./token-negotiator-dist/theme/style.css"></noscript>
   </head>
   <body onload="init()">
     <button onclick="switchTheme()">Switch theme</button>
