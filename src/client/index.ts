@@ -15,7 +15,8 @@ import {SelectWallet} from "./views/select-wallet";
 import {SelectIssuers} from "./views/select-issuers";
 import Web3WalletProvider from '../wallet/Web3WalletProvider';
 import {LocalOutlet} from "../outlet/localOutlet";
-import { OutletInterface } from "../outlet";
+import {Outlet, OutletInterface} from "../outlet";
+import { browserBlocksIframeStorage } from "../utils/support/getBrowserData";
 import { waitForElementToExist, errorHandler } from '../utils/index';
 
 if(typeof window !== "undefined") window.tn = { version: "2.2.0" };
@@ -37,6 +38,7 @@ const defaultConfig: NegotiationInterface = {
 	issuers: [],
 	uiOptions: {
 		uiType: "popup",
+		// value ".overlay-tn" hardcoded in ui.ts
 		containerElement: ".overlay-tn",
 		openingHeading: "Validate your token ownership for access",
 		issuerHeading: "Detected tokens",
@@ -46,6 +48,7 @@ const defaultConfig: NegotiationInterface = {
 	autoLoadTokens: true,
 	autoEnableTokens: true,
 	messagingForceTab: false,
+	forceOffChainTokenRedirect: true,
 	unSupportedUserAgent: {
 		authentication: {
 			config: {
@@ -97,12 +100,20 @@ export class Client {
 		[UIUpdateEventType.ISSUERS_LOADED]: undefined
 	};
 
+	private urlParams: URLSearchParams;
 
 	static getKey(file: string){
 		return  Authenticator.decodePublicKey(file);
 	}
 
 	constructor(config: NegotiationInterface) {
+		if (window.location.hash) {
+			this.urlParams = new URLSearchParams(window.location.hash.substring(1));
+			document.location.hash = "";
+			let action = this.getDataFromQuery("action");
+			logger(2, `Client() fired. Action = "${action}"`);
+		}
+
 		this.config = this.mergeConfig(defaultConfig, config);
 
 		this.negotiateAlreadyFired = false;
@@ -117,24 +128,25 @@ export class Client {
 		this.registerOutletProofEventListener();
 	}
 
+	getDataFromQuery(itemKey: any): string {
+		return this.urlParams ? this.urlParams.get(itemKey) : "";
+	}
+
 	public readProofCallback(){
 
-		if (!window.location.hash)
+		if (!this.getDataFromQuery)
 			return false;
 
-		let params = new URLSearchParams(window.location.hash.substring(1));
-		let action = params.get("action");
+		let action = this.getDataFromQuery("action");
 
 		if (action !== "proof-callback")
 			return false;
 
-		const issuer = params.get("issuer");
-		const attest = params.get("attestation");
-		const error = params.get("error");
+		const issuer = this.getDataFromQuery("issuer");
+		const attest = this.getDataFromQuery("attestation");
+		const error = this.getDataFromQuery("error");
 
 		this.emitRedirectProofEvent(issuer, attest, error);
-
-		document.location.hash = "";
 	}
 
 	private registerOutletProofEventListener(){
@@ -271,12 +283,13 @@ export class Client {
 	}
 
 	public checkUserAgentSupport(type: string){
-
+		
 		if (!isUserAgentSupported(this.config.unSupportedUserAgent?.[type]?.config)){
-
+			
+			// TODO do we check browser support in passive mode? looks like we just save "errorMessage"
 			let err = this.config.unSupportedUserAgent[type].errorMessage;
 
-			if (this.config.type === 'active') {
+			if (this.activeNegotiateRequired()) {
 				this.ui = new Ui(this.config.uiOptions, this);
 				this.ui.initialize();
 				this.ui.openOverlay();
@@ -284,9 +297,20 @@ export class Client {
 				this.ui.viewContainer.style.display = 'none';
 			}
 
+			// TODO what the sense of this handler?
 			errorHandler(err, 'error', null, null, true, true);
 
 		}
+	}
+
+	private activeNegotiateRequired(): boolean {
+		return (
+			this.config.type === "active" 
+		);
+	}
+
+	private createCurrentUrlWithoutHash(): string {
+		return window.location.origin + window.location.pathname + window.location.search??("?" + window.location.search);
 	}
 
 	public getNoTokenMsg (collectionID: string) {
@@ -297,7 +321,16 @@ export class Client {
 
 	async negotiate(issuers?: (OnChainTokenConfig | OffChainTokenConfig)[], openPopup = false) {
 
+		let currentIssuer = this.getOutletConfigForCurrentOrigin();
+		if (currentIssuer){
+			logger(2, "Sync Outlet fired in Client to read MagicLink before negotiate().");
+			let outlet = new Outlet(currentIssuer, true);
+			await outlet.readMagicLink();
+			outlet = null;
+		}
+
 		try {
+			// TODO full for emailAttestation. isnt it?
 			this.checkUserAgentSupport("full");
 		} catch(err){
 			errorHandler(NOT_SUPPORTED_ERROR, 'error', () => this.eventSender.emitErrorToClient(err), null, true, true);
@@ -309,7 +342,7 @@ export class Client {
 
 		requiredParams(Object.keys(this.tokenStore.getCurrentIssuers()).length, "issuers are missing.");
 
-		if (this.config.type === "active") {
+		if (this.activeNegotiateRequired()) {
 
 			this.issuersLoaded = !this.tokenStore.hasUnloadedIssuers();
 
@@ -397,6 +430,8 @@ export class Client {
 
 		let issuers = this.tokenStore.getCurrentIssuers(false);
 
+		let action = this.getDataFromQuery("action");
+
 		for (let issuer in issuers){
 
 			let tokens;
@@ -407,7 +442,28 @@ export class Client {
 				if ((new URL(issuerConfig.tokenOrigin)).origin === document.location.origin){
 					tokens = this.loadLocalOutletTokens(issuerConfig);
 				} else {
-					tokens = await this.loadRemoteOutletTokens(issuerConfig);
+					// TODO make solution:
+					// in case if we have multiple tokens then redirect flow will not work
+					// because page will reload on first remote token
+					let resposeIssuer = this.getDataFromQuery("issuer");
+
+					if (
+						(
+							action === OutletAction.GET_ISSUER_TOKENS + "-response" 
+							// have to read tokens from "proof-callback" action,
+							// in other way page will be redirected in loop
+							|| action === "proof-callback"
+						)
+					&& issuer == resposeIssuer) {
+						let resposeTokensEncoded = this.getDataFromQuery("tokens");
+						try {
+							tokens = JSON.parse(resposeTokensEncoded);
+						} catch (e){
+							logger(2, "Error parse tokens from Response. ", e);
+						}
+					} else {						
+						tokens = await this.loadRemoteOutletTokens(issuerConfig);
+					}
 				}
 			} catch (err) {
 				errorHandler('popup error', 'error', () => this.eventSender.emitErrorToClient(err, issuer), null, true, false);
@@ -420,6 +476,57 @@ export class Client {
 			this.tokenStore.setTokens(issuer, tokens);
 
 		}
+	}
+
+	readTokensFromUrl(){
+		let issuers = this.tokenStore.getCurrentIssuers(false);
+		let issuer = this.getDataFromQuery("issuer");
+
+		if (!issuer) {
+			logger(3, "No issuer in URL.")
+			return;
+		}
+
+		const issuerConfig = issuers[issuer] as OffChainTokenConfig;
+		if (!issuerConfig) {
+			logger(3, `No issuer config for "${issuer}" in URL.`)
+			return;
+		}
+
+		let tokens;
+
+
+		try {
+			if ((new URL(issuerConfig.tokenOrigin)).origin !== document.location.origin){
+				// TODO make solution:
+				// in case if we have multiple tokens then redirect flow will not work
+				// because page will reload on first remote token
+				
+
+				let resposeTokensEncoded = this.getDataFromQuery("tokens");
+				try {
+					tokens = JSON.parse(resposeTokensEncoded);
+				} catch (e){
+					logger(2, "Error parse tokens from Response. ", e);
+				}
+
+			}
+		} catch (err) {
+			logger(1, "Error read tokens from URL");
+			return;
+		}
+
+		if (!tokens) {
+			logger(2, `No tokens for "${issuer}" in URL.`)
+			return;
+		}
+
+		logger(2,"readTokensFromUrl tokens:");
+		logger(2, tokens);
+
+		this.tokenStore.setTokens(issuer, tokens);
+
+
 	}
 
 	async setPassiveNegotiationOnChainTokens() {
@@ -511,17 +618,26 @@ export class Client {
 
 		const data: any = {
 			issuer: issuer,
-			filter: issuer.filters,
+			filter: issuer.filters
 		}
 
 		if (issuer.accessRequestType)
 			data.access = issuer.accessRequestType;
 
-		const res = await this.messaging.sendMessage({
-			action: OutletAction.GET_ISSUER_TOKENS,
-			origin: issuer.tokenOrigin,
-			data: data
-		}, this.config.messagingForceTab, this.config.type === "active" ? this.ui : null);
+		let redirectRequired = 
+			(browserBlocksIframeStorage() && this.config.type === "passive") 
+			|| this.config.forceOffChainTokenRedirect;
+
+		const res = await this.messaging.sendMessage(
+			{
+				action: OutletAction.GET_ISSUER_TOKENS,
+				origin: issuer.tokenOrigin,
+				data: data
+			}, 
+			this.config.messagingForceTab, 
+			this.config.type === "active" ? this.ui : null,
+			redirectRequired ? this.createCurrentUrlWithoutHash() : false
+		);
 
 		return res.data?.tokens ?? [];
 	}
@@ -689,11 +805,65 @@ export class Client {
 		}
 	};
 
+	getOutletConfigForCurrentOrigin(){
+		let allIssuers = this.tokenStore.getCurrentIssuers();
+		let currentIssuers = [];
+
+		Object.keys(allIssuers).forEach(key => {
+			let issuerConfig = allIssuers[key] as OffChainTokenConfig;
+
+			try {
+
+				if (
+					(new URL(issuerConfig.tokenOrigin)).origin === document.location.origin 
+					// should not be 2 tokens with same origin
+					// && issuerConfig.collectionID == issuer
+				){
+					currentIssuers.push(issuerConfig);
+				} 
+			} catch (err) {
+				logger(2,err);
+				console.log("issuer config error");
+			}
+		})
+
+		if (currentIssuers.length){
+			return currentIssuers[0];
+		}
+		return false;
+	}
+
+	onlySameOrigin(){
+		let allIssuers = this.tokenStore.getCurrentIssuers();
+		let onlySameOriginFlag = true;
+
+		Object.keys(allIssuers).forEach(key => {
+			let issuerConfig = allIssuers[key] as OffChainTokenConfig;
+			let thisOneSameOrigin = false;
+			try {
+				if (
+					(new URL(issuerConfig.tokenOrigin)).origin === document.location.origin 
+				){
+					thisOneSameOrigin = true;
+				} 
+			} catch (err) {
+				logger(2,err);
+				console.log("issuer config error");
+			}
+
+			// if any issuerConfig missing tokenOrigin or something wrong then skip sameOrigin flow
+			if (!thisOneSameOrigin) {
+				onlySameOriginFlag = false;
+			}
+		})
+
+		return onlySameOriginFlag;
+	}
+
 	async addTokenViaMagicLink(magicLink: any) {
 		let url = new URL(magicLink);
 		let params =
 			url.hash.length > 1 ? url.hash.substring(1) : url.search.substring(1);
-
 		let res = await this.messaging.sendMessage({
 			action: OutletAction.MAGIC_URL,
 			origin: url.origin + url.pathname,
@@ -701,14 +871,40 @@ export class Client {
 				urlParams: params
 			}
 		}, this.config.messagingForceTab);
-
 		if (res.evt === OutletResponseAction.ISSUER_TOKENS) return res.data.tokens;
-
 		errorHandler(res.errors.join("\n"), 'error', null, false, true);
 	}
 
 	on(type: TokenNegotiatorEvents, callback?: any, data?: any) {
 		requiredParams(type, "Event type is not defined");
+
+		// try to read tokens when listener attached
+		if((type === 'tokens' || type === 'tokens-selected') && callback){
+			this.readTokensFromUrl();
+		}
+
+		// read token-proof only when callback attached ( init listener by user )
+		if(type === 'token-proof' && callback) {
+			logger(2, "token-proof listener atteched. check URL HASH for proof callbacks.");
+			
+			const action = this.getDataFromQuery("action");
+						
+			if (action === "proof-callback") {
+				this.readProofCallback();
+			} else if (action === "email-callback") {
+
+				let currentIssuer = this.getOutletConfigForCurrentOrigin();
+
+				if (currentIssuer){
+					logger(2, "Outlet fired to parse URL hash params.");
+
+					let outlet = new Outlet(currentIssuer, true, this.urlParams);			
+					outlet.pageOnLoadEventHandler().then(()=>{
+						outlet = null;
+					});
+				}
+			}
+		}
 
 		if (callback) {
 			// assign callback reference to web developers event e.g. negotiator.on('tokens', (tokensForWebPage) => { ... }));

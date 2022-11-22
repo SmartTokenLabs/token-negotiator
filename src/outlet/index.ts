@@ -27,6 +27,7 @@ export interface OutletInterface {
 	tokenIdName?: string;
 	unsignedTokenDataName?: string;
 	itemStorageKey?: string;
+	tokenOrigin? : string;
 }
 
 export const defaultConfig = {
@@ -59,8 +60,11 @@ export class Outlet {
 	tokenConfig: OutletInterface;
 	urlParams?: URLSearchParams;
 
-	constructor(config: OutletInterface) {
+	singleUse = false;
+
+	constructor(config: OutletInterface, singleUse = false, urlParams:any = null) {
 		this.tokenConfig = Object.assign(defaultConfig, config);
+		this.singleUse = singleUse;
 
 		// set default tokenReader
 		if (!this.tokenConfig.tokenParser) {
@@ -75,7 +79,20 @@ export class Outlet {
 			}
 		});
 
-		this.pageOnLoadEventHandler();
+		if (urlParams) {
+			this.urlParams = urlParams;
+		} else {
+			let params =
+			window.location.hash.length > 1
+				? "?" + window.location.hash.substring(1)
+				: window.location.search;
+			this.urlParams = new URLSearchParams(params);
+		}
+		
+		// to avoid duplicate run in syncOutlet()
+		if (!this.singleUse) {
+			this.pageOnLoadEventHandler();
+		} 
 	}
 
 	getDataFromQuery(itemKey: any): string {
@@ -89,11 +106,7 @@ export class Outlet {
 	}
 
 	async pageOnLoadEventHandler() {
-		let params =
-			window.location.hash.length > 1
-				? "?" + window.location.hash.substring(1)
-				: window.location.search;
-		this.urlParams = new URLSearchParams(params);
+		
 
 		const evtid = this.getDataFromQuery("evtid");
 		const action = this.getDataFromQuery("action");
@@ -153,6 +166,16 @@ export class Outlet {
 						params.set("issuer", issuer)
 						params.set("attestation", useToken as string);
 
+						// add tokens to avoid redirect loop
+						// when use redirect to get tokens
+
+						let outlet = new Outlet(this.tokenConfig, true);
+						let issuerTokens = outlet.prepareTokenOutput({});
+		
+						logger(2, "issuerTokens: ", issuerTokens);
+		
+						params.set("tokens", JSON.stringify(issuerTokens));
+
 						let urlToRedirect = `${requestorURL}#${params.toString()}`;
 						console.log("urlToRedirect from OutletAction.EMAIL_ATTEST_CALLBACK: ", urlToRedirect)
 
@@ -191,31 +214,8 @@ export class Outlet {
 				/* localStorage.setItem("cookie-support-check", "test");
 				this.sendCookieCheck(evtid);*/
 
-				const {tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey} =
-					this.tokenConfig;
-
-				try {
-
-					const tokens = readMagicUrl(
-						tokenUrlName,
-						tokenSecretName,
-						tokenIdName,
-						itemStorageKey,
-						this.urlParams
-					);
-
-					await this.whitelistCheck(evtid, "write");
-
-					storeMagicURL(tokens, itemStorageKey);
-
-					const event = new Event("tokensupdated");
-
-					// Dispatch the event to force negotiator to reread tokens.
-					// MagicLinkReader part of Outlet usually works in the parent window, same as Client, so it use same document
-					document.body.dispatchEvent(event);
-
-				} catch (e){
-					// no-op
+				if (!this.singleUse) {
+					await this.readMagicLink();
 				}
 				
 				this.sendTokens(evtid);
@@ -227,6 +227,38 @@ export class Outlet {
 		} catch (e: any){
 			console.error(e);
 			this.sendErrorResponse(evtid, e.message);
+		}
+	}
+
+	public async readMagicLink(){
+
+		const evtid = this.getDataFromQuery("evtid");
+
+		const {tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey} =
+			this.tokenConfig;
+
+		try {
+
+			const tokens = readMagicUrl(
+				tokenUrlName,
+				tokenSecretName,
+				tokenIdName,
+				itemStorageKey,
+				this.urlParams
+			);
+
+			await this.whitelistCheck(evtid, "write");
+
+			storeMagicURL(tokens, itemStorageKey);
+
+			const event = new Event("tokensupdated");
+
+			// Dispatch the event to force negotiator to reread tokens.
+			// MagicLinkReader part of Outlet usually works in the parent window, same as Client, so it use same document
+			document.body.dispatchEvent(event);
+
+		} catch (e){
+			// no-op
 		}
 	}
 
@@ -426,6 +458,32 @@ export class Outlet {
 	private sendTokens(evtid: any) {
 		let issuerTokens = this.prepareTokenOutput(this.getFilter());
 
+		logger(2, "issuerTokens: (Outlet.sendTokens)", issuerTokens);
+		
+		let requestor = this.getDataFromQuery("requestor");
+		
+		if (requestor){
+			try {
+			let url = new URL(requestor);
+			
+				const params = new URLSearchParams();
+				params.set("action", OutletAction.GET_ISSUER_TOKENS + "-response");
+				params.set("issuer", this.tokenConfig.collectionID);
+				params.set("tokens", JSON.stringify(issuerTokens));
+
+				let requestorURL = url.origin + url.pathname + (url.search ? ("?" + url.search ) : "");
+
+				const goto = `${requestorURL}#${params.toString()}`
+				logger(2, "tokens ready. go to: ", goto);
+
+				document.location.href = goto;
+
+				return;
+			} catch(e){
+				console.log("Requestor redirect Error. ", e);
+			}
+		}
+		
 		this.sendMessageResponse({
 			evtid: evtid,
 			evt: OutletResponseAction.ISSUER_TOKENS,
@@ -457,23 +515,58 @@ export class Outlet {
 		document.location.href = requestorURL + "#" + params.toString();
 	}
 
+	private isSameOrigin(){
+		try {
+			let tokenUrl = new URL(this.tokenConfig.tokenOrigin);
+			if (tokenUrl.origin == document.location.origin){
+				return true;
+			} else {
+				return false;
+			}
+		} catch(e){
+			return false;
+		}
+	}
+
 	public sendMessageResponse(response: ResponseInterfaceBase) {
 		// dont send Message if no referrer defined
 		if (!document.referrer) {
 			return;
 		}
 
-		let target, origin;
+		let target;
 
-		if (!window.opener) {
-			target = window.parent;
-		} else {
+		// opened by JS 
+		if (window.opener && window.opener != window) {
 			target = window.opener;
+		// iframe
+		} else if (window.parent != window){
+			target = window.parent;
 		}
 
 		// let pUrl = new URL(document.referrer);
 		// origin = pUrl.origin;
 
-		if (target) target.postMessage(response, "*");
+		if (target) {
+			target.postMessage(response, "*");
+		}
+
+		if (!this.isSameOrigin()){
+			// At least Brave iOS browser blocks close(), so user have to see the message and close tab.
+			// Message appears when tokens succesully sent with postMessage
+			let style = `
+				background: #eee;
+				padding: 10px;
+				color: #000;
+				display: inline-block;
+				border-radius: 4px;
+				font-size: 1.2em;
+				box-shadow: rgb(0 0 0 / 35%) 0px 5px 15px;
+			`;
+			let div = document.createElement("div");
+			div.innerHTML = "Data sent. Please close the tab and back to main app.";
+			div.setAttribute("style", style);
+			document.body.appendChild(div);
+		}
 	}
 }

@@ -1,6 +1,6 @@
 import {attachPostMessageListener, logger, removePostMessageListener} from "../utils";
 import {ClientError} from "../client";
-import {isMacOrIOS, isBrave} from "../utils/support/getBrowserData";
+import { browserBlocksIframeStorage} from "../utils/support/getBrowserData";
 
 // TODO move Message related interfaces/enum in to shared location /core 
 
@@ -44,8 +44,12 @@ export class Messaging {
 
 		if (!forceTab && this.iframeStorageSupport === null) {
 			// TODO: temp to test safari top level context access.
-			if (document.location.hash !== "#safari-iframe-test")
-				this.iframeStorageSupport = !isMacOrIOS() && !isBrave();
+			// TODO do we need this verificaton?
+			// if (document.location.hash !== "#safari-iframe-test")
+
+			// 
+				// this.iframeStorageSupport = !isMacOrIOS() && !isBrave();
+			this.iframeStorageSupport = !browserBlocksIframeStorage();
 		}
 
 		// Uncomment to test popup mode
@@ -290,19 +294,29 @@ export class Messaging {
 
 		let url = `${request.origin}#evtid=${id}&action=${request.action}`;
 
-		for (let i in request.data){
-			let value = request.data[i];
+		// in request to Outlet() to get tokens we dont have any token
+		if (typeof request.data.token !== "undefined") {
+			url += `&token=${encodeURIComponent(JSON.stringify(request.data.token))}`;
+		}
+
+		for (let key in request.data){
+			let value = request.data[key];
+
+			// no sense to send issuer config. Outlet() use own config, 
+			// it can be dangerous if Outlet beleive to external config from URL HASH
+			if (key === "issuer")
+				continue;
 
 			if (!value)
 				continue;
 
 			if (value instanceof Array || value instanceof Object){
-				url += `&${i}=${encodeURIComponent(JSON.stringify(value))}`;
+				url += `&${key}=${JSON.stringify(value)}`;
 			} else {
-				if (i === "urlParams"){
+				if (key === "urlParams"){
 					url += `&${value}`;
 				} else {
-					url += `&${i}=${value}`;
+					url += `&${key}=${value}`;
 				}
 			}
 		}

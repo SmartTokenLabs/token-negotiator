@@ -22,6 +22,7 @@ for both on and off chain tokens.
 * White listing functionality added for off chain flow
 * New library hooks for wallet network change
 * Multi-key off chain attestation support
+* Off Chain Re-direct settings and UX enhancements to support wallet, desktop, mobile browsers
 
 ### Bug Fixes
 
