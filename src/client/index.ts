@@ -48,8 +48,7 @@ const defaultConfig: NegotiationInterface = {
 	autoLoadTokens: true,
 	autoEnableTokens: true,
 	messagingForceTab: false,
-	// by default use redirect flow for active negotiation()
-	forceRedirect: true,
+	forceOffChainTokenRedirect: true,
 	unSupportedUserAgent: {
 		authentication: {
 			config: {
@@ -305,7 +304,6 @@ export class Client {
 	}
 
 	private activeNegotiateRequired(): boolean {
-		
 		return (
 			this.config.type === "active" 
 		);
@@ -628,7 +626,7 @@ export class Client {
 
 		let redirectRequired = 
 			(browserBlocksIframeStorage() && this.config.type === "passive") 
-			|| this.config.forceRedirect;
+			|| this.config.forceOffChainTokenRedirect;
 
 		const res = await this.messaging.sendMessage(
 			{

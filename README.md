@@ -178,7 +178,7 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
   const negotiator = new Client({
     type: 'passive',
     issuers: [
-      { 
+      {
         collectionID: 'devcon', 
         title: "Devcon",
         onChain: false,
@@ -534,6 +534,7 @@ OffChain | string  |
 | base64attestorPubKey   | The base64 encoded public key of the identity attestation issuer                  | OffChain     | Y        | string  |
 | noTokenMsg           | A token issuer message to assist users when they have no tokens |    both    |     N           | string
 | hideToggle           | Hide the Toggle Buttons for the collection |    both    |     N           | boolean
+| forceOffChainTokenRedirect | redirect to collect off connect off chain tokens (default is true) |    off chain    |     N           | boolean
 
 ### Outlet Configuration 
 (Applicable to TokenScript off chain token issuers)
