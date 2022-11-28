@@ -4,10 +4,15 @@
 
 .overlay-tn .headline-container-tn {
   border-bottom: 1px solid #ececec;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   padding-top: 8px;
+  & > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .toolbar-tn {
+    justify-content: right;
+  }
 }
 
 .overlay-tn .cancel-auth-btn {
@@ -117,7 +122,7 @@
 }
 
 .dis-wallet-tn {
-  margin: 10px;
+  margin: 5px 10px;
 }
 
 .stl-tn {
@@ -506,6 +511,20 @@ li.issuer-connect-banner-tn .tokens-btn-tn,
   cursor: pointer;
   color: white;
   background: #101010;
+  & > svg {
+    fill: white;
+  }
+}
+
+.refresh-tn {
+  margin-top: 0;
+  margin-bottom: 10px;
+  margin-right: 10px;
+}
+
+.refresh-icon-tn {
+  width: 12px;
+  height: 12px;
 }
 
 .dismiss-error-tn {

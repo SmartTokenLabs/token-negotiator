@@ -388,7 +388,7 @@ export class Client {
 
 	private cancelAutoload = true;
 
-	async tokenAutoLoad(onLoading: (issuer: string) => void, onComplete: (issuer: string, tokens: any[]) => void) {
+	async tokenAutoLoad(onLoading: (issuer: string) => void, onComplete: (issuer: string, tokens: any[]) => void, refresh: boolean) {
 
 		if (this.config.autoLoadTokens === false)
 			return;
@@ -401,7 +401,7 @@ export class Client {
 
 			let tokens = this.tokenStore.getIssuerTokens(issuerKey)
 
-			if (tokens?.length > 0)
+			if (!refresh && tokens?.length > 0)
 				continue;
 
 			onLoading(issuerKey);
@@ -418,6 +418,9 @@ export class Client {
 			}
 
 			count++;
+
+			if (refresh)
+				continue;
 
 			if (this.cancelAutoload || (this.config.autoLoadTokens !== true && count > this.config.autoLoadTokens))
 				break;
