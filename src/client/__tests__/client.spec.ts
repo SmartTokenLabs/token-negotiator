@@ -74,7 +74,11 @@ describe('client spec', () => {
 	test('tokenNegotiatorClient a new instance of client', () => {
 		const tokenNegotiatorClient = getOffChainConfigClient();
 
-		expect(tokenNegotiatorClient.getTokenStore().getCurrentIssuers()).toEqual({
+		const issuers = tokenNegotiatorClient.getTokenStore().getCurrentIssuers();
+
+		delete issuers["devcon"].timestamp;
+
+		expect(issuers).toEqual({
 			"devcon": {
 				collectionID: 'devcon',
 				title: "Devcon",
@@ -99,7 +103,11 @@ describe('client spec', () => {
 
 		expect(store.getCurrentTokens(true)).toEqual({});
 
-		expect(store.getCurrentIssuers()).toEqual({
+		const issuers = store.getCurrentIssuers();
+
+		delete issuers["devcon"].timestamp;
+
+		expect(issuers).toEqual({
 			"devcon": {
 				"attestationOrigin": "https://stage.attestation.id/",
 				"base64attestorPubKey": "",
@@ -195,7 +203,13 @@ describe('client spec', () => {
 		});
 		
 		tokenNegotiatorActiveClient.negotiate(offChainIssuer);
-		expect(tokenNegotiatorActiveClient.getTokenStore().getCurrentIssuers()).toEqual({
+
+
+		let issuers = tokenNegotiatorActiveClient.getTokenStore().getCurrentIssuers();
+
+		delete issuers["devcon"].timestamp;
+
+		expect(issuers).toEqual({
 			"devcon": {
 				collectionID: 'devcon',
 				title: "Devcon",
@@ -208,8 +222,14 @@ describe('client spec', () => {
 				base64attestorPubKey: ""
 			}
 		});
+
 		tokenNegotiatorPassiveClient.negotiate(offChainIssuer);
-		expect(tokenNegotiatorPassiveClient.getTokenStore().getCurrentIssuers()).toEqual({
+
+		issuers = tokenNegotiatorActiveClient.getTokenStore().getCurrentIssuers();
+
+		delete issuers["devcon"].timestamp;
+
+		expect(issuers).toEqual({
 			"devcon": {
 				collectionID: 'devcon',
 				title: "Devcon",
