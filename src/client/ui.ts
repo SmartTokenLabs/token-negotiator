@@ -20,7 +20,7 @@ export interface UIOptionsInterface {
 	theme?: UItheme;
 	position?: PopupPosition;
 	autoPopup?: boolean;
-	alwaysShowStartScreen: boolean;
+	alwaysShowStartScreen?: boolean;
 }
 
 export class Ui {
