@@ -43,12 +43,14 @@ const defaultConfig: NegotiationInterface = {
 		openingHeading: "Validate your token ownership for access",
 		issuerHeading: "Detected tokens",
 		autoPopup: true,
-		position: "bottom-right"
+		position: "bottom-right",
+		alwaysShowStartScreen: false
 	},
 	autoLoadTokens: true,
 	autoEnableTokens: true,
 	messagingForceTab: false,
 	forceOffChainTokenRedirect: true,
+	tokenPersistenceTTL: 600,
 	unSupportedUserAgent: {
 		authentication: {
 			config: {
@@ -118,7 +120,7 @@ export class Client {
 
 		this.negotiateAlreadyFired = false;
 
-		this.tokenStore = new TokenStore(this.config.autoEnableTokens);
+		this.tokenStore = new TokenStore(this.config.autoEnableTokens, this.config.tokenPersistenceTTL);
 
 		if (this.config.issuers?.length > 0)
 			this.tokenStore.updateIssuers(this.config.issuers);
@@ -454,7 +456,7 @@ export class Client {
 							// in other way page will be redirected in loop
 							|| action === "proof-callback"
 						)
-					&& issuer == resposeIssuer) {
+					&& issuer === resposeIssuer) {
 						let resposeTokensEncoded = this.getDataFromQuery("tokens");
 						try {
 							tokens = JSON.parse(resposeTokensEncoded);
@@ -823,7 +825,7 @@ export class Client {
 				} 
 			} catch (err) {
 				logger(2,err);
-				console.log("issuer config error");
+				console.log("issuer config error " + err.message);
 			}
 		})
 

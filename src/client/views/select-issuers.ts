@@ -141,7 +141,7 @@ export class SelectIssuers extends AbstractView {
 
 	}
 
-	issuerConnectMarkup(title: string, image: string|undefined, issuer: string, tokens: []|null){
+	issuerConnectMarkup(title: string, image: string|undefined, issuer: string, tokens: any[]){
 		return `
             <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
               <div tabindex="0" style="display: flex; align-items: center;">
