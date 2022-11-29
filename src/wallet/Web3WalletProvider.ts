@@ -217,7 +217,7 @@ export class Web3WalletProvider {
 
 			await window.ethereum.enable(); // fall back may be needed for FF to open Extension Prompt.
 
-			const provider = new ethers.providers.Web3Provider(window.ethereum);
+			const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
 
 			return this.registerProvider(provider, "MetaMask");
 
