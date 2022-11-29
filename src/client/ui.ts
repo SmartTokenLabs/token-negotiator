@@ -101,14 +101,11 @@ export class Ui {
 		if (this.options.alwaysShowStartScreen || !localStorage.getItem(TokenStore.LOCAL_STORAGE_KEY) || !this.client.getTokenStore().getTotalTokenCount())
 			return Start;
 
-		if (this.client.getTokenStore().hasOnChainTokens()){
-			if (await this.canSkipWalletSelection()){
-				this.client.enrichTokenLookupDataOnChainTokens();
-				return SelectIssuers;
-			}
-			return SelectWallet;
-		} else {
+		if (await this.canSkipWalletSelection()){
+			this.client.enrichTokenLookupDataOnChainTokens();
 			return SelectIssuers;
+		} else {
+			return SelectWallet;
 		}
 	}
 

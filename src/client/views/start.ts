@@ -25,13 +25,11 @@ export class Start extends AbstractView {
 		// TODO: Enable skipping of start screen when wallet is already connected?
 		this.ui.showLoaderDelayed(["Initializing wallet.."], 500);
 
-		if (this.client.getTokenStore().hasOnChainTokens()){
-			let wp = await this.client.getWalletProvider();
-			await wp.loadConnections();
+		if (await this.ui.canSkipWalletSelection()){
 			this.client.enrichTokenLookupDataOnChainTokens();
-			this.ui.updateUI(wp.getConnectedWalletData().length ? SelectIssuers : SelectWallet);
-		} else {
 			this.ui.updateUI(SelectIssuers);
+		} else {
+			this.ui.updateUI(SelectWallet);
 		}
 
 		this.ui.dismissLoader();
