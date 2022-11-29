@@ -90,6 +90,9 @@
   background: #282828;
   border: 1px solid #303030;
   font-weight: 400;
+  & > svg {
+    fill: white;
+  }
 }
 
 .overlay-tn.dark-tn .dismiss-error-tn {

@@ -111,7 +111,6 @@ export class Client {
 	constructor(config: NegotiationInterface) {
 		if (window.location.hash) {
 			this.urlParams = new URLSearchParams(window.location.hash.substring(1));
-			document.location.hash = "";
 			let action = this.getDataFromQuery("action");
 			logger(2, `Client() fired. Action = "${action}"`);
 		}
@@ -896,6 +895,7 @@ export class Client {
 						
 			if (action === "proof-callback") {
 				this.readProofCallback();
+				document.location.hash = "";
 			} else if (action === "email-callback") {
 
 				let currentIssuer = this.getOutletConfigForCurrentOrigin();
@@ -908,6 +908,7 @@ export class Client {
 						outlet = null;
 					});
 				}
+				document.location.hash = "";
 			}
 		}
 

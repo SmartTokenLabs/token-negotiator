@@ -68,6 +68,7 @@ module.exports = {
     output: {
         library: 'negotiator',
         filename: 'negotiator.js',
+		chunkFilename: 'negotiator-[chunkhash].js',
         libraryTarget: 'umd',
         path: path.resolve(__dirname, 'token-negotiator-dist'),
     },
