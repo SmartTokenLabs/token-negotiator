@@ -328,6 +328,7 @@ Once connected to Token Negotiator, the wallet instance can be used.
   * @return {String} chain id
   * @return {String} providerType 'MetaMask'
   * @return {Object} provider instance
+  * @return {Object} ethers library instance
   */
   negotiator.on('connected-wallet', (connectedWallet) => {
     // handle the wallet instance as required by your application
