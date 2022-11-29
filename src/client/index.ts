@@ -11,8 +11,6 @@ import {SignedUNChallenge} from "./auth/signedUNChallenge";
 import {TicketZKProof} from "./auth/ticketZKProof";
 import {AuthenticationMethod} from "./auth/abstractAuthentication";
 import { isUserAgentSupported, validateBlockchain } from '../utils/support/isSupported';
-import {SelectWallet} from "./views/select-wallet";
-import {SelectIssuers} from "./views/select-issuers";
 import Web3WalletProvider from '../wallet/Web3WalletProvider';
 import {LocalOutlet} from "../outlet/localOutlet";
 import {Outlet, OutletInterface} from "../outlet";
@@ -234,7 +232,6 @@ export class Client {
 		let wp = await this.getWalletProvider();
 		wp.deleteConnections();
 		this.tokenStore.clearCachedTokens();
-		if(this.ui?.updateUI) this.ui.updateUI(SelectWallet);
 		this.eventSender.emitConnectedWalletInstance(null);
 		this.eventSender.emitDisconnectedWalletInstance();
 	}
@@ -767,8 +764,8 @@ export class Client {
 		}
 
 		return new Promise((resolve, reject) => {
-			this.ui.updateUI(SelectWallet, {connectCallback: async () => {
-				this.ui.updateUI(SelectIssuers);
+			this.ui.updateUI("wallet", {connectCallback: async () => {
+				this.ui.updateUI("main");
 				try {
 					let res = await this.authenticate(authRequest);
 					resolve(res);

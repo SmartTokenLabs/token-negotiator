@@ -2,7 +2,7 @@ import {Start} from './views/start';
 
 import {logger, requiredParams} from "../utils";
 import {Client, ClientError} from "./index";
-import {ViewInterface, ViewConstructor, AbstractView} from "./views/view-interface";
+import {ViewInterface, ViewConstructor} from "./views/view-interface";
 import {TokenStore} from "./tokenStore";
 import {SelectIssuers} from "./views/select-issuers";
 import {SelectWallet} from "./views/select-wallet";
@@ -10,6 +10,7 @@ import {SelectWallet} from "./views/select-wallet";
 export type UIType = "popup" | "inline"; // TODO: implement modal too
 export type PopupPosition = 'bottom-right' | 'bottom-left' | 'top-left' | 'top-right';
 export type UItheme = 'light' | 'dark';
+export type ViewType = "start" | "main" | "wallet";
 
 export interface UIOptionsInterface {
 	uiType?: UIType;
@@ -21,6 +22,9 @@ export interface UIOptionsInterface {
 	position?: PopupPosition;
 	autoPopup?: boolean;
 	alwaysShowStartScreen?: boolean;
+	viewOverrides?: {
+		[type: string]: ViewConstructor<ViewInterface>
+	}
 }
 
 export class Ui {
@@ -96,16 +100,31 @@ export class Ui {
 
 	}
 
+	public getViewClass(type: ViewType): ViewConstructor<ViewInterface> {
+
+		if (this.options.viewOverrides?.[type])
+			return this.options.viewOverrides?.[type];
+
+		switch (type){
+		case "start":
+			return Start;
+		case "main":
+			return SelectIssuers;
+		case "wallet":
+			return SelectWallet;
+		}
+	}
+
 	public async getStartScreen(){
 
 		if (this.options.alwaysShowStartScreen || !localStorage.getItem(TokenStore.LOCAL_STORAGE_KEY) || !this.client.getTokenStore().getTotalTokenCount())
-			return Start;
+			return this.getViewClass("start");
 
 		if (await this.canSkipWalletSelection()){
 			this.client.enrichTokenLookupDataOnChainTokens();
-			return SelectIssuers;
+			return this.getViewClass("main");
 		} else {
-			return SelectWallet;
+			return this.getViewClass("wallet");
 		}
 	}
 
@@ -194,7 +213,10 @@ export class Ui {
 		}
 	}
 
-	updateUI(ViewClass: ViewConstructor<AbstractView>, data?: any) {
+	updateUI(ViewClass: ViewConstructor<ViewInterface>|ViewType, data?: any) {
+
+		if (typeof ViewClass === "string")
+			ViewClass = this.getViewClass(ViewClass);
 
 		if (!this.viewContainer){
 			logger(3, "Element .overlay-content-tn not found: popup not initialized");
