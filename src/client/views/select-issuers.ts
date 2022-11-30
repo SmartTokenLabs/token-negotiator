@@ -23,6 +23,11 @@ export class SelectIssuers extends AbstractView {
 	}
 
 	render(){
+		this.renderContent();
+		this.afterRender();
+	}
+
+	protected renderContent(){
 
 		this.viewContainer.innerHTML = `
             <div class="inner-content-tn issuer-slider-tn">
@@ -84,6 +89,9 @@ export class SelectIssuers extends AbstractView {
 		let tokensListElem = this.tokensContainer.getElementsByClassName("token-list-container-tn")[0];
 
 		this.tokenListView = new TokenList(this.client, this.ui, tokensListElem, {});
+	}
+
+	protected afterRender(){
 
 		if (this.client.issuersLoaded) {
 			if (this.client.getTokenStore().hasUnloadedTokens())
@@ -91,7 +99,6 @@ export class SelectIssuers extends AbstractView {
 		} else {
 			this.issuersLoading();
 		}
-
 	}
 
 	protected getCustomContent(){
