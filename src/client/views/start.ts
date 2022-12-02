@@ -1,6 +1,4 @@
 import {AbstractView} from "./view-interface";
-import {SelectWallet} from "./select-wallet";
-import {SelectIssuers} from "./select-issuers";
 
 export class Start extends AbstractView {
 
@@ -21,15 +19,14 @@ export class Start extends AbstractView {
 	}
 
 	async goToWalletSelection() {
-	
-		// TODO: Enable skipping of start screen when wallet is already connected?
+
 		this.ui.showLoaderDelayed(["Initializing wallet.."], 500);
 
 		if (await this.ui.canSkipWalletSelection()){
 			this.client.enrichTokenLookupDataOnChainTokens();
-			this.ui.updateUI(SelectIssuers);
+			this.ui.updateUI("main");
 		} else {
-			this.ui.updateUI(SelectWallet);
+			this.ui.updateUI("wallet");
 		}
 
 		this.ui.dismissLoader();
