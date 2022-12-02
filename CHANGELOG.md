@@ -24,6 +24,7 @@ for both on and off chain tokens.
 * Multi-key off chain attestation support
 * Off Chain Re-direct settings and UX enhancements to support wallet, desktop, mobile browsers
 * Exposed ethers library instance
+* Persist class names for UMD build allowing for more flexiblility towards management and reference to internal classes
 
 ### Bug Fixes
 

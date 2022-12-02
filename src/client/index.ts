@@ -92,7 +92,7 @@ export class Client {
 	private config: NegotiationInterface;
 	private web3WalletProvider: Web3WalletProvider;
 	private messaging: Messaging;
-	private ui: Ui;
+	protected ui: Ui;
 	private clientCallBackEvents: {} = {};
 	private tokenStore: TokenStore;
 	private uiUpdateCallbacks: {[type in UIUpdateEventType]} = {
