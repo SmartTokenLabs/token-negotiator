@@ -29,8 +29,15 @@ export class SelectIssuers extends AbstractView {
               <div class="issuer-view-tn scroll-tn">
                 <div class="brand-tn"></div>
                 <div class="headline-container-tn">
-                  <p class="headline-tn">${this.params.options.issuerHeading}</p>
-                  <button class="btn-tn dis-wallet-tn" style="display: none;" aria-label="Disconnect Wallet">Disconnect</button>
+                  <div>
+                  	<p class="headline-tn">${this.params.options.issuerHeading}</p>
+                  	<button class="btn-tn dis-wallet-tn" style="display: none;" aria-label="Disconnect Wallet">Disconnect</button>
+				  </div>
+				  <div class="toolbar-tn">
+				  	<button class="btn-tn refresh-tn" aria-label="Refresh Tokens">
+                  		<svg class="refresh-icon-tn" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"\t viewBox="0 0 383.748 383.748" style="enable-background:new 0 0 383.748 383.748;" xml:space="preserve"><g>\t<path d="M62.772,95.042C90.904,54.899,137.496,30,187.343,30c83.743,0,151.874,68.13,151.874,151.874h30\t\tC369.217,81.588,287.629,0,187.343,0c-35.038,0-69.061,9.989-98.391,28.888C70.368,40.862,54.245,56.032,41.221,73.593\t\tL2.081,34.641v113.365h113.91L62.772,95.042z"/>\t<path d="M381.667,235.742h-113.91l53.219,52.965c-28.132,40.142-74.724,65.042-124.571,65.042\t\tc-83.744,0-151.874-68.13-151.874-151.874h-30c0,100.286,81.588,181.874,181.874,181.874c35.038,0,69.062-9.989,98.391-28.888\t\tc18.584-11.975,34.707-27.145,47.731-44.706l39.139,38.952V235.742z"/></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g></svg>
+				  	</button>
+				  </div>
                 </div>
 								<nav class="token-issuer-nav-tn">
                 	<ul class="token-issuer-list-container-tn" role="menubar"></ul>
@@ -56,6 +63,12 @@ export class SelectIssuers extends AbstractView {
 		this.viewContainer.querySelector('.back-to-menu-tn').addEventListener('click', this.backToIssuers.bind(this));
 
 		this.setupWalletButton();
+
+		const refreshBtn = this.viewContainer.querySelector('.refresh-tn');
+
+		refreshBtn.addEventListener('click', () => {
+			this.autoLoadTokens(true);
+		});
 
 		this.issuerListContainer = document.querySelector(".token-issuer-list-container-tn");
 		this.tokensContainer = document.getElementsByClassName("token-view-tn")[0];
@@ -141,7 +154,7 @@ export class SelectIssuers extends AbstractView {
 
 	}
 
-	issuerConnectMarkup(title: string, image: string|undefined, issuer: string, tokens: []|null){
+	issuerConnectMarkup(title: string, image: string|undefined, issuer: string, tokens: any[]){
 		return `
             <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
               <div tabindex="0" style="display: flex; align-items: center;">
@@ -171,7 +184,7 @@ export class SelectIssuers extends AbstractView {
 		// TODO - Review and uplift this logic. Its not working as expected from tests
 	}
 
-	async autoLoadTokens(){
+	async autoLoadTokens(refresh = false){
 
 		await this.client.tokenAutoLoad(this.issuerLoading.bind(this), (issuer: string, tokens: any[]) => {
 
@@ -185,7 +198,7 @@ export class SelectIssuers extends AbstractView {
 			}
 
 			this.issuerConnected(issuer, tokens, false);
-		});
+		}, true);
 	}
 
 	async connectTokenIssuer(event: any) {
@@ -218,10 +231,18 @@ export class SelectIssuers extends AbstractView {
 	}
 
 	issuerLoading(issuer: string){
+
+		const tokensBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .tokens-btn-tn`);
+
+		if (tokensBtn)
+			tokensBtn.style.display = "none"
+
 		const connectBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`);
 
-		if (connectBtn)
+		if (connectBtn) {
 			connectBtn.innerHTML = '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>';
+			connectBtn.style.display = "block";
+		}
 	}
 
 	issuerConnected(issuer: string, tokens: any[], showTokens = true) {

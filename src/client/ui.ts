@@ -3,6 +3,9 @@ import {Start} from './views/start';
 import {logger, requiredParams} from "../utils";
 import {Client, ClientError} from "./index";
 import {ViewInterface, ViewConstructor, AbstractView} from "./views/view-interface";
+import {TokenStore} from "./tokenStore";
+import {SelectIssuers} from "./views/select-issuers";
+import {SelectWallet} from "./views/select-wallet";
 
 export type UIType = "popup" | "inline"; // TODO: implement modal too
 export type PopupPosition = 'bottom-right' | 'bottom-left' | 'top-left' | 'top-right';
@@ -11,12 +14,13 @@ export type UItheme = 'light' | 'dark';
 export interface UIOptionsInterface {
 	uiType?: UIType;
 	containerElement?: string;
-  openingHeading?: string;
-  issuerHeading?: string;
-  repeatAction?: string;
-  theme?: UItheme;
+	openingHeading?: string;
+	issuerHeading?: string;
+	repeatAction?: string;
+	theme?: UItheme;
 	position?: PopupPosition;
 	autoPopup?: boolean;
+	alwaysShowStartScreen?: boolean;
 }
 
 export class Ui {
@@ -54,7 +58,7 @@ export class Ui {
 
 	initialize(){
 
-		setTimeout(() => {
+		setTimeout(async () => {
 
 			this.popupContainer = document.querySelector(this.options.containerElement);
 
@@ -85,11 +89,34 @@ export class Ui {
 				}
 			});
 
-			this.updateUI(Start);
+			this.updateUI(await this.getStartScreen());
 
 		
 		}, 0);
 
+	}
+
+	public async getStartScreen(){
+
+		if (this.options.alwaysShowStartScreen || !localStorage.getItem(TokenStore.LOCAL_STORAGE_KEY) || !this.client.getTokenStore().getTotalTokenCount())
+			return Start;
+
+		if (await this.canSkipWalletSelection()){
+			this.client.enrichTokenLookupDataOnChainTokens();
+			return SelectIssuers;
+		} else {
+			return SelectWallet;
+		}
+	}
+
+	public async canSkipWalletSelection(){
+		if (this.client.getTokenStore().hasOnChainTokens()){
+			let wp = await this.client.getWalletProvider();
+			await wp.loadConnections();
+			return wp.getConnectedWalletData().length > 0;
+		} else {
+			return true;
+		}
 	}
 
 	initializeUIType(){

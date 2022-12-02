@@ -49,6 +49,7 @@ export interface NegotiationInterface {
     safeConnectOptions?: SafeConnectOptions;
     // force redirect flow in "active" mode on negotiate()
     forceOffChainTokenRedirect?: boolean;
+	tokenPersistenceTTL?: number;
     unSupportedUserAgent?: {
         authentication?: {
             config: BrowserDataInterface,

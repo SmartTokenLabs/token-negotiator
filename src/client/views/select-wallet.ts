@@ -96,6 +96,8 @@ export class SelectWallet extends AbstractView {
 			if (this.params?.data?.connectCallback){
 				this.params?.data?.connectCallback();
 			} else {
+				// TODO: It may be better/faster to fire this on view load.
+				this.client.enrichTokenLookupDataOnChainTokens();
 				this.ui.updateUI(SelectIssuers);
 			}
 

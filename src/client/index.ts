@@ -43,12 +43,14 @@ const defaultConfig: NegotiationInterface = {
 		openingHeading: "Validate your token ownership for access",
 		issuerHeading: "Detected tokens",
 		autoPopup: true,
-		position: "bottom-right"
+		position: "bottom-right",
+		alwaysShowStartScreen: false
 	},
 	autoLoadTokens: true,
 	autoEnableTokens: true,
 	messagingForceTab: false,
 	forceOffChainTokenRedirect: true,
+	tokenPersistenceTTL: 600,
 	unSupportedUserAgent: {
 		authentication: {
 			config: {
@@ -109,7 +111,6 @@ export class Client {
 	constructor(config: NegotiationInterface) {
 		if (window.location.hash) {
 			this.urlParams = new URLSearchParams(window.location.hash.substring(1));
-			document.location.hash = "";
 			let action = this.getDataFromQuery("action");
 			logger(2, `Client() fired. Action = "${action}"`);
 		}
@@ -118,7 +119,7 @@ export class Client {
 
 		this.negotiateAlreadyFired = false;
 
-		this.tokenStore = new TokenStore(this.config.autoEnableTokens);
+		this.tokenStore = new TokenStore(this.config.autoEnableTokens, this.config.tokenPersistenceTTL);
 
 		if (this.config.issuers?.length > 0)
 			this.tokenStore.updateIssuers(this.config.issuers);
@@ -386,7 +387,7 @@ export class Client {
 
 	private cancelAutoload = true;
 
-	async tokenAutoLoad(onLoading: (issuer: string) => void, onComplete: (issuer: string, tokens: any[]) => void) {
+	async tokenAutoLoad(onLoading: (issuer: string) => void, onComplete: (issuer: string, tokens: any[]) => void, refresh: boolean) {
 
 		if (this.config.autoLoadTokens === false)
 			return;
@@ -399,7 +400,7 @@ export class Client {
 
 			let tokens = this.tokenStore.getIssuerTokens(issuerKey)
 
-			if (tokens?.length > 0)
+			if (!refresh && tokens?.length > 0)
 				continue;
 
 			onLoading(issuerKey);
@@ -416,6 +417,9 @@ export class Client {
 			}
 
 			count++;
+
+			if (refresh)
+				continue;
 
 			if (this.cancelAutoload || (this.config.autoLoadTokens !== true && count > this.config.autoLoadTokens))
 				break;
@@ -454,7 +458,7 @@ export class Client {
 							// in other way page will be redirected in loop
 							|| action === "proof-callback"
 						)
-					&& issuer == resposeIssuer) {
+					&& issuer === resposeIssuer) {
 						let resposeTokensEncoded = this.getDataFromQuery("tokens");
 						try {
 							tokens = JSON.parse(resposeTokensEncoded);
@@ -823,7 +827,7 @@ export class Client {
 				} 
 			} catch (err) {
 				logger(2,err);
-				console.log("issuer config error");
+				console.log("issuer config error " + err.message);
 			}
 		})
 
@@ -891,6 +895,7 @@ export class Client {
 						
 			if (action === "proof-callback") {
 				this.readProofCallback();
+				document.location.hash = "";
 			} else if (action === "email-callback") {
 
 				let currentIssuer = this.getOutletConfigForCurrentOrigin();
@@ -903,6 +908,7 @@ export class Client {
 						outlet = null;
 					});
 				}
+				document.location.hash = "";
 			}
 		}
 
