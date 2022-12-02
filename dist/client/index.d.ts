@@ -1,4 +1,4 @@
-import { Ui, UItheme } from './ui';
+import { UiInterface, UItheme } from './ui';
 import "./../vendor/keyShape";
 import { TokenStore } from "./tokenStore";
 import { OffChainTokenConfig, OnChainTokenConfig, AuthenticateInterface, NegotiationInterface, TokenNegotiatorEvents } from './interface';
@@ -12,6 +12,7 @@ declare global {
         tn: unknown;
     }
 }
+export declare const defaultConfig: NegotiationInterface;
 export declare const enum UIUpdateEventType {
     ISSUERS_LOADING = 0,
     ISSUERS_LOADED = 1
@@ -27,10 +28,10 @@ export declare enum ClientErrorMessage {
 export declare class Client {
     private negotiateAlreadyFired;
     issuersLoaded: boolean;
-    private config;
+    protected config: NegotiationInterface;
     private web3WalletProvider;
     private messaging;
-    private ui;
+    protected ui: UiInterface;
     private clientCallBackEvents;
     private tokenStore;
     private uiUpdateCallbacks;
@@ -43,7 +44,8 @@ export declare class Client {
     private emitRedirectProofEvent;
     private mergeConfig;
     getTokenStore(): TokenStore;
-    getUi(): Ui;
+    getUi(): UiInterface;
+    createUiInstance(): void;
     triggerUiUpdateCallback(type: UIUpdateEventType, data?: {}): void;
     registerUiUpdateCallback(type: UIUpdateEventType, callback: Function): void;
     safeConnectAvailable(): boolean;

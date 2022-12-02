@@ -50,8 +50,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 import { AbstractView } from "./view-interface";
-import { SelectWallet } from "./select-wallet";
-import { SelectIssuers } from "./select-issuers";
 var Start = (function (_super) {
     __extends(Start, _super);
     function Start() {
@@ -71,10 +69,10 @@ var Start = (function (_super) {
                     case 1:
                         if (_a.sent()) {
                             this.client.enrichTokenLookupDataOnChainTokens();
-                            this.ui.updateUI(SelectIssuers);
+                            this.ui.updateUI("main");
                         }
                         else {
-                            this.ui.updateUI(SelectWallet);
+                            this.ui.updateUI("wallet");
                         }
                         this.ui.dismissLoader();
                         return [2];

@@ -6,6 +6,9 @@ export declare class SelectIssuers extends AbstractView {
     tokenListView: TokenList | undefined;
     init(): void;
     render(): void;
+    protected renderContent(): void;
+    protected afterRender(): void;
+    protected getCustomContent(): string;
     setupWalletButton(): Promise<void>;
     issuersLoading(): void;
     populateIssuers(): void;

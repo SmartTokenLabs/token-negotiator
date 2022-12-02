@@ -23,7 +23,7 @@ export declare class Web3WalletProvider {
     emitNetworkChange(chainId: string): string;
     deleteConnections(): void;
     loadConnections(): Promise<void>;
-    connectWith(walletType: string, checkConnectionOnly?: boolean): any;
+    connectWith(walletType: string, checkConnectionOnly?: boolean): Promise<any>;
     signMessage(address: string, message: string): Promise<string>;
     getWalletProvider(address: string): ethers.providers.Web3Provider;
     getConnectedWalletData(): WalletConnection[];

@@ -1,11 +1,9 @@
-import { Start } from './views/start';
 import { Client } from "./index";
-import { ViewInterface, ViewConstructor, AbstractView } from "./views/view-interface";
-import { SelectIssuers } from "./views/select-issuers";
-import { SelectWallet } from "./views/select-wallet";
+import { ViewInterface, ViewConstructor } from "./views/view-interface";
 export declare type UIType = "popup" | "inline";
 export declare type PopupPosition = 'bottom-right' | 'bottom-left' | 'top-left' | 'top-right';
 export declare type UItheme = 'light' | 'dark';
+export declare type ViewType = "start" | "main" | "wallet";
 export interface UIOptionsInterface {
     uiType?: UIType;
     containerElement?: string;
@@ -16,10 +14,30 @@ export interface UIOptionsInterface {
     position?: PopupPosition;
     autoPopup?: boolean;
     alwaysShowStartScreen?: boolean;
+    viewOverrides?: {
+        [type: string]: ViewConstructor<ViewInterface>;
+    };
 }
-export declare class Ui {
-    private static UI_CONTAINER_HTML;
-    private static FAB_BUTTON_HTML;
+export interface UiInterface {
+    viewContainer: HTMLElement;
+    initialize(): void;
+    updateUI(ViewClass: ViewConstructor<ViewInterface> | ViewType, data?: any): any;
+    closeOverlay(): void;
+    openOverlay(): void;
+    togglePopup(): void;
+    viewIsNotStart(): boolean;
+    showError(error: string | Error): any;
+    showError(error: string | Error, canDismiss: boolean): any;
+    setErrorRetryCallback(retryCallback?: Function): any;
+    showLoader(...message: string[]): any;
+    showLoaderDelayed(messages: string[], delay: number): any;
+    showLoaderDelayed(messages: string[], delay: number, openOverlay: boolean): any;
+    dismissLoader(): any;
+    switchTheme(newTheme: UItheme): any;
+}
+export declare class Ui implements UiInterface {
+    protected static UI_CONTAINER_HTML: string;
+    protected static FAB_BUTTON_HTML: string;
     options?: UIOptionsInterface;
     client: Client;
     popupContainer: any;
@@ -30,22 +48,23 @@ export declare class Ui {
     retryButton: any;
     constructor(options: UIOptionsInterface, client: Client);
     initialize(): void;
-    getStartScreen(): Promise<typeof SelectIssuers | typeof SelectWallet | typeof Start>;
+    getViewClass(type: ViewType): ViewConstructor<ViewInterface>;
+    getStartScreen(): Promise<ViewConstructor<ViewInterface>>;
     canSkipWalletSelection(): Promise<boolean>;
     initializeUIType(): void;
     closeOverlay(): void;
     openOverlay(): void;
     togglePopup(): void;
-    updateUI(ViewClass: ViewConstructor<AbstractView>, data?: any): void;
+    updateUI(ViewClass: ViewConstructor<ViewInterface> | ViewType, data?: any): void;
     viewIsNotStart(): boolean;
     showError(error: string | Error, canDismiss?: boolean): void;
     setErrorRetryCallback(retryCallback?: Function): void;
     loadTimer?: any;
     showLoaderDelayed(messages: string[], delay: number, openOverlay?: boolean): void;
-    cancelDelayedLoader(): void;
+    protected cancelDelayedLoader(): void;
     showLoader(...message: string[]): void;
     dismissLoader(): void;
-    private setTheme;
+    protected setTheme(theme: UItheme): void;
     private assignFabButtonAnimation;
     private validateTheme;
     switchTheme(newTheme: UItheme): void;

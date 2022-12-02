@@ -55,8 +55,6 @@ import { TokenStore } from "./tokenStore";
 import { SignedUNChallenge } from "./auth/signedUNChallenge";
 import { TicketZKProof } from "./auth/ticketZKProof";
 import { isUserAgentSupported, validateBlockchain } from '../utils/support/isSupported';
-import { SelectWallet } from "./views/select-wallet";
-import { SelectIssuers } from "./views/select-issuers";
 import { LocalOutlet } from "../outlet/localOutlet";
 import { Outlet } from "../outlet";
 import { browserBlocksIframeStorage } from "../utils/support/getBrowserData";
@@ -64,7 +62,7 @@ import { waitForElementToExist, errorHandler } from '../utils/index';
 if (typeof window !== "undefined")
     window.tn = { version: "2.2.0" };
 var NOT_SUPPORTED_ERROR = "This browser is not supported. Please try using Chrome, Edge, FireFox or Safari.";
-var defaultConfig = {
+export var defaultConfig = {
     type: "active",
     issuers: [],
     uiOptions: {
@@ -224,6 +222,9 @@ var Client = (function () {
     Client.prototype.getUi = function () {
         return this.ui;
     };
+    Client.prototype.createUiInstance = function () {
+        this.ui = new Ui(this.config.uiOptions, this);
+    };
     Client.prototype.triggerUiUpdateCallback = function (type, data) {
         if (this.uiUpdateCallbacks[type])
             this.uiUpdateCallbacks[type](data);
@@ -259,18 +260,15 @@ var Client = (function () {
         });
     };
     Client.prototype.disconnectWallet = function () {
-        var _a;
         return __awaiter(this, void 0, void 0, function () {
             var wp;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0: return [4, this.getWalletProvider()];
                     case 1:
-                        wp = _b.sent();
+                        wp = _a.sent();
                         wp.deleteConnections();
                         this.tokenStore.clearCachedTokens();
-                        if ((_a = this.ui) === null || _a === void 0 ? void 0 : _a.updateUI)
-                            this.ui.updateUI(SelectWallet);
                         this.eventSender.emitConnectedWalletInstance(null);
                         this.eventSender.emitDisconnectedWalletInstance();
                         return [2];
@@ -346,7 +344,7 @@ var Client = (function () {
         if (!isUserAgentSupported((_b = (_a = this.config.unSupportedUserAgent) === null || _a === void 0 ? void 0 : _a[type]) === null || _b === void 0 ? void 0 : _b.config)) {
             var err = this.config.unSupportedUserAgent[type].errorMessage;
             if (this.activeNegotiateRequired()) {
-                this.ui = new Ui(this.config.uiOptions, this);
+                this.createUiInstance();
                 this.ui.initialize();
                 this.ui.openOverlay();
                 this.ui.showError(err, false);
@@ -420,7 +418,7 @@ var Client = (function () {
                 this.enrichTokenLookupDataOnChainTokens();
         }
         else {
-            this.ui = new Ui(this.config.uiOptions, this);
+            this.createUiInstance();
             this.ui.initialize();
             autoOpenPopup = true;
         }
@@ -834,12 +832,12 @@ var Client = (function () {
                         _a.sent();
                         return [2, this.authenticate(authRequest)];
                     case 4: return [2, new Promise(function (resolve, reject) {
-                            _this.ui.updateUI(SelectWallet, { connectCallback: function () { return __awaiter(_this, void 0, void 0, function () {
+                            _this.ui.updateUI("wallet", { connectCallback: function () { return __awaiter(_this, void 0, void 0, function () {
                                     var res, e_4;
                                     return __generator(this, function (_a) {
                                         switch (_a.label) {
                                             case 0:
-                                                this.ui.updateUI(SelectIssuers);
+                                                this.ui.updateUI("main");
                                                 _a.label = 1;
                                             case 1:
                                                 _a.trys.push([1, 3, , 4]);
