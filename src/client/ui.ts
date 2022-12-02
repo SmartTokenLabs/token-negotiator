@@ -30,8 +30,7 @@ export interface UIOptionsInterface {
 export interface UiInterface {
 	viewContainer: HTMLElement,
 	initialize(): void;
-	updateUI(ViewClass: ViewConstructor<ViewInterface>, data?: any);
-	getStartView(): ViewConstructor<ViewInterface>
+	updateUI(ViewClass: ViewConstructor<ViewInterface>|ViewType, data?: any);
 	closeOverlay(): void;
 	openOverlay(): void;
 	togglePopup(): void;
