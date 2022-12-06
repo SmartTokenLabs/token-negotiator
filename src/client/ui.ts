@@ -29,7 +29,7 @@ export interface UIOptionsInterface {
 
 export interface UiInterface {
 	viewContainer: HTMLElement,
-	initialize(): void;
+	initialize(): Promise<void>;
 	updateUI(ViewClass: ViewConstructor<ViewInterface>|ViewType, data?: any);
 	closeOverlay(): void;
 	openOverlay(): void;
@@ -78,44 +78,34 @@ export class Ui implements UiInterface {
 		this.client = client;
 	}
 
-	initialize(){
+	async initialize(){
 
-		setTimeout(async () => {
+		this.popupContainer = document.querySelector(this.options.containerElement);
 
-			this.popupContainer = document.querySelector(this.options.containerElement);
+		if (!this.popupContainer){
+			this.popupContainer = document.createElement("div");
+			this.popupContainer.className = "overlay-tn";
+			document.body.appendChild(this.popupContainer);
+		}
 
-			if (!this.popupContainer){
-				this.popupContainer = document.createElement("div");
-				this.popupContainer.className = "overlay-tn";
-				document.body.appendChild(this.popupContainer);
+		this.initializeUIType();
+
+		this.setTheme(this.options?.theme ?? 'light');
+
+		this.viewContainer = this.popupContainer.querySelector(".view-content-tn");
+		this.loadContainer = this.popupContainer.querySelector(".load-container-tn");
+		this.retryButton = this.loadContainer.querySelector('.dismiss-error-tn');
+
+		this.retryButton.addEventListener('click', () => {
+			this.dismissLoader();
+			if (this.retryCallback) {
+				this.retryCallback();
+				this.retryCallback = undefined;
+				this.retryButton.innerText = "Dismiss";
 			}
+		});
 
-			// requiredParams(this.popupContainer, 'No entry point element with the class name of ' + this.options.containerElement + ' found.');
-
-
-
-			this.initializeUIType();
-
-			this.setTheme(this.options?.theme ?? 'light');
-
-			this.viewContainer = this.popupContainer.querySelector(".view-content-tn");
-			this.loadContainer = this.popupContainer.querySelector(".load-container-tn");
-			this.retryButton = this.loadContainer.querySelector('.dismiss-error-tn');
-
-			this.retryButton.addEventListener('click', () => {
-				this.dismissLoader();
-				if (this.retryCallback) {
-					this.retryCallback();
-					this.retryCallback = undefined;
-					this.retryButton.innerText = "Dismiss";
-				}
-			});
-
-			this.updateUI(await this.getStartScreen());
-
-
-		}, 0);
-
+		this.updateUI(await this.getStartScreen());
 	}
 
 	public getViewClass(type: ViewType): ViewConstructor<ViewInterface> {
