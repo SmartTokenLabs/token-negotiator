@@ -72,11 +72,10 @@ var Ui = (function () {
         this.client = client;
     }
     Ui.prototype.initialize = function () {
-        var _this = this;
-        setTimeout(function () { return __awaiter(_this, void 0, void 0, function () {
-            var _a;
+        var _a, _b;
+        return __awaiter(this, void 0, void 0, function () {
+            var _c;
             var _this = this;
-            var _b, _c;
             return __generator(this, function (_d) {
                 switch (_d.label) {
                     case 0:
@@ -87,7 +86,7 @@ var Ui = (function () {
                             document.body.appendChild(this.popupContainer);
                         }
                         this.initializeUIType();
-                        this.setTheme((_c = (_b = this.options) === null || _b === void 0 ? void 0 : _b.theme) !== null && _c !== void 0 ? _c : 'light');
+                        this.setTheme((_b = (_a = this.options) === null || _a === void 0 ? void 0 : _a.theme) !== null && _b !== void 0 ? _b : 'light');
                         this.viewContainer = this.popupContainer.querySelector(".view-content-tn");
                         this.loadContainer = this.popupContainer.querySelector(".load-container-tn");
                         this.retryButton = this.loadContainer.querySelector('.dismiss-error-tn');
@@ -99,14 +98,14 @@ var Ui = (function () {
                                 _this.retryButton.innerText = "Dismiss";
                             }
                         });
-                        _a = this.updateUI;
+                        _c = this.updateUI;
                         return [4, this.getStartScreen()];
                     case 1:
-                        _a.apply(this, [_d.sent()]);
+                        _c.apply(this, [_d.sent()]);
                         return [2];
                 }
             });
-        }); }, 0);
+        });
     };
     Ui.prototype.getViewClass = function (type) {
         var _a, _b;

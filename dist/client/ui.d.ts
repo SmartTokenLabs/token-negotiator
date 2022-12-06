@@ -20,7 +20,7 @@ export interface UIOptionsInterface {
 }
 export interface UiInterface {
     viewContainer: HTMLElement;
-    initialize(): void;
+    initialize(): Promise<void>;
     updateUI(ViewClass: ViewConstructor<ViewInterface> | ViewType, data?: any): any;
     closeOverlay(): void;
     openOverlay(): void;
@@ -47,7 +47,7 @@ export declare class Ui implements UiInterface {
     retryCallback?: Function;
     retryButton: any;
     constructor(options: UIOptionsInterface, client: Client);
-    initialize(): void;
+    initialize(): Promise<void>;
     getViewClass(type: ViewType): ViewConstructor<ViewInterface>;
     getStartScreen(): Promise<ViewConstructor<ViewInterface>>;
     canSkipWalletSelection(): Promise<boolean>;
