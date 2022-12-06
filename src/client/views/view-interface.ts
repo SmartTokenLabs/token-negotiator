@@ -5,6 +5,8 @@ export interface ViewConstructor<T> {
 	new (client: Client, popup: Ui, viewContainer: any, params: any): T;
 }
 
+export type ViewFactory = (client: Client, popup: Ui, viewContainer: any, params: any) => ViewInterface;
+
 export interface ViewInterface {
 	render(): void;
 	init(): void;

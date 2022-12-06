@@ -2,7 +2,7 @@ import {Start} from './views/start';
 
 import {logger, requiredParams} from "../utils";
 import {Client, ClientError} from "./index";
-import {ViewInterface, ViewConstructor} from "./views/view-interface";
+import {ViewInterface, ViewFactory, ViewConstructor} from "./views/view-interface";
 import {TokenStore} from "./tokenStore";
 import {SelectIssuers} from "./views/select-issuers";
 import {SelectWallet} from "./views/select-wallet";
@@ -23,14 +23,14 @@ export interface UIOptionsInterface {
 	autoPopup?: boolean;
 	alwaysShowStartScreen?: boolean;
 	viewOverrides?: {
-		[type: string]: ViewConstructor<ViewInterface>
+		[type: string]: ViewFactory
 	}
 }
 
 export interface UiInterface {
 	viewContainer: HTMLElement,
 	initialize(): Promise<void>;
-	updateUI(ViewClass: ViewConstructor<ViewInterface>|ViewType, data?: any);
+	updateUI(ViewClass: ViewFactory|ViewType, data?: any);
 	closeOverlay(): void;
 	openOverlay(): void;
 	togglePopup(): void;
@@ -73,6 +73,8 @@ export class Ui implements UiInterface {
 	retryCallback?: Function;
 	retryButton: any;
 
+	private isStartView = true;
+
 	constructor(options: UIOptionsInterface, client: Client) {
 		this.options = options;
 		this.client = client;
@@ -108,31 +110,37 @@ export class Ui implements UiInterface {
 		this.updateUI(await this.getStartScreen());
 	}
 
-	public getViewClass(type: ViewType): ViewConstructor<ViewInterface> {
+	public getViewFactory(type: ViewType): ViewFactory {
 
 		if (this.options.viewOverrides?.[type])
 			return this.options.viewOverrides?.[type];
 
 		switch (type){
 		case "start":
-			return Start;
+			return this.getDefaultViewFactory(Start);
 		case "main":
-			return SelectIssuers;
+			return this.getDefaultViewFactory(SelectIssuers);
 		case "wallet":
-			return SelectWallet;
+			return this.getDefaultViewFactory(SelectWallet);
+		}
+	}
+
+	private getDefaultViewFactory(viewContructor: ViewConstructor<ViewInterface>){
+		return (client: Client, popup: Ui, viewContainer: any, params: any) => {
+			return new viewContructor(client, popup, viewContainer, params);
 		}
 	}
 
 	public async getStartScreen(){
 
 		if (this.options.alwaysShowStartScreen || !localStorage.getItem(TokenStore.LOCAL_STORAGE_KEY) || !this.client.getTokenStore().getTotalTokenCount())
-			return this.getViewClass("start");
+			return "start";
 
 		if (await this.canSkipWalletSelection()){
 			this.client.enrichTokenLookupDataOnChainTokens();
-			return this.getViewClass("main");
+			return "main";
 		} else {
-			return this.getViewClass("wallet");
+			return "wallet";
 		}
 	}
 
@@ -221,23 +229,27 @@ export class Ui implements UiInterface {
 		}
 	}
 
-	updateUI(ViewClass: ViewConstructor<ViewInterface>|ViewType, data?: any) {
+	updateUI(viewFactory: ViewFactory|ViewType, data?: any) {
 
-		if (typeof ViewClass === "string")
-			ViewClass = this.getViewClass(ViewClass);
+		if (typeof viewFactory === "string") {
+			this.isStartView = viewFactory === "start";
+			viewFactory = this.getViewFactory(viewFactory);
+		} else {
+			this.isStartView = false;
+		}
 
 		if (!this.viewContainer){
 			logger(3, "Element .overlay-content-tn not found: popup not initialized");
 			return;
 		}
 
-		this.currentView = new ViewClass(this.client, this, this.viewContainer, {options: this.options, data: data});
+		this.currentView = viewFactory(this.client, this, this.viewContainer, {options: this.options, data: data});
 		this.currentView.render();
 
 	}
 
 	viewIsNotStart(){
-		return !(this.currentView instanceof this.getViewClass("start"));
+		return !this.isStartView;
 	}
 
 	showError(error: string | Error, canDismiss = true){
