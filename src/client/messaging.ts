@@ -1,5 +1,5 @@
 import {Messaging as CoreMessaging, RequestInterfaceBase, ResponseInterfaceBase} from "../core/messaging";
-import {Ui} from "./ui";
+import {UiInterface} from "./ui";
 import {ClientError, ClientErrorMessage} from "./index";
 
 export enum OutletAction {
@@ -19,7 +19,7 @@ export class Messaging {
 
 	public core = new CoreMessaging();
 
-	async sendMessage(request: RequestInterfaceBase, forceTab = false, ui?: Ui, redirectUrl: false|string = false): Promise<ResponseInterfaceBase> {
+	async sendMessage(request: RequestInterfaceBase, forceTab = false, ui?: UiInterface, redirectUrl: false|string = false): Promise<ResponseInterfaceBase> {
 
 		try {
 			return await this.core.sendMessage(request, forceTab, redirectUrl);
@@ -43,7 +43,7 @@ export class Messaging {
 		}
 	}
 
-	private handleUserClose(request: RequestInterfaceBase, ui: Ui, forceTab){
+	private handleUserClose(request: RequestInterfaceBase, ui: UiInterface, forceTab){
 
 		return new Promise<ResponseInterfaceBase>((resolve, reject) => {
 

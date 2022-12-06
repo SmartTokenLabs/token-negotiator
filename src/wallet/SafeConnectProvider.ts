@@ -5,7 +5,7 @@ import {AbstractAuthentication, AuthenticationResult} from "../client/auth/abstr
 import {AttestedAddress} from "../client/auth/attestedAddress";
 import {UNInterface} from "../client/auth/util/UN";
 import {SafeConnectChallenge} from "../client/auth/safeConnectChallenge";
-import {Ui} from "../client/ui";
+import {UiInterface} from "../client/ui";
 import {SafeConnect} from "../client/auth/util/SafeConnect";
 
 export enum SafeConnectAction {
@@ -22,12 +22,12 @@ export interface SafeConnectOptions {
 
 export class SafeConnectProvider {
 
-	private ui: Ui;
+	private ui: UiInterface;
 	private keyStore = new KeyStore();
 	private readonly options: SafeConnectOptions;
 	private messaging = new Messaging();
 
-	constructor(ui: Ui, options: SafeConnectOptions) {
+	constructor(ui: UiInterface, options: SafeConnectOptions) {
 		this.ui = ui;
 		this.options = options;
 	}

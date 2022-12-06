@@ -108,21 +108,34 @@ var Ui = (function () {
             });
         }); }, 0);
     };
+    Ui.prototype.getViewClass = function (type) {
+        var _a, _b;
+        if ((_a = this.options.viewOverrides) === null || _a === void 0 ? void 0 : _a[type])
+            return (_b = this.options.viewOverrides) === null || _b === void 0 ? void 0 : _b[type];
+        switch (type) {
+            case "start":
+                return Start;
+            case "main":
+                return SelectIssuers;
+            case "wallet":
+                return SelectWallet;
+        }
+    };
     Ui.prototype.getStartScreen = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         if (this.options.alwaysShowStartScreen || !localStorage.getItem(TokenStore.LOCAL_STORAGE_KEY) || !this.client.getTokenStore().getTotalTokenCount())
-                            return [2, Start];
+                            return [2, this.getViewClass("start")];
                         return [4, this.canSkipWalletSelection()];
                     case 1:
                         if (_a.sent()) {
                             this.client.enrichTokenLookupDataOnChainTokens();
-                            return [2, SelectIssuers];
+                            return [2, this.getViewClass("main")];
                         }
                         else {
-                            return [2, SelectWallet];
+                            return [2, this.getViewClass("wallet")];
                         }
                         return [2];
                 }
@@ -199,6 +212,8 @@ var Ui = (function () {
         }
     };
     Ui.prototype.updateUI = function (ViewClass, data) {
+        if (typeof ViewClass === "string")
+            ViewClass = this.getViewClass(ViewClass);
         if (!this.viewContainer) {
             logger(3, "Element .overlay-content-tn not found: popup not initialized");
             return;
@@ -207,7 +222,7 @@ var Ui = (function () {
         this.currentView.render();
     };
     Ui.prototype.viewIsNotStart = function () {
-        return !(this.currentView instanceof Start);
+        return !(this.currentView instanceof this.getViewClass("start"));
     };
     Ui.prototype.showError = function (error, canDismiss) {
         if (canDismiss === void 0) { canDismiss = true; }

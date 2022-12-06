@@ -1,5 +1,5 @@
 import { Messaging as CoreMessaging, RequestInterfaceBase, ResponseInterfaceBase } from "../core/messaging";
-import { Ui } from "./ui";
+import { UiInterface } from "./ui";
 export declare enum OutletAction {
     MAGIC_URL = "magic-url",
     GET_ISSUER_TOKENS = "get-issuer-tokens",
@@ -13,7 +13,7 @@ export declare enum OutletResponseAction {
 }
 export declare class Messaging {
     core: CoreMessaging;
-    sendMessage(request: RequestInterfaceBase, forceTab?: boolean, ui?: Ui, redirectUrl?: false | string): Promise<ResponseInterfaceBase>;
+    sendMessage(request: RequestInterfaceBase, forceTab?: boolean, ui?: UiInterface, redirectUrl?: false | string): Promise<ResponseInterfaceBase>;
     private handleUserClose;
     private createNamedError;
 }

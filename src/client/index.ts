@@ -1,6 +1,6 @@
 
 import {OutletAction, OutletResponseAction, Messaging} from "./messaging";
-import { Ui, UItheme } from './ui';
+import {Ui, UiInterface, UItheme} from './ui';
 import { logger, requiredParams } from "../utils";
 import {getNftCollection, getNftTokens} from "../utils/token/nftProvider";
 import "./../vendor/keyShape";
@@ -31,7 +31,7 @@ declare global {
 
 const NOT_SUPPORTED_ERROR = "This browser is not supported. Please try using Chrome, Edge, FireFox or Safari.";
 
-const defaultConfig: NegotiationInterface = {
+export const defaultConfig: NegotiationInterface = {
 	type: "active",
 	issuers: [],
 	uiOptions: {
@@ -89,10 +89,10 @@ export class Client {
 
 	private negotiateAlreadyFired: boolean;
 	public issuersLoaded: boolean;
-	private config: NegotiationInterface;
+	protected config: NegotiationInterface;
 	private web3WalletProvider: Web3WalletProvider;
 	private messaging: Messaging;
-	private ui: Ui;
+	protected ui: UiInterface;
 	private clientCallBackEvents: {} = {};
 	private tokenStore: TokenStore;
 	private uiUpdateCallbacks: {[type in UIUpdateEventType]} = {
@@ -196,6 +196,10 @@ export class Client {
 		return this.ui;
 	}
 
+	createUiInstance(){
+		this.ui = new Ui(this.config.uiOptions, this);
+	}
+
 	triggerUiUpdateCallback(type: UIUpdateEventType, data?: {}){
 		if (this.uiUpdateCallbacks[type])
 			this.uiUpdateCallbacks[type](data);
@@ -281,14 +285,14 @@ export class Client {
 	}
 
 	public checkUserAgentSupport(type: string){
-		
+
 		if (!isUserAgentSupported(this.config.unSupportedUserAgent?.[type]?.config)){
-			
+
 			// TODO do we check browser support in passive mode? looks like we just save "errorMessage"
 			let err = this.config.unSupportedUserAgent[type].errorMessage;
 
 			if (this.activeNegotiateRequired()) {
-				this.ui = new Ui(this.config.uiOptions, this);
+				this.createUiInstance();
 				this.ui.initialize();
 				this.ui.openOverlay();
 				this.ui.showError(err, false);
@@ -303,7 +307,7 @@ export class Client {
 
 	private activeNegotiateRequired(): boolean {
 		return (
-			this.config.type === "active" 
+			this.config.type === "active"
 		);
 	}
 
@@ -369,7 +373,7 @@ export class Client {
 				this.enrichTokenLookupDataOnChainTokens();
 
 		} else {
-			this.ui = new Ui(this.config.uiOptions, this);
+			this.createUiInstance();
 			this.ui.initialize();
 			autoOpenPopup = true;
 		}
@@ -450,7 +454,7 @@ export class Client {
 
 					if (
 						(
-							action === OutletAction.GET_ISSUER_TOKENS + "-response" 
+							action === OutletAction.GET_ISSUER_TOKENS + "-response"
 							// have to read tokens from "proof-callback" action,
 							// in other way page will be redirected in loop
 							|| action === "proof-callback"
@@ -462,7 +466,7 @@ export class Client {
 						} catch (e){
 							logger(2, "Error parse tokens from Response. ", e);
 						}
-					} else {						
+					} else {
 						tokens = await this.loadRemoteOutletTokens(issuerConfig);
 					}
 				}
@@ -502,7 +506,7 @@ export class Client {
 				// TODO make solution:
 				// in case if we have multiple tokens then redirect flow will not work
 				// because page will reload on first remote token
-				
+
 
 				let resposeTokensEncoded = this.getDataFromQuery("tokens");
 				try {
@@ -625,8 +629,8 @@ export class Client {
 		if (issuer.accessRequestType)
 			data.access = issuer.accessRequestType;
 
-		let redirectRequired = 
-			(browserBlocksIframeStorage() && this.config.type === "passive") 
+		let redirectRequired =
+			(browserBlocksIframeStorage() && this.config.type === "passive")
 			|| this.config.forceOffChainTokenRedirect;
 
 		const res = await this.messaging.sendMessage(
@@ -634,8 +638,8 @@ export class Client {
 				action: OutletAction.GET_ISSUER_TOKENS,
 				origin: issuer.tokenOrigin,
 				data: data
-			}, 
-			this.config.messagingForceTab, 
+			},
+			this.config.messagingForceTab,
 			this.config.type === "active" ? this.ui : null,
 			redirectRequired ? this.createCurrentUrlWithoutHash() : false
 		);
@@ -816,12 +820,12 @@ export class Client {
 			try {
 
 				if (
-					(new URL(issuerConfig.tokenOrigin)).origin === document.location.origin 
+					(new URL(issuerConfig.tokenOrigin)).origin === document.location.origin
 					// should not be 2 tokens with same origin
 					// && issuerConfig.collectionID == issuer
 				){
 					currentIssuers.push(issuerConfig);
-				} 
+				}
 			} catch (err) {
 				logger(2,err);
 				console.log("issuer config error " + err.message);
@@ -843,10 +847,10 @@ export class Client {
 			let thisOneSameOrigin = false;
 			try {
 				if (
-					(new URL(issuerConfig.tokenOrigin)).origin === document.location.origin 
+					(new URL(issuerConfig.tokenOrigin)).origin === document.location.origin
 				){
 					thisOneSameOrigin = true;
-				} 
+				}
 			} catch (err) {
 				logger(2,err);
 				console.log("issuer config error");
@@ -887,9 +891,9 @@ export class Client {
 		// read token-proof only when callback attached ( init listener by user )
 		if(type === 'token-proof' && callback) {
 			logger(2, "token-proof listener atteched. check URL HASH for proof callbacks.");
-			
+
 			const action = this.getDataFromQuery("action");
-						
+
 			if (action === "proof-callback") {
 				this.readProofCallback();
 				document.location.hash = "";
@@ -900,7 +904,7 @@ export class Client {
 				if (currentIssuer){
 					logger(2, "Outlet fired to parse URL hash params.");
 
-					let outlet = new Outlet(currentIssuer, true, this.urlParams);			
+					let outlet = new Outlet(currentIssuer, true, this.urlParams);
 					outlet.pageOnLoadEventHandler().then(()=>{
 						outlet = null;
 					});
