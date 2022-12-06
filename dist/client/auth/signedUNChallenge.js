@@ -119,7 +119,7 @@ var SignedUNChallenge = (function (_super) {
             });
         });
     };
-    SignedUNChallenge.DEFAULT_ENDPOINT = "https://crypto-verify.herokuapp.com/use-devcon-ticket";
+    SignedUNChallenge.DEFAULT_ENDPOINT = "https://attestation-verify.tokenscript.org/un";
     return SignedUNChallenge;
 }(AbstractAuthentication));
 export { SignedUNChallenge };
