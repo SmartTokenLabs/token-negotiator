@@ -114,7 +114,7 @@ export const errorHandler = (error: any, type: ErrorType, action?: Function | nu
 	let errorMsg;
 
 	if (typeof error === "object"){
-		errorMsg = error.message ?? {};
+		errorMsg = error.message ?? "Unknown error type: " + JSON.stringify(error);
 	} else {
 		errorMsg = error;
 	}
@@ -132,7 +132,7 @@ export const errorHandler = (error: any, type: ErrorType, action?: Function | nu
 
 export class NegotiatorError extends Error {
 
-	constructor(message: string, public originalError: {}|string, public code?: string) {
+	constructor(message: string, public originalError: any, public code?: string) {
 		super(message);
 	}
 }
