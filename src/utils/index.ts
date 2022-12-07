@@ -109,10 +109,31 @@ export const waitForElementToExist = (selector: string): Promise<Element> => {
 
 export type ErrorType = 'warning' | 'info' | 'error';
 
-export const errorHandler = (message: string, type: ErrorType, action?: Function | null, data?: unknown, log = true, throwError = false) => {
-	if (log) logger(2, type + ': ' + message);
+export const errorHandler = (error: any, type: ErrorType, action?: Function | null, data?: unknown, log = true, throwError = false) => {
+
+	let errorMsg;
+
+	if (typeof error === "object"){
+		errorMsg = error.message ?? "Unknown error type: " + JSON.stringify(error);
+	} else {
+		errorMsg = error;
+	}
+
+	if (log) logger(2, type + ': ' + errorMsg);
+
 	if (action) action();
-	if (throwError) throw new Error(message);
-	return {type, message, data}
+
+	if (throwError) {
+		throw new NegotiatorError(errorMsg, error);
+	}
+
+	return {type, message: error, data}
+}
+
+export class NegotiatorError extends Error {
+
+	constructor(message: string, public originalError: any, public code?: string) {
+		super(message);
+	}
 }
 
