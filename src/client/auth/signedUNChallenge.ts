@@ -6,7 +6,7 @@ import {UN, UNInterface} from "./util/UN";
 export class SignedUNChallenge extends AbstractAuthentication implements AuthenticationMethod {
 
 	TYPE = "signedUN";
-	private static DEFAULT_ENDPOINT = "https://crypto-verify.herokuapp.com/use-devcon-ticket";
+	private static DEFAULT_ENDPOINT = "https://attestation-verify.tokenscript.org/un";
 
 	async getTokenProof(_issuerConfig: OnChainTokenConfig | OffChainTokenConfig, _tokens: Array<any>, request: AuthenticateInterface): Promise<AuthenticationResult> {
 
