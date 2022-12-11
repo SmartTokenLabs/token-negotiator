@@ -92,7 +92,7 @@ export class Client {
 	protected config: NegotiationInterface;
 	private web3WalletProvider: Web3WalletProvider;
 	private messaging: Messaging;
-	protected ui: UiInterface;
+	public ui: UiInterface;
 	private clientCallBackEvents: {} = {};
 	private tokenStore: TokenStore;
 	private uiUpdateCallbacks: {[type in UIUpdateEventType]} = {
@@ -123,6 +123,10 @@ export class Client {
 			this.tokenStore.updateIssuers(this.config.issuers);
 
 		this.messaging = new Messaging();
+
+		if(this.config.type === "active") {
+			this.ui = new Ui(this.config.uiOptions, this);
+		}
 
 		this.registerOutletProofEventListener();
 	}
@@ -292,7 +296,9 @@ export class Client {
 			let err = this.config.unSupportedUserAgent[type].errorMessage;
 
 			if (this.activeNegotiateRequired()) {
-				this.createUiInstance();
+				if(!this.ui) {
+					this.createUiInstance();
+				}
 				this.ui.initialize();
 				this.ui.openOverlay();
 				this.ui.showError(err, false);
