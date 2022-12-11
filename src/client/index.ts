@@ -124,10 +124,6 @@ export class Client {
 
 		this.messaging = new Messaging();
 
-		if(this.config.type === "active") {
-			this.ui = new Ui(this.config.uiOptions, this);
-		}
-
 		this.registerOutletProofEventListener();
 	}
 
@@ -296,9 +292,7 @@ export class Client {
 			let err = this.config.unSupportedUserAgent[type].errorMessage;
 
 			if (this.activeNegotiateRequired()) {
-				if(!this.ui) {
-					this.createUiInstance();
-				}
+				this.createUiInstance();
 				this.ui.initialize();
 				this.ui.openOverlay();
 				this.ui.showError(err, false);
