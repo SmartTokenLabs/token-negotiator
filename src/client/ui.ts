@@ -23,7 +23,7 @@ export interface UIOptionsInterface {
 	autoPopup?: boolean;
 	alwaysShowStartScreen?: boolean;
 	viewOverrides?: {
-		[type: string]: ViewFactory
+		[type: string]: ViewFactory|ViewConstructor<ViewInterface>
 	}
 }
 
@@ -120,24 +120,18 @@ export class Ui implements UiInterface {
 
 	}
 
-	public getViewFactory(type: ViewType): ViewFactory {
+	public getViewFactory(type: ViewType): ViewFactory|ViewConstructor<ViewInterface> {
 
 		if (this.options.viewOverrides?.[type])
 			return this.options.viewOverrides?.[type];
 
 		switch (type){
 		case "start":
-			return this.getDefaultViewFactory(Start);
+			return Start;
 		case "main":
-			return this.getDefaultViewFactory(SelectIssuers);
+			return SelectIssuers;
 		case "wallet":
-			return this.getDefaultViewFactory(SelectWallet);
-		}
-	}
-
-	private getDefaultViewFactory(viewContructor: ViewConstructor<ViewInterface>){
-		return (client: Client, popup: Ui, viewContainer: any, params: any) => {
-			return new viewContructor(client, popup, viewContainer, params);
+			return SelectWallet;
 		}
 	}
 
@@ -239,7 +233,7 @@ export class Ui implements UiInterface {
 		}
 	}
 
-	updateUI(viewFactory: ViewFactory|ViewType, data?: any) {
+	updateUI(viewFactory: ViewFactory|ViewConstructor<ViewInterface>|ViewType, data?: any) {
 
 		if (typeof viewFactory === "string") {
 			this.isStartView = viewFactory === "start";
@@ -253,7 +247,9 @@ export class Ui implements UiInterface {
 			return;
 		}
 
-		this.currentView = viewFactory(this.client, this, this.viewContainer, {options: this.options, data: data});
+		// @ts-ignore
+		this.currentView = new viewFactory(this.client, this, this.viewContainer, {options: this.options, data: data});
+
 		this.currentView.render();
 
 	}
