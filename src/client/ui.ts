@@ -231,7 +231,7 @@ export class Ui implements UiInterface {
 		}
 	}
 
-	updateUI(ViewClass: ViewConstructor<ViewInterface>|ViewType, data?: any) {
+	updateUI(ViewClass: ViewConstructor<ViewInterface>|ViewType, params?: any) {
 
 		if (typeof ViewClass === "string")
 			ViewClass = this.getViewClass(ViewClass);
@@ -241,7 +241,7 @@ export class Ui implements UiInterface {
 			return;
 		}
 
-		this.currentView = new ViewClass(this.client, this, this.viewContainer, {options: this.options, data: data});
+		this.currentView = new ViewClass(this.client, this, this.viewContainer, {options: this.options, params});
 		this.currentView.render();
 
 	}
