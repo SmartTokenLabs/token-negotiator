@@ -2,7 +2,7 @@ import {Start} from './views/start';
 
 import {logger, requiredParams} from "../utils";
 import {Client, ClientError} from "./index";
-import {ViewInterface, ViewFactory, ViewConstructor} from "./views/view-interface";
+import {ViewInterface, ViewComponent} from "./views/view-interface";
 import {TokenStore} from "./tokenStore";
 import {SelectIssuers} from "./views/select-issuers";
 import {SelectWallet} from "./views/select-wallet";
@@ -23,14 +23,17 @@ export interface UIOptionsInterface {
 	autoPopup?: boolean;
 	alwaysShowStartScreen?: boolean;
 	viewOverrides?: {
-		[type: string]: ViewFactory|ViewConstructor<ViewInterface>
+		[type: string]: {
+			component?: ViewComponent,
+			options?: {[key: string]: any}
+		}
 	}
 }
 
 export interface UiInterface {
 	viewContainer: HTMLElement,
 	initialize(): Promise<void>;
-	updateUI(ViewClass: ViewFactory|ViewType, data?: any);
+	updateUI(ViewClass: ViewComponent|ViewType, data?: any);
 	closeOverlay(): void;
 	openOverlay(): void;
 	togglePopup(): void;
@@ -110,18 +113,29 @@ export class Ui implements UiInterface {
 		this.updateUI(await this.getStartScreen());
 	}
 
-	public getViewFactory(type: ViewType): ViewFactory|ViewConstructor<ViewInterface> {
+	public getViewFactory(type: ViewType): [ViewComponent, {[key: string]: any}] {
 
-		if (this.options.viewOverrides?.[type])
-			return this.options.viewOverrides?.[type];
+		let viewOptions = {};
+
+		if (this.options.viewOverrides?.[type]){
+
+			if (this.options.viewOverrides?.[type].options)
+				viewOptions = this.options.viewOverrides?.[type].options;
+
+			if (this.options.viewOverrides?.[type].component)
+				return [
+					this.options.viewOverrides?.[type].component,
+					viewOptions
+				];
+		}
 
 		switch (type){
 		case "start":
-			return Start;
+			return [Start, viewOptions];
 		case "main":
-			return SelectIssuers;
+			return [SelectIssuers, viewOptions];
 		case "wallet":
-			return SelectWallet;
+			return [SelectWallet, viewOptions];
 		}
 	}
 
@@ -223,11 +237,17 @@ export class Ui implements UiInterface {
 		}
 	}
 
-	updateUI(viewFactory: ViewFactory|ViewConstructor<ViewInterface>|ViewType, data?: any) {
+	updateUI(viewFactory: ViewComponent|ViewType, data?: any) {
+
+		let viewOptions = {};
 
 		if (typeof viewFactory === "string") {
+
 			this.isStartView = viewFactory === "start";
-			viewFactory = this.getViewFactory(viewFactory);
+
+			const [component, opts] = this.getViewFactory(viewFactory);
+			viewFactory = component;
+			viewOptions = opts;
 		} else {
 			this.isStartView = false;
 		}
@@ -238,7 +258,7 @@ export class Ui implements UiInterface {
 		}
 
 		// @ts-ignore
-		this.currentView = new viewFactory(this.client, this, this.viewContainer, {options: this.options, data: data});
+		this.currentView = new viewFactory(this.client, this, this.viewContainer, {options: {...this.options, ...viewOptions}, data: data});
 
 		this.currentView.render();
 
