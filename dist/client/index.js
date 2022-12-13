@@ -144,6 +144,7 @@ var Client = (function () {
             var action = this.getDataFromQuery("action");
             logger(2, "Client() fired. Action = \"".concat(action, "\""));
         }
+        console.log(config);
         this.config = this.mergeConfig(defaultConfig, config);
         this.negotiateAlreadyFired = false;
         this.tokenStore = new TokenStore(this.config.autoEnableTokens, this.config.tokenPersistenceTTL);

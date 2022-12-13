@@ -3,9 +3,7 @@ import {AbstractView} from "./view-interface";
 export class Start extends AbstractView {
 
 	render(){
-
 		this.viewContainer.innerHTML = this.renderMainTemplate();
-
 		this.viewContainer.querySelector('.opening-btn-tn').addEventListener('click', this.goToWalletSelection.bind(this));
 	}
 

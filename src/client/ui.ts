@@ -117,10 +117,14 @@ export class Ui implements UiInterface {
 
 		let viewOptions = {};
 
+		console.log('func triggered testing if we make it here', type, this.options);
+
 		if (this.options.viewOverrides?.[type]){
 
 			if (this.options.viewOverrides?.[type].options)
 				viewOptions = this.options.viewOverrides?.[type].options;
+
+			console.log('testing if we make it here', this.options.viewOverrides);
 
 			if (this.options.viewOverrides?.[type].component)
 				return [
@@ -132,7 +136,7 @@ export class Ui implements UiInterface {
 		return [this.getDefaultView(type), viewOptions];
 	}
 
-	protected getDefaultView(type: ViewType){
+	protected getDefaultView(type: ViewType): ViewComponent {
 
 		switch (type){
 		case "start":

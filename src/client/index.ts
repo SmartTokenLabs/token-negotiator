@@ -113,6 +113,8 @@ export class Client {
 			logger(2, `Client() fired. Action = "${action}"`);
 		}
 
+		console.log(config);
+
 		this.config = this.mergeConfig(defaultConfig, config);
 
 		this.negotiateAlreadyFired = false;
