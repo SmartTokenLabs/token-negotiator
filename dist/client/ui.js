@@ -131,14 +131,18 @@ var Ui = (function () {
                     viewOptions
                 ];
         }
+        return [this.getDefaultView(type), viewOptions];
+    };
+    Ui.prototype.getDefaultView = function (type) {
         switch (type) {
             case "start":
-                return [Start, viewOptions];
+                return Start;
             case "main":
-                return [SelectIssuers, viewOptions];
+                return SelectIssuers;
             case "wallet":
-                return [SelectWallet, viewOptions];
+                return SelectWallet;
         }
+        throw new Error("Default component " + type + " does not exist");
     };
     Ui.prototype.getStartScreen = function () {
         return __awaiter(this, void 0, void 0, function () {

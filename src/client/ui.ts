@@ -129,14 +129,21 @@ export class Ui implements UiInterface {
 				];
 		}
 
+		return [this.getDefaultView(type), viewOptions];
+	}
+
+	protected getDefaultView(type: ViewType){
+
 		switch (type){
 		case "start":
-			return [Start, viewOptions];
+			return Start;
 		case "main":
-			return [SelectIssuers, viewOptions];
+			return SelectIssuers;
 		case "wallet":
-			return [SelectWallet, viewOptions];
+			return SelectWallet;
 		}
+
+		throw new Error("Default component " + type + " does not exist");
 	}
 
 	public async getStartScreen(){

@@ -1,5 +1,8 @@
+import { Start } from './views/start';
 import { Client } from "./index";
 import { ViewInterface, ViewComponent } from "./views/view-interface";
+import { SelectIssuers } from "./views/select-issuers";
+import { SelectWallet } from "./views/select-wallet";
 export declare type UIType = "popup" | "inline";
 export declare type PopupPosition = 'bottom-right' | 'bottom-left' | 'top-left' | 'top-right';
 export declare type UItheme = 'light' | 'dark';
@@ -57,6 +60,7 @@ export declare class Ui implements UiInterface {
     getViewFactory(type: ViewType): [ViewComponent, {
         [key: string]: any;
     }];
+    protected getDefaultView(type: ViewType): typeof Start | typeof SelectIssuers | typeof SelectWallet;
     getStartScreen(): Promise<"start" | "main" | "wallet">;
     canSkipWalletSelection(): Promise<boolean>;
     initializeUIType(): void;
