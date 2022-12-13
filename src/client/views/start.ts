@@ -6,8 +6,6 @@ export class Start extends AbstractView {
 
 		this.viewContainer.innerHTML = this.renderMainTemplate();
 
-		// this.viewContainer.innerHTML = this.renderMainTemplate({openingHeading: this.params.options.openingHeading});
-
 		this.viewContainer.querySelector('.opening-btn-tn').addEventListener('click', this.goToWalletSelection.bind(this));
 	}
 
@@ -24,20 +22,6 @@ export class Start extends AbstractView {
             </div>
 		`;
 	}
-
-	/* renderMainTemplate(params: {[key: string]: any}){
-		return this.params.options.mainContent(params) ?? `
-			<div class="opening-content-view-tn">
-              <div class="brand-tn"></div>
-              <div class="inner-content-tn">
-                <div class="inner-content-block-tn">
-                  <button class="opening-btn-tn" aria-label="Start connecting your tokens">Let's go!</button>
-                  <div class="opening-heading-tn">${params.openingHeading}</div>
-                </div>
-              </div>
-            </div>
-		`;
-	}*/
 
 	async goToWalletSelection() {
 
