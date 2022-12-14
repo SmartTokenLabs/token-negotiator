@@ -111,11 +111,9 @@ var Ui = (function () {
     Ui.prototype.getViewFactory = function (type) {
         var _a, _b, _c, _d, _e;
         var viewOptions = {};
-        console.log('func triggered testing if we make it here', type, this.options);
         if ((_a = this.options.viewOverrides) === null || _a === void 0 ? void 0 : _a[type]) {
             if ((_b = this.options.viewOverrides) === null || _b === void 0 ? void 0 : _b[type].options)
                 viewOptions = (_c = this.options.viewOverrides) === null || _c === void 0 ? void 0 : _c[type].options;
-            console.log('testing if we make it here', this.options.viewOverrides);
             if ((_d = this.options.viewOverrides) === null || _d === void 0 ? void 0 : _d[type].component)
                 return [
                     (_e = this.options.viewOverrides) === null || _e === void 0 ? void 0 : _e[type].component,
@@ -179,11 +177,6 @@ var Ui = (function () {
     };
     Ui.prototype.getFabButton = function () {
         return Ui.FAB_BUTTON_HTML;
-    };
-    Ui.prototype.setPopupPosition = function () {
-        this.options.position
-            ? this.popupContainer.classList.add(this.options.position)
-            : this.popupContainer.classList.add('bottom-right');
     };
     Ui.prototype.initializeUIType = function () {
         var _this = this;

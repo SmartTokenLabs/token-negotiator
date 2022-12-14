@@ -174,12 +174,6 @@ export class Ui implements UiInterface {
 		return Ui.FAB_BUTTON_HTML;
 	}
 
-	setPopupPosition() {
-		this.options.position
-				? this.popupContainer.classList.add(this.options.position)
-				: this.popupContainer.classList.add('bottom-right');
-	}
-
 	initializeUIType(){
 
 		this.popupContainer.classList.add(this.options.uiType + "-tn");
@@ -187,6 +181,7 @@ export class Ui implements UiInterface {
 		switch (this.options.uiType){
 
 		case "popup":
+
 			this.options.position
 				? this.popupContainer.classList.add(this.options.position)
 				: this.popupContainer.classList.add('bottom-right');

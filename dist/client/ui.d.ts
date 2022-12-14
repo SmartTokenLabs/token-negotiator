@@ -62,7 +62,6 @@ export declare class Ui implements UiInterface {
     canSkipWalletSelection(): Promise<boolean>;
     getUIContainer(): string;
     getFabButton(): string;
-    setPopupPosition(): void;
     initializeUIType(): void;
     closeOverlay(): void;
     openOverlay(): void;
