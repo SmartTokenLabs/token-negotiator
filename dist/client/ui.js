@@ -1,14 +1,3 @@
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -144,7 +133,6 @@ var Ui = (function () {
             case "wallet":
                 return SelectWallet;
         }
-        throw new Error("Default component " + type + " does not exist");
     };
     Ui.prototype.getStartScreen = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -186,6 +174,17 @@ var Ui = (function () {
             });
         });
     };
+    Ui.prototype.getUIContainer = function () {
+        return Ui.UI_CONTAINER_HTML;
+    };
+    Ui.prototype.getFabButton = function () {
+        return Ui.FAB_BUTTON_HTML;
+    };
+    Ui.prototype.setPopupPosition = function () {
+        this.options.position
+            ? this.popupContainer.classList.add(this.options.position)
+            : this.popupContainer.classList.add('bottom-right');
+    };
     Ui.prototype.initializeUIType = function () {
         var _this = this;
         this.popupContainer.classList.add(this.options.uiType + "-tn");
@@ -194,7 +193,7 @@ var Ui = (function () {
                 this.options.position
                     ? this.popupContainer.classList.add(this.options.position)
                     : this.popupContainer.classList.add('bottom-right');
-                this.popupContainer.innerHTML = Ui.UI_CONTAINER_HTML + Ui.FAB_BUTTON_HTML;
+                this.popupContainer.innerHTML = this.getUIContainer() + this.getFabButton();
                 this.popupContainer.querySelector('.overlay-fab-button-tn').addEventListener('click', this.togglePopup.bind(this));
                 this.popupContainer.addEventListener('click', function (event) {
                     event.stopPropagation();
@@ -210,20 +209,22 @@ var Ui = (function () {
         }
     };
     Ui.prototype.closeOverlay = function () {
+        var _a, _b, _c;
         if (this.options.uiType === "inline")
             return;
         this.popupContainer.classList.remove("open");
-        window.KeyshapeJS.timelines()[0].time(0);
-        window.KeyshapeJS.globalPause();
+        (_b = (_a = window.KeyshapeJS) === null || _a === void 0 ? void 0 : _a.timelines()[0]) === null || _b === void 0 ? void 0 : _b.time(0);
+        (_c = window.KeyshapeJS) === null || _c === void 0 ? void 0 : _c.globalPause();
     };
     Ui.prototype.openOverlay = function () {
         var _this = this;
         if (this.options.uiType === "inline")
             return;
         setTimeout(function () {
+            var _a, _b, _c;
             _this.popupContainer.classList.add("open");
-            window.KeyshapeJS.timelines()[0].time(0);
-            window.KeyshapeJS.globalPlay();
+            (_b = (_a = window.KeyshapeJS) === null || _a === void 0 ? void 0 : _a.timelines()[0]) === null || _b === void 0 ? void 0 : _b.time(0);
+            (_c = window.KeyshapeJS) === null || _c === void 0 ? void 0 : _c.globalPlay();
         }, 10);
     };
     Ui.prototype.togglePopup = function () {
@@ -251,7 +252,7 @@ var Ui = (function () {
             logger(3, "Element .overlay-content-tn not found: popup not initialized");
             return;
         }
-        this.currentView = new viewFactory(this.client, this, this.viewContainer, { options: __assign(__assign({}, this.options), viewOptions), data: data });
+        this.currentView = new viewFactory(this.client, this, this.viewContainer, { options: this.options, viewOptions: viewOptions, data: data });
         this.currentView.render();
     };
     Ui.prototype.viewIsNotStart = function () {
@@ -320,7 +321,7 @@ var Ui = (function () {
         }
     };
     Ui.prototype.assignFabButtonAnimation = function () {
-        if (window.KeyshapeJS) {
+        if (window.KeyshapeJS && window.KeyshapeJS.timelines()[0]) {
             window.KeyshapeJS.globalPause();
             window.KeyshapeJS.animate("#svg-tn-left", [{ p: 'mpath', t: [0, 400], v: ['0%', '100%'], e: [[1, 0, 0, .6, 1], [0]], mp: "M13,28.5L27.1,28.1" }, { p: 'rotate', t: [0, 400], v: [0, 0], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'scaleX', t: [0, 400], v: [1, 1], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'scaleY', t: [0, 400], v: [1, 1], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'anchorX', t: [0, 400], v: [-13, -17.1], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'anchorY', t: [0, 400], v: [-13.5, -17.1], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'd', t: [0, 400], v: ["path('M25.5,26C25.5,26,20.5,26,20.5,26C20.5,23.1,19.9,20.4,18.8,17.9C17.8,15.6,16.4,13.6,14.6,11.8C12.7,9.9,10.3,8.4,7.8,7.4C5.5,6.5,3,6,.5,6L.5,1C.5,1,.5,1,.5,1C.5,1,7.5,1,7.5,1L25.5,1L25.5,7.2C25.5,7.2,25.5,12.8,25.5,12.8C25.5,12.8,25.5,19,25.5,19Z')", "path('M31.8,32.8C31.5,33.2,30.9,33.4,30.4,33.4C29.9,33.4,29.4,33.2,29,32.8C29,32.8,1.4,5.2,1.4,5.2C1,4.8,.8,4.3,.8,3.8C.8,3.3,1,2.8,1.4,2.4L2.4,1.4C2.7,1,3.3,.8,3.8,.8C4.3,.8,4.8,1,5.2,1.4L5.2,1.4L32.8,29C33.2,29.4,33.4,29.9,33.4,30.4C33.4,30.9,33.2,31.5,32.8,31.8Z')"], e: [[1, 0, 0, .6, 1], [0]] }], "#svg-tn-right", [{ p: 'mpath', t: [0, 400], v: ['0%', '100%'], e: [[1, 0, 0, .6, 1], [0]], mp: "M41.5,28.7L27.1,28.1" }, { p: 'rotate', t: [0, 400], v: [0, 0], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'anchorX', t: [0, 400], v: [-40.5, -17.1], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'anchorY', t: [0, 400], v: [-13.5, -17.1], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'd', t: [0, 400], v: ["path('M53,1C53,1,53,1,53,1C53,1,53,12.9,53,12.9L53,19C53,19,53,26,53,26C53,26,40.2,26,40.2,26L34.1,26C34.1,26,28,26,28,26C28,26,28,12.6,28,12.6L28,7.4C28,7.4,28,1,28,1C28,1,40.6,1,40.6,1C40.6,1,45.9,1,45.9,1Z')", "path('M29,1.4C29.4,1,29.9,.8,30.4,.8C30.9,.8,31.5,1,31.8,1.4L32.8,2.4C33.2,2.7,33.4,3.3,33.4,3.8C33.4,4.3,33.2,4.8,32.8,5.2L5.2,32.8C4.8,33.2,4.3,33.4,3.8,33.4C3.3,33.4,2.8,33.2,2.4,32.8L1.4,31.8C1,31.5,.8,30.9,.8,30.4C.8,29.9,1,29.4,1.4,29C1.4,29,29,1.4,29,1.4Z')"], e: [[1, 0, 0, .6, 1], [0]] }], { autoremove: false }).range(0, 400);
         }

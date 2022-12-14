@@ -60,6 +60,9 @@ export declare class Ui implements UiInterface {
     protected getDefaultView(type: ViewType): ViewComponent;
     getStartScreen(): Promise<"start" | "main" | "wallet">;
     canSkipWalletSelection(): Promise<boolean>;
+    getUIContainer(): string;
+    getFabButton(): string;
+    setPopupPosition(): void;
     initializeUIType(): void;
     closeOverlay(): void;
     openOverlay(): void;

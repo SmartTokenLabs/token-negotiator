@@ -28,7 +28,7 @@ export declare enum ClientErrorMessage {
 export declare class Client {
     private negotiateAlreadyFired;
     issuersLoaded: boolean;
-    protected config: NegotiationInterface;
+    config: NegotiationInterface;
     private web3WalletProvider;
     private messaging;
     protected ui: UiInterface;

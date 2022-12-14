@@ -137,7 +137,6 @@ export class Ui implements UiInterface {
 	}
 
 	protected getDefaultView(type: ViewType): ViewComponent {
-
 		switch (type){
 		case "start":
 			return Start;
@@ -146,8 +145,6 @@ export class Ui implements UiInterface {
 		case "wallet":
 			return SelectWallet;
 		}
-
-		throw new Error("Default component " + type + " does not exist");
 	}
 
 	public async getStartScreen(){
@@ -172,6 +169,20 @@ export class Ui implements UiInterface {
 			return true;
 		}
 	}
+	
+	getUIContainer() {
+		return Ui.UI_CONTAINER_HTML;
+	}
+
+	getFabButton () {
+		return Ui.FAB_BUTTON_HTML;
+	}
+
+	setPopupPosition() {
+		this.options.position
+				? this.popupContainer.classList.add(this.options.position)
+				: this.popupContainer.classList.add('bottom-right');
+	}
 
 	initializeUIType(){
 
@@ -184,7 +195,7 @@ export class Ui implements UiInterface {
 				? this.popupContainer.classList.add(this.options.position)
 				: this.popupContainer.classList.add('bottom-right');
 
-			this.popupContainer.innerHTML = Ui.UI_CONTAINER_HTML + Ui.FAB_BUTTON_HTML;
+			this.popupContainer.innerHTML = this.getUIContainer() + this.getFabButton();
 
 			this.popupContainer.querySelector('.overlay-fab-button-tn').addEventListener('click', this.togglePopup.bind(this));
 
@@ -209,38 +220,27 @@ export class Ui implements UiInterface {
 	}
 
 	closeOverlay() {
-
-		if (this.options.uiType === "inline")
-			return;
-
+		if (this.options.uiType === "inline") return;
 		this.popupContainer.classList.remove("open");
-
-		window.KeyshapeJS.timelines()[0].time(0);
-
-		window.KeyshapeJS.globalPause();
+		// TODO deprecate keyshape for native css
+		window.KeyshapeJS?.timelines()[0]?.time(0);
+		window.KeyshapeJS?.globalPause();
 	}
 
 	openOverlay(){
-
-		if (this.options.uiType === "inline")
-			return;
-
+		if (this.options.uiType === "inline") return;
 		// Prevent out-of-popup click from closing the popup straight away
 		setTimeout(()=> {
 			this.popupContainer.classList.add("open");
-
-			window.KeyshapeJS.timelines()[0].time(0);
-
-			window.KeyshapeJS.globalPlay();
+			// TODO deprecate keyshape for native css
+			window.KeyshapeJS?.timelines()[0]?.time(0);
+			window.KeyshapeJS?.globalPlay();
 		}, 10);
 	}
 
 	togglePopup() {
-
 		requiredParams(this.popupContainer, 'No overlay element found.');
-
 		let openOverlay = !this.popupContainer.classList.contains("open");
-
 		if (openOverlay) {
 			this.openOverlay();
 		} else {
@@ -269,7 +269,7 @@ export class Ui implements UiInterface {
 		}
 
 		// @ts-ignore
-		this.currentView = new viewFactory(this.client, this, this.viewContainer, {options: {...this.options, ...viewOptions}, data: data});
+		this.currentView = new viewFactory(this.client, this, this.viewContainer, {options: this.options, viewOptions, data: data});
 
 		this.currentView.render();
 
@@ -356,7 +356,8 @@ export class Ui implements UiInterface {
 
 	private assignFabButtonAnimation() {
 
-		if (window.KeyshapeJS) {
+		// TODO deprecate KeyshapeJS
+		if (window.KeyshapeJS && window.KeyshapeJS.timelines()[0]) {
 
 			window.KeyshapeJS.globalPause();
 
@@ -370,7 +371,6 @@ export class Ui implements UiInterface {
 		if (theme && theme === 'dark') {
 			return theme
 		}
-
 		return 'light';
 	}
 

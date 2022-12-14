@@ -89,7 +89,7 @@ export class Client {
 
 	private negotiateAlreadyFired: boolean;
 	public issuersLoaded: boolean;
-	protected config: NegotiationInterface;
+	public config: NegotiationInterface;
 	private web3WalletProvider: Web3WalletProvider;
 	private messaging: Messaging;
 	protected ui: UiInterface;
@@ -112,8 +112,6 @@ export class Client {
 			let action = this.getDataFromQuery("action");
 			logger(2, `Client() fired. Action = "${action}"`);
 		}
-
-		console.log(config);
 
 		this.config = this.mergeConfig(defaultConfig, config);
 
