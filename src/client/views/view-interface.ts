@@ -13,7 +13,7 @@ export interface ViewInterface {
 	client: Client,
 	ui: Ui;
 	viewContainer: any;
-  params: any;
+	params: any;
 	render(): void;
 	init(): void;
 	update(params: any): void;
