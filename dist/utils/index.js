@@ -1,3 +1,18 @@
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
     if (!m) return o;
@@ -119,15 +134,35 @@ export var waitForElementToExist = function (selector) {
         observer.observe(document.body, { childList: true, subtree: true });
     });
 };
-export var errorHandler = function (message, type, action, data, log, throwError) {
+export var errorHandler = function (error, type, action, data, log, throwError) {
+    var _a;
     if (log === void 0) { log = true; }
     if (throwError === void 0) { throwError = false; }
+    var errorMsg;
+    if (typeof error === "object") {
+        errorMsg = (_a = error.message) !== null && _a !== void 0 ? _a : "Unknown error type: " + JSON.stringify(error);
+    }
+    else {
+        errorMsg = error;
+    }
     if (log)
-        logger(2, type + ': ' + message);
+        logger(2, type + ': ' + errorMsg);
     if (action)
         action();
-    if (throwError)
-        throw new Error(message);
-    return { type: type, message: message, data: data };
+    if (throwError) {
+        throw new NegotiatorError(errorMsg, error);
+    }
+    return { type: type, message: error, data: data };
 };
+var NegotiatorError = (function (_super) {
+    __extends(NegotiatorError, _super);
+    function NegotiatorError(message, originalError, code) {
+        var _this = _super.call(this, message) || this;
+        _this.originalError = originalError;
+        _this.code = code;
+        return _this;
+    }
+    return NegotiatorError;
+}(Error));
+export { NegotiatorError };
 //# sourceMappingURL=index.js.map

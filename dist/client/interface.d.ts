@@ -44,7 +44,7 @@ export interface NegotiationInterface {
     autoEnableTokens?: boolean;
     messagingForceTab?: boolean;
     safeConnectOptions?: SafeConnectOptions;
-    forceOffChainTokenRedirect?: boolean;
+    enableOffChainRedirectMode?: boolean;
     tokenPersistenceTTL?: number;
     unSupportedUserAgent?: {
         authentication?: {
