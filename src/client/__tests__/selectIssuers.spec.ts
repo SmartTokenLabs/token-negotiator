@@ -25,35 +25,44 @@ describe('select issuers spec', () => {
 		});
 	}
 
-	test('selectIssuers render list issuers', async () => {
-		document.body.innerHTML =  `
-    <div class="overlay-tn">
-    </div>
-	  `
-		const client = getOnChainConfigClient()
-		client.negotiate()
-		client.getUi().initialize()
+	// TODO 
+	// test('selectIssuers render list issuers', async () => {
+	// 	document.body.innerHTML =  `
+  //   <div class="overlay-tn">
+  //   </div>
+	//   `
+	// 	const client = getOnChainConfigClient()
+	// 	await client.negotiate();
 
-		setTimeout(() => {
+	// 	const selectIssuers = new SelectIssuers(client, client.getUi(), client.getUi().viewContainer, {options: {issuerHeading: "issuerHeading"}})
 
-			const selectIssuers = new SelectIssuers(client, client.getUi(), client.getUi().viewContainer, {options: {issuerHeading: "issuerHeading"}})
+	// 	selectIssuers.render();
 
-			selectIssuers.render()
-
-			expect(selectIssuers.viewContainer.innerHTML).not.toEqual("")
-		}, 0)
+	// 	expect(selectIssuers.viewContainer.innerHTML).not.toEqual("")
 		
-	});
-
-	test('selectIssuers generating token list markup', () => {
+	// });
+	
+	test('selectIssuers generating token list markup', async () => {
 		const client = getOnChainConfigClient()
-		client.negotiate()
+		await client.negotiate();
 		const selectIssuers = new SelectIssuers(client, client.getUi(), {}, "options" )
-
 		const title = "title"
 		const image = "image"
 		const issuer = "issuer"
 		const tokens = ["1", "2"]
 		expect(selectIssuers.issuerConnectMarkup(title, image, issuer, tokens)).not.toEqual("")
 	});
+	
+	test('get ui container', async () => {
+		const client = getOnChainConfigClient()
+		await client.negotiate();
+		expect(client.getUi().getUIContainer()).toContain("overlay-content-tn");
+	});
+
+	test('get ui fab button', async () => {
+		const client = getOnChainConfigClient()
+		await client.negotiate();
+		expect(client.getUi().getFabButton()).toContain("<button");
+	});
+
 })

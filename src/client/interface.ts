@@ -48,7 +48,7 @@ export interface NegotiationInterface {
     messagingForceTab?: boolean;
     safeConnectOptions?: SafeConnectOptions;
     // force redirect flow in "active" mode on negotiate()
-    forceOffChainTokenRedirect?: boolean;
+    enableOffChainRedirectMode?: boolean;
 	tokenPersistenceTTL?: number;
     unSupportedUserAgent?: {
         authentication?: {

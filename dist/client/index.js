@@ -77,7 +77,7 @@ export var defaultConfig = {
     autoLoadTokens: true,
     autoEnableTokens: true,
     messagingForceTab: false,
-    forceOffChainTokenRedirect: true,
+    enableOffChainRedirectMode: false,
     tokenPersistenceTTL: 600,
     unSupportedUserAgent: {
         authentication: {
@@ -726,8 +726,8 @@ var Client = (function () {
                         };
                         if (issuer.accessRequestType)
                             data.access = issuer.accessRequestType;
-                        redirectRequired = (browserBlocksIframeStorage() && this.config.type === "passive")
-                            || this.config.forceOffChainTokenRedirect;
+                        redirectRequired = this.config.enableOffChainRedirectMode &&
+                            (browserBlocksIframeStorage() && this.config.type === "passive");
                         return [4, this.messaging.sendMessage({
                                 action: OutletAction.GET_ISSUER_TOKENS,
                                 origin: issuer.tokenOrigin,
