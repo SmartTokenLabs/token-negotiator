@@ -78,19 +78,7 @@ describe('client spec', () => {
 
 		delete issuers["devcon"].timestamp;
 
-		expect(issuers).toEqual({
-			"devcon": {
-				collectionID: 'devcon',
-				title: "Devcon",
-				onChain: false,
-				tokenOrigin: "http://localhost:3002/",
-				attestationOrigin: "https://stage.attestation.id/",
-				unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
-				image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
-				base64senderPublicKey: "",
-				base64attestorPubKey: ""
-			}
-		});
+		expect(issuers).toEqual({"devcon": {"attestationOrigin": "https://stage.attestation.id/", "base64attestorPubKey": "", "base64senderPublicKey": "", "collectionID": "devcon", "image": "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg", "onChain": false, "title": "Devcon", "tokenOrigin": "http://localhost:3002/", "unEndPoint": "https://crypto-verify.herokuapp.com/use-devcon-ticket"}});
 	});
 
 	test('tokenNegotiatorClient getTokenStore Data', () => {
@@ -171,77 +159,6 @@ describe('client spec', () => {
 			expect(err).toEqual(new Error('HTTP error.'));
 		}
 		expect(tokenNegotiatorClient.getTokenStore().getCurrentIssuers(true)).toBeDefined();
-	});
-
-	test('tokenNegotiatorClient method negotiate', async () => {
-		let offChainIssuer = [
-			{
-				collectionID: 'devcon',
-				title: "Devcon",
-				onChain: false,
-				tokenOrigin: "http://localhost:3002/",
-				attestationOrigin: "https://stage.attestation.id/",
-				unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
-				image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
-				base64senderPublicKey: "",
-				base64attestorPubKey: ""
-			}
-		]
-		const tokenNegotiatorActiveClient = new Client({
-			type: "active",
-			issuers: [
-				{ onChain: true, collectionID: "bayc", contract: '0x26472AA24D795AbcB687bddb44d733ef55Ebdf09', chain: 'rinkeby' },
-			],
-			options: {}
-		});
-		const tokenNegotiatorPassiveClient = new Client({
-			type: "passive",
-			issuers: [
-				{ onChain: true, collectionID: "bayc", contract: '0x26472AA24D795AbcB687bddb44d733ef55Ebdf09', chain: 'rinkeby' },
-			],
-			options: {}
-		});
-		
-		tokenNegotiatorActiveClient.negotiate(offChainIssuer);
-
-
-		let issuers = tokenNegotiatorActiveClient.getTokenStore().getCurrentIssuers();
-
-		delete issuers["devcon"].timestamp;
-
-		expect(issuers).toEqual({
-			"devcon": {
-				collectionID: 'devcon',
-				title: "Devcon",
-				onChain: false,
-				tokenOrigin: "http://localhost:3002/",
-				attestationOrigin: "https://stage.attestation.id/",
-				unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
-				image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
-				base64senderPublicKey: "",
-				base64attestorPubKey: ""
-			}
-		});
-
-		tokenNegotiatorPassiveClient.negotiate(offChainIssuer);
-
-		issuers = tokenNegotiatorActiveClient.getTokenStore().getCurrentIssuers();
-
-		delete issuers["devcon"].timestamp;
-
-		expect(issuers).toEqual({
-			"devcon": {
-				collectionID: 'devcon',
-				title: "Devcon",
-				onChain: false,
-				tokenOrigin: "http://localhost:3002/",
-				attestationOrigin: "https://stage.attestation.id/",
-				unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
-				image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
-				base64senderPublicKey: "",
-				base64attestorPubKey: ""
-			}
-		});
 	});
 
 	test('tokenNegotiatorClient method setPassiveNegotiationWebTokens', async () => {
