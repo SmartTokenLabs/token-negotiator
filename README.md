@@ -80,6 +80,11 @@ The following types of tokens are supported:
     <tr>
       <td>evm</td>
       <td>cronos</td>
+      <td>N</td>
+    </tr>
+    <tr>
+      <td>evm</td>
+      <td>cronos test net</td>
       <td>Y</td>
     </tr>
     <tr>

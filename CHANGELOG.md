@@ -27,7 +27,7 @@ for both on and off chain tokens.
 * Wallet Disconnect SVG added / remove the disconnect text
 * UX/UI Refresh button and functionality added
 * UX/UI Alignment for refresh / disconnect icons
-* Added support for networks and test nets (see read me)
+* Added support for networks, mainnet and test net (see read me)
 
 ### Bug Fixes
 
