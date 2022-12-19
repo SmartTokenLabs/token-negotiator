@@ -13,7 +13,14 @@
   align-items: center;
 }
 .overlay-tn .headline-container-tn .toolbar-tn {
+  display: flex;
   justify-content: right;
+}
+.overlay-tn .headline-container-tn .toolbar-tn button {
+  margin: 0;
+}
+.overlay-tn .headline-container-tn .toolbar-tn button:last-child {
+  margin: 0 10px;
 }
 
 .overlay-tn .cancel-auth-btn {
