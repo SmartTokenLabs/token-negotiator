@@ -44,7 +44,7 @@ The following types of tokens are supported:
       <td>N</td>
     </tr>
     <td>evm</td>
-      <td>bsc chain testnet</td>
+      <td>bsc testnet</td>
       <td>Y</td>
     </tr>
     <tr>
@@ -54,7 +54,7 @@ The following types of tokens are supported:
     </tr>
     <tr>
 	    <td>evm</td>
-      <td>avalanche fuji testnet</td>
+      <td>avalanche testnet</td>
       <td>Y</td>
     </tr>
     <tr>
@@ -84,7 +84,7 @@ The following types of tokens are supported:
     </tr>
     <tr>
       <td>evm</td>
-      <td>cronos test net</td>
+      <td>cronos testnet</td>
       <td>Y</td>
     </tr>
     <tr>
