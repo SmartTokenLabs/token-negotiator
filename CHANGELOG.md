@@ -26,6 +26,7 @@ for both on and off chain tokens.
 * Exposed ethers library instance
 * Wallet Disconnect SVG added / remove the disconnect text
 * UX/UI Refresh button and functionality added
+* UX/UI Alignment for refresh / disconnect icons
 
 ### Bug Fixes
 
