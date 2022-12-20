@@ -43,10 +43,19 @@ The following types of tokens are supported:
       <td>bsc</td>
       <td>N</td>
     </tr>
+    <td>evm</td>
+      <td>bsc testnet</td>
+      <td>Y</td>
+    </tr>
     <tr>
 	    <td>evm</td>
       <td>avalanche</td>
       <td>N</td>
+    </tr>
+    <tr>
+	    <td>evm</td>
+      <td>avalanche testnet</td>
+      <td>Y</td>
     </tr>
     <tr>
 	    <td>evm</td>
@@ -67,6 +76,16 @@ The following types of tokens are supported:
       <td>evm</td>
       <td>arbitrum</td>
       <td>N</td>
+    </tr>
+    <tr>
+      <td>evm</td>
+      <td>cronos</td>
+      <td>N</td>
+    </tr>
+    <tr>
+      <td>evm</td>
+      <td>cronos testnet</td>
+      <td>Y</td>
     </tr>
     <tr>
 	  <td>solana</td>
