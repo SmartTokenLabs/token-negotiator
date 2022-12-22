@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - staging
+      - ci-testing
   pull_request:
     branches:
       - "*"
@@ -31,3 +32,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  gh-pages:
+    needs:
+      - tn-p1
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: gh-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && contains(fromJson('["main", "ci-testing"]'), github.ref_name)
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1

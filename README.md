@@ -111,8 +111,8 @@ NPM
 
 Browser build
 ```html
-  <script type="text/javascript" src="./token-negotiator-dist/negotiator.js"></script>
-  <link rel="stylesheet" href="./token-negotiator-dist/theme/style.css" />
+  <script type="text/javascript" src="https://tokenscript.github.io/token-negotiator/negotiator.js"></script>
+  <link rel="stylesheet" href="https://tokenscript.github.io/token-negotiator/theme/style.css" />
 ```
 
 ## Reading Tokens into a website or web application.
@@ -408,8 +408,8 @@ Configure the library using the following example.
 
 ````html
 
-  <script type="text/javascript" src="./token-negotiator-dist/negotiator.js"></script>
-  <link rel="stylesheet" href="./token-negotiator-dist/theme/style.css" />
+  <script type="text/javascript" src="https://tokenscript.github.io/token-negotiator/negotiator.js"></script>
+  <link rel="stylesheet" href="https://tokenscript.github.io/token-negotiator/theme/style.css" />
 
   <body onload="init()">
 
