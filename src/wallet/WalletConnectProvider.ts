@@ -1,4 +1,11 @@
 import WalletConnectProvider from "@walletconnect/web3-provider";
+import UniversalProvider from "@walletconnect/universal-provider";
+import QRCodeModal from "@walletconnect/qrcode-modal";
+import { PairingTypes, SessionTypes } from "@walletconnect/types";
+
+export const CUSTOM_RPCS_FOR_WC = {
+	1: `https://mainnet.infura.io/v3/9f79b2f9274344af90b8d4e244b580ef`
+}
 
 export const getWalletConnectProviderInstance = async (checkConnectionOnly?: boolean) => {
 	return new WalletConnectProvider({
@@ -21,4 +28,17 @@ export const getWalletConnectProviderInstance = async (checkConnectionOnly?: boo
 			10: 'https://mainnet.optimism.io'
 		}
 	});
+}
+
+export const getWalletConnectUniversalProviderInstance = async () => {
+	// let closed
+	console.log('Initializing universal provider');
+	const _client = await UniversalProvider.init({
+		projectId: '2ec7ead81da1226703ad789c0b2f7b30',
+		logger: "debug",
+		relayUrl: "wss://relay.walletconnect.com",
+	});
+
+	console.log('universal provider was initialized', _client);
+	return _client;
 }

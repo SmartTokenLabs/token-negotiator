@@ -1,4 +1,6 @@
 import { ethers } from "ethers";
+import QRCodeModal from "@walletconnect/qrcode-modal";
+import { PairingTypes, SessionTypes } from "@walletconnect/types";
 import { logger } from "../utils";
 import {SafeConnectOptions} from "./SafeConnectProvider";
 import {Client} from "../client";
@@ -124,9 +126,7 @@ export class Web3WalletProvider {
 			return address;
              
 		} else {
-
 			throw new Error('Wallet type not found');
-
 		}
 
 	}
@@ -163,7 +163,6 @@ export class Web3WalletProvider {
 	}
 
 	private async registerProvider(provider: ethers.providers.Web3Provider, providerName: string){
-
 		const accounts = await provider.listAccounts();
 		const chainId = (await provider.detectNetwork()).chainId;
 
@@ -253,6 +252,84 @@ export class Web3WalletProvider {
 
 		})
 
+	}
+
+	async WalletConnectV2 (checkConnectionOnly: boolean) {
+
+		logger(2, 'connect Wallet Connect');
+
+		const walletConnectProvider = await import("./WalletConnectProvider");
+
+		const universalWalletConnect = await walletConnectProvider.getWalletConnectUniversalProviderInstance();
+
+		universalWalletConnect.on("display_uri", async (uri: string) => {
+			console.log("EVENT", "QR Code Modal open");
+	
+			QRCodeModal.open(uri, () => {
+				this.client.getUi().showError('User closed modal');
+			});
+		});
+
+		// Subscribe to session ping
+		universalWalletConnect.on("session_ping", ({ id, topic }: { id: number; topic: string }) => {
+			console.log("EVENT", "session_ping");
+			console.log(id, topic);
+		});
+  
+		// Subscribe to session event
+		universalWalletConnect.on("session_event", ({ event, chainId }: { event: any; chainId: string }) => {
+			console.log("EVENT", "session_event");
+			console.log(event, chainId);
+		});
+  
+		// Subscribe to session update
+		universalWalletConnect.on("session_update", ({ topic, session }: { topic: string; session: SessionTypes.Struct }) => {
+			console.log("EVENT", "session_updated");
+			// setSession(session);
+		},
+		);
+  
+		// Subscribe to session delete
+		universalWalletConnect.on("session_delete", ({ id, topic }: { id: number; topic: string }) => {
+			console.log("EVENT", "session_deleted");
+			console.log(id, topic);
+			// resetApp();
+		});
+	
+		let pairing;
+	
+		await universalWalletConnect.connect({
+			namespaces: {
+				eip155: {
+					methods: [
+						"eth_sendTransaction",
+						"eth_signTransaction",
+						"eth_sign",
+						"personal_sign",
+						"eth_signTypedData",
+					],
+					chains: [`eip155:1`],
+					events: ["chainChanged", "accountsChanged"],
+					rpcMap: {
+						1: `https://mainnet.infura.io/v3/9f79b2f9274344af90b8d4e244b580ef`
+					}
+				},
+			},
+			pairingTopic: pairing?.topic,
+		});
+	
+		QRCodeModal.close();
+
+		return new Promise((resolve, reject) => {
+			universalWalletConnect.enable().then(() => {
+				const provider = new ethers.providers.Web3Provider(universalWalletConnect);
+
+				resolve(this.registerProvider(provider, "WalletConnect"));
+			}).catch((e) => {
+				reject(e)
+			});
+
+		})
 	}
 
 	async Torus (checkConnectionOnly: boolean) {
