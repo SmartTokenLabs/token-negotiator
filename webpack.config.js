@@ -2,13 +2,6 @@ const path = require('path');
 const webpack = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin')
 
-// more polyfills will be required as the library extends to support blockchain and non blockchain token attestations.
-
-// ie polyfil
-// https://medium.com/@karim-sheikh/dynamic-module-loading-ie-11-edge-chrome-firefox-6d4f1842b1bf
-// https://www.contentful.com/blog/2017/10/19/put-your-webpack-bundle-on-a-diet-part-2/
-// https://itnext.io/lazy-loading-polyfills-4b85c4951e73
-
 module.exports = {
     mode: "production",
     target: 'web',
@@ -19,8 +12,7 @@ module.exports = {
         }),
         new webpack.ProvidePlugin({
             process: 'process/browser',
-        }),
-        // new webpack.optimize.ModuleConcatenationPlugin()
+        })
     ],
     module: {
         rules: [
@@ -76,6 +68,7 @@ module.exports = {
     output: {
         library: 'negotiator',
         filename: 'negotiator.js',
+		chunkFilename: 'negotiator-[chunkhash].js',
         libraryTarget: 'umd',
         path: path.resolve(__dirname, 'token-negotiator-dist'),
     },
@@ -84,5 +77,3 @@ module.exports = {
         minimizer: [new TerserPlugin()],
     }
 };
-
-// https://webpack.js.org/guides/tree-shaking/

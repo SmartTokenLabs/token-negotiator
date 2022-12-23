@@ -2,26 +2,55 @@ import {Start} from './views/start';
 
 import {logger, requiredParams} from "../utils";
 import {Client, ClientError} from "./index";
-import {ViewInterface, ViewConstructor, AbstractView} from "./views/view-interface";
+import {ViewInterface, ViewComponent} from "./views/view-interface";
+import {TokenStore} from "./tokenStore";
+import {SelectIssuers} from "./views/select-issuers";
+import {SelectWallet} from "./views/select-wallet";
 
 export type UIType = "popup" | "inline"; // TODO: implement modal too
 export type PopupPosition = 'bottom-right' | 'bottom-left' | 'top-left' | 'top-right';
 export type UItheme = 'light' | 'dark';
+export type ViewType = "start" | "main" | "wallet";
 
 export interface UIOptionsInterface {
 	uiType?: UIType;
 	containerElement?: string;
-  openingHeading?: string;
-  issuerHeading?: string;
-  repeatAction?: string;
-  theme?: UItheme;
+	openingHeading?: string;
+	issuerHeading?: string;
+	repeatAction?: string;
+	theme?: UItheme;
 	position?: PopupPosition;
 	autoPopup?: boolean;
+	alwaysShowStartScreen?: boolean;
+	viewOverrides?: {
+		[type: string]: {
+			component?: ViewComponent,
+			options?: {[key: string]: any}
+		}
+	}
 }
 
-export class Ui {
+export interface UiInterface {
+	viewContainer: HTMLElement,
+	initialize(): Promise<void>;
+	updateUI(ViewClass: ViewComponent|ViewType, data?: any);
+	closeOverlay(): void;
+	openOverlay(): void;
+	togglePopup(): void;
+	viewIsNotStart(): boolean;
+	showError(error: string | Error);
+	showError(error: string | Error, canDismiss: boolean);
+	setErrorRetryCallback(retryCallback?: Function);
+	showLoader(...message: string[]);
+	showLoaderDelayed(messages: string[], delay: number);
+	showLoaderDelayed(messages: string[], delay: number, openOverlay: boolean);
+	dismissLoader();
+	switchTheme(newTheme: UItheme);
+}
 
-	private static UI_CONTAINER_HTML = `
+export class Ui implements UiInterface {
+
+	protected static UI_CONTAINER_HTML = `
 		<div class="overlay-content-tn" aria-label="Token negotiator overlay">
 			<div class="load-container-tn" style="display: none;">
 				<div class="lds-ellipsis loader-tn"><div></div><div></div><div></div><div></div></div>
@@ -32,7 +61,7 @@ export class Ui {
 		</div>
 	`;
 
-	private static FAB_BUTTON_HTML = `
+	protected static FAB_BUTTON_HTML = `
 		<button aria-label="token negotiator toggle" class="overlay-fab-button-tn">
 		  <svg style="pointer-events: none" xmlns="http://www.w3.org/2000/svg" width="55" height="55" viewBox="0 0 55 55"><path fill="white" id="svg-tn-left" d="M25.5 26h-5c0-2.9-0.6-5.6-1.7-8.1c-1-2.3-2.4-4.3-4.2-6.1c-1.9-1.9-4.3-3.4-6.8-4.4c-2.3-0.9-4.8-1.4-7.3-1.4v-5h7h18v6.2v5.6v6.2Z" transform="translate(13,28.5) translate(0,0) translate(-13,-13.5)"/><path id="svg-tn-right" fill="white" d="M53 1v11.9v6.1v7h-12.8h-6.1h-6.1v-13.4v-5.2v-6.4h12.6h5.3Z" transform="translate(41.5,28.7) translate(0,0) translate(-40.5,-13.5)"/></svg>
 		</button>
@@ -47,44 +76,102 @@ export class Ui {
 	retryCallback?: Function;
 	retryButton: any;
 
+	private isStartView = true;
+
 	constructor(options: UIOptionsInterface, client: Client) {
 		this.options = options;
 		this.client = client;
 	}
 
-	initialize(){
+	async initialize(){
 
-		setTimeout(() => {
+		this.popupContainer = document.querySelector(this.options.containerElement);
 
-			this.popupContainer = document.querySelector(this.options.containerElement);
+		if (!this.popupContainer){
+			this.popupContainer = document.createElement("div");
+			this.popupContainer.className = "overlay-tn";
+			document.body.appendChild(this.popupContainer);
+		}
 
-			requiredParams(this.popupContainer, 'No entry point element with the class name of ' + this.options.containerElement + ' found.');
+		this.initializeUIType();
 
-			if (this.popupContainer) {
+		this.setTheme(this.options?.theme ?? 'light');
 
-				this.initializeUIType();
+		this.viewContainer = this.popupContainer.querySelector(".view-content-tn");
+		this.loadContainer = this.popupContainer.querySelector(".load-container-tn");
+		this.retryButton = this.loadContainer.querySelector('.dismiss-error-tn');
 
-				this.setTheme(this.options?.theme ?? 'light');
-
-				this.viewContainer = this.popupContainer.querySelector(".view-content-tn");
-				this.loadContainer = this.popupContainer.querySelector(".load-container-tn");
-				this.retryButton = this.loadContainer.querySelector('.dismiss-error-tn');
-
-				this.retryButton.addEventListener('click', () => {
-					this.dismissLoader();
-					if (this.retryCallback) {
-						this.retryCallback();
-						this.retryCallback = undefined;
-						this.retryButton.innerText = "Dismiss";
-					}
-				});
-
-				this.updateUI(Start);
-
+		this.retryButton.addEventListener('click', () => {
+			this.dismissLoader();
+			if (this.retryCallback) {
+				this.retryCallback();
+				this.retryCallback = undefined;
+				this.retryButton.innerText = "Dismiss";
 			}
+		});
 
-		}, 0);
+		this.updateUI(await this.getStartScreen());
+	}
 
+	public getViewFactory(type: ViewType): [ViewComponent, {[key: string]: any}] {
+
+		let viewOptions = {};
+
+		if (this.options.viewOverrides?.[type]){
+
+			if (this.options.viewOverrides?.[type].options)
+				viewOptions = this.options.viewOverrides?.[type].options;
+
+			if (this.options.viewOverrides?.[type].component)
+				return [
+					this.options.viewOverrides?.[type].component,
+					viewOptions
+				];
+		}
+
+		return [this.getDefaultView(type), viewOptions];
+	}
+
+	protected getDefaultView(type: ViewType): ViewComponent {
+		switch (type){
+		case "start":
+			return Start;
+		case "main":
+			return SelectIssuers;
+		case "wallet":
+			return SelectWallet;
+		}
+	}
+
+	public async getStartScreen(){
+
+		if (this.options.alwaysShowStartScreen || !localStorage.getItem(TokenStore.LOCAL_STORAGE_KEY) || !this.client.getTokenStore().getTotalTokenCount())
+			return "start";
+
+		if (await this.canSkipWalletSelection()){
+			this.client.enrichTokenLookupDataOnChainTokens();
+			return "main";
+		} else {
+			return "wallet";
+		}
+	}
+
+	public async canSkipWalletSelection(){
+		if (this.client.getTokenStore().hasOnChainTokens()){
+			let wp = await this.client.getWalletProvider();
+			await wp.loadConnections();
+			return wp.getConnectedWalletData().length > 0;
+		} else {
+			return true;
+		}
+	}
+	
+	getUIContainer() {
+		return Ui.UI_CONTAINER_HTML;
+	}
+
+	getFabButton () {
+		return Ui.FAB_BUTTON_HTML;
 	}
 
 	initializeUIType(){
@@ -94,11 +181,12 @@ export class Ui {
 		switch (this.options.uiType){
 
 		case "popup":
+
 			this.options.position
 				? this.popupContainer.classList.add(this.options.position)
 				: this.popupContainer.classList.add('bottom-right');
 
-			this.popupContainer.innerHTML = Ui.UI_CONTAINER_HTML + Ui.FAB_BUTTON_HTML;
+			this.popupContainer.innerHTML = this.getUIContainer() + this.getFabButton();
 
 			this.popupContainer.querySelector('.overlay-fab-button-tn').addEventListener('click', this.togglePopup.bind(this));
 
@@ -123,38 +211,27 @@ export class Ui {
 	}
 
 	closeOverlay() {
-
-		if (this.options.uiType === "inline")
-			return;
-
+		if (this.options.uiType === "inline") return;
 		this.popupContainer.classList.remove("open");
-
-		window.KeyshapeJS.timelines()[0].time(0);
-
-		window.KeyshapeJS.globalPause();
+		// TODO deprecate keyshape for native css
+		window.KeyshapeJS?.timelines()[0]?.time(0);
+		window.KeyshapeJS?.globalPause();
 	}
 
 	openOverlay(){
-
-		if (this.options.uiType === "inline")
-			return;
-
+		if (this.options.uiType === "inline") return;
 		// Prevent out-of-popup click from closing the popup straight away
 		setTimeout(()=> {
 			this.popupContainer.classList.add("open");
-
-			window.KeyshapeJS.timelines()[0].time(0);
-
-			window.KeyshapeJS.globalPlay();
+			// TODO deprecate keyshape for native css
+			window.KeyshapeJS?.timelines()[0]?.time(0);
+			window.KeyshapeJS?.globalPlay();
 		}, 10);
 	}
 
 	togglePopup() {
-
 		requiredParams(this.popupContainer, 'No overlay element found.');
-
 		let openOverlay = !this.popupContainer.classList.contains("open");
-
 		if (openOverlay) {
 			this.openOverlay();
 		} else {
@@ -162,20 +239,35 @@ export class Ui {
 		}
 	}
 
-	updateUI(ViewClass: ViewConstructor<AbstractView>, data?: any) {
+	updateUI(viewFactory: ViewComponent|ViewType, data?: any) {
+
+		let viewOptions = {};
+
+		if (typeof viewFactory === "string") {
+
+			this.isStartView = viewFactory === "start";
+
+			const [component, opts] = this.getViewFactory(viewFactory);
+			viewFactory = component;
+			viewOptions = opts;
+		} else {
+			this.isStartView = false;
+		}
 
 		if (!this.viewContainer){
 			logger(3, "Element .overlay-content-tn not found: popup not initialized");
 			return;
 		}
 
-		this.currentView = new ViewClass(this.client, this, this.viewContainer, {options: this.options, data: data});
+		// @ts-ignore
+		this.currentView = new viewFactory(this.client, this, this.viewContainer, {options: this.options, viewOptions, data: data});
+
 		this.currentView.render();
 
 	}
 
 	viewIsNotStart(){
-		return !(this.currentView instanceof Start);
+		return !this.isStartView;
 	}
 
 	showError(error: string | Error, canDismiss = true){
@@ -219,7 +311,7 @@ export class Ui {
 		}, delay);
 	}
 
-	cancelDelayedLoader(){
+	protected cancelDelayedLoader(){
 		if (this.loadTimer){
 			clearTimeout(this.loadTimer);
 			this.loadTimer = null;
@@ -243,7 +335,7 @@ export class Ui {
 		this.loadContainer.style.display = 'none';
 	}
 
-	private setTheme(theme: UItheme) {
+	protected setTheme(theme: UItheme) {
 		let refTokenSelector = document.querySelector(".overlay-tn");
 		if (refTokenSelector) {
 			refTokenSelector.classList.remove(this.options.theme + "-tn");
@@ -255,7 +347,8 @@ export class Ui {
 
 	private assignFabButtonAnimation() {
 
-		if (window.KeyshapeJS) {
+		// TODO deprecate KeyshapeJS
+		if (window.KeyshapeJS && window.KeyshapeJS.timelines()[0]) {
 
 			window.KeyshapeJS.globalPause();
 
@@ -269,7 +362,6 @@ export class Ui {
 		if (theme && theme === 'dark') {
 			return theme
 		}
-
 		return 'light';
 	}
 

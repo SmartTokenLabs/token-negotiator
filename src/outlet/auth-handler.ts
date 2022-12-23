@@ -1,11 +1,11 @@
 // @ts-nocheck
 
-import { Item } from "../tokenLookup";
 import { ResponseActionBase } from "../core/messaging";
-import { Outlet } from "./index";
+import { OutletAction } from "../client/messaging";
+import {Outlet, OutletInterface} from "./index";
 import { Authenticator } from "@tokenscript/attestation";
 import { logger } from "../utils";
-import { getBrowserData } from "../utils/support/getBrowserData";
+import {isBrave, isMacOrIOS} from "../utils/support/getBrowserData";
 
 export interface DevconToken {
 	ticketBlob: string;
@@ -72,7 +72,7 @@ export class AuthHandler {
 	private attestationInTab: boolean;
 	private attestationTabHandler: any;
 	private buttonOverlay: HTMLElement | null = null;
-	private tryingToGetAttestationInBackground: boolean = false;
+	private tryingToGetAttestationInBackground = false;
 
 	private iframe: HTMLIFrameElement | null = null;
 	private iframeWrap: HTMLElement | null = null;
@@ -85,15 +85,17 @@ export class AuthHandler {
 
 	private wrapperBase = "tn_attestation_open";
 	private interval = null;
-	private rejectHandler:Function;
+	private rejectHandler: Function;
 
 	constructor(
-		outlet: Outlet,
-		evtid: any,
-		tokenDef: Item,
-		tokenObj: DevconToken | any,
-		address: string, 
-		wallet: string
+		outlet?: Outlet,
+		evtid?: any,
+		private tokenDef: OutletInterface,
+		private tokenObj: DevconToken | any,
+		private address?: string,
+		private wallet?: string,
+		private redirectUrl?: false|string,
+		private unsignedToken?: any
 	) {
 		this.outlet = outlet;
 		this.evtid = evtid;
@@ -106,10 +108,10 @@ export class AuthHandler {
 		this.signedTokenSecret = tokenObj.ticketSecret;
 
 		this.attestationOrigin = tokenObj.attestationOrigin;
-		this.attestationInTab = tokenObj.attestationInTab;
 
-		this.address = address;
-		this.wallet = wallet;
+		// disable attestationInTab by default
+		this.attestationInTab = tokenObj.attestationInTab; 
+		//!== undefined ? tokenObj.attestationInTab : (isBrave() || isMacOrIOS());
 	}
 
 	openAttestationApp(){
@@ -118,15 +120,16 @@ export class AuthHandler {
 
 			// TODO check if its an iframe, if TAB then no need to request to display 
 			logger(2, "display new TAB to attest, ask parent to show current iframe");
-			
-			this.outlet.sendMessageResponse({
-				evtid: this.evtid,
-				evt: ResponseActionBase.SHOW_FRAME,
-				max_width: "500px",
-				min_height: "300px"
-			});
 
-			let button:HTMLDivElement; 
+			if (this.outlet)
+				this.outlet.sendMessageResponse({
+					evtid: this.evtid,
+					evt: ResponseActionBase.SHOW_FRAME,
+					max_width: "500px",
+					min_height: "300px"
+				});
+
+			let button: HTMLDivElement;
 			
 			button = document.createElement("div");
 			button.classList.add(this.wrapperBase + "_btn");
@@ -241,8 +244,34 @@ export class AuthHandler {
 		return new Promise((resolve, reject) => {
 			this.rejectHandler = reject;
 
-			// dont do it for brawe, brawe doesnt support access to indexDB through iframe
-			if (this.attestationInTab && !getBrowserData().brave){
+			if (this.redirectUrl){
+
+				const curParams = new URLSearchParams(document.location.hash.substring(1));
+
+				const params = new URLSearchParams();
+				params.set("action", OutletAction.EMAIL_ATTEST_CALLBACK);
+				params.set("email", this.email);
+				params.set("address", this.address);
+				params.set("wallet", this.wallet);
+				params.set("issuer", this.tokenDef.collectionID);
+				params.set("token", JSON.stringify(this.unsignedToken));
+				params.set("email-attestation-callback", this.redirectUrl);
+
+				const requestor = curParams.get("requestor");
+
+				if (requestor)
+					params.set("requestor", requestor);
+
+				const goto = `${this.attestationOrigin}#${params.toString()}`
+				logger(2, "authenticate. go to: ", goto);
+
+				document.location.href = goto;
+
+				return;
+			}
+
+			// don't do it for brave, brave doesn't support access to indexDB through iframe
+			if (this.attestationInTab && !isBrave()){
 				this.tryingToGetAttestationInBackground = true;
 			}
 
@@ -290,6 +319,57 @@ export class AuthHandler {
 		document.body.appendChild(iframeWrap);
 	}
 
+	public async getUseToken(attestationBlob: any, attestationSecret: any) {
+
+		try {
+			if (!this.signedTokenSecret) {
+				throw new Error("signedTokenSecret required");
+			}
+			if (!attestationSecret) {
+				throw new Error("attestationSecret required");
+			}
+			if (!this.signedTokenBlob) {
+				throw new Error("signedTokenBlob required");
+			}
+			if (!attestationBlob) {
+				throw new Error("attestationBlob required");
+			}
+			if (!this.base64attestorPubKey) {
+				throw new Error("base64attestorPubKey required");
+			}
+			if (!this.base64senderPublicKeys) {
+				throw new Error("base64senderPublicKeys required");
+			}
+
+			let useToken = await Authenticator.getUseTicket(
+				this.signedTokenSecret,
+				attestationSecret,
+				this.signedTokenBlob,
+				attestationBlob,
+				this.base64attestorPubKey,
+				this.base64senderPublicKeys
+			);
+
+			if (useToken) {
+				logger(2,'this.authResultCallback( useToken ): ');
+				if (this.buttonOverlay)
+					this.buttonOverlay.remove();
+				return useToken;
+			} else {
+				logger(2,"this.authResultCallback( empty ): ");
+				throw new Error("Empty useToken");
+			}
+
+		} catch (e) {
+			logger(2,`UseDevconTicket failed.`, e.message);
+			logger(3, e);
+			if (this.buttonOverlay)
+				this.buttonOverlay.remove();
+			throw new Error("Failed to create UseTicket. " + e.message);
+		}
+
+	}
+
 	async postMessageAttestationListener(
 		event: MessageEvent,
 		resolve: Function,
@@ -332,18 +412,21 @@ export class AuthHandler {
 					this.iframeWrap.style.display = "flex";
 				
 					// ask parent to show this iframe
-					this.outlet.sendMessageResponse({
-						evtid: this.evtid,
-						evt: ResponseActionBase.SHOW_FRAME,
-						// max_width: "700px",
-						// min_height: "600px"
-					});
+					if (this.outlet)
+						this.outlet.sendMessageResponse({
+							evtid: this.evtid,
+							evt: ResponseActionBase.SHOW_FRAME,
+							// max_width: "700px",
+							// min_height: "600px"
+						});
 				}
 			} else {
 
 				if (event.data.error){
 					logger(2,"Error received from the iframe: " + event.data.error);
 					reject(new Error(event.data.error));
+					if (this.buttonOverlay)
+						this.buttonOverlay.remove();
 				}
 
 				// display works for iframe only
@@ -366,52 +449,16 @@ export class AuthHandler {
 			this.iframeWrap.remove();
 		}
 
-		
-
 		this.attestationBlob = event.data?.attestation;
 		this.attestationSecret = event.data?.requestSecret;
 
 		try {
-			if (!this.signedTokenSecret) {
-				throw new Error("signedTokenSecret required");
-			}
-			if (!this.attestationSecret) {
-				throw new Error("attestationSecret required");
-			}
-			if (!this.signedTokenBlob) {
-				throw new Error("signedTokenBlob required");
-			}
-			if (!this.attestationBlob) {
-				throw new Error("attestationBlob required");
-			}
-			if (!this.base64attestorPubKey) {
-				throw new Error("base64attestorPubKey required");
-			}
-			if (!this.base64senderPublicKeys) {
-				throw new Error("base64senderPublicKeys required");
-			}
-
-			let useToken = await Authenticator.getUseTicket(
-				this.signedTokenSecret,
-				this.attestationSecret,
-				this.signedTokenBlob,
-				this.attestationBlob,
-				this.base64attestorPubKey,
-				this.base64senderPublicKeys
-			);
-
-			if (useToken) {
-				logger(2,'this.authResultCallback( useToken ): ');
-				resolve(useToken);
-			} else {
-				console.log("this.authResultCallback( empty ): ");
-				throw new Error("Empty useToken");
-			}
-		} catch (e) {
-			logger(2,`UseDevconTicket failed.`, e.message);
-			logger(3, e);
-			reject(new Error("Failed to create UseTicket. " + e.message));
+			const useToken = this.getUseToken(this.attestationBlob, this.attestationSecret);
+			resolve(useToken);
+		} catch (e: any){
+			reject(e);
 		}
+
 		// construct UseDevconTicket, see
 		// https://github.com/TokenScript/attestation/blob/main/data-modules/src/UseDevconTicket.asd
 

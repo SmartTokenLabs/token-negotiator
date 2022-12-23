@@ -9,8 +9,8 @@ export const getBrowserData = () => {
 	const isEdge = UA && UA.indexOf("edg/") > 0;
 	const isChrome = UA && /chrome\/\d+/.test(UA) && !isEdge;
 	const isPhantomJS = UA && /phantomjs/.test(UA);
-	const isFireFox = UA && /firefox\/\d+/.test(UA);
-	const isSafari = window.safari ? true : false;
+	const isFireFox = UA && /firefox|fxios\/\d+/.test(UA);
+	const isSafari = isMacSafari() || isIosSafari();
 	const isBrave = !!window.navigator["brave"];
 
 	// detect OS
@@ -79,3 +79,34 @@ export const getBrowserData = () => {
 		imTokenAndroid: isAndroid && isImToken,
 	};
 };
+
+export function isMacOrIOS() {
+	return !!window.safari ||
+		/iphone|ipad|ipod|ios/.test(window.navigator.userAgent ? window.navigator.userAgent.toLowerCase() : "");
+}
+
+export function isBrave() {
+	return !!window.navigator["brave"];
+}
+
+export function isIosSafari() {
+	let userAgent = window.navigator.userAgent ? window.navigator.userAgent.toLowerCase() : ""
+
+	return /ip(ad|od|hone)/i.test(userAgent) &&
+		/webkit/i.test(userAgent) &&
+		!(/(crios|fxios|opios|mercury)/i.test(userAgent)) && !isBrave();
+}
+
+export function isMacSafari() {
+	return !!window.safari;
+}
+
+export function isSafari() {
+	return isMacSafari() || isIosSafari();
+}
+
+export function browserBlocksIframeStorage(): boolean {
+	let browserData = getBrowserData();
+	// TODO remove Chrome from list
+	return browserData.iOS || isSafari() || isBrave();
+}

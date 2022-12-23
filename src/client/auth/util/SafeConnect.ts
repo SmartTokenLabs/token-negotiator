@@ -85,7 +85,7 @@ export class SafeConnect {
 
 		const linkAttest = new EthereumKeyLinkingAttestation();
 
-		linkAttest.create(addressAttest, linkedEthAddress, 3600);
+		linkAttest.create(addressAttest, linkedEthAddress, 3600 + 600, undefined, Math.round(Date.now() / 1000) - 600);
 
 		await linkAttest.sign(holdingPrivKey);
 

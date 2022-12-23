@@ -1,6 +1,6 @@
 
 import {OutletAction, OutletResponseAction, Messaging} from "./messaging";
-import { Ui, UItheme } from './ui';
+import {Ui, UiInterface, UItheme} from './ui';
 import { logger, requiredParams } from "../utils";
 import {getNftCollection, getNftTokens} from "../utils/token/nftProvider";
 import "./../vendor/keyShape";
@@ -10,13 +10,14 @@ import { OffChainTokenConfig, OnChainTokenConfig, AuthenticateInterface, Negotia
 import {SignedUNChallenge} from "./auth/signedUNChallenge";
 import {TicketZKProof} from "./auth/ticketZKProof";
 import {AuthenticationMethod} from "./auth/abstractAuthentication";
-import { isUserAgentSupported } from '../utils/support/isSupported';
-import {SelectWallet} from "./views/select-wallet";
-import {SelectIssuers} from "./views/select-issuers";
+import { isUserAgentSupported, validateBlockchain } from '../utils/support/isSupported';
 import Web3WalletProvider from '../wallet/Web3WalletProvider';
+import {LocalOutlet} from "../outlet/localOutlet";
+import {Outlet, OutletInterface} from "../outlet";
+import { browserBlocksIframeStorage } from "../utils/support/getBrowserData";
+import { waitForElementToExist, errorHandler } from '../utils/index';
 
-
-if(typeof window !== "undefined") window.tn = { version: "2.1.0" };
+if(typeof window !== "undefined") window.tn = { version: "2.2.0" };
 
 declare global {
 	interface Window {
@@ -29,22 +30,25 @@ declare global {
 }
 
 const NOT_SUPPORTED_ERROR = "This browser is not supported. Please try using Chrome, Edge, FireFox or Safari.";
-const NO_INTERNET_ERROR_MESSAGE = "No internet connection. Please check your internet connection and try again";
 
-const defaultConfig: NegotiationInterface = {
+export const defaultConfig: NegotiationInterface = {
 	type: "active",
 	issuers: [],
 	uiOptions: {
 		uiType: "popup",
+		// value ".overlay-tn" hardcoded in ui.ts
 		containerElement: ".overlay-tn",
 		openingHeading: "Validate your token ownership for access",
 		issuerHeading: "Detected tokens",
 		autoPopup: true,
 		position: "bottom-right",
+		alwaysShowStartScreen: false
 	},
 	autoLoadTokens: true,
 	autoEnableTokens: true,
 	messagingForceTab: false,
+	enableOffChainRedirectMode: false,
+	tokenPersistenceTTL: 600,
 	unSupportedUserAgent: {
 		authentication: {
 			config: {
@@ -85,10 +89,10 @@ export class Client {
 
 	private negotiateAlreadyFired: boolean;
 	public issuersLoaded: boolean;
-	private config: NegotiationInterface;
+	public config: NegotiationInterface;
 	private web3WalletProvider: Web3WalletProvider;
 	private messaging: Messaging;
-	private ui: Ui;
+	protected ui: UiInterface;
 	private clientCallBackEvents: {} = {};
 	private tokenStore: TokenStore;
 	private uiUpdateCallbacks: {[type in UIUpdateEventType]} = {
@@ -96,26 +100,72 @@ export class Client {
 		[UIUpdateEventType.ISSUERS_LOADED]: undefined
 	};
 
+	private urlParams: URLSearchParams;
 
 	static getKey(file: string){
 		return  Authenticator.decodePublicKey(file);
 	}
 
 	constructor(config: NegotiationInterface) {
+		if (window.location.hash) {
+			this.urlParams = new URLSearchParams(window.location.hash.substring(1));
+			let action = this.getDataFromQuery("action");
+			logger(2, `Client() fired. Action = "${action}"`);
+		}
 
 		this.config = this.mergeConfig(defaultConfig, config);
 
 		this.negotiateAlreadyFired = false;
 
-		this.tokenStore = new TokenStore(this.config.autoEnableTokens);
+		this.tokenStore = new TokenStore(this.config.autoEnableTokens, this.config.tokenPersistenceTTL);
 
 		if (this.config.issuers?.length > 0)
 			this.tokenStore.updateIssuers(this.config.issuers);
 
 		this.messaging = new Messaging();
+
+		this.registerOutletProofEventListener();
 	}
 
-	private mergeConfig(defaultConfig, config){
+	getDataFromQuery(itemKey: any): string {
+		return this.urlParams ? this.urlParams.get(itemKey) : "";
+	}
+
+	public readProofCallback(){
+
+		if (!this.getDataFromQuery)
+			return false;
+
+		let action = this.getDataFromQuery("action");
+
+		if (action !== "proof-callback")
+			return false;
+
+		const issuer = this.getDataFromQuery("issuer");
+		const attest = this.getDataFromQuery("attestation");
+		const error = this.getDataFromQuery("error");
+
+		this.emitRedirectProofEvent(issuer, attest, error);
+	}
+
+	private registerOutletProofEventListener(){
+		window.addEventListener("auth-callback", (e: CustomEvent) => {
+			this.emitRedirectProofEvent(e.detail.issuer, e.detail.proof, e.detail.error);
+		});
+	}
+
+	private emitRedirectProofEvent(issuer: string, proof?: string, error?: string){
+		// Wait to ensure UI is initialized
+		setTimeout(() => {
+			if (error){
+				this.handleProofError(new Error(error), issuer);
+			} else {
+				this.eventSender.emitProofToClient({proof}, issuer, null);
+			}
+		}, 500);
+	}
+
+	private mergeConfig(defaultConfig: NegotiationInterface, config: NegotiationInterface){
 
 		for (let key in config){
 
@@ -126,6 +176,15 @@ export class Client {
 			}
 		}
 
+		// Check if blockchain is supported one
+		if (defaultConfig.issuers && defaultConfig.issuers.length) {
+			for(const issuer of defaultConfig.issuers) {
+				if (issuer.onChain === true) {
+					validateBlockchain(issuer.blockchain ?? "");
+				}
+			}
+	
+		}
 		return defaultConfig;
 	}
 
@@ -135,6 +194,10 @@ export class Client {
 
 	getUi(){
 		return this.ui;
+	}
+
+	createUiInstance(){
+		this.ui = new Ui(this.config.uiOptions, this);
 	}
 
 	triggerUiUpdateCallback(type: UIUpdateEventType, data?: {}){
@@ -173,7 +236,8 @@ export class Client {
 		let wp = await this.getWalletProvider();
 		wp.deleteConnections();
 		this.tokenStore.clearCachedTokens();
-		this.ui.updateUI(SelectWallet);
+		this.eventSender.emitConnectedWalletInstance(null);
+		this.eventSender.emitDisconnectedWalletInstance();
 	}
 
 	async negotiatorConnectToWallet(walletType: string) {
@@ -220,47 +284,64 @@ export class Client {
 		this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADED);
 	}
 
-	public checkUserAgentSupport(type: string){
+	public async checkUserAgentSupport(type: string){
 
 		if (!isUserAgentSupported(this.config.unSupportedUserAgent?.[type]?.config)){
 
+			// TODO do we check browser support in passive mode? looks like we just save "errorMessage"
 			let err = this.config.unSupportedUserAgent[type].errorMessage;
 
-			if (this.config.type === 'active') {
-				this.ui = new Ui(this.config.uiOptions, this);
-				this.ui.initialize();
+			if (this.activeNegotiateRequired()) {
+				this.createUiInstance();
+				await this.ui.initialize();
 				this.ui.openOverlay();
 				this.ui.showError(err, false);
 				this.ui.viewContainer.style.display = 'none';
 			}
 
-			throw new Error(err);
+			// TODO what the sense of this handler?
+			errorHandler(err, 'error', null, null, true, true);
 
 		}
 	}
 
+	private activeNegotiateRequired(): boolean {
+		return (
+			this.config.type === "active"
+		);
+	}
+
+	private createCurrentUrlWithoutHash(): string {
+		return window.location.origin + window.location.pathname + window.location.search??("?" + window.location.search);
+	}
+
+	public getNoTokenMsg (collectionID: string) {
+		const store = this.getTokenStore().getCurrentIssuers();
+		const collectionNoTokenMsg = store[collectionID]?.noTokenMsg;
+		return collectionNoTokenMsg ? collectionNoTokenMsg : '';
+	}
+
 	async negotiate(issuers?: (OnChainTokenConfig | OffChainTokenConfig)[], openPopup = false) {
 
-		try {
-			this.checkUserAgentSupport("full");
-		} catch(err){
-			logger(2,err);
-			err.name = "NOT_SUPPORTED_ERROR";
-			console.log("browser not supported");
-			this.eventSender.emitErrorToClient(err);
-			return;
+		let currentIssuer = this.getOutletConfigForCurrentOrigin();
+		if (currentIssuer){
+			logger(2, "Sync Outlet fired in Client to read MagicLink before negotiate().");
+			let outlet = new Outlet(currentIssuer, true);
+			await outlet.readMagicLink();
+			outlet = null;
 		}
-		
+
+		await this.checkUserAgentSupport("full");
 
 		if (issuers) this.tokenStore.updateIssuers(issuers);
 
 		requiredParams(Object.keys(this.tokenStore.getCurrentIssuers()).length, "issuers are missing.");
 
-		if (this.config.type === "active") {
+		if (this.activeNegotiateRequired()) {
 
 			this.issuersLoaded = !this.tokenStore.hasUnloadedIssuers();
 
-			this.activeNegotiationStrategy(openPopup);
+			await this.activeNegotiationStrategy(openPopup);
 
 		} else {
 			// TODO build logic to allow to connect with wallectConnect, Torus etc.
@@ -272,10 +353,9 @@ export class Client {
 			await this.passiveNegotiationStrategy();
 		}
 
-		window.addEventListener('offline', () => this.checkInternetConnectivity());
 	}
 
-	activeNegotiationStrategy(openPopup: boolean) {
+	async activeNegotiationStrategy(openPopup: boolean) {
 
 		let autoOpenPopup;
 
@@ -286,8 +366,8 @@ export class Client {
 				this.enrichTokenLookupDataOnChainTokens();
 
 		} else {
-			this.ui = new Ui(this.config.uiOptions, this);
-			this.ui.initialize();
+			this.createUiInstance();
+			await this.ui.initialize();
 			autoOpenPopup = true;
 		}
 
@@ -301,7 +381,7 @@ export class Client {
 
 	private cancelAutoload = true;
 
-	async tokenAutoLoad(onLoading: (issuer: string) => void, onComplete: (issuer: string, tokens: any[]) => void) {
+	async tokenAutoLoad(onLoading: (issuer: string) => void, onComplete: (issuer: string, tokens: any[]) => void, refresh: boolean) {
 
 		if (this.config.autoLoadTokens === false)
 			return;
@@ -314,7 +394,7 @@ export class Client {
 
 			let tokens = this.tokenStore.getIssuerTokens(issuerKey)
 
-			if (tokens?.length > 0)
+			if (!refresh && tokens?.length > 0)
 				continue;
 
 			onLoading(issuerKey);
@@ -332,6 +412,9 @@ export class Client {
 
 			count++;
 
+			if (refresh)
+				continue;
+
 			if (this.cancelAutoload || (this.config.autoLoadTokens !== true && count > this.config.autoLoadTokens))
 				break;
 		}
@@ -345,34 +428,103 @@ export class Client {
 
 		let issuers = this.tokenStore.getCurrentIssuers(false);
 
+		let action = this.getDataFromQuery("action");
+
 		for (let issuer in issuers){
 
-			let res;
+			let tokens;
 
 			const issuerConfig = this.tokenStore.getCurrentIssuers()[issuer] as OffChainTokenConfig;
 
 			try {
-				res = await this.messaging.sendMessage({
-					action: OutletAction.GET_ISSUER_TOKENS,
-					origin: issuerConfig.tokenOrigin,
-					data: {
-						issuer: issuer,
-						filter: issuerConfig.filters
+				if ((new URL(issuerConfig.tokenOrigin)).origin === document.location.origin){
+					tokens = this.loadLocalOutletTokens(issuerConfig);
+				} else {
+					// TODO make solution:
+					// in case if we have multiple tokens then redirect flow will not work
+					// because page will reload on first remote token
+					let resposeIssuer = this.getDataFromQuery("issuer");
+
+					if (
+						(
+							action === OutletAction.GET_ISSUER_TOKENS + "-response"
+							// have to read tokens from "proof-callback" action,
+							// in other way page will be redirected in loop
+							|| action === "proof-callback"
+						)
+					&& issuer === resposeIssuer) {
+						let resposeTokensEncoded = this.getDataFromQuery("tokens");
+						try {
+							tokens = JSON.parse(resposeTokensEncoded);
+						} catch (e){
+							logger(2, "Error parse tokens from Response. ", e);
+						}
+					} else {
+						tokens = await this.loadRemoteOutletTokens(issuerConfig);
 					}
-				}, this.config.messagingForceTab);
+				}
 			} catch (err) {
-				logger(2,err);
-				console.log("popup error");
-				this.eventSender.emitErrorToClient(err, issuer);
+				errorHandler('popup error', 'error', () => this.eventSender.emitErrorToClient(err, issuer), null, true, false);
 				continue;
 			}
 
 			logger(2,"tokens:");
-			logger(2,res.data.tokens);
+			logger(2, tokens);
 
-			this.tokenStore.setTokens(issuer, res.data.tokens);
+			this.tokenStore.setTokens(issuer, tokens);
 
 		}
+	}
+
+	readTokensFromUrl(){
+		let issuers = this.tokenStore.getCurrentIssuers(false);
+		let issuer = this.getDataFromQuery("issuer");
+
+		if (!issuer) {
+			logger(3, "No issuer in URL.")
+			return;
+		}
+
+		const issuerConfig = issuers[issuer] as OffChainTokenConfig;
+		if (!issuerConfig) {
+			logger(3, `No issuer config for "${issuer}" in URL.`)
+			return;
+		}
+
+		let tokens;
+
+
+		try {
+			if ((new URL(issuerConfig.tokenOrigin)).origin !== document.location.origin){
+				// TODO make solution:
+				// in case if we have multiple tokens then redirect flow will not work
+				// because page will reload on first remote token
+
+
+				let resposeTokensEncoded = this.getDataFromQuery("tokens");
+				try {
+					tokens = JSON.parse(resposeTokensEncoded);
+				} catch (e){
+					logger(2, "Error parse tokens from Response. ", e);
+				}
+
+			}
+		} catch (err) {
+			logger(1, "Error read tokens from URL");
+			return;
+		}
+
+		if (!tokens) {
+			logger(2, `No tokens for "${issuer}" in URL.`)
+			return;
+		}
+
+		logger(2,"readTokensFromUrl tokens:");
+		logger(2, tokens);
+
+		this.tokenStore.setTokens(issuer, tokens);
+
+
 	}
 
 	async setPassiveNegotiationOnChainTokens() {
@@ -428,7 +580,7 @@ export class Client {
 		const config = this.tokenStore.getCurrentIssuers()[issuer];
 
 		if (!config)
-			throw new Error("Undefined token issuer")
+			errorHandler('Undefined token issuer', 'error', null, null, true, true);
 
 		let tokens;
 
@@ -443,28 +595,56 @@ export class Client {
 
 			tokens = await getNftTokens(config, walletAddress);
 
-			this.tokenStore.setTokens(issuer,  tokens);
-
 		} else {
 
-			let res = await this.messaging.sendMessage({
-				action: OutletAction.GET_ISSUER_TOKENS,
-				origin: config.tokenOrigin,
-				data : {
-					issuer: issuer,
-					filter: config.filters
-				},
-			}, this.config.messagingForceTab, this.ui);
-
-			tokens = res.data.tokens;
-
-			this.tokenStore.setTokens(issuer, res.data.tokens);
+			if ((new URL(config.tokenOrigin)).origin === document.location.origin){
+				tokens = this.loadLocalOutletTokens(config);
+			} else {
+				tokens = await this.loadRemoteOutletTokens(config);
+			}
 		}
+
+		this.tokenStore.setTokens(issuer,  tokens);
 
 		if (this.config.autoEnableTokens)
 			this.eventSender.emitSelectedTokensToClient(this.tokenStore.getSelectedTokens())
 
 		return tokens;
+	}
+
+	private async loadRemoteOutletTokens(issuer: OffChainTokenConfig){
+
+		const data: any = {
+			issuer: issuer,
+			filter: issuer.filters
+		}
+
+		if (issuer.accessRequestType)
+			data.access = issuer.accessRequestType;
+
+		let redirectRequired =
+			this.config.enableOffChainRedirectMode &&
+			(browserBlocksIframeStorage() && this.config.type === "passive");
+
+		const res = await this.messaging.sendMessage(
+			{
+				action: OutletAction.GET_ISSUER_TOKENS,
+				origin: issuer.tokenOrigin,
+				data: data
+			},
+			this.config.messagingForceTab,
+			this.config.type === "active" ? this.ui : null,
+			redirectRequired ? this.createCurrentUrlWithoutHash() : false
+		);
+
+		return res.data?.tokens ?? [];
+	}
+
+	private loadLocalOutletTokens(issuer: OffChainTokenConfig){
+
+		const localOutlet = new LocalOutlet((issuer as OutletInterface & OffChainTokenConfig));
+
+		return localOutlet.getTokens();
 	}
 
 	updateSelectedTokens(selectedTokens) {
@@ -474,35 +654,33 @@ export class Client {
 
 	async authenticate(authRequest: AuthenticateInterface) {
 
-		try {
-			this.checkUserAgentSupport("authentication")
-		} catch(err){
-			logger(2,err);
-			err.name = "NOT_SUPPORTED_ERROR";
-			console.log("browser not supported");
-			this.eventSender.emitErrorToClient(err);
-			return;
-		}
-
+		await this.checkUserAgentSupport("authentication");
 
 		const { issuer, unsignedToken } = authRequest;
+
 		requiredParams(
 			issuer && unsignedToken,
-			"Issuer and signed token required."
+			"Issuer and unsigned token required."
 		);
+
+		if (unsignedToken.signedToken){
+			delete unsignedToken.signedToken;
+		}
 
 		const config = this.tokenStore.getCurrentIssuers()[issuer];
 
 		if (!config)
-			throw new Error("Provided issuer was not found.");
+			errorHandler("Provided issuer was not found.", 'error', null, null, true, true);
 
 		// TODO: How to handle error display in passive negotiation? Use optional UI or emit errors to listener?
 
 		if (this.ui) {
 			this.ui.showLoaderDelayed([
 				"<h4>Authenticating...</h4>",
-				"<small>You may need to sign a new challenge in your wallet</small>"
+				"<small>You may need to sign a new challenge in your wallet</small>",
+				"<button class='cancel-auth-btn btn-tn' aria-label='Cancel authentication'>Cancel</button>"
 			], 600, true);
+			this.enableAuthCancel(issuer);
 		}
 
 		let AuthType;
@@ -523,7 +701,12 @@ export class Client {
 
 			authRequest.options.messagingForceTab = this.config.messagingForceTab;
 
+			logger(2, "authRequest", authRequest);
+			logger(2, "get proof at ", window.location.href);
+
 			res = await authenticator.getTokenProof(config, [authRequest.unsignedToken], authRequest);
+
+			logger(2, "proof received at ", window.location.href);
 
 			logger(2,"Ticket proof successfully validated.");
 
@@ -536,8 +719,7 @@ export class Client {
 				return this.handleWalletRequired(authRequest);
 			}
 
-			this.handleProofError(err, issuer);
-			throw err;
+			errorHandler(err, 'error', () => this.handleProofError(err, issuer), null, false, true);
 		}
 
 		if (this.ui) {
@@ -546,6 +728,16 @@ export class Client {
 		}
 
 		return res.data;
+	}
+
+	public enableAuthCancel(issuer): void {
+		waitForElementToExist('.cancel-auth-btn').then((cancelAuthButton: HTMLElement) => {
+			cancelAuthButton.onclick = () => {
+				const err = 'User cancelled authentication';
+				this.ui.showError(err);
+				this.eventSender.emitProofToClient(null, issuer, err);
+			}
+		});
 	}
 
 	private async handleWalletRequired(authRequest){
@@ -561,8 +753,8 @@ export class Client {
 		}
 
 		return new Promise((resolve, reject) => {
-			this.ui.updateUI(SelectWallet, {connectCallback: async () => {
-				this.ui.updateUI(SelectIssuers);
+			this.ui.updateUI("wallet", {connectCallback: async () => {
+				this.ui.updateUI("main");
 				try {
 					let res = await this.authenticate(authRequest);
 					resolve(res);
@@ -586,36 +778,82 @@ export class Client {
 		emitSelectedTokensToClient: (tokens: any) => {
 			this.on("tokens-selected", null, { selectedTokens: tokens });
 		},
-		emitProofToClient: (data: any, issuer: any, error = "") => {
+		emitProofToClient: (data: any, issuer: any, error: Error|string = "") => {
 			this.on("token-proof", null, { data, issuer, error });
 		},
 		emitErrorToClient: (error: Error, issuer = "none") => {
-
-			this.checkInternetConnectivity();
-
 			this.on("error", null, {error, issuer});
 		},
 		emitConnectedWalletInstance: (connectedWallet: any) => {
 			this.on("connected-wallet", null, connectedWallet);
+		},
+		emitDisconnectedWalletInstance: () => {
+			this.on("disconnected-wallet", null, null);
+		},
+		emitNetworkChange: (chain: any) => {
+			this.on("network-change", null, chain);
 		}
 	};
 
-	checkInternetConnectivity(): void {
-		if (!navigator.onLine) {
-			if (this.config.type === 'active') {
-				setTimeout(() => {
-					this.ui.showError(this.config.noInternetErrorMessage ?? NO_INTERNET_ERROR_MESSAGE);
-				}, 1000);
+	getOutletConfigForCurrentOrigin(){
+		let allIssuers = this.tokenStore.getCurrentIssuers();
+		let currentIssuers = [];
+
+		Object.keys(allIssuers).forEach(key => {
+			let issuerConfig = allIssuers[key] as OffChainTokenConfig;
+
+			try {
+
+				if (
+					(new URL(issuerConfig.tokenOrigin)).origin === document.location.origin
+					// should not be 2 tokens with same origin
+					// && issuerConfig.collectionID == issuer
+				){
+					currentIssuers.push(issuerConfig);
+				}
+			} catch (err) {
+				logger(2,err);
+				console.log("issuer config error " + err.message);
 			}
-			throw new Error(this.config.noInternetErrorMessage ?? NO_INTERNET_ERROR_MESSAGE)
+		})
+
+		if (currentIssuers.length){
+			return currentIssuers[0];
 		}
+		return false;
+	}
+
+	onlySameOrigin(){
+		let allIssuers = this.tokenStore.getCurrentIssuers();
+		let onlySameOriginFlag = true;
+
+		Object.keys(allIssuers).forEach(key => {
+			let issuerConfig = allIssuers[key] as OffChainTokenConfig;
+			let thisOneSameOrigin = false;
+			try {
+				if (
+					(new URL(issuerConfig.tokenOrigin)).origin === document.location.origin
+				){
+					thisOneSameOrigin = true;
+				}
+			} catch (err) {
+				logger(2,err);
+				console.log("issuer config error");
+			}
+
+			// if any issuerConfig missing tokenOrigin or something wrong then skip sameOrigin flow
+			if (!thisOneSameOrigin) {
+				onlySameOriginFlag = false;
+			}
+		})
+
+		return onlySameOriginFlag;
 	}
 
 	async addTokenViaMagicLink(magicLink: any) {
 		let url = new URL(magicLink);
 		let params =
 			url.hash.length > 1 ? url.hash.substring(1) : url.search.substring(1);
-
 		let res = await this.messaging.sendMessage({
 			action: OutletAction.MAGIC_URL,
 			origin: url.origin + url.pathname,
@@ -623,14 +861,42 @@ export class Client {
 				urlParams: params
 			}
 		}, this.config.messagingForceTab);
-
 		if (res.evt === OutletResponseAction.ISSUER_TOKENS) return res.data.tokens;
-
-		throw new Error(res.errors.join("\n"));
+		errorHandler(res.errors.join("\n"), 'error', null, false, true);
 	}
 
 	on(type: TokenNegotiatorEvents, callback?: any, data?: any) {
 		requiredParams(type, "Event type is not defined");
+
+		// try to read tokens when listener attached
+		if((type === 'tokens' || type === 'tokens-selected') && callback){
+			this.readTokensFromUrl();
+		}
+
+		// read token-proof only when callback attached ( init listener by user )
+		if(type === 'token-proof' && callback) {
+			logger(2, "token-proof listener atteched. check URL HASH for proof callbacks.");
+
+			const action = this.getDataFromQuery("action");
+
+			if (action === "proof-callback") {
+				this.readProofCallback();
+				document.location.hash = "";
+			} else if (action === "email-callback") {
+
+				let currentIssuer = this.getOutletConfigForCurrentOrigin();
+
+				if (currentIssuer){
+					logger(2, "Outlet fired to parse URL hash params.");
+
+					let outlet = new Outlet(currentIssuer, true, this.urlParams);
+					outlet.pageOnLoadEventHandler().then(()=>{
+						outlet = null;
+					});
+				}
+				document.location.hash = "";
+			}
+		}
 
 		if (callback) {
 			// assign callback reference to web developers event e.g. negotiator.on('tokens', (tokensForWebPage) => { ... }));

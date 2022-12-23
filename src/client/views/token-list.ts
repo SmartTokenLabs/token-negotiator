@@ -9,6 +9,7 @@ export interface TokenListItemInterface {
     image: string;
     data: any;
     toggleState: boolean;
+		hideToggle?:boolean;
 }
 
 export class TokenList extends AbstractView {
@@ -148,11 +149,13 @@ export class TokenList extends AbstractView {
 
 	createTokenMarkup(config: TokenListItemInterface) {
 
-		const { tokenIssuerKey, title, data, index, image, toggleState } = config;
+		const { tokenIssuerKey, title, data, index, image, toggleState, hideToggle } = config;
 
 		const tokenId = index.length > 15 ?
 			(index.substring(0, 5) + "..." + index.substring(index.length-5, index.length))
 			: index;
+
+		const isChecked = toggleState ? 'checked' : '';
 
 		return `
             <li class='token-tn'>
@@ -160,12 +163,12 @@ export class TokenList extends AbstractView {
               <div class='data-tn'>
                   <p class='token-title-tn'>${title}</p>
                   <p class='detail-tn' title="${index}">#${(tokenId)}</p>
-                </div>
-              <div class='toggle-tn'>
-                <input ${toggleState ? 'checked' : '' } data-key='${tokenIssuerKey}' data-token='${JSON.stringify(data)}' data-index='${index}' type='checkbox' name='toggle${index}' class='mobileToggle-tn toggle-tn' id='toggle${index}'>
+                </div>` + 
+			(hideToggle ? "" : `<div class='toggle-tn'>
+                <input ${isChecked} data-key='${tokenIssuerKey}' data-token='${JSON.stringify(data)}' data-index='${index}' type='checkbox' name='toggle${index}' class='mobileToggle-tn toggle-tn' id='toggle${index}'>
                 <label for='toggle${index}'></label>
-              </div>
-            </li>
+              </div>`) +
+            `</li>
         `;
 	}
 }

@@ -9,6 +9,7 @@ export interface OffChainTokenConfig extends IssuerConfigInterface {
     unEndPoint?: string;
     base64senderPublicKeys: {[key: string]: string};
     base64attestorPubKey: string;
+	accessRequestType?: "read"|"write";
 }
 
 export interface OnChainTokenConfig extends IssuerConfigInterface {
@@ -33,6 +34,8 @@ export interface IssuerConfigInterface {
     image?: string;
 	symbol?: string;
     filters?: {};
+	noTokenMsg?: string;
+    hideToggle?: boolean;
 }
 
 export type Issuer = OffChainTokenConfig | SolanaIssuerConfig | OnChainTokenConfig;
@@ -44,6 +47,9 @@ export interface NegotiationInterface {
     autoEnableTokens?: boolean;
     messagingForceTab?: boolean;
     safeConnectOptions?: SafeConnectOptions;
+    // force redirect flow in "active" mode on negotiate()
+    enableOffChainRedirectMode?: boolean;
+	tokenPersistenceTTL?: number;
     unSupportedUserAgent?: {
         authentication?: {
             config: BrowserDataInterface,
@@ -57,8 +63,6 @@ export interface NegotiationInterface {
     noInternetErrorMessage?: string;
 }
 
-// TODO: Implement tokenId - each issuer token should have a unique ID (tokenId for instance).
-// webster should not be required to pass the whole object as it can lead to hard to solve errors for webster.
 export interface AuthenticateInterface {
     issuer: any;
     tokenId?: number | string;
@@ -70,4 +74,4 @@ export interface AuthenticateInterface {
     blockchain?: string;
 }
 
-export type TokenNegotiatorEvents = 'token-proof' | 'connected-wallet' | 'tokens-selected' | 'tokens' | 'error';
+export type TokenNegotiatorEvents = 'token-proof' | 'connected-wallet' | 'disconnected-wallet' | 'tokens-selected' | 'tokens' | 'network-change' | 'error';

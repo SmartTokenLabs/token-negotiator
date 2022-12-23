@@ -85,3 +85,55 @@ export const removePostMessageListener = (listener: any) => {
 	}
 }
 
+/**
+ * Function to wait for element to exist.
+ * @param selector query selector
+ * @returns 
+ */
+export const waitForElementToExist = (selector: string): Promise<Element> => {
+	return new Promise(resolve => {
+		if (document.querySelector(selector)) {
+			return resolve(document.querySelector(selector));
+		}
+
+		const observer = new MutationObserver(() => {
+			if (document.querySelector(selector)) {
+				resolve(document.querySelector(selector));
+				observer.disconnect();
+			}
+		});
+		observer.observe(document.body, {childList: true, subtree: true });
+	});
+
+}
+
+export type ErrorType = 'warning' | 'info' | 'error';
+
+export const errorHandler = (error: any, type: ErrorType, action?: Function | null, data?: unknown, log = true, throwError = false) => {
+
+	let errorMsg;
+
+	if (typeof error === "object"){
+		errorMsg = error.message ?? "Unknown error type: " + JSON.stringify(error);
+	} else {
+		errorMsg = error;
+	}
+
+	if (log) logger(2, type + ': ' + errorMsg);
+
+	if (action) action();
+
+	if (throwError) {
+		throw new NegotiatorError(errorMsg, error);
+	}
+
+	return {type, message: error, data}
+}
+
+export class NegotiatorError extends Error {
+
+	constructor(message: string, public originalError: any, public code?: string) {
+		super(message);
+	}
+}
+

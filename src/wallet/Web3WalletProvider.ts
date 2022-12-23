@@ -13,6 +13,7 @@ interface WalletConnection {
 	providerType: string,
 	blockchain: string,
 	provider?: ethers.providers.Web3Provider,
+	ethers?: any
 }
 
 export class Web3WalletProvider {
@@ -40,7 +41,8 @@ export class Web3WalletProvider {
 				address: con.address,
 				chainId: con.chainId,
 				providerType: con.providerType,
-				blockchain: con.blockchain
+				blockchain: con.blockchain,
+				ethers: ethers
 			};
 			
 		}
@@ -59,6 +61,18 @@ export class Web3WalletProvider {
 		} else {
 			return null;
 		}
+	}
+	
+	emitNetworkChange(chainId: string) {
+
+		if(chainId) {
+
+			this.client.eventSender.emitNetworkChange(chainId);
+
+			return chainId;
+			
+		}
+
 	}
 
 	deleteConnections(){
@@ -143,7 +157,7 @@ export class Web3WalletProvider {
 
 	registerNewWalletAddress ( address: string, chainId: number|string, providerType: string, provider: any, blockchain = 'evm' ) {
 
-		this.connections[address.toLowerCase()] = { address, chainId, providerType, provider, blockchain };
+		this.connections[address.toLowerCase()] = { address, chainId, providerType, provider, blockchain, ethers };
 
 		return address;
 	}
@@ -167,8 +181,6 @@ export class Web3WalletProvider {
 			if (curAccount === accounts[0])
 				return;
 
-			console.log("Account changed: " + accounts[0]);
-
 			delete this.connections[curAccount.toLowerCase()];
 
 			curAccount = accounts[0];
@@ -183,6 +195,17 @@ export class Web3WalletProvider {
 			this.client.enrichTokenLookupDataOnChainTokens();
 		});
 
+		// @ts-ignore
+		provider.provider.on("chainChanged", (_chainId: any) => {
+			
+			this.registerNewWalletAddress(accounts[0], _chainId, providerName, provider);
+
+			this.saveConnections();
+
+			this.emitNetworkChange(_chainId);
+			
+		});
+
 		return accounts[0];
 	}
 
@@ -194,7 +217,7 @@ export class Web3WalletProvider {
 
 			await window.ethereum.enable(); // fall back may be needed for FF to open Extension Prompt.
 
-			const provider = new ethers.providers.Web3Provider(window.ethereum);
+			const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
 
 			return this.registerProvider(provider, "MetaMask");
 

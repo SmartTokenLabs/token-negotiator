@@ -1,6 +1,11 @@
 
 import { logger } from '..';
 import { getBrowserData } from './getBrowserData';
+import { errorHandler } from '../index';
+
+export const SUPPORTED_EVM_BLOCKCHAINS = [
+	"evm", "polygon", "optimism", "bsc", "avalanche", "fantom", "goerli", "mumbai", "arbitrum"
+];
 
 export interface BrowserDataInterface {
 	iE?: boolean
@@ -39,3 +44,27 @@ export const isUserAgentSupported = (unSupportedUserAgents?: BrowserDataInterfac
 	const unsupported = Object.keys(unSupportedUserAgents);
 	return !(unsupported.some(browser => unSupportedUserAgents[browser] && browserData[browser]));
 }
+
+export const validateBlockchain = (blockchain: string) => {
+	if (blockchain === "") {
+		const warning = `You did not specify 'blockchain', the default value is evm. Check our github to see supported values.`;
+		errorHandler(warning, 'warning', null, null);
+		return "evm";
+	}
+	if (blockchain === "solana") {
+		return "solana";
+	}
+
+	if (blockchain === "evm") {
+		return "evm";
+	}
+
+	if (SUPPORTED_EVM_BLOCKCHAINS.includes(blockchain.toLowerCase())) {
+		errorHandler("We recommend you to set `blockchain` as 'evm'.", 'warning', null, null);
+		return "evm";
+	}
+
+	const err = "You set unsupported `blockchain` in the constructor. Check our github to see supported values."
+	errorHandler(err, 'error', null, null);
+	return blockchain;
+} 

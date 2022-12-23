@@ -23,14 +23,38 @@ export class SelectIssuers extends AbstractView {
 	}
 
 	render(){
+		this.renderContent();
+		this.afterRender();
+	}
+
+	protected renderContent(){
 
 		this.viewContainer.innerHTML = `
             <div class="inner-content-tn issuer-slider-tn">
               <div class="issuer-view-tn scroll-tn">
                 <div class="brand-tn"></div>
                 <div class="headline-container-tn">
-                  <p class="headline-tn">${this.params.options.issuerHeading}</p>
-                  <button class="btn-tn dis-wallet-tn" aria-label="Disconnect Wallet">Disconnect</button>
+                  <div>
+                  	<p class="headline-tn">${this.params.options.issuerHeading}</p>
+										<div class="toolbar-tn">
+				  						<button class="btn-tn refresh-tn" aria-label="Refresh Tokens">
+                  			<svg class="refresh-icon-tn" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"\t viewBox="0 0 383.748 383.748" style="enable-background:new 0 0 383.748 383.748;" xml:space="preserve"><g>\t<path d="M62.772,95.042C90.904,54.899,137.496,30,187.343,30c83.743,0,151.874,68.13,151.874,151.874h30\t\tC369.217,81.588,287.629,0,187.343,0c-35.038,0-69.061,9.989-98.391,28.888C70.368,40.862,54.245,56.032,41.221,73.593\t\tL2.081,34.641v113.365h113.91L62.772,95.042z"/>\t<path d="M381.667,235.742h-113.91l53.219,52.965c-28.132,40.142-74.724,65.042-124.571,65.042\t\tc-83.744,0-151.874-68.13-151.874-151.874h-30c0,100.286,81.588,181.874,181.874,181.874c35.038,0,69.062-9.989,98.391-28.888\t\tc18.584-11.975,34.707-27.145,47.731-44.706l39.139,38.952V235.742z"/></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g></svg>
+				  						</button>
+											<button class="btn-tn dis-wallet-tn" style="display: none;" aria-label="Disconnect Wallet">
+												<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+												<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+												<svg width="12px" height="100%" viewBox="0 0 384 384" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+														<g id="Layer1">
+																<path d="M194.449,-0.378L194.449,29.622L29.577,29.622C29.577,95.909 30.577,354.191 30.577,354.191L194.449,354.191L194.449,384.191L16.077,384.191C7.517,384.191 0.577,377.251 0.577,368.691L0.577,15.122C0.577,6.562 7.517,-0.378 16.077,-0.378L194.449,-0.378Z"/>
+																<g transform="matrix(1.39537,0,0,2.43013,-54.9803,-262.053)">
+																		<path d="M99.772,200.171L99.772,165.725L228.493,165.725L228.493,133.741L314.191,182.948L228.493,232.156L228.493,200.171L99.772,200.171Z"/>
+																</g>
+														</g>
+												</svg>											
+											</button>
+				  					</div>                  	
+				  </div>
+				  ${this.getCustomContent()}
                 </div>
 								<nav class="token-issuer-nav-tn">
                 	<ul class="token-issuer-list-container-tn" role="menubar"></ul>
@@ -55,8 +79,12 @@ export class SelectIssuers extends AbstractView {
 
 		this.viewContainer.querySelector('.back-to-menu-tn').addEventListener('click', this.backToIssuers.bind(this));
 
-		this.viewContainer.querySelector('.dis-wallet-tn').addEventListener('click', () => {
-			this.client.disconnectWallet();
+		this.setupWalletButton();
+
+		const refreshBtn = this.viewContainer.querySelector('.refresh-tn');
+
+		refreshBtn.addEventListener('click', () => {
+			this.autoLoadTokens(true);
 		});
 
 		this.issuerListContainer = document.querySelector(".token-issuer-list-container-tn");
@@ -72,6 +100,9 @@ export class SelectIssuers extends AbstractView {
 		let tokensListElem = this.tokensContainer.getElementsByClassName("token-list-container-tn")[0];
 
 		this.tokenListView = new TokenList(this.client, this.ui, tokensListElem, {});
+	}
+
+	protected afterRender(){
 
 		if (this.client.issuersLoaded) {
 			if (this.client.getTokenStore().hasUnloadedTokens())
@@ -79,7 +110,27 @@ export class SelectIssuers extends AbstractView {
 		} else {
 			this.issuersLoading();
 		}
+	}
 
+	protected getCustomContent(){
+		return "";
+	}
+
+	async setupWalletButton(){
+
+		const provider = await this.client.getWalletProvider();
+
+		if (provider.getConnectedWalletData().length > 0){
+
+			const walletBtn = this.viewContainer.querySelector('.dis-wallet-tn');
+
+			walletBtn.style.display = "block";
+
+			walletBtn.addEventListener('click', () => {
+				this.client.disconnectWallet();
+				this.ui.updateUI("wallet");
+			});
+		}
 	}
 
 	issuersLoading(){
@@ -127,7 +178,7 @@ export class SelectIssuers extends AbstractView {
 
 	}
 
-	issuerConnectMarkup(title: string, image: string|undefined, issuer: string, tokens: []|null){
+	issuerConnectMarkup(title: string, image: string|undefined, issuer: string, tokens: any[]){
 		return `
             <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
               <div tabindex="0" style="display: flex; align-items: center;">
@@ -135,7 +186,13 @@ export class SelectIssuers extends AbstractView {
                 <p class="issuer-connect-title">${title}</p>
               </div>
               <button aria-label="connect with the token issuer ${issuer}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" 
-              			class="connect-btn-tn" style="${(tokens?.length ? "display: none;" : "")}" data-issuer="${issuer}">Load</button>
+					class="connect-btn-tn"
+					style="${(tokens?.length ? "display: none;" : "")}"
+					data-issuer="${issuer}"
+					${this.client.issuersLoaded === true ? "" : "disabled"}
+				>
+				${this.client.issuersLoaded === true ? "Load" : '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'}
+			  </button>
               <button aria-label="tokens available from token issuer ${issuer}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" 
               			class="tokens-btn-tn" style="${(tokens?.length ? "display: block;" : "")}" data-issuer="${issuer}">${tokens?.length} token${(tokens?.length ? "s" : "")} available</button>
             </li>
@@ -151,7 +208,7 @@ export class SelectIssuers extends AbstractView {
 		// TODO - Review and uplift this logic. Its not working as expected from tests
 	}
 
-	async autoLoadTokens(){
+	async autoLoadTokens(refresh = false){
 
 		await this.client.tokenAutoLoad(this.issuerLoading.bind(this), (issuer: string, tokens: any[]) => {
 
@@ -165,7 +222,7 @@ export class SelectIssuers extends AbstractView {
 			}
 
 			this.issuerConnected(issuer, tokens, false);
-		});
+		}, true);
 	}
 
 	async connectTokenIssuer(event: any) {
@@ -190,7 +247,7 @@ export class SelectIssuers extends AbstractView {
 		this.ui.dismissLoader();
 
 		if (!tokens?.length){
-			this.ui.showError("No tokens found!");
+			this.ui.showError(`No tokens found! ${this.client.getNoTokenMsg(issuer)}`);
 			return;
 		}
 
@@ -198,10 +255,18 @@ export class SelectIssuers extends AbstractView {
 	}
 
 	issuerLoading(issuer: string){
+
+		const tokensBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .tokens-btn-tn`);
+
+		if (tokensBtn)
+			tokensBtn.style.display = "none"
+
 		const connectBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`);
 
-		if (connectBtn)
+		if (connectBtn) {
 			connectBtn.innerHTML = '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>';
+			connectBtn.style.display = "block";
+		}
 	}
 
 	issuerConnected(issuer: string, tokens: any[], showTokens = true) {
@@ -267,10 +332,11 @@ export class SelectIssuers extends AbstractView {
 				tokens.push(<TokenListItemInterface>{
 					data: t,
 					tokenIssuerKey: issuer,
-					index: t.tiketIdNumber ?? i,
+					index: (t.tiketIdNumber ?? t.ticketIdNumber) ?? i,
 					title: title,
 					image: image,
-					toggleState: isSelected
+					toggleState: isSelected,
+					hideToggle: config?.hideToggle
 				});
 
 			} else {
@@ -283,7 +349,8 @@ export class SelectIssuers extends AbstractView {
 					index: tokenId,
 					title: t.title,
 					image: t.image,
-					toggleState: isSelected
+					toggleState: isSelected,
+					hideToggle: config?.hideToggle
 				});
 
 			}

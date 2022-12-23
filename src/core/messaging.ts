@@ -1,5 +1,6 @@
 import {attachPostMessageListener, logger, removePostMessageListener} from "../utils";
 import {ClientError} from "../client";
+import { browserBlocksIframeStorage} from "../utils/support/getBrowserData";
 
 // TODO move Message related interfaces/enum in to shared location /core 
 
@@ -16,7 +17,7 @@ export interface ResponseInterfaceBase {
     data?: any,
 	errors?: string[],
 	max_width?: string,
-	min_height?: string,
+	min_height?: string
 }
 
 export enum ResponseActionBase {
@@ -37,12 +38,18 @@ export class Messaging {
 
 	iframeStorageSupport: null|boolean = null;
 	iframe: any = null;
-	listenerSet: boolean = false;
+	listenerSet = false;
 
-	async sendMessage(request: RequestInterfaceBase, forceTab = false): Promise<ResponseInterfaceBase> {
+	async sendMessage(request: RequestInterfaceBase, forceTab = false, redirectUrl: false|string = false): Promise<ResponseInterfaceBase> {
 
 		if (!forceTab && this.iframeStorageSupport === null) {
-			this.iframeStorageSupport = !window.safari;
+			// TODO: temp to test safari top level context access.
+			// TODO do we need this verificaton?
+			// if (document.location.hash !== "#safari-iframe-test")
+
+			// 
+				// this.iframeStorageSupport = !isMacOrIOS() && !isBrave();
+			this.iframeStorageSupport = !browserBlocksIframeStorage();
 		}
 
 		// Uncomment to test popup mode
@@ -50,6 +57,11 @@ export class Messaging {
 
 		logger(2,"Send request: ");
 		logger(2,request);
+
+		if (redirectUrl){
+			this.sendRedirect(request, redirectUrl);
+			return;
+		}
 
 		if (!forceTab && this.iframeStorageSupport !== false){
 			try {
@@ -65,6 +77,18 @@ export class Messaging {
 		}
 	}
 
+	private sendRedirect(request: RequestInterfaceBase, redirectUrl: string){
+
+		let id = Messaging.getUniqueEventId();
+		const url = this.constructUrl(id, request);
+
+		let newLocation = `${url}&redirect=true&requestor=${encodeURIComponent(redirectUrl)}`;
+
+		logger(2, `redirect from ${document.location.href} to ${newLocation}`);
+
+		document.location.href = newLocation;
+	}
+
 	private sendIframe(request: RequestInterfaceBase): Promise<ResponseInterfaceBase>{
 
 		return new Promise((resolve, reject) => {
@@ -73,6 +97,7 @@ export class Messaging {
 			let url = this.constructUrl(id, request);
 
 			this.iframe = this.createIframe(() => {
+				this.listenerSet = false;
 				this.removeModal();
 				reject(ClientError.USER_ABORT);
 			});
@@ -81,6 +106,7 @@ export class Messaging {
 				this.listenerSet = true;
 				this.setResponseListener(id, request.origin, request.timeout, resolve, reject,
 					() => {
+						this.listenerSet = false;
 						this.removeModal();
 					}
 				);
@@ -146,30 +172,46 @@ export class Messaging {
 
 					received = true;
 
-					if (response.evt === ResponseActionBase.COOKIE_CHECK){
-						// if (!iframe || this.iframeStorageSupport === true)
-						// 	return;
+					// TODO: revert to tab when requestStorageAccess error is encountered in outlet - but only for browsers that support new tabs (no wallet dapp browsers)
+					/* if (response.evt === ResponseActionBase.COOKIE_CHECK){
+						if (!this.iframe || this.iframeStorageSupport === true)
+							return;
 
+						this.iframeStorageSupport = !!response?.data?.thirdPartyCookies;
+						if (!this.iframeStorageSupport){
+							afterResolveOrError();
+							reject("IFRAME_STORAGE");
+						}
 						return;
-					}
+					}*/
 
 					if (response.evt === ResponseActionBase.ERROR) {
-						reject(new Error(response.errors.join(". ")));
+
+						if (response.errors[0] === "IFRAME_STORAGE") {
+							this.iframeStorageSupport = false;
+							reject("IFRAME_STORAGE");
+						} else {
+							reject(new Error(response.errors.join(". ")));
+						}
+
 					} else if (response.evt === ResponseActionBase.SHOW_FRAME){
+
+						if (timer)
+							clearTimeout(timer);
 
 						if (this.iframe) {
 							let modal = this.getModal();
 							modal.style.display = "block";
 
 							if (response.max_width) {
-								let modalContent:HTMLElement = modal.querySelector(".modal-content-tn");
+								let modalContent: HTMLElement = modal.querySelector(".modal-content-tn");
 								if (modalContent){
 									modalContent.style.maxWidth = response.max_width;
 								}
 							}
 
 							if (response.min_height) {
-								let iframe:HTMLElement = modal.querySelector("iframe");
+								let iframe: HTMLElement = modal.querySelector("iframe");
 								if (iframe){
 									iframe.style.minHeight = response.min_height;
 								}
@@ -200,7 +242,7 @@ export class Messaging {
 		attachPostMessageListener(listener);
 
 		if (timeout === undefined)
-			timeout = 10000;
+			timeout = 20000;
 
 		if (timeout > 0)
 			timer = setTimeout(()=>{
@@ -252,19 +294,29 @@ export class Messaging {
 
 		let url = `${request.origin}#evtid=${id}&action=${request.action}`;
 
-		for (let i in request.data){
-			let value = request.data[i];
+		// in request to Outlet() to get tokens we dont have any token
+		if (typeof request.data.token !== "undefined") {
+			url += `&token=${encodeURIComponent(JSON.stringify(request.data.token))}`;
+		}
+
+		for (let key in request.data){
+			let value = request.data[key];
+
+			// no sense to send issuer config. Outlet() use own config, 
+			// it can be dangerous if Outlet beleive to external config from URL HASH
+			if (key === "issuer")
+				continue;
 
 			if (!value)
 				continue;
 
 			if (value instanceof Array || value instanceof Object){
-				url += `&${i}=${JSON.stringify(value)}`;
+				url += `&${key}=${JSON.stringify(value)}`;
 			} else {
-				if (i === "urlParams"){
+				if (key === "urlParams"){
 					url += `&${value}`;
 				} else {
-					url += `&${i}=${value}`;
+					url += `&${key}=${value}`;
 				}
 			}
 		}

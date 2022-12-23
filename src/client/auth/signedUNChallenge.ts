@@ -43,7 +43,7 @@ export class SignedUNChallenge extends AbstractAuthentication implements Authent
 				}
 			};
 
-			let endpoint = request.options?.unEndpoint ?? SignedUNChallenge.DEFAULT_ENDPOINT;
+			let endpoint = request.options?.unEndPoint ?? SignedUNChallenge.DEFAULT_ENDPOINT;
 
 			const challenge = await UN.getNewUN(endpoint);
 			let signature;

@@ -1,11 +1,13 @@
 import {Messaging as CoreMessaging, RequestInterfaceBase, ResponseInterfaceBase} from "../core/messaging";
-import {Ui} from "./ui";
+import {UiInterface} from "./ui";
 import {ClientError, ClientErrorMessage} from "./index";
 
 export enum OutletAction {
 	MAGIC_URL = "magic-url",
 	GET_ISSUER_TOKENS = "get-issuer-tokens",
-	GET_PROOF = "get-proof"
+	GET_PROOF = "get-proof",
+	GET_PROOF_CALLBACK = "proof-callback",
+	EMAIL_ATTEST_CALLBACK = "email-callback",
 }
 
 export enum OutletResponseAction {
@@ -17,10 +19,10 @@ export class Messaging {
 
 	public core = new CoreMessaging();
 
-	async sendMessage(request: RequestInterfaceBase, forceTab = false, ui?: Ui): Promise<ResponseInterfaceBase> {
+	async sendMessage(request: RequestInterfaceBase, forceTab = false, ui?: UiInterface, redirectUrl: false|string = false): Promise<ResponseInterfaceBase> {
 
 		try {
-			return await this.core.sendMessage(request, forceTab);
+			return await this.core.sendMessage(request, forceTab, redirectUrl);
 		} catch (e) {
 
 			if (e === ClientError.POPUP_BLOCKED){
@@ -41,7 +43,7 @@ export class Messaging {
 		}
 	}
 
-	private handleUserClose(request: RequestInterfaceBase, ui: Ui, forceTab){
+	private handleUserClose(request: RequestInterfaceBase, ui: UiInterface, forceTab){
 
 		return new Promise<ResponseInterfaceBase>((resolve, reject) => {
 

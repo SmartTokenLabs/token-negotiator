@@ -36,62 +36,66 @@ The following types of tokens are supported:
     <tr>
       <td>evm</td>
       <td>optimism</td>
-            <td>N</td>
+      <td>N</td>
     </tr>
     <tr>
     <td>evm</td>
       <td>bsc</td>
-            <td>N</td>
+      <td>N</td>
+    </tr>
+    <td>evm</td>
+      <td>bsc testnet</td>
+      <td>Y</td>
     </tr>
     <tr>
 	    <td>evm</td>
       <td>avalanche</td>
-            <td>N</td>
+      <td>N</td>
+    </tr>
+    <tr>
+	    <td>evm</td>
+      <td>avalanche testnet</td>
+      <td>Y</td>
     </tr>
     <tr>
 	    <td>evm</td>
       <td>fantom</td>
-            <td>N</td>
-    </tr>
-        <tr>
-    <td>evm</td>
-      <td>rinkeby</td>
-            <td>Y</td>
+      <td>N</td>
     </tr>
     <tr>
-    <td>evm</td>
-      <td>ropsten</td>
-            <td>Y</td>
-    </tr>
-    <tr>
-    <td>evm</td>
+      <td>evm</td>
       <td>goerli</td>
-            <td>Y</td>
-    </tr>
-    <tr>
-    	<td>evm</td>
-      <td>kovan</td>
-            <td>Y</td>
+      <td>Y</td>
     </tr>
     <tr>
       <td>evm</td>
       <td>mumbai</td>
-            <td>Y</td>
+      <td>Y</td>
     </tr>
     <tr>
       <td>evm</td>
       <td>arbitrum</td>
-            <td>N</td>
+      <td>N</td>
+    </tr>
+    <tr>
+      <td>evm</td>
+      <td>cronos</td>
+      <td>N</td>
+    </tr>
+    <tr>
+      <td>evm</td>
+      <td>cronos testnet</td>
+      <td>Y</td>
     </tr>
     <tr>
 	  <td>solana</td>
       <td>mainnet</td>
-            <td>N</td>
+      <td>N</td>
     </tr>
     <tr>
 	    <td>solana</td>
-        <td>devnet</td>
-            <td>Y</td>
+      <td>devnet</td>
+      <td>Y</td>
     </tr>
   </tbody>
 </table>
@@ -107,8 +111,8 @@ NPM
 
 Browser build
 ```html
-  <script type="text/javascript" src="./token-negotiator-dist/negotiator.js"></script>
-  <link rel="stylesheet" href="./token-negotiator-dist/theme/style.css" />
+  <script type="text/javascript" src="https://tokenscript.github.io/token-negotiator/negotiator.js"></script>
+  <link rel="stylesheet" href="https://tokenscript.github.io/token-negotiator/theme/style.css" />
 ```
 
 ## Reading Tokens into a website or web application.
@@ -193,7 +197,7 @@ This approach is designed for a fully custom ui/ux experience, where a list of a
   const negotiator = new Client({
     type: 'passive',
     issuers: [
-      { 
+      {
         collectionID: 'devcon', 
         title: "Devcon",
         onChain: false,
@@ -331,7 +335,7 @@ Authenticating ownership of the token will provide a proof with a limited expiry
 
 ````
 
-### Utilise the wallet provider instance
+### Utilise the wallet provider instance hook
 
 Once connected to Token Negotiator, the wallet instance can be used.
 
@@ -343,9 +347,39 @@ Once connected to Token Negotiator, the wallet instance can be used.
   * @return {String} chain id
   * @return {String} providerType 'MetaMask'
   * @return {Object} provider instance
+  * @return {Object} ethers library instance
   */
   negotiator.on('connected-wallet', (connectedWallet) => {
     // handle the wallet instance as required by your application
+    // { ... }
+  });
+
+````
+
+### Wallet disconnection hook
+
+This event is triggered when the user disconnects their wallet from Token Negotiator.
+
+````javascript
+
+  negotiator.on('disconnected-wallet', () => {
+    // handle the wallet disconnection event as required by your application
+    // { ... }
+  });
+
+````
+
+### Wallet network change hook (evm wallets only at this time)
+
+This event is triggered when the user changes their current connected wallets network
+
+````javascript
+
+  /**
+  * @returns {String|Number} chain
+  */
+  negotiator.on('network-change', (chain) => {
+    // handle the wallet network change as required by your application
     // { ... }
   });
 
@@ -374,8 +408,8 @@ Configure the library using the following example.
 
 ````html
 
-  <script type="text/javascript" src="./token-negotiator-dist/negotiator.js"></script>
-  <link rel="stylesheet" href="./token-negotiator-dist/theme/style.css" />
+  <script type="text/javascript" src="https://tokenscript.github.io/token-negotiator/negotiator.js"></script>
+  <link rel="stylesheet" href="https://tokenscript.github.io/token-negotiator/theme/style.css" />
 
   <body onload="init()">
 
@@ -388,11 +422,23 @@ Configure the library using the following example.
             window.negotiator = new negotiator.Client({
                 type: 'active',
                 issuers: [
-                    { blockchain: 'evm', onChain: true, collectionID: "rinkeby-punks", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'rinkeby-punk' },
-                    { blockchain: 'evm', onChain: true, collectionID: "stl-rnd-women-tribe", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'stl-rnd-women-tribe-nfts' },
-                    { blockchain: 'evm', onChain: true, collectionID: "stl-rnd-zed-run", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'stl-rnd-zed' },
-                    { blockchain: 'evm', onChain: true, collectionID: "stl-rnd-bayc-derivatives", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'stl-rnd-bayc-derivatives' },
-                    { blockchain: 'evm', onChain: true, collectionID: "stl-riot-racers", contract: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656', chain: 'rinkeby', openSeaSlug: 'stl-rnd-riot-racers' }
+                  {
+                    onChain: true, 
+                    collectionID: "tt", 
+                    contract: '0x76be3b62873462d2142405439777e971754e8e77', 
+                    chain: 'eth',
+                    blockchain: "evm",
+                  },
+                  {
+                    hideToggle : true,
+                    noTokenMsg: "<p>If you have a token please:</p><p>1. Open your magic link inside this browser.<br/>2. Refresh this page.</p>",
+                    onChain: true, 
+                    collectionID: "bsc-collection-test", 
+                    contract: '0xF5db804101d8600c26598A1Ba465166c33CdAA4b', 
+                    chain: 'bsc',
+                    blockchain: "evm",
+                  },
+                  { onChain: true, collectionID: "Perion", contract: '0x96af92ae2d822a0f191455ceca4d4e7ee227668e', chain: 'mumbai', blockchain: "evm" }
                 ],
                 uiOptions: {
                     openingHeading: "Open a new world of discounts available with your tokens.",
@@ -490,6 +536,9 @@ OffChain | string  |
 | symbol               | Solana symbol for the collection (required when using Solana tokens)                                                  | OnChain      | Y        | string  |
 | chain                  | Chain for the collection                                                 | OnChain      | Y        | string  |
 | openSeaSlug            | The collection name for OpenSea listing. Improves performance for token fetching. | OnChain      | N        | string  |
+| noTokenMsg           | A token issuer message to assist users when they have no tokens |    both    |     N           | string
+| hideToggle           | Hide the Toggle Buttons for the collection |    both    |     N           | boolean
+
 
 ### Off Chain
 
@@ -503,6 +552,9 @@ OffChain | string  |
 | unEndPoint             | URL for the unpredictable number service                                          | OffChain     | Y        | string  |
 | base64senderPublicKeys | An array of base64 encoded ticket issuer public keys, indexed by conference ID    | OffChain     | Y        | object  |
 | base64attestorPubKey   | The base64 encoded public key of the identity attestation issuer                  | OffChain     | Y        | string  |
+| noTokenMsg           | A token issuer message to assist users when they have no tokens |    both    |     N           | string
+| hideToggle           | Hide the Toggle Buttons for the collection |    both    |     N           | boolean
+| enableOffChainRedirectMode | redirect to connect off chain tokens (default is true) |    off chain    |     N           | boolean
 
 ### Outlet Configuration 
 (Applicable to TokenScript off chain token issuers)
