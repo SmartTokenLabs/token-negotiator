@@ -4,6 +4,7 @@ import { PairingTypes, SessionTypes } from "@walletconnect/types";
 import { logger } from "../utils";
 import {SafeConnectOptions} from "./SafeConnectProvider";
 import {Client} from "../client";
+import { CUSTOM_RPCS_FOR_WC_V2, WC_V2_CHAINS } from "./WalletConnectProvider";
 
 interface WalletConnectionState {
 	[index: string]: WalletConnection
@@ -256,7 +257,7 @@ export class Web3WalletProvider {
 
 	async WalletConnectV2 (checkConnectionOnly: boolean) {
 
-		logger(2, 'connect Wallet Connect');
+		logger(2, 'connect Wallet Connect V2');
 
 		const walletConnectProvider = await import("./WalletConnectProvider");
 
@@ -273,30 +274,29 @@ export class Web3WalletProvider {
 		// Subscribe to session ping
 		universalWalletConnect.on("session_ping", ({ id, topic }: { id: number; topic: string }) => {
 			console.log("EVENT", "session_ping");
-			console.log(id, topic);
 		});
   
 		// Subscribe to session event
 		universalWalletConnect.on("session_event", ({ event, chainId }: { event: any; chainId: string }) => {
-			console.log("EVENT", "session_event");
-			console.log(event, chainId);
+			console.log("WC V2 EVENT", "session_event");
 		});
   
 		// Subscribe to session update
 		universalWalletConnect.on("session_update", ({ topic, session }: { topic: string; session: SessionTypes.Struct }) => {
-			console.log("EVENT", "session_updated");
+			console.log("WC V2 EVENT", "session_updated");
 			// setSession(session);
 		},
 		);
   
 		// Subscribe to session delete
 		universalWalletConnect.on("session_delete", ({ id, topic }: { id: number; topic: string }) => {
-			console.log("EVENT", "session_deleted");
-			console.log(id, topic);
+			console.log("WC V2 EVENT", "session_deleted");
 			// resetApp();
 		});
 	
 		let pairing;
+
+		console.log('CUSTOM_RPCS_FOR_WC_V2 ==>', CUSTOM_RPCS_FOR_WC_V2.toString());
 	
 		await universalWalletConnect.connect({
 			namespaces: {
@@ -308,11 +308,12 @@ export class Web3WalletProvider {
 						"personal_sign",
 						"eth_signTypedData",
 					],
-					chains: [`eip155:1`],
+					chains: WC_V2_CHAINS,
 					events: ["chainChanged", "accountsChanged"],
-					rpcMap: {
-						1: `https://mainnet.infura.io/v3/9f79b2f9274344af90b8d4e244b580ef`
-					}
+					rpcMap: CUSTOM_RPCS_FOR_WC_V2
+					// rpcMap: {
+					// 	1: `https://mainnet.infura.io/v3/9f79b2f9274344af90b8d4e244b580ef`
+					// }
 				},
 			},
 			pairingTopic: pairing?.topic,
