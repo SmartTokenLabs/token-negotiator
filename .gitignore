@@ -5,3 +5,5 @@ junit.xml
 dist-common-js
 bundles
 .idea
+token-negotiator-dist/
+
