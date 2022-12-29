@@ -43,10 +43,19 @@ The following types of tokens are supported:
       <td>bsc</td>
       <td>N</td>
     </tr>
+    <td>evm</td>
+      <td>bsc testnet</td>
+      <td>Y</td>
+    </tr>
     <tr>
 	    <td>evm</td>
       <td>avalanche</td>
       <td>N</td>
+    </tr>
+    <tr>
+	    <td>evm</td>
+      <td>avalanche testnet</td>
+      <td>Y</td>
     </tr>
     <tr>
 	    <td>evm</td>
@@ -67,6 +76,16 @@ The following types of tokens are supported:
       <td>evm</td>
       <td>arbitrum</td>
       <td>N</td>
+    </tr>
+    <tr>
+      <td>evm</td>
+      <td>cronos</td>
+      <td>N</td>
+    </tr>
+    <tr>
+      <td>evm</td>
+      <td>cronos testnet</td>
+      <td>Y</td>
     </tr>
     <tr>
 	  <td>solana</td>
@@ -92,8 +111,8 @@ NPM
 
 Browser build
 ```html
-  <script type="text/javascript" src="./token-negotiator-dist/negotiator.js"></script>
-  <link rel="stylesheet" href="./token-negotiator-dist/theme/style.css" />
+  <script type="text/javascript" src="https://tokenscript.github.io/token-negotiator/negotiator.js"></script>
+  <link rel="stylesheet" href="https://tokenscript.github.io/token-negotiator/theme/style.css" />
 ```
 
 ## Reading Tokens into a website or web application.
@@ -389,8 +408,8 @@ Configure the library using the following example.
 
 ````html
 
-  <script type="text/javascript" src="./token-negotiator-dist/negotiator.js"></script>
-  <link rel="stylesheet" href="./token-negotiator-dist/theme/style.css" />
+  <script type="text/javascript" src="https://tokenscript.github.io/token-negotiator/negotiator.js"></script>
+  <link rel="stylesheet" href="https://tokenscript.github.io/token-negotiator/theme/style.css" />
 
   <body onload="init()">
 
@@ -535,7 +554,7 @@ OffChain | string  |
 | base64attestorPubKey   | The base64 encoded public key of the identity attestation issuer                  | OffChain     | Y        | string  |
 | noTokenMsg           | A token issuer message to assist users when they have no tokens |    both    |     N           | string
 | hideToggle           | Hide the Toggle Buttons for the collection |    both    |     N           | boolean
-| forceOffChainTokenRedirect | redirect to connect off chain tokens (default is true) |    off chain    |     N           | boolean
+| enableOffChainRedirectMode | redirect to connect off chain tokens (default is true) |    off chain    |     N           | boolean
 
 ### Outlet Configuration 
 (Applicable to TokenScript off chain token issuers)

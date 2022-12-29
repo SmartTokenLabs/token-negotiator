@@ -12,8 +12,13 @@ export declare const attachPostMessageListener: (listener: any) => void;
 export declare const removePostMessageListener: (listener: any) => void;
 export declare const waitForElementToExist: (selector: string) => Promise<Element>;
 export declare type ErrorType = 'warning' | 'info' | 'error';
-export declare const errorHandler: (message: string, type: ErrorType, action?: Function | null, data?: unknown, log?: boolean, throwError?: boolean) => {
+export declare const errorHandler: (error: any, type: ErrorType, action?: Function | null, data?: unknown, log?: boolean, throwError?: boolean) => {
     type: ErrorType;
-    message: string;
+    message: any;
     data: unknown;
 };
+export declare class NegotiatorError extends Error {
+    originalError: any;
+    code?: string;
+    constructor(message: string, originalError: any, code?: string);
+}

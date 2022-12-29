@@ -24,6 +24,10 @@ for both on and off chain tokens.
 * Multi-key off chain attestation support
 * Off Chain Re-direct settings and UX enhancements to support wallet, desktop, mobile browsers
 * Exposed ethers library instance
+* Wallet Disconnect SVG added / remove the disconnect text
+* UX/UI Refresh button and functionality added
+* UX/UI Alignment for refresh / disconnect icons
+* Added support for networks, mainnet and test net (see read me)
 
 ### Bug Fixes
 

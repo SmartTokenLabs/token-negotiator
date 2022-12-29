@@ -28,7 +28,7 @@ export declare enum ClientErrorMessage {
 export declare class Client {
     private negotiateAlreadyFired;
     issuersLoaded: boolean;
-    protected config: NegotiationInterface;
+    config: NegotiationInterface;
     private web3WalletProvider;
     private messaging;
     protected ui: UiInterface;
@@ -54,12 +54,12 @@ export declare class Client {
     disconnectWallet(): Promise<void>;
     negotiatorConnectToWallet(walletType: string): Promise<any>;
     enrichTokenLookupDataOnChainTokens(): Promise<void>;
-    checkUserAgentSupport(type: string): void;
+    checkUserAgentSupport(type: string): Promise<void>;
     private activeNegotiateRequired;
     private createCurrentUrlWithoutHash;
     getNoTokenMsg(collectionID: string): string;
     negotiate(issuers?: (OnChainTokenConfig | OffChainTokenConfig)[], openPopup?: boolean): Promise<void>;
-    activeNegotiationStrategy(openPopup: boolean): void;
+    activeNegotiationStrategy(openPopup: boolean): Promise<void>;
     private cancelAutoload;
     tokenAutoLoad(onLoading: (issuer: string) => void, onComplete: (issuer: string, tokens: any[]) => void, refresh: boolean): Promise<void>;
     cancelTokenAutoload(): void;
@@ -71,7 +71,6 @@ export declare class Client {
     private loadRemoteOutletTokens;
     private loadLocalOutletTokens;
     updateSelectedTokens(selectedTokens: any): void;
-    checkUserAgentSupportHandler(): void;
     authenticate(authRequest: AuthenticateInterface): any;
     enableAuthCancel(issuer: any): void;
     private handleWalletRequired;

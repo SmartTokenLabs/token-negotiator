@@ -47,7 +47,7 @@ export const defaultConfig: NegotiationInterface = {
 	autoLoadTokens: true,
 	autoEnableTokens: true,
 	messagingForceTab: false,
-	forceOffChainTokenRedirect: true,
+	enableOffChainRedirectMode: false,
 	tokenPersistenceTTL: 600,
 	unSupportedUserAgent: {
 		authentication: {
@@ -89,7 +89,7 @@ export class Client {
 
 	private negotiateAlreadyFired: boolean;
 	public issuersLoaded: boolean;
-	protected config: NegotiationInterface;
+	public config: NegotiationInterface;
 	private web3WalletProvider: Web3WalletProvider;
 	private messaging: Messaging;
 	protected ui: UiInterface;
@@ -284,7 +284,7 @@ export class Client {
 		this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADED);
 	}
 
-	public checkUserAgentSupport(type: string){
+	public async checkUserAgentSupport(type: string){
 
 		if (!isUserAgentSupported(this.config.unSupportedUserAgent?.[type]?.config)){
 
@@ -293,7 +293,7 @@ export class Client {
 
 			if (this.activeNegotiateRequired()) {
 				this.createUiInstance();
-				this.ui.initialize();
+				await this.ui.initialize();
 				this.ui.openOverlay();
 				this.ui.showError(err, false);
 				this.ui.viewContainer.style.display = 'none';
@@ -331,14 +331,7 @@ export class Client {
 			outlet = null;
 		}
 
-		try {
-			// TODO full for emailAttestation. isnt it?
-			this.checkUserAgentSupport("full");
-		} catch(err){
-			errorHandler(NOT_SUPPORTED_ERROR, 'error', () => this.eventSender.emitErrorToClient(err), null, true, true);
-			return;
-		}
-		
+		await this.checkUserAgentSupport("full");
 
 		if (issuers) this.tokenStore.updateIssuers(issuers);
 
@@ -348,7 +341,7 @@ export class Client {
 
 			this.issuersLoaded = !this.tokenStore.hasUnloadedIssuers();
 
-			this.activeNegotiationStrategy(openPopup);
+			await this.activeNegotiationStrategy(openPopup);
 
 		} else {
 			// TODO build logic to allow to connect with wallectConnect, Torus etc.
@@ -362,7 +355,7 @@ export class Client {
 
 	}
 
-	activeNegotiationStrategy(openPopup: boolean) {
+	async activeNegotiationStrategy(openPopup: boolean) {
 
 		let autoOpenPopup;
 
@@ -374,7 +367,7 @@ export class Client {
 
 		} else {
 			this.createUiInstance();
-			this.ui.initialize();
+			await this.ui.initialize();
 			autoOpenPopup = true;
 		}
 
@@ -630,8 +623,8 @@ export class Client {
 			data.access = issuer.accessRequestType;
 
 		let redirectRequired =
-			(browserBlocksIframeStorage() && this.config.type === "passive")
-			|| this.config.forceOffChainTokenRedirect;
+			this.config.enableOffChainRedirectMode &&
+			(browserBlocksIframeStorage() && this.config.type === "passive");
 
 		const res = await this.messaging.sendMessage(
 			{
@@ -659,17 +652,9 @@ export class Client {
 		this.eventSender.emitSelectedTokensToClient(selectedTokens);
 	}
 
-	checkUserAgentSupportHandler () {
-		try {
-			return this.checkUserAgentSupport("authentication")
-		} catch(err){
-			errorHandler(err, 'error', () => this.eventSender.emitErrorToClient(err), null, true, false);
-			return;
-		}
-	}
-
 	async authenticate(authRequest: AuthenticateInterface) {
-		this.checkUserAgentSupportHandler();
+
+		await this.checkUserAgentSupport("authentication");
 
 		const { issuer, unsignedToken } = authRequest;
 

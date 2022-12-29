@@ -1,5 +1,5 @@
 import { Client } from "./index";
-import { ViewInterface, ViewConstructor } from "./views/view-interface";
+import { ViewInterface, ViewComponent } from "./views/view-interface";
 export declare type UIType = "popup" | "inline";
 export declare type PopupPosition = 'bottom-right' | 'bottom-left' | 'top-left' | 'top-right';
 export declare type UItheme = 'light' | 'dark';
@@ -15,13 +15,18 @@ export interface UIOptionsInterface {
     autoPopup?: boolean;
     alwaysShowStartScreen?: boolean;
     viewOverrides?: {
-        [type: string]: ViewConstructor<ViewInterface>;
+        [type: string]: {
+            component?: ViewComponent;
+            options?: {
+                [key: string]: any;
+            };
+        };
     };
 }
 export interface UiInterface {
     viewContainer: HTMLElement;
-    initialize(): void;
-    updateUI(ViewClass: ViewConstructor<ViewInterface> | ViewType, data?: any): any;
+    initialize(): Promise<void>;
+    updateUI(ViewClass: ViewComponent | ViewType, data?: any): any;
     closeOverlay(): void;
     openOverlay(): void;
     togglePopup(): void;
@@ -46,16 +51,22 @@ export declare class Ui implements UiInterface {
     currentView: ViewInterface | undefined;
     retryCallback?: Function;
     retryButton: any;
+    private isStartView;
     constructor(options: UIOptionsInterface, client: Client);
-    initialize(): void;
-    getViewClass(type: ViewType): ViewConstructor<ViewInterface>;
-    getStartScreen(): Promise<ViewConstructor<ViewInterface>>;
+    initialize(): Promise<void>;
+    getViewFactory(type: ViewType): [ViewComponent, {
+        [key: string]: any;
+    }];
+    protected getDefaultView(type: ViewType): ViewComponent;
+    getStartScreen(): Promise<"start" | "main" | "wallet">;
     canSkipWalletSelection(): Promise<boolean>;
+    getUIContainer(): string;
+    getFabButton(): string;
     initializeUIType(): void;
     closeOverlay(): void;
     openOverlay(): void;
     togglePopup(): void;
-    updateUI(ViewClass: ViewConstructor<ViewInterface> | ViewType, data?: any): void;
+    updateUI(viewFactory: ViewComponent | ViewType, data?: any): void;
     viewIsNotStart(): boolean;
     showError(error: string | Error, canDismiss?: boolean): void;
     setErrorRetryCallback(retryCallback?: Function): void;

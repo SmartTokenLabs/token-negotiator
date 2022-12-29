@@ -67,16 +67,16 @@ import { SelectIssuers } from "./views/select-issuers";
 import { SelectWallet } from "./views/select-wallet";
 var Ui = (function () {
     function Ui(options, client) {
+        this.isStartView = true;
         this.loadTimer = null;
         this.options = options;
         this.client = client;
     }
     Ui.prototype.initialize = function () {
-        var _this = this;
-        setTimeout(function () { return __awaiter(_this, void 0, void 0, function () {
-            var _a;
+        var _a, _b;
+        return __awaiter(this, void 0, void 0, function () {
+            var _c;
             var _this = this;
-            var _b, _c;
             return __generator(this, function (_d) {
                 switch (_d.label) {
                     case 0:
@@ -87,7 +87,7 @@ var Ui = (function () {
                             document.body.appendChild(this.popupContainer);
                         }
                         this.initializeUIType();
-                        this.setTheme((_c = (_b = this.options) === null || _b === void 0 ? void 0 : _b.theme) !== null && _c !== void 0 ? _c : 'light');
+                        this.setTheme((_b = (_a = this.options) === null || _a === void 0 ? void 0 : _a.theme) !== null && _b !== void 0 ? _b : 'light');
                         this.viewContainer = this.popupContainer.querySelector(".view-content-tn");
                         this.loadContainer = this.popupContainer.querySelector(".load-container-tn");
                         this.retryButton = this.loadContainer.querySelector('.dismiss-error-tn');
@@ -99,19 +99,30 @@ var Ui = (function () {
                                 _this.retryButton.innerText = "Dismiss";
                             }
                         });
-                        _a = this.updateUI;
+                        _c = this.updateUI;
                         return [4, this.getStartScreen()];
                     case 1:
-                        _a.apply(this, [_d.sent()]);
+                        _c.apply(this, [_d.sent()]);
                         return [2];
                 }
             });
-        }); }, 0);
+        });
     };
-    Ui.prototype.getViewClass = function (type) {
-        var _a, _b;
-        if ((_a = this.options.viewOverrides) === null || _a === void 0 ? void 0 : _a[type])
-            return (_b = this.options.viewOverrides) === null || _b === void 0 ? void 0 : _b[type];
+    Ui.prototype.getViewFactory = function (type) {
+        var _a, _b, _c, _d, _e;
+        var viewOptions = {};
+        if ((_a = this.options.viewOverrides) === null || _a === void 0 ? void 0 : _a[type]) {
+            if ((_b = this.options.viewOverrides) === null || _b === void 0 ? void 0 : _b[type].options)
+                viewOptions = (_c = this.options.viewOverrides) === null || _c === void 0 ? void 0 : _c[type].options;
+            if ((_d = this.options.viewOverrides) === null || _d === void 0 ? void 0 : _d[type].component)
+                return [
+                    (_e = this.options.viewOverrides) === null || _e === void 0 ? void 0 : _e[type].component,
+                    viewOptions
+                ];
+        }
+        return [this.getDefaultView(type), viewOptions];
+    };
+    Ui.prototype.getDefaultView = function (type) {
         switch (type) {
             case "start":
                 return Start;
@@ -127,15 +138,15 @@ var Ui = (function () {
                 switch (_a.label) {
                     case 0:
                         if (this.options.alwaysShowStartScreen || !localStorage.getItem(TokenStore.LOCAL_STORAGE_KEY) || !this.client.getTokenStore().getTotalTokenCount())
-                            return [2, this.getViewClass("start")];
+                            return [2, "start"];
                         return [4, this.canSkipWalletSelection()];
                     case 1:
                         if (_a.sent()) {
                             this.client.enrichTokenLookupDataOnChainTokens();
-                            return [2, this.getViewClass("main")];
+                            return [2, "main"];
                         }
                         else {
-                            return [2, this.getViewClass("wallet")];
+                            return [2, "wallet"];
                         }
                         return [2];
                 }
@@ -161,6 +172,12 @@ var Ui = (function () {
             });
         });
     };
+    Ui.prototype.getUIContainer = function () {
+        return Ui.UI_CONTAINER_HTML;
+    };
+    Ui.prototype.getFabButton = function () {
+        return Ui.FAB_BUTTON_HTML;
+    };
     Ui.prototype.initializeUIType = function () {
         var _this = this;
         this.popupContainer.classList.add(this.options.uiType + "-tn");
@@ -169,7 +186,7 @@ var Ui = (function () {
                 this.options.position
                     ? this.popupContainer.classList.add(this.options.position)
                     : this.popupContainer.classList.add('bottom-right');
-                this.popupContainer.innerHTML = Ui.UI_CONTAINER_HTML + Ui.FAB_BUTTON_HTML;
+                this.popupContainer.innerHTML = this.getUIContainer() + this.getFabButton();
                 this.popupContainer.querySelector('.overlay-fab-button-tn').addEventListener('click', this.togglePopup.bind(this));
                 this.popupContainer.addEventListener('click', function (event) {
                     event.stopPropagation();
@@ -185,20 +202,22 @@ var Ui = (function () {
         }
     };
     Ui.prototype.closeOverlay = function () {
+        var _a, _b, _c;
         if (this.options.uiType === "inline")
             return;
         this.popupContainer.classList.remove("open");
-        window.KeyshapeJS.timelines()[0].time(0);
-        window.KeyshapeJS.globalPause();
+        (_b = (_a = window.KeyshapeJS) === null || _a === void 0 ? void 0 : _a.timelines()[0]) === null || _b === void 0 ? void 0 : _b.time(0);
+        (_c = window.KeyshapeJS) === null || _c === void 0 ? void 0 : _c.globalPause();
     };
     Ui.prototype.openOverlay = function () {
         var _this = this;
         if (this.options.uiType === "inline")
             return;
         setTimeout(function () {
+            var _a, _b, _c;
             _this.popupContainer.classList.add("open");
-            window.KeyshapeJS.timelines()[0].time(0);
-            window.KeyshapeJS.globalPlay();
+            (_b = (_a = window.KeyshapeJS) === null || _a === void 0 ? void 0 : _a.timelines()[0]) === null || _b === void 0 ? void 0 : _b.time(0);
+            (_c = window.KeyshapeJS) === null || _c === void 0 ? void 0 : _c.globalPlay();
         }, 10);
     };
     Ui.prototype.togglePopup = function () {
@@ -211,18 +230,26 @@ var Ui = (function () {
             this.closeOverlay();
         }
     };
-    Ui.prototype.updateUI = function (ViewClass, data) {
-        if (typeof ViewClass === "string")
-            ViewClass = this.getViewClass(ViewClass);
+    Ui.prototype.updateUI = function (viewFactory, data) {
+        var viewOptions = {};
+        if (typeof viewFactory === "string") {
+            this.isStartView = viewFactory === "start";
+            var _a = __read(this.getViewFactory(viewFactory), 2), component = _a[0], opts = _a[1];
+            viewFactory = component;
+            viewOptions = opts;
+        }
+        else {
+            this.isStartView = false;
+        }
         if (!this.viewContainer) {
             logger(3, "Element .overlay-content-tn not found: popup not initialized");
             return;
         }
-        this.currentView = new ViewClass(this.client, this, this.viewContainer, { options: this.options, data: data });
+        this.currentView = new viewFactory(this.client, this, this.viewContainer, { options: this.options, viewOptions: viewOptions, data: data });
         this.currentView.render();
     };
     Ui.prototype.viewIsNotStart = function () {
-        return !(this.currentView instanceof this.getViewClass("start"));
+        return !this.isStartView;
     };
     Ui.prototype.showError = function (error, canDismiss) {
         if (canDismiss === void 0) { canDismiss = true; }
@@ -287,7 +314,7 @@ var Ui = (function () {
         }
     };
     Ui.prototype.assignFabButtonAnimation = function () {
-        if (window.KeyshapeJS) {
+        if (window.KeyshapeJS && window.KeyshapeJS.timelines()[0]) {
             window.KeyshapeJS.globalPause();
             window.KeyshapeJS.animate("#svg-tn-left", [{ p: 'mpath', t: [0, 400], v: ['0%', '100%'], e: [[1, 0, 0, .6, 1], [0]], mp: "M13,28.5L27.1,28.1" }, { p: 'rotate', t: [0, 400], v: [0, 0], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'scaleX', t: [0, 400], v: [1, 1], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'scaleY', t: [0, 400], v: [1, 1], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'anchorX', t: [0, 400], v: [-13, -17.1], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'anchorY', t: [0, 400], v: [-13.5, -17.1], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'd', t: [0, 400], v: ["path('M25.5,26C25.5,26,20.5,26,20.5,26C20.5,23.1,19.9,20.4,18.8,17.9C17.8,15.6,16.4,13.6,14.6,11.8C12.7,9.9,10.3,8.4,7.8,7.4C5.5,6.5,3,6,.5,6L.5,1C.5,1,.5,1,.5,1C.5,1,7.5,1,7.5,1L25.5,1L25.5,7.2C25.5,7.2,25.5,12.8,25.5,12.8C25.5,12.8,25.5,19,25.5,19Z')", "path('M31.8,32.8C31.5,33.2,30.9,33.4,30.4,33.4C29.9,33.4,29.4,33.2,29,32.8C29,32.8,1.4,5.2,1.4,5.2C1,4.8,.8,4.3,.8,3.8C.8,3.3,1,2.8,1.4,2.4L2.4,1.4C2.7,1,3.3,.8,3.8,.8C4.3,.8,4.8,1,5.2,1.4L5.2,1.4L32.8,29C33.2,29.4,33.4,29.9,33.4,30.4C33.4,30.9,33.2,31.5,32.8,31.8Z')"], e: [[1, 0, 0, .6, 1], [0]] }], "#svg-tn-right", [{ p: 'mpath', t: [0, 400], v: ['0%', '100%'], e: [[1, 0, 0, .6, 1], [0]], mp: "M41.5,28.7L27.1,28.1" }, { p: 'rotate', t: [0, 400], v: [0, 0], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'anchorX', t: [0, 400], v: [-40.5, -17.1], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'anchorY', t: [0, 400], v: [-13.5, -17.1], e: [[1, 0, 0, .6, 1], [0]] }, { p: 'd', t: [0, 400], v: ["path('M53,1C53,1,53,1,53,1C53,1,53,12.9,53,12.9L53,19C53,19,53,26,53,26C53,26,40.2,26,40.2,26L34.1,26C34.1,26,28,26,28,26C28,26,28,12.6,28,12.6L28,7.4C28,7.4,28,1,28,1C28,1,40.6,1,40.6,1C40.6,1,45.9,1,45.9,1Z')", "path('M29,1.4C29.4,1,29.9,.8,30.4,.8C30.9,.8,31.5,1,31.8,1.4L32.8,2.4C33.2,2.7,33.4,3.3,33.4,3.8C33.4,4.3,33.2,4.8,32.8,5.2L5.2,32.8C4.8,33.2,4.3,33.4,3.8,33.4C3.3,33.4,2.8,33.2,2.4,32.8L1.4,31.8C1,31.5,.8,30.9,.8,30.4C.8,29.9,1,29.4,1.4,29C1.4,29,29,1.4,29,1.4Z')"], e: [[1, 0, 0, .6, 1], [0]] }], { autoremove: false }).range(0, 400);
         }
