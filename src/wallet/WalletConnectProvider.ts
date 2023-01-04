@@ -1,3 +1,7 @@
+import { TextEncoder, TextDecoder } from 'util';
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
+
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import UniversalProvider from "@walletconnect/universal-provider";
 
