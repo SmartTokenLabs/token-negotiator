@@ -14,10 +14,7 @@
     display: flex;
     justify-content: right;
     button {
-      margin: 0;
-    }
-    button:last-child {
-      margin: 0 10px;
+      margin-right: 10px;
     }
   }
 }
