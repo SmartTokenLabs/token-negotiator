@@ -31,6 +31,7 @@ export declare class Web3WalletProvider {
     private registerProvider;
     MetaMask(checkConnectionOnly: boolean): Promise<string>;
     WalletConnect(checkConnectionOnly: boolean): Promise<unknown>;
+    WalletConnectV2(checkConnectionOnly: boolean): Promise<unknown>;
     Torus(checkConnectionOnly: boolean): Promise<string>;
     Phantom(): Promise<string>;
     SafeConnect(): Promise<any>;

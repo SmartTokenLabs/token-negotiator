@@ -1,9 +1,9 @@
-import { TextEncoder, TextDecoder } from 'util';
-global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder;
-
+import {TextDecoder, TextEncoder} from 'text-encoding';
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import UniversalProvider from "@walletconnect/universal-provider";
+
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
 
 export const CUSTOM_RPCS_FOR_WC_V2 = {
 	1: 'https://ethereum.publicnode.com', // mainnet
@@ -64,11 +64,10 @@ export const getWalletConnectProviderInstance = async (checkConnectionOnly?: boo
 }
 
 export const getWalletConnectUniversalProviderInstance = async () => {
-	const _client = await UniversalProvider.init({
+
+	return await UniversalProvider.init({
 		projectId: '2ec7ead81da1226703ad789c0b2f7b30',
 		logger: "debug",
 		relayUrl: "wss://relay.walletconnect.com",
 	});
-
-	return _client;
 }

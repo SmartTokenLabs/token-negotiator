@@ -34,7 +34,29 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+import { TextDecoder, TextEncoder } from 'text-encoding';
 import WalletConnectProvider from "@walletconnect/web3-provider";
+import UniversalProvider from "@walletconnect/universal-provider";
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
+export var CUSTOM_RPCS_FOR_WC_V2 = {
+    1: 'https://ethereum.publicnode.com',
+    137: 'https://polygon-rpc.com/',
+    56: 'https://bsc-dataseed.binance.org/',
+    43114: 'https://api.avax.network/ext/bc/C/rpc',
+    250: 'https://rpc.fantom.network/',
+    25: 'https://evm-cronos.crypto.org',
+    42161: 'https://arb1.arbitrum.io/rpc',
+    10: 'https://mainnet.optimism.io'
+};
+export var WC_V2_CHAINS = [
+    'eip155:1',
+    'eip155:137',
+    'eip155:250',
+    'eip155:25',
+    'eip155:42161',
+    'eip155:10'
+];
 export var getWalletConnectProviderInstance = function (checkConnectionOnly) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         return [2, new WalletConnectProvider({
@@ -57,6 +79,18 @@ export var getWalletConnectProviderInstance = function (checkConnectionOnly) { r
                     10: 'https://mainnet.optimism.io'
                 }
             })];
+    });
+}); };
+export var getWalletConnectUniversalProviderInstance = function () { return __awaiter(void 0, void 0, void 0, function () {
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4, UniversalProvider.init({
+                    projectId: '2ec7ead81da1226703ad789c0b2f7b30',
+                    logger: "debug",
+                    relayUrl: "wss://relay.walletconnect.com",
+                })];
+            case 1: return [2, _a.sent()];
+        }
     });
 }); };
 //# sourceMappingURL=WalletConnectProvider.js.map
