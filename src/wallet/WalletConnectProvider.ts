@@ -1,9 +1,9 @@
 import {TextDecoder, TextEncoder} from 'text-encoding';
-import WalletConnectProvider from "@walletconnect/web3-provider";
-import UniversalProvider from "@walletconnect/universal-provider";
-
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
+
+import WalletConnectProvider from "@walletconnect/web3-provider";
+import UniversalProvider from "@walletconnect/universal-provider";
 
 export const CUSTOM_RPCS_FOR_WC_V2 = {
 	1: 'https://ethereum.publicnode.com', // mainnet

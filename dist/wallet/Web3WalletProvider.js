@@ -13,7 +13,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
             if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
             if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
@@ -80,9 +80,9 @@ var Web3WalletProvider = (function () {
     };
     Web3WalletProvider.prototype.loadConnections = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var data, state, _a, _b, _i, address, connection, e_1;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var data, state, _a, _b, _c, _i, address, connection, e_1;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
                         data = localStorage.getItem(Web3WalletProvider.LOCAL_STORAGE_KEY);
                         if (!data)
@@ -90,24 +90,27 @@ var Web3WalletProvider = (function () {
                         state = JSON.parse(data);
                         if (!state)
                             return [2];
-                        _a = [];
-                        for (_b in state)
-                            _a.push(_b);
+                        _a = state;
+                        _b = [];
+                        for (_c in _a)
+                            _b.push(_c);
                         _i = 0;
-                        _c.label = 1;
+                        _d.label = 1;
                     case 1:
-                        if (!(_i < _a.length)) return [3, 6];
-                        address = _a[_i];
+                        if (!(_i < _b.length)) return [3, 6];
+                        _c = _b[_i];
+                        if (!(_c in _a)) return [3, 5];
+                        address = _c;
                         connection = state[address];
-                        _c.label = 2;
+                        _d.label = 2;
                     case 2:
-                        _c.trys.push([2, 4, , 5]);
+                        _d.trys.push([2, 4, , 5]);
                         return [4, this.connectWith(connection.providerType, true)];
                     case 3:
-                        _c.sent();
+                        _d.sent();
                         return [3, 5];
                     case 4:
-                        e_1 = _c.sent();
+                        e_1 = _d.sent();
                         console.log("Wallet couldn't connect: " + e_1.message);
                         delete state[address];
                         this.saveConnections();
