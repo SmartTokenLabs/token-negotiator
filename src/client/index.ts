@@ -14,8 +14,8 @@ import { isUserAgentSupported, validateBlockchain } from '../utils/support/isSup
 import Web3WalletProvider from '../wallet/Web3WalletProvider';
 import {LocalOutlet} from "../outlet/localOutlet";
 import {Outlet, OutletInterface} from "../outlet";
-import { browserBlocksIframeStorage } from "../utils/support/getBrowserData";
-import { waitForElementToExist, errorHandler } from '../utils/index';
+import {shouldUseRedirectMode} from "../utils/support/getBrowserData";
+import { waitForElementToExist, errorHandler } from '../utils';
 
 if(typeof window !== "undefined") window.tn = { version: "2.2.0" };
 
@@ -47,7 +47,6 @@ export const defaultConfig: NegotiationInterface = {
 	autoLoadTokens: true,
 	autoEnableTokens: true,
 	messagingForceTab: false,
-	enableOffChainRedirectMode: false,
 	tokenPersistenceTTL: 600,
 	unSupportedUserAgent: {
 		authentication: {
@@ -321,7 +320,7 @@ export class Client {
 		return collectionNoTokenMsg ? collectionNoTokenMsg : '';
 	}
 
-	async negotiate(issuers?: (OnChainTokenConfig | OffChainTokenConfig)[], openPopup = false) {
+	async negotiate(issuers?: (OnChainTokenConfig | OffChainTokenConfig)[], openPopup = false, refreshTokens = false) {
 
 		let currentIssuer = this.getOutletConfigForCurrentOrigin();
 		if (currentIssuer){
@@ -344,11 +343,11 @@ export class Client {
 			await this.activeNegotiationStrategy(openPopup);
 
 		} else {
-			// TODO build logic to allow to connect with wallectConnect, Torus etc.
-			// Logic to ask user to connect to wallet when they have provided web3 tokens to negotiate with.
-			// See other TODO's in this flow.
-			// if (window.ethereum && onChainTokens.tokenKeys.length > 0) await this.web3WalletProvider.connectWith('MetaMask');
+
 			await this.enrichTokenLookupDataOnChainTokens();
+
+			if (refreshTokens)
+				this.getTokenStore().clearCachedTokens();
 
 			await this.passiveNegotiationStrategy();
 		}
@@ -394,7 +393,7 @@ export class Client {
 
 			let tokens = this.tokenStore.getIssuerTokens(issuerKey)
 
-			if (!refresh && tokens?.length > 0)
+			if (!refresh && tokens != null)
 				continue;
 
 			onLoading(issuerKey);
@@ -440,10 +439,9 @@ export class Client {
 				if ((new URL(issuerConfig.tokenOrigin)).origin === document.location.origin){
 					tokens = this.loadLocalOutletTokens(issuerConfig);
 				} else {
-					// TODO make solution:
-					// in case if we have multiple tokens then redirect flow will not work
-					// because page will reload on first remote token
-					let resposeIssuer = this.getDataFromQuery("issuer");
+
+					// Check response URL for redirect result for this issuer.
+					let responseIssuer = this.getDataFromQuery("issuer");
 
 					if (
 						(
@@ -452,14 +450,21 @@ export class Client {
 							// in other way page will be redirected in loop
 							|| action === "proof-callback"
 						)
-					&& issuer === resposeIssuer) {
-						let resposeTokensEncoded = this.getDataFromQuery("tokens");
+						&& issuer === responseIssuer
+					) {
+						let responseTokensEncoded = this.getDataFromQuery("tokens");
 						try {
-							tokens = JSON.parse(resposeTokensEncoded);
+							tokens = JSON.parse(responseTokensEncoded);
 						} catch (e){
 							logger(2, "Error parse tokens from Response. ", e);
 						}
 					} else {
+
+						let tokens = this.tokenStore.getIssuerTokens(issuer);
+
+						if (tokens !== null)
+							continue;
+
 						tokens = await this.loadRemoteOutletTokens(issuerConfig);
 					}
 				}
@@ -533,6 +538,11 @@ export class Client {
 		let walletProvider = await this.getWalletProvider();
 
 		for (let issuerKey in issuers){
+
+			let tokens = this.tokenStore.getIssuerTokens(issuerKey);
+
+			if (tokens !== null)
+				continue;
 
 			let issuer: Issuer = issuers[issuerKey];
 
@@ -622,9 +632,7 @@ export class Client {
 		if (issuer.accessRequestType)
 			data.access = issuer.accessRequestType;
 
-		let redirectRequired =
-			this.config.enableOffChainRedirectMode &&
-			(browserBlocksIframeStorage() && this.config.type === "passive");
+		const redirectRequired = shouldUseRedirectMode(this.config.offChainRedirectMode);
 
 		const res = await this.messaging.sendMessage(
 			{

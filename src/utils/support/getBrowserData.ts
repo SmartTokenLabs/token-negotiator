@@ -110,3 +110,14 @@ export function browserBlocksIframeStorage(): boolean {
 	// TODO remove Chrome from list
 	return browserData.iOS || isSafari() || isBrave();
 }
+
+export function shouldUseRedirectMode(redirectConfig?: "always" | "never") {
+	switch (redirectConfig){
+	case "always":
+		return true;
+	case "never":
+		return false;
+	default:
+		return browserBlocksIframeStorage();
+	}
+}

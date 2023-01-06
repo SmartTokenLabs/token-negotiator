@@ -16,7 +16,7 @@ export class TokenStore {
 
 	//  TODO: We could also store this data in local storage to speed up loading on sites that are not a SPA.
 	// Cached token data
-	private tokenData: {[issuer: string]: {timestamp: number, tokens: []}} = {};
+	private tokenData: {[issuer: string]: {timestamp: number, tokens: []|null}} = {};
 
 	// Cached issuer data for contract level metadata
 	private tokenLookup: TokenLookup = {};
@@ -146,7 +146,7 @@ export class TokenStore {
 	public getIssuerTokens(issuer: string){
 		if (this.tokenData[issuer])
 			return this.tokenData[issuer].tokens ?? [];
-		return [];
+		return null;
 	}
 
 	public setTokens(issuer: string, tokens: []){
