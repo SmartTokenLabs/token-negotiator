@@ -160,7 +160,7 @@ export class Client {
 			if (error){
 				this.handleProofError(new Error(error), issuer);
 			} else {
-				this.eventSender.emitProofToClient({proof}, issuer, null);
+				this.eventSender("token-proof", { issuer, error: null, data: {proof} });
 			}
 		}, 500);
 	}
@@ -236,8 +236,8 @@ export class Client {
 		let wp = await this.getWalletProvider();
 		wp.deleteConnections();
 		this.tokenStore.clearCachedTokens();
-		this.eventSender.emitConnectedWalletInstance(null);
-		this.eventSender.emitDisconnectedWalletInstance();
+		this.eventSender("connected-wallet", null);
+		this.eventSender("disconnected-wallet", null);
 	}
 
 	async negotiatorConnectToWallet(walletType: string) {
@@ -373,7 +373,7 @@ export class Client {
 
 		// emit existing cached tokens
 		if (this.config.autoEnableTokens && Object.keys(this.tokenStore.getSelectedTokens()).length)
-			this.eventSender.emitSelectedTokensToClient(this.tokenStore.getSelectedTokens())
+			this.eventSender("tokens-selected", { selectedTokens: this.tokenStore.getSelectedTokens() });
 
 		if (openPopup || (this.config.uiOptions.autoPopup === true && autoOpenPopup))
 			this.ui.openOverlay();
@@ -406,7 +406,7 @@ export class Client {
 			} catch (e){
 				e.message = "Failed to load " + issuerKey + ": " + e.message;
 				logger(2, e.message);
-				this.eventSender.emitErrorToClient(e, issuerKey);
+				errorHandler('autoload tokens error', 'error', () => this.eventSender("error", { issuer: issuerKey, error: e }), null, true, false);
 				onComplete(issuerKey, null);
 			}
 
@@ -463,8 +463,8 @@ export class Client {
 						tokens = await this.loadRemoteOutletTokens(issuerConfig);
 					}
 				}
-			} catch (err) {
-				errorHandler('popup error', 'error', () => this.eventSender.emitErrorToClient(err, issuer), null, true, false);
+			} catch (error) {
+				errorHandler('popup error', 'error', () => this.eventSender("error", { issuer, error }), null, true, false);
 				continue;
 			}
 
@@ -545,7 +545,7 @@ export class Client {
 				this.tokenStore.setTokens(issuerKey, tokens);
 			} catch (err) {
 				logger(2, err);
-				this.eventSender.emitErrorToClient(err, issuerKey);
+				errorHandler('passive loading of tokens error', 'error', () => this.eventSender("error", { issuer: issuerKey, error: err }), null, true, false);
 			}
 		}
 	}
@@ -565,7 +565,7 @@ export class Client {
 			tokens[issuer] = {tokens: tokens[issuer]};
 		}
 
-		this.eventSender.emitAllTokensToClient(tokens);
+		this.eventSender("tokens", tokens);
 
 		// Feature not supported when an end users third party cookies are disabled
 		// because the use of a tab requires a user gesture.
@@ -606,8 +606,9 @@ export class Client {
 
 		this.tokenStore.setTokens(issuer,  tokens);
 
-		if (this.config.autoEnableTokens)
-			this.eventSender.emitSelectedTokensToClient(this.tokenStore.getSelectedTokens())
+		if (this.config.autoEnableTokens) {
+			this.eventSender("tokens-selected", { selectedTokens: this.tokenStore.getSelectedTokens() });
+		}
 
 		return tokens;
 	}
@@ -649,7 +650,7 @@ export class Client {
 
 	updateSelectedTokens(selectedTokens) {
 		this.tokenStore.setSelectedTokens(selectedTokens);
-		this.eventSender.emitSelectedTokensToClient(selectedTokens);
+		this.eventSender("tokens", { selectedTokens });
 	}
 
 	async authenticate(authRequest: AuthenticateInterface) {
@@ -710,7 +711,7 @@ export class Client {
 
 			logger(2,"Ticket proof successfully validated.");
 
-			this.eventSender.emitProofToClient(res.data, issuer);
+			this.eventSender("token-proof", { data: res.data, issuer });
 
 		} catch (err) {
 			logger(2,err);
@@ -735,7 +736,7 @@ export class Client {
 			cancelAuthButton.onclick = () => {
 				const err = 'User cancelled authentication';
 				this.ui.showError(err);
-				this.eventSender.emitProofToClient(null, issuer, err);
+				this.eventSender("token-proof", { issuer, err, data: null });
 			}
 		});
 	}
@@ -767,33 +768,12 @@ export class Client {
 
 	private handleProofError(err, issuer) {
 		if (this.ui) this.ui.showError(err);
-		this.eventSender.emitProofToClient(null, issuer, err);
+		this.eventSender("token-proof", { issuer, error: err,  data: null, });
 	}
 
-	eventSender = {
-		// TODO: consolidate these events
-		emitAllTokensToClient: (tokens: any) => {
-			this.on("tokens", null, tokens);
-		},
-		emitSelectedTokensToClient: (tokens: any) => {
-			this.on("tokens-selected", null, { selectedTokens: tokens });
-		},
-		emitProofToClient: (data: any, issuer: any, error: Error|string = "") => {
-			this.on("token-proof", null, { data, issuer, error });
-		},
-		emitErrorToClient: (error: Error, issuer = "none") => {
-			this.on("error", null, {error, issuer});
-		},
-		emitConnectedWalletInstance: (connectedWallet: any) => {
-			this.on("connected-wallet", null, connectedWallet);
-		},
-		emitDisconnectedWalletInstance: () => {
-			this.on("disconnected-wallet", null, null);
-		},
-		emitNetworkChange: (chain: any) => {
-			this.on("network-change", null, chain);
-		}
-	};
+	eventSender(eventName:TokenNegotiatorEvents, data:any) {
+		this.on(eventName, null, data);
+	}
 
 	getOutletConfigForCurrentOrigin(){
 		let allIssuers = this.tokenStore.getCurrentIssuers();
@@ -881,6 +861,7 @@ export class Client {
 
 			if (action === "proof-callback") {
 				this.readProofCallback();
+				// This should target removal of the specific hash values of this library only. 
 				document.location.hash = "";
 			} else if (action === "email-callback") {
 
@@ -894,6 +875,7 @@ export class Client {
 						outlet = null;
 					});
 				}
+				// This should target removal of the specific hash values of this library only. 
 				document.location.hash = "";
 			}
 		}

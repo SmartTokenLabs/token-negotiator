@@ -33,7 +33,7 @@ export declare class Client {
     private messaging;
     protected ui: UiInterface;
     private clientCallBackEvents;
-    private tokenStore;
+    protected tokenStore: TokenStore;
     private uiUpdateCallbacks;
     private urlParams;
     static getKey(file: string): import("@tokenscript/attestation/dist/libs/KeyPair").KeyPair;
@@ -75,15 +75,7 @@ export declare class Client {
     enableAuthCancel(issuer: any): void;
     private handleWalletRequired;
     private handleProofError;
-    eventSender: {
-        emitAllTokensToClient: (tokens: any) => void;
-        emitSelectedTokensToClient: (tokens: any) => void;
-        emitProofToClient: (data: any, issuer: any, error?: Error | string) => void;
-        emitErrorToClient: (error: Error, issuer?: string) => void;
-        emitConnectedWalletInstance: (connectedWallet: any) => void;
-        emitDisconnectedWalletInstance: () => void;
-        emitNetworkChange: (chain: any) => void;
-    };
+    eventSender(eventName: TokenNegotiatorEvents, data: any): void;
     getOutletConfigForCurrentOrigin(): any;
     onlySameOrigin(): boolean;
     addTokenViaMagicLink(magicLink: any): Promise<any>;

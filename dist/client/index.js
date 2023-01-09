@@ -13,7 +13,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
             if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
             if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
@@ -106,7 +106,6 @@ export var ClientErrorMessage;
 var Client = (function () {
     function Client(config) {
         var _a;
-        var _this = this;
         var _b;
         this.clientCallBackEvents = {};
         this.uiUpdateCallbacks = (_a = {},
@@ -114,31 +113,6 @@ var Client = (function () {
             _a[1] = undefined,
             _a);
         this.cancelAutoload = true;
-        this.eventSender = {
-            emitAllTokensToClient: function (tokens) {
-                _this.on("tokens", null, tokens);
-            },
-            emitSelectedTokensToClient: function (tokens) {
-                _this.on("tokens-selected", null, { selectedTokens: tokens });
-            },
-            emitProofToClient: function (data, issuer, error) {
-                if (error === void 0) { error = ""; }
-                _this.on("token-proof", null, { data: data, issuer: issuer, error: error });
-            },
-            emitErrorToClient: function (error, issuer) {
-                if (issuer === void 0) { issuer = "none"; }
-                _this.on("error", null, { error: error, issuer: issuer });
-            },
-            emitConnectedWalletInstance: function (connectedWallet) {
-                _this.on("connected-wallet", null, connectedWallet);
-            },
-            emitDisconnectedWalletInstance: function () {
-                _this.on("disconnected-wallet", null, null);
-            },
-            emitNetworkChange: function (chain) {
-                _this.on("network-change", null, chain);
-            }
-        };
         if (window.location.hash) {
             this.urlParams = new URLSearchParams(window.location.hash.substring(1));
             var action = this.getDataFromQuery("action");
@@ -182,7 +156,7 @@ var Client = (function () {
                 _this.handleProofError(new Error(error), issuer);
             }
             else {
-                _this.eventSender.emitProofToClient({ proof: proof }, issuer, null);
+                _this.eventSender("token-proof", { issuer: issuer, error: null, data: { proof: proof } });
             }
         }, 500);
     };
@@ -269,8 +243,8 @@ var Client = (function () {
                         wp = _a.sent();
                         wp.deleteConnections();
                         this.tokenStore.clearCachedTokens();
-                        this.eventSender.emitConnectedWalletInstance(null);
-                        this.eventSender.emitDisconnectedWalletInstance();
+                        this.eventSender("connected-wallet", null);
+                        this.eventSender("disconnected-wallet", null);
                         return [2];
                 }
             });
@@ -295,37 +269,40 @@ var Client = (function () {
     };
     Client.prototype.enrichTokenLookupDataOnChainTokens = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var issuers, _a, _b, _i, issuer, tokenData, lookupData, e_2;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var issuers, _a, _b, _c, _i, issuer, tokenData, lookupData, e_2;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
                         this.issuersLoaded = false;
                         this.triggerUiUpdateCallback(0);
                         issuers = this.tokenStore.getCurrentIssuers(true);
-                        _a = [];
-                        for (_b in issuers)
-                            _a.push(_b);
+                        _a = issuers;
+                        _b = [];
+                        for (_c in _a)
+                            _b.push(_c);
                         _i = 0;
-                        _c.label = 1;
+                        _d.label = 1;
                     case 1:
-                        if (!(_i < _a.length)) return [3, 6];
-                        issuer = _a[_i];
+                        if (!(_i < _b.length)) return [3, 6];
+                        _c = _b[_i];
+                        if (!(_c in _a)) return [3, 5];
+                        issuer = _c;
                         tokenData = issuers[issuer];
                         if (tokenData.title)
                             return [3, 5];
-                        _c.label = 2;
+                        _d.label = 2;
                     case 2:
-                        _c.trys.push([2, 4, , 5]);
+                        _d.trys.push([2, 4, , 5]);
                         return [4, getNftCollection(tokenData)];
                     case 3:
-                        lookupData = _c.sent();
+                        lookupData = _d.sent();
                         if (lookupData) {
                             lookupData.onChain = true;
                             this.tokenStore.updateTokenLookupStore(issuer, lookupData);
                         }
                         return [3, 5];
                     case 4:
-                        e_2 = _c.sent();
+                        e_2 = _d.sent();
                         logger(2, "Failed to load contract data for " + issuer + ": " + e_2.message);
                         return [3, 5];
                     case 5:
@@ -438,7 +415,7 @@ var Client = (function () {
                         _a.label = 3;
                     case 3:
                         if (this.config.autoEnableTokens && Object.keys(this.tokenStore.getSelectedTokens()).length)
-                            this.eventSender.emitSelectedTokensToClient(this.tokenStore.getSelectedTokens());
+                            this.eventSender("tokens-selected", { selectedTokens: this.tokenStore.getSelectedTokens() });
                         if (openPopup || (this.config.uiOptions.autoPopup === true && autoOpenPopup))
                             this.ui.openOverlay();
                         return [2];
@@ -448,52 +425,71 @@ var Client = (function () {
     };
     Client.prototype.tokenAutoLoad = function (onLoading, onComplete, refresh) {
         return __awaiter(this, void 0, void 0, function () {
-            var count, _a, _b, _i, issuerKey, tokens, tokens_1, e_3;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var count, _loop_1, this_1, _a, _b, _c, _i, issuerKey, state_1;
+            var _this = this;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
                         if (this.config.autoLoadTokens === false)
                             return [2];
                         this.cancelAutoload = false;
                         count = 1;
-                        _a = [];
-                        for (_b in this.tokenStore.getCurrentIssuers())
-                            _a.push(_b);
+                        _loop_1 = function (issuerKey) {
+                            var tokens, tokens_1, e_3;
+                            return __generator(this, function (_e) {
+                                switch (_e.label) {
+                                    case 0:
+                                        tokens = this_1.tokenStore.getIssuerTokens(issuerKey);
+                                        if (!refresh && (tokens === null || tokens === void 0 ? void 0 : tokens.length) > 0)
+                                            return [2, "continue"];
+                                        onLoading(issuerKey);
+                                        _e.label = 1;
+                                    case 1:
+                                        _e.trys.push([1, 3, , 4]);
+                                        return [4, this_1.connectTokenIssuer(issuerKey)];
+                                    case 2:
+                                        tokens_1 = _e.sent();
+                                        onComplete(issuerKey, tokens_1);
+                                        return [3, 4];
+                                    case 3:
+                                        e_3 = _e.sent();
+                                        e_3.message = "Failed to load " + issuerKey + ": " + e_3.message;
+                                        logger(2, e_3.message);
+                                        errorHandler('autoload tokens error', 'error', function () { return _this.eventSender("error", { issuer: issuerKey, error: e_3 }); }, null, true, false);
+                                        onComplete(issuerKey, null);
+                                        return [3, 4];
+                                    case 4:
+                                        count++;
+                                        if (refresh)
+                                            return [2, "continue"];
+                                        if (this_1.cancelAutoload || (this_1.config.autoLoadTokens !== true && count > this_1.config.autoLoadTokens))
+                                            return [2, "break"];
+                                        return [2];
+                                }
+                            });
+                        };
+                        this_1 = this;
+                        _a = this.tokenStore.getCurrentIssuers();
+                        _b = [];
+                        for (_c in _a)
+                            _b.push(_c);
                         _i = 0;
-                        _c.label = 1;
+                        _d.label = 1;
                     case 1:
-                        if (!(_i < _a.length)) return [3, 7];
-                        issuerKey = _a[_i];
-                        tokens = this.tokenStore.getIssuerTokens(issuerKey);
-                        if (!refresh && (tokens === null || tokens === void 0 ? void 0 : tokens.length) > 0)
-                            return [3, 6];
-                        onLoading(issuerKey);
-                        _c.label = 2;
+                        if (!(_i < _b.length)) return [3, 4];
+                        _c = _b[_i];
+                        if (!(_c in _a)) return [3, 3];
+                        issuerKey = _c;
+                        return [5, _loop_1(issuerKey)];
                     case 2:
-                        _c.trys.push([2, 4, , 5]);
-                        return [4, this.connectTokenIssuer(issuerKey)];
+                        state_1 = _d.sent();
+                        if (state_1 === "break")
+                            return [3, 4];
+                        _d.label = 3;
                     case 3:
-                        tokens_1 = _c.sent();
-                        onComplete(issuerKey, tokens_1);
-                        return [3, 5];
-                    case 4:
-                        e_3 = _c.sent();
-                        e_3.message = "Failed to load " + issuerKey + ": " + e_3.message;
-                        logger(2, e_3.message);
-                        this.eventSender.emitErrorToClient(e_3, issuerKey);
-                        onComplete(issuerKey, null);
-                        return [3, 5];
-                    case 5:
-                        count++;
-                        if (refresh)
-                            return [3, 6];
-                        if (this.cancelAutoload || (this.config.autoLoadTokens !== true && count > this.config.autoLoadTokens))
-                            return [3, 7];
-                        _c.label = 6;
-                    case 6:
                         _i++;
                         return [3, 1];
-                    case 7: return [2];
+                    case 4: return [2];
                 }
             });
         });
@@ -503,32 +499,32 @@ var Client = (function () {
     };
     Client.prototype.setPassiveNegotiationWebTokens = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var issuers, action, _loop_1, this_1, _a, _b, _i, issuer;
+            var issuers, action, _loop_2, this_2, _a, _b, _c, _i, issuer;
             var _this = this;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
                         issuers = this.tokenStore.getCurrentIssuers(false);
                         action = this.getDataFromQuery("action");
-                        _loop_1 = function (issuer) {
-                            var tokens, issuerConfig, resposeIssuer, resposeTokensEncoded, err_1;
-                            return __generator(this, function (_d) {
-                                switch (_d.label) {
+                        _loop_2 = function (issuer) {
+                            var tokens, issuerConfig, resposeIssuer, resposeTokensEncoded, error_1;
+                            return __generator(this, function (_e) {
+                                switch (_e.label) {
                                     case 0:
                                         tokens = void 0;
-                                        issuerConfig = this_1.tokenStore.getCurrentIssuers()[issuer];
-                                        _d.label = 1;
+                                        issuerConfig = this_2.tokenStore.getCurrentIssuers()[issuer];
+                                        _e.label = 1;
                                     case 1:
-                                        _d.trys.push([1, 6, , 7]);
+                                        _e.trys.push([1, 6, , 7]);
                                         if (!((new URL(issuerConfig.tokenOrigin)).origin === document.location.origin)) return [3, 2];
-                                        tokens = this_1.loadLocalOutletTokens(issuerConfig);
+                                        tokens = this_2.loadLocalOutletTokens(issuerConfig);
                                         return [3, 5];
                                     case 2:
-                                        resposeIssuer = this_1.getDataFromQuery("issuer");
+                                        resposeIssuer = this_2.getDataFromQuery("issuer");
                                         if (!((action === OutletAction.GET_ISSUER_TOKENS + "-response"
                                             || action === "proof-callback")
                                             && issuer === resposeIssuer)) return [3, 3];
-                                        resposeTokensEncoded = this_1.getDataFromQuery("tokens");
+                                        resposeTokensEncoded = this_2.getDataFromQuery("tokens");
                                         try {
                                             tokens = JSON.parse(resposeTokensEncoded);
                                         }
@@ -536,36 +532,39 @@ var Client = (function () {
                                             logger(2, "Error parse tokens from Response. ", e);
                                         }
                                         return [3, 5];
-                                    case 3: return [4, this_1.loadRemoteOutletTokens(issuerConfig)];
+                                    case 3: return [4, this_2.loadRemoteOutletTokens(issuerConfig)];
                                     case 4:
-                                        tokens = _d.sent();
-                                        _d.label = 5;
+                                        tokens = _e.sent();
+                                        _e.label = 5;
                                     case 5: return [3, 7];
                                     case 6:
-                                        err_1 = _d.sent();
-                                        errorHandler('popup error', 'error', function () { return _this.eventSender.emitErrorToClient(err_1, issuer); }, null, true, false);
+                                        error_1 = _e.sent();
+                                        errorHandler('popup error', 'error', function () { return _this.eventSender("error", { issuer: issuer, error: error_1 }); }, null, true, false);
                                         return [2, "continue"];
                                     case 7:
                                         logger(2, "tokens:");
                                         logger(2, tokens);
-                                        this_1.tokenStore.setTokens(issuer, tokens);
+                                        this_2.tokenStore.setTokens(issuer, tokens);
                                         return [2];
                                 }
                             });
                         };
-                        this_1 = this;
-                        _a = [];
-                        for (_b in issuers)
-                            _a.push(_b);
+                        this_2 = this;
+                        _a = issuers;
+                        _b = [];
+                        for (_c in _a)
+                            _b.push(_c);
                         _i = 0;
-                        _c.label = 1;
+                        _d.label = 1;
                     case 1:
-                        if (!(_i < _a.length)) return [3, 4];
-                        issuer = _a[_i];
-                        return [5, _loop_1(issuer)];
+                        if (!(_i < _b.length)) return [3, 4];
+                        _c = _b[_i];
+                        if (!(_c in _a)) return [3, 3];
+                        issuer = _c;
+                        return [5, _loop_2(issuer)];
                     case 2:
-                        _c.sent();
-                        _c.label = 3;
+                        _d.sent();
+                        _d.label = 3;
                     case 3:
                         _i++;
                         return [3, 1];
@@ -612,40 +611,58 @@ var Client = (function () {
     };
     Client.prototype.setPassiveNegotiationOnChainTokens = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var issuers, walletProvider, _a, _b, _i, issuerKey, issuer, tokens, err_2;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var issuers, walletProvider, _loop_3, this_3, _a, _b, _c, _i, issuerKey;
+            var _this = this;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
                         issuers = this.tokenStore.getCurrentIssuers(true);
                         return [4, this.getWalletProvider()];
                     case 1:
-                        walletProvider = _c.sent();
-                        _a = [];
-                        for (_b in issuers)
-                            _a.push(_b);
+                        walletProvider = _d.sent();
+                        _loop_3 = function (issuerKey) {
+                            var issuer, tokens, err_1;
+                            return __generator(this, function (_e) {
+                                switch (_e.label) {
+                                    case 0:
+                                        issuer = issuers[issuerKey];
+                                        _e.label = 1;
+                                    case 1:
+                                        _e.trys.push([1, 3, , 4]);
+                                        return [4, getNftTokens(issuer, walletProvider.getConnectedWalletData()[0].address)];
+                                    case 2:
+                                        tokens = _e.sent();
+                                        this_3.tokenStore.setTokens(issuerKey, tokens);
+                                        return [3, 4];
+                                    case 3:
+                                        err_1 = _e.sent();
+                                        logger(2, err_1);
+                                        errorHandler('passive loading of tokens error', 'error', function () { return _this.eventSender("error", { issuer: issuerKey, error: err_1 }); }, null, true, false);
+                                        return [3, 4];
+                                    case 4: return [2];
+                                }
+                            });
+                        };
+                        this_3 = this;
+                        _a = issuers;
+                        _b = [];
+                        for (_c in _a)
+                            _b.push(_c);
                         _i = 0;
-                        _c.label = 2;
+                        _d.label = 2;
                     case 2:
-                        if (!(_i < _a.length)) return [3, 7];
-                        issuerKey = _a[_i];
-                        issuer = issuers[issuerKey];
-                        _c.label = 3;
+                        if (!(_i < _b.length)) return [3, 5];
+                        _c = _b[_i];
+                        if (!(_c in _a)) return [3, 4];
+                        issuerKey = _c;
+                        return [5, _loop_3(issuerKey)];
                     case 3:
-                        _c.trys.push([3, 5, , 6]);
-                        return [4, getNftTokens(issuer, walletProvider.getConnectedWalletData()[0].address)];
+                        _d.sent();
+                        _d.label = 4;
                     case 4:
-                        tokens = _c.sent();
-                        this.tokenStore.setTokens(issuerKey, tokens);
-                        return [3, 6];
-                    case 5:
-                        err_2 = _c.sent();
-                        logger(2, err_2);
-                        this.eventSender.emitErrorToClient(err_2, issuerKey);
-                        return [3, 6];
-                    case 6:
                         _i++;
                         return [3, 2];
-                    case 7: return [2];
+                    case 5: return [2];
                 }
             });
         });
@@ -667,7 +684,7 @@ var Client = (function () {
                         for (issuer in tokens) {
                             tokens[issuer] = { tokens: tokens[issuer] };
                         }
-                        this.eventSender.emitAllTokensToClient(tokens);
+                        this.eventSender("tokens", tokens);
                         if (this.messaging.core.iframeStorageSupport === false && Object.keys(this.tokenStore.getCurrentTokens(false)).length === 0)
                             logger(2, "iFrame storage support not detected: Enable popups via your browser to access off-chain tokens with this negotiation type.");
                         return [2];
@@ -706,8 +723,9 @@ var Client = (function () {
                         _b.label = 6;
                     case 6:
                         this.tokenStore.setTokens(issuer, tokens);
-                        if (this.config.autoEnableTokens)
-                            this.eventSender.emitSelectedTokensToClient(this.tokenStore.getSelectedTokens());
+                        if (this.config.autoEnableTokens) {
+                            this.eventSender("tokens-selected", { selectedTokens: this.tokenStore.getSelectedTokens() });
+                        }
                         return [2, tokens];
                 }
             });
@@ -746,11 +764,11 @@ var Client = (function () {
     };
     Client.prototype.updateSelectedTokens = function (selectedTokens) {
         this.tokenStore.setSelectedTokens(selectedTokens);
-        this.eventSender.emitSelectedTokensToClient(selectedTokens);
+        this.eventSender("tokens", { selectedTokens: selectedTokens });
     };
     Client.prototype.authenticate = function (authRequest) {
         return __awaiter(this, void 0, void 0, function () {
-            var issuer, unsignedToken, config, AuthType, authenticator, res, err_3;
+            var issuer, unsignedToken, config, AuthType, authenticator, res, err_2;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -793,15 +811,15 @@ var Client = (function () {
                         res = _a.sent();
                         logger(2, "proof received at ", window.location.href);
                         logger(2, "Ticket proof successfully validated.");
-                        this.eventSender.emitProofToClient(res.data, issuer);
+                        this.eventSender("token-proof", { data: res.data, issuer: issuer });
                         return [3, 5];
                     case 4:
-                        err_3 = _a.sent();
-                        logger(2, err_3);
-                        if (err_3.message === "WALLET_REQUIRED") {
+                        err_2 = _a.sent();
+                        logger(2, err_2);
+                        if (err_2.message === "WALLET_REQUIRED") {
                             return [2, this.handleWalletRequired(authRequest)];
                         }
-                        errorHandler(err_3, 'error', function () { return _this.handleProofError(err_3, issuer); }, null, false, true);
+                        errorHandler(err_2, 'error', function () { return _this.handleProofError(err_2, issuer); }, null, false, true);
                         return [3, 5];
                     case 5:
                         if (this.ui) {
@@ -819,7 +837,7 @@ var Client = (function () {
             cancelAuthButton.onclick = function () {
                 var err = 'User cancelled authentication';
                 _this.ui.showError(err);
-                _this.eventSender.emitProofToClient(null, issuer, err);
+                _this.eventSender("token-proof", { issuer: issuer, err: err, data: null });
             };
         });
     };
@@ -872,7 +890,10 @@ var Client = (function () {
     Client.prototype.handleProofError = function (err, issuer) {
         if (this.ui)
             this.ui.showError(err);
-        this.eventSender.emitProofToClient(null, issuer, err);
+        this.eventSender("token-proof", { issuer: issuer, error: err, data: null, });
+    };
+    Client.prototype.eventSender = function (eventName, data) {
+        this.on(eventName, null, data);
     };
     Client.prototype.getOutletConfigForCurrentOrigin = function () {
         var allIssuers = this.tokenStore.getCurrentIssuers();

@@ -2,6 +2,7 @@ import { ethers } from "ethers";
 import { logger } from "../utils";
 import {SafeConnectOptions} from "./SafeConnectProvider";
 import {Client} from "../client";
+import { TokenNegotiatorEvents } from "src/client/interface";
 
 interface WalletConnectionState {
 	[index: string]: WalletConnection
@@ -56,7 +57,7 @@ export class Web3WalletProvider {
 			Object.keys(this.connections).length &&
 			address
 		) {
-			this.client.eventSender.emitConnectedWalletInstance(this.connections[address.toLocaleLowerCase()]);
+			this.client.eventSender("connected-wallet", { data: this.connections[address.toLocaleLowerCase()] });
 			return this.connections[address.toLocaleLowerCase()];
 		} else {
 			return null;
@@ -67,7 +68,7 @@ export class Web3WalletProvider {
 
 		if(chainId) {
 
-			this.client.eventSender.emitNetworkChange(chainId);
+			this.client.eventSender("network-change", chainId);
 
 			return chainId;
 			

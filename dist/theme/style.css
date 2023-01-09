@@ -17,7 +17,7 @@
   justify-content: right;
 }
 .overlay-tn .headline-container-tn .toolbar-tn button {
-  margin: 0 10px;
+  margin-right: 10px;
 }
 
 .overlay-tn .cancel-auth-btn {
