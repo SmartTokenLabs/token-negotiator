@@ -11,7 +11,7 @@ export declare const base64ToUint8array: (base64str: string) => Uint8Array;
 export declare const attachPostMessageListener: (listener: any) => void;
 export declare const removePostMessageListener: (listener: any) => void;
 export declare const waitForElementToExist: (selector: string) => Promise<Element>;
-export declare type ErrorType = 'warning' | 'info' | 'error';
+export type ErrorType = 'warning' | 'info' | 'error';
 export declare const errorHandler: (error: any, type: ErrorType, action?: Function | null, data?: unknown, log?: boolean, throwError?: boolean) => {
     type: ErrorType;
     message: any;

@@ -33,7 +33,7 @@ export declare class Client {
     private messaging;
     protected ui: UiInterface;
     private clientCallBackEvents;
-    private tokenStore;
+    protected tokenStore: TokenStore;
     private uiUpdateCallbacks;
     private urlParams;
     static getKey(file: string): import("@tokenscript/attestation/dist/libs/KeyPair").KeyPair;

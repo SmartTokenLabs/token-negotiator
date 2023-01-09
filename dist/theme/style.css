@@ -15,9 +15,10 @@
 .overlay-tn .headline-container-tn .toolbar-tn {
   display: flex;
   justify-content: right;
+  align-items: center;
 }
 .overlay-tn .headline-container-tn .toolbar-tn button {
-  margin: 0 10px;
+  margin-right: 10px;
 }
 
 .overlay-tn .cancel-auth-btn {
@@ -510,12 +511,6 @@ li.issuer-connect-banner-tn .tokens-btn-tn,
   cursor: pointer;
   color: white;
   background: #101010;
-}
-
-.refresh-tn {
-  margin-top: 0;
-  margin-bottom: 10px;
-  margin-right: 10px;
 }
 
 .refresh-icon-tn {
