@@ -1,4 +1,4 @@
-import WalletConnectProvider from "@walletconnect/web3-provider";
+import WalletConnectProvider from "@walletconnect/web3-provider/dist/umd/index.min";
 
 export const getWalletConnectProviderInstance = async (checkConnectionOnly?: boolean) => {
 	return new WalletConnectProvider({
