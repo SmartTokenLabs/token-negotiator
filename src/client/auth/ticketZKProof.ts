@@ -25,7 +25,7 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 		let redirectMode: false|string = request?.options?.useRedirect || shouldUseRedirectMode(this.client.config.offChainRedirectMode) || false;
 
 		if (redirectMode)
-			redirectMode = request?.options?.redirectUrl || document.location.origin + document.location.pathname + document.location.search;
+			redirectMode = request?.options?.redirectUrl || document.location.href;
 
 		let useEthKey: UNInterface|null = null;
 

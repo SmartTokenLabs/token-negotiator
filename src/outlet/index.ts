@@ -135,7 +135,7 @@ export class Outlet {
 			}
 			case OutletAction.EMAIL_ATTEST_CALLBACK: {
 
-				const requestorURL = this.getDataFromQuery("requestor");
+				const requestorURL = new URL(this.getDataFromQuery("requestor"));
 				const issuer = this.getDataFromQuery("issuer");
 
 				try {
@@ -161,7 +161,7 @@ export class Outlet {
 					// re-direct back to origin
 					if (requestorURL) {
 
-						const params = new URLSearchParams();
+						const params = new URLSearchParams(requestorURL.hash.substring(1));
 						params.set("action", "proof-callback");
 						params.set("issuer", issuer)
 						params.set("attestation", useToken as string);
@@ -176,10 +176,11 @@ export class Outlet {
 		
 						params.set("tokens", JSON.stringify(issuerTokens));
 
-						let urlToRedirect = `${requestorURL}#${params.toString()}`;
-						console.log("urlToRedirect from OutletAction.EMAIL_ATTEST_CALLBACK: ", urlToRedirect)
+						requestorURL.hash = "#" + params.toString();
 
-						document.location.href = urlToRedirect;
+						console.log("urlToRedirect from OutletAction.EMAIL_ATTEST_CALLBACK: ", requestorURL.href)
+
+						document.location.href = requestorURL.href;
 
 						return;
 					}
@@ -464,19 +465,20 @@ export class Outlet {
 		
 		if (requestor){
 			try {
-			let url = new URL(requestor);
+				let url = new URL(requestor);
 			
-				const params = new URLSearchParams();
+				const params = new URLSearchParams(url.hash.substring(1));
 				params.set("action", OutletAction.GET_ISSUER_TOKENS + "-response");
 				params.set("issuer", this.tokenConfig.collectionID);
 				params.set("tokens", JSON.stringify(issuerTokens));
 
-				let requestorURL = url.origin + url.pathname + (url.search ? ("?" + url.search ) : "");
+				url.hash = "#" + params.toString();
 
-				const goto = `${requestorURL}#${params.toString()}`
-				logger(2, "tokens ready. go to: ", goto);
+				let requesterURL = url.href;
 
-				document.location.href = goto;
+				logger(2, "tokens ready. go to: ", requesterURL);
+
+				document.location.href = requesterURL;
 
 				return;
 			} catch(e){

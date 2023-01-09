@@ -110,6 +110,7 @@ export class Client {
 			this.urlParams = new URLSearchParams(window.location.hash.substring(1));
 			let action = this.getDataFromQuery("action");
 			logger(2, `Client() fired. Action = "${action}"`);
+			this.removeCallbackParamsFromUrl();
 		}
 
 		this.config = this.mergeConfig(defaultConfig, config);
@@ -144,7 +145,33 @@ export class Client {
 		const attest = this.getDataFromQuery("attestation");
 		const error = this.getDataFromQuery("error");
 
+		this.removeCallbackFromUrlSearchParams(this.urlParams);
+
 		this.emitRedirectProofEvent(issuer, attest, error);
+	}
+
+	private removeCallbackParamsFromUrl(){
+
+		let params = new URLSearchParams(document.location.hash.substring(1));
+
+		params = this.removeCallbackFromUrlSearchParams(params);
+
+		document.location.hash = "#" + params.toString();
+	}
+
+	private removeCallbackFromUrlSearchParams(params: URLSearchParams, paramNames: string[] = [
+		"action",
+		"issuer",
+		"tokens",
+		"attestation",
+		"error"
+	]){
+		for (let paramName of paramNames){
+			if (params.has(paramName))
+				params.delete(paramName)
+		}
+
+		return params;
 	}
 
 	private registerOutletProofEventListener(){
@@ -310,10 +337,6 @@ export class Client {
 		);
 	}
 
-	private createCurrentUrlWithoutHash(): string {
-		return window.location.origin + window.location.pathname + window.location.search??("?" + window.location.search);
-	}
-
 	public getNoTokenMsg (collectionID: string) {
 		const store = this.getTokenStore().getCurrentIssuers();
 		const collectionNoTokenMsg = store[collectionID]?.noTokenMsg;
@@ -455,12 +478,13 @@ export class Client {
 						let responseTokensEncoded = this.getDataFromQuery("tokens");
 						try {
 							tokens = JSON.parse(responseTokensEncoded);
+							this.removeCallbackFromUrlSearchParams(this.urlParams);
 						} catch (e){
 							logger(2, "Error parse tokens from Response. ", e);
 						}
 					} else {
 
-						let tokens = this.tokenStore.getIssuerTokens(issuer);
+						tokens = this.tokenStore.getIssuerTokens(issuer);
 
 						if (tokens !== null)
 							continue;
@@ -483,6 +507,12 @@ export class Client {
 
 	readTokensFromUrl(){
 		let issuers = this.tokenStore.getCurrentIssuers(false);
+
+		let action = this.getDataFromQuery("action");
+
+		if (action !== OutletAction.GET_ISSUER_TOKENS + "-response")
+			return;
+
 		let issuer = this.getDataFromQuery("issuer");
 
 		if (!issuer) {
@@ -513,6 +543,7 @@ export class Client {
 					logger(2, "Error parse tokens from Response. ", e);
 				}
 
+				this.removeCallbackFromUrlSearchParams(this.urlParams);
 			}
 		} catch (err) {
 			logger(1, "Error read tokens from URL");
@@ -642,7 +673,7 @@ export class Client {
 			},
 			this.config.messagingForceTab,
 			this.config.type === "active" ? this.ui : null,
-			redirectRequired ? this.createCurrentUrlWithoutHash() : false
+			redirectRequired ? document.location.href : false
 		);
 
 		return res.data?.tokens ?? [];
@@ -889,7 +920,6 @@ export class Client {
 
 			if (action === "proof-callback") {
 				this.readProofCallback();
-				document.location.hash = "";
 			} else if (action === "email-callback") {
 
 				let currentIssuer = this.getOutletConfigForCurrentOrigin();
@@ -902,7 +932,6 @@ export class Client {
 						outlet = null;
 					});
 				}
-				document.location.hash = "";
 			}
 		}
 
