@@ -80,7 +80,7 @@ jobs:
         if: github.event_name == 'push' && contains('refs/heads/staging refs/heads/main', github.ref)
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SNAPSHOT_VERSION: ${{ github.ref }}
+          SNAPSHOT_VERSION: ${{ github.ref == 'refs/heads/staging' && 'staging' || 'main' }}
         run: |
           CURRENT_VERSION=$(node -p "require('./package.json').version")
           SNAP_TAG="SNAPSHOT-$SNAPSHOT_VERSION"
