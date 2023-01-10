@@ -33,7 +33,7 @@ jobs:
       - name: "Publish NPM snapshot"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SNAPSHOT_VERSION: ${{ uppercase(github.ref) }}
+          SNAPSHOT_VERSION: ${{ github.ref }}
         run: |
           CURRENT_VERSION=$(node -p "require('./package.json').version")
           NEW_VERSION="SNAPSHOT-%{SNAPSHOT_VERSION}"
