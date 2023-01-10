@@ -34,13 +34,19 @@ jobs:
           node-version: '16.x'
           registry-url: 'https://npm.pkg.github.com'
 
+      - uses: actions/delete-package-versions@v4
+        with:
+          package-name: token-negotiator
+          package-type: npm
+          num-old-versions-to-delete: 5
+          min-versions-to-keep: 5
+
       - name: "Publish NPM snapshot"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SNAPSHOT_VERSION: ${{ github.ref == 'refs/heads/staging' && 'staging' || 'main' }}
         run: |
           CURRENT_VERSION=$(node -p "require('./package.json').version")
-          NEW_VERSION="SNAPSHOT-$SNAPSHOT_VERSION"
-          ./scripts/set_version.js "$CURRENT_VERSION-$NEW_VERSION"
-          npm unpublish -f "token-negotiator@$CURRENT_VERSION-$NEW_VERSION" || true
-          npm publish --tag "$NEW_VERSION" --ignore-prepublish
+          SNAP_TAG="SNAPSHOT-$SNAPSHOT_VERSION"
+          ./scripts/set_version.js "$CURRENT_VERSION-$SNAP_TAG.${GITHUB_SHA::6}"
+          npm publish --tag "$SNAP_TAG" --ignore-prepublish
