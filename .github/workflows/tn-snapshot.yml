@@ -41,5 +41,5 @@ jobs:
         run: |
           CURRENT_VERSION=$(node -p "require('./package.json').version")
           NEW_VERSION="SNAPSHOT-$SNAPSHOT_VERSION"
-          sed -i '' "s/${CURRENT_VERSION}/${NEW_VERSION}/" package.json
+          ./scripts/set_version.js $NEW_VERSION
           npm publish --tag SNAPSHOT --ignore-prepublish
