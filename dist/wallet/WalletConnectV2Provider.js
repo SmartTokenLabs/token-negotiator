@@ -13,7 +13,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
-        while (g && (g = 0, op[0] && (_ = 0)), _) try {
+        while (_) try {
             if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
             if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
@@ -34,29 +34,38 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-import WalletConnectProvider from "@walletconnect/web3-provider/dist/umd/index.min";
-export var getWalletConnectProviderInstance = function (checkConnectionOnly) { return __awaiter(void 0, void 0, void 0, function () {
+import { TextDecoder, TextEncoder } from 'text-encoding';
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
+import UniversalProvider from "@walletconnect/universal-provider/dist/index.umd";
+export var CUSTOM_RPCS_FOR_WC_V2 = {
+    1: 'https://ethereum.publicnode.com',
+    137: 'https://polygon-rpc.com/',
+    56: 'https://bsc-dataseed.binance.org/',
+    43114: 'https://api.avax.network/ext/bc/C/rpc',
+    250: 'https://rpc.fantom.network/',
+    25: 'https://evm-cronos.crypto.org',
+    42161: 'https://arb1.arbitrum.io/rpc',
+    10: 'https://mainnet.optimism.io'
+};
+export var WC_V2_CHAINS = [
+    'eip155:1',
+    'eip155:137',
+    'eip155:250',
+    'eip155:25',
+    'eip155:42161',
+    'eip155:10'
+];
+export var getWalletConnectV2ProviderInstance = function () { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
-        return [2, new WalletConnectProvider({
-                infuraId: "7753fa7b79d2469f97c156780fce37ac",
-                qrcode: !checkConnectionOnly,
-                rpc: {
-                    5: 'https://eth-goerli.g.alchemy.com/v2/yVhq9zPJorAWsw-F87fEabSUl7cCU6z4',
-                    11155111: 'https://sepolia.infura.io/v3/9f79b2f9274344af90b8d4e244b580ef',
-                    137: 'https://polygon-rpc.com/',
-                    80001: 'https://polygon-mumbai.g.alchemy.com/v2/rVI6pOV4irVsrw20cJxc1fxK_1cSeiY0',
-                    56: 'https://bsc-dataseed.binance.org/',
-                    97: 'https://data-seed-prebsc-1-s1.binance.org:8545',
-                    43114: 'https://api.avax.network/ext/bc/C/rpc',
-                    43113: 'https://api.avax-test.network/ext/bc/C/rpc',
-                    250: 'https://rpc.fantom.network/',
-                    25: 'https://evm-cronos.crypto.org',
-                    338: 'https://evm-t3.cronos.org',
-                    42161: 'https://arb1.arbitrum.io/rpc',
-                    421613: 'https://arb-goerli.g.alchemy.com/v2/nFrflomLgsQQL5NWjGileAVqIGGxZWce',
-                    10: 'https://mainnet.optimism.io'
-                }
-            })];
+        switch (_a.label) {
+            case 0: return [4, UniversalProvider.init({
+                    projectId: '2ec7ead81da1226703ad789c0b2f7b30',
+                    logger: "debug",
+                    relayUrl: "wss://relay.walletconnect.com",
+                })];
+            case 1: return [2, _a.sent()];
+        }
     });
 }); };
-//# sourceMappingURL=WalletConnectProvider.js.map
+//# sourceMappingURL=WalletConnectV2Provider.js.map

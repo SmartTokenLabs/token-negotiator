@@ -109,8 +109,8 @@ var Web3WalletProvider = (function () {
                         _d.sent();
                         return [3, 5];
                     case 4:
-                        e_1 = _d.sent();
-                        console.log("Wallet couldn't connect" + e_1.message);
+                        e_1 = _c.sent();
+                        console.log("Wallet couldn't connect: " + e_1.message);
                         delete state[address];
                         this.saveConnections();
                         this.emitSavedConnection(address);
@@ -255,6 +255,79 @@ var Web3WalletProvider = (function () {
                                     resolve(_this.registerProvider(provider, "WalletConnect"));
                                 }).catch(function (e) { return reject(e); });
                             })];
+                }
+            });
+        });
+    };
+    Web3WalletProvider.prototype.WalletConnectV2 = function (checkConnectionOnly) {
+        return __awaiter(this, void 0, void 0, function () {
+            var walletConnectProvider, universalWalletConnect, QRCodeModal, pairing;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        logger(2, 'connect Wallet Connect V2');
+                        return [4, import("./WalletConnectV2Provider")];
+                    case 1:
+                        walletConnectProvider = _a.sent();
+                        return [4, walletConnectProvider.getWalletConnectV2ProviderInstance()];
+                    case 2:
+                        universalWalletConnect = _a.sent();
+                        universalWalletConnect.on("display_uri", function (uri) { return __awaiter(_this, void 0, void 0, function () {
+                            var _this = this;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0:
+                                        console.log("EVENT", "QR Code Modal open");
+                                        return [4, import("@walletconnect/qrcode-modal")];
+                                    case 1:
+                                        QRCodeModal = (_a.sent()).default;
+                                        QRCodeModal.open(uri, function () {
+                                            _this.client.getUi().showError('User closed modal');
+                                        });
+                                        return [2];
+                                }
+                            });
+                        }); });
+                        universalWalletConnect.on("session_delete", function (_a) {
+                            var id = _a.id, topic = _a.topic;
+                            console.log("WC V2 EVENT", "session_deleted");
+                            _this.client.disconnectWallet();
+                            var ui = _this.client.getUi();
+                            if (ui)
+                                ui.updateUI("wallet");
+                        });
+                        if (!!checkConnectionOnly) return [3, 4];
+                        pairing = void 0;
+                        return [4, universalWalletConnect.connect({
+                                namespaces: {
+                                    eip155: {
+                                        methods: [
+                                            "eth_sendTransaction",
+                                            "eth_signTransaction",
+                                            "eth_sign",
+                                            "personal_sign",
+                                            "eth_signTypedData",
+                                        ],
+                                        chains: walletConnectProvider.WC_V2_CHAINS,
+                                        events: ["chainChanged", "accountsChanged"],
+                                        rpcMap: walletConnectProvider.CUSTOM_RPCS_FOR_WC_V2
+                                    },
+                                },
+                                pairingTopic: pairing === null || pairing === void 0 ? void 0 : pairing.topic,
+                            })];
+                    case 3:
+                        _a.sent();
+                        QRCodeModal.close();
+                        _a.label = 4;
+                    case 4: return [2, new Promise(function (resolve, reject) {
+                            universalWalletConnect.enable().then(function () {
+                                var provider = new ethers.providers.Web3Provider(universalWalletConnect);
+                                resolve(_this.registerProvider(provider, "WalletConnectV2"));
+                            }).catch(function (e) {
+                                reject(e);
+                            });
+                        })];
                 }
             });
         });

@@ -1,1 +1,1 @@
-{"version":3,"file":"TorusProvider.js","sourceRoot":"","sources":["../../src/wallet/TorusProvider.ts"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAAA,OAAO,KAAK,MAAM,wBAAwB,CAAC;AAE3C,MAAM,CAAC,IAAM,wBAAwB,GAAG;;QACtC,WAAO,IAAI,KAAK,EAAE,EAAC;;KACpB,CAAA"}
+{"version":3,"file":"TorusProvider.js","sourceRoot":"","sources":["../../src/wallet/TorusProvider.ts"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAAA,OAAO,KAAK,MAAM,2CAA2C,CAAC;AAE9D,MAAM,CAAC,IAAM,wBAAwB,GAAG;;QACtC,WAAO,IAAI,KAAK,EAAE,EAAC;;KACpB,CAAA"}

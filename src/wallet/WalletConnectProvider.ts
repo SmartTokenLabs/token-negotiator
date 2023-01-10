@@ -21,4 +21,4 @@ export const getWalletConnectProviderInstance = async (checkConnectionOnly?: boo
 			10: 'https://mainnet.optimism.io'
 		}
 	});
-}
+};
