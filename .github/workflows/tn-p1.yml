@@ -89,7 +89,7 @@ jobs:
           CURRENT_VERSION=$(node -p "require('./package.json').version")
           SNAP_TAG="SNAPSHOT-$SNAPSHOT_VERSION"
           ./scripts/set_version.js "$CURRENT_VERSION-$SNAP_TAG.${GITHUB_SHA::6}"
-          npm publish --tag "$SNAP_TAG" --ignore-prepublish --access restricted
+          npm publish --tag "$SNAP_TAG" --access restricted
 
       - uses: actions/delete-package-versions@v4
         with:
