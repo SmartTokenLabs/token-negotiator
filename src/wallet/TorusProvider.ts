@@ -1,5 +1,5 @@
-import Torus from "@toruslabs/torus-embed";
+import Torus from "@toruslabs/torus-embed/dist/torus.umd.min";
 
 export const getTorusProviderInstance = async () => {
-  return new Torus();
+	return new Torus();
 }
