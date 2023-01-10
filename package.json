@@ -13,7 +13,7 @@
     "clean": "shx rm -rf dist",
     "copy-assets": "copyfiles ./src/vendor/*.js dist/vendor -V --flat",
     "copy-assets-umd": "copyfiles ./src/vendor/*.js token-negotiator-dist/vendor -V --flat",
-    "prepare": "npm run build",
+    "prepublishOnly": "npm run build",
     "lint": "eslint . --quiet",
     "test": "jest",
     "test-watch": "jest --watch",
