@@ -94,7 +94,7 @@ export class Client {
 	private messaging: Messaging;
 	protected ui: UiInterface;
 	private clientCallBackEvents: {} = {};
-	private tokenStore: TokenStore;
+	protected tokenStore: TokenStore;
 	private uiUpdateCallbacks: {[type in UIUpdateEventType]} = {
 		[UIUpdateEventType.ISSUERS_LOADING]: undefined,
 		[UIUpdateEventType.ISSUERS_LOADED]: undefined

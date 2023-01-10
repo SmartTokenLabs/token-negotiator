@@ -243,7 +243,7 @@ export class Web3WalletProvider {
 			}
 
 			walletConnect.enable().then(() => {
-				const provider = new ethers.providers.Web3Provider(walletConnect);
+				const provider = new ethers.providers.Web3Provider(walletConnect, "any");
 
 				resolve(this.registerProvider(provider, "WalletConnect"));
 			}).catch((e) => reject(e));
@@ -334,7 +334,7 @@ export class Web3WalletProvider {
 
 		await torus.login();
 
-		const provider = new ethers.providers.Web3Provider(torus.provider);
+		const provider = new ethers.providers.Web3Provider(torus.provider, "any");
 
 		return this.registerProvider(provider, "Torus");
 
