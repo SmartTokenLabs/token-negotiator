@@ -53,6 +53,7 @@ jobs:
           npm run build-umd
 
       - name: test
+        if: github.event_name != 'push'
         uses: ArtiomTr/jest-coverage-report-action@v2
         with:
           annotations: failed-tests
