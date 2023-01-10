@@ -1,8 +1,11 @@
-import { UiInterface, UItheme } from './ui';
+import { UiInterface, UItheme } from "./ui";
 import "./../vendor/keyShape";
 import { TokenStore } from "./tokenStore";
-import { OffChainTokenConfig, OnChainTokenConfig, AuthenticateInterface, NegotiationInterface, TokenNegotiatorEvents } from './interface';
-import Web3WalletProvider from '../wallet/Web3WalletProvider';
+import { OffChainTokenConfig, OnChainTokenConfig, AuthenticateInterface, NegotiationInterface, TokenNegotiatorEvents, EventSenderTokenProof, EventSenderTokensSelected, EventSenderConnectedWallet, EventSenderDisconnectedWallet, EventSenderError } from "./interface";
+import Web3WalletProvider from "../wallet/Web3WalletProvider";
+interface EventSenderTokens {
+    data: any[];
+}
 declare global {
     interface Window {
         KeyshapeJS?: any;
@@ -75,10 +78,17 @@ export declare class Client {
     enableAuthCancel(issuer: any): void;
     private handleWalletRequired;
     private handleProofError;
-    eventSender(eventName: TokenNegotiatorEvents, data: any): void;
+    eventSender(eventName: "tokens", data: EventSenderTokens): any;
+    eventSender(eventName: "token-proof", data: EventSenderTokenProof): any;
+    eventSender(eventName: "tokens-selected", data: EventSenderTokensSelected): any;
+    eventSender(eventName: "connected-wallet", data: EventSenderConnectedWallet): any;
+    eventSender(eventName: "disconnected-wallet", data: EventSenderDisconnectedWallet): any;
+    eventSender(eventName: "network-change", data: string): any;
+    eventSender(eventName: "error", data: EventSenderError): any;
     getOutletConfigForCurrentOrigin(): any;
     onlySameOrigin(): boolean;
     addTokenViaMagicLink(magicLink: any): Promise<any>;
     on(type: TokenNegotiatorEvents, callback?: any, data?: any): any;
     switchTheme(newTheme: UItheme): void;
 }
+export {};

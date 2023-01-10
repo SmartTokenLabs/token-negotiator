@@ -46,7 +46,7 @@ var __values = (this && this.__values) || function(o) {
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 import { OutletAction, OutletResponseAction, Messaging } from "./messaging";
-import { Ui } from './ui';
+import { Ui } from "./ui";
 import { logger, requiredParams } from "../utils";
 import { getNftCollection, getNftTokens } from "../utils/token/nftProvider";
 import "./../vendor/keyShape";
@@ -54,11 +54,11 @@ import { Authenticator } from "@tokenscript/attestation";
 import { TokenStore } from "./tokenStore";
 import { SignedUNChallenge } from "./auth/signedUNChallenge";
 import { TicketZKProof } from "./auth/ticketZKProof";
-import { isUserAgentSupported, validateBlockchain } from '../utils/support/isSupported';
+import { isUserAgentSupported, validateBlockchain, } from "../utils/support/isSupported";
 import { LocalOutlet } from "../outlet/localOutlet";
 import { Outlet } from "../outlet";
 import { browserBlocksIframeStorage } from "../utils/support/getBrowserData";
-import { waitForElementToExist, errorHandler } from '../utils/index';
+import { waitForElementToExist, errorHandler } from "../utils/index";
 if (typeof window !== "undefined")
     window.tn = { version: "2.2.0" };
 var NOT_SUPPORTED_ERROR = "This browser is not supported. Please try using Chrome, Edge, FireFox or Safari.";
@@ -72,7 +72,7 @@ export var defaultConfig = {
         issuerHeading: "Detected tokens",
         autoPopup: true,
         position: "bottom-right",
-        alwaysShowStartScreen: false
+        alwaysShowStartScreen: false,
     },
     autoLoadTokens: true,
     autoEnableTokens: true,
@@ -82,15 +82,15 @@ export var defaultConfig = {
     unSupportedUserAgent: {
         authentication: {
             config: {},
-            errorMessage: NOT_SUPPORTED_ERROR
+            errorMessage: NOT_SUPPORTED_ERROR,
         },
         full: {
             config: {
                 iE: true,
                 iE9: true,
             },
-            errorMessage: NOT_SUPPORTED_ERROR
-        }
+            errorMessage: NOT_SUPPORTED_ERROR,
+        },
     },
 };
 export var ClientError;
@@ -156,7 +156,11 @@ var Client = (function () {
                 _this.handleProofError(new Error(error), issuer);
             }
             else {
-                _this.eventSender("token-proof", { issuer: issuer, error: null, data: { proof: proof } });
+                _this.eventSender("token-proof", {
+                    issuer: issuer,
+                    error: null,
+                    data: { proof: proof },
+                });
             }
         }, 500);
     };
@@ -210,10 +214,10 @@ var Client = (function () {
         return this.config.safeConnectOptions !== undefined;
     };
     Client.prototype.solanaAvailable = function () {
-        return (typeof window.solana !== 'undefined' &&
+        return (typeof window.solana !== "undefined" &&
             this.config.issuers.filter(function (issuer) {
                 var _a;
-                return ((_a = issuer === null || issuer === void 0 ? void 0 : issuer.blockchain) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === 'solana';
+                return ((_a = issuer === null || issuer === void 0 ? void 0 : issuer.blockchain) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === "solana";
             }).length > 0);
     };
     Client.prototype.getWalletProvider = function () {
@@ -332,10 +336,10 @@ var Client = (function () {
                         _c.sent();
                         this.ui.openOverlay();
                         this.ui.showError(err, false);
-                        this.ui.viewContainer.style.display = 'none';
+                        this.ui.viewContainer.style.display = "none";
                         _c.label = 2;
                     case 2:
-                        errorHandler(err, 'error', null, null, true, true);
+                        errorHandler(err, "error", null, null, true, true);
                         _c.label = 3;
                     case 3: return [2];
                 }
@@ -343,17 +347,19 @@ var Client = (function () {
         });
     };
     Client.prototype.activeNegotiateRequired = function () {
-        return (this.config.type === "active");
+        return this.config.type === "active";
     };
     Client.prototype.createCurrentUrlWithoutHash = function () {
         var _a;
-        return (_a = window.location.origin + window.location.pathname + window.location.search) !== null && _a !== void 0 ? _a : ("?" + window.location.search);
+        return ((_a = window.location.origin +
+            window.location.pathname +
+            window.location.search) !== null && _a !== void 0 ? _a : "?" + window.location.search);
     };
     Client.prototype.getNoTokenMsg = function (collectionID) {
         var _a;
         var store = this.getTokenStore().getCurrentIssuers();
         var collectionNoTokenMsg = (_a = store[collectionID]) === null || _a === void 0 ? void 0 : _a.noTokenMsg;
-        return collectionNoTokenMsg ? collectionNoTokenMsg : '';
+        return collectionNoTokenMsg ? collectionNoTokenMsg : "";
     };
     Client.prototype.negotiate = function (issuers, openPopup) {
         if (openPopup === void 0) { openPopup = false; }
@@ -414,9 +420,13 @@ var Client = (function () {
                         autoOpenPopup = true;
                         _a.label = 3;
                     case 3:
-                        if (this.config.autoEnableTokens && Object.keys(this.tokenStore.getSelectedTokens()).length)
-                            this.eventSender("tokens-selected", { selectedTokens: this.tokenStore.getSelectedTokens() });
-                        if (openPopup || (this.config.uiOptions.autoPopup === true && autoOpenPopup))
+                        if (this.config.autoEnableTokens &&
+                            Object.keys(this.tokenStore.getSelectedTokens()).length)
+                            this.eventSender("tokens-selected", {
+                                selectedTokens: this.tokenStore.getSelectedTokens(),
+                            });
+                        if (openPopup ||
+                            (this.config.uiOptions.autoPopup === true && autoOpenPopup))
                             this.ui.openOverlay();
                         return [2];
                 }
@@ -455,14 +465,16 @@ var Client = (function () {
                                         e_3 = _e.sent();
                                         e_3.message = "Failed to load " + issuerKey + ": " + e_3.message;
                                         logger(2, e_3.message);
-                                        errorHandler('autoload tokens error', 'error', function () { return _this.eventSender("error", { issuer: issuerKey, error: e_3 }); }, null, true, false);
+                                        errorHandler("autoload tokens error", "error", function () { return _this.eventSender("error", { issuer: issuerKey, error: e_3 }); }, null, true, false);
                                         onComplete(issuerKey, null);
                                         return [3, 4];
                                     case 4:
                                         count++;
                                         if (refresh)
                                             return [2, "continue"];
-                                        if (this_1.cancelAutoload || (this_1.config.autoLoadTokens !== true && count > this_1.config.autoLoadTokens))
+                                        if (this_1.cancelAutoload ||
+                                            (this_1.config.autoLoadTokens !== true &&
+                                                count > this_1.config.autoLoadTokens))
                                             return [2, "break"];
                                         return [2];
                                 }
@@ -516,14 +528,14 @@ var Client = (function () {
                                         _e.label = 1;
                                     case 1:
                                         _e.trys.push([1, 6, , 7]);
-                                        if (!((new URL(issuerConfig.tokenOrigin)).origin === document.location.origin)) return [3, 2];
+                                        if (!(new URL(issuerConfig.tokenOrigin).origin === document.location.origin)) return [3, 2];
                                         tokens = this_2.loadLocalOutletTokens(issuerConfig);
                                         return [3, 5];
                                     case 2:
                                         resposeIssuer = this_2.getDataFromQuery("issuer");
-                                        if (!((action === OutletAction.GET_ISSUER_TOKENS + "-response"
-                                            || action === "proof-callback")
-                                            && issuer === resposeIssuer)) return [3, 3];
+                                        if (!((action === OutletAction.GET_ISSUER_TOKENS + "-response" ||
+                                            action === "proof-callback") &&
+                                            issuer === resposeIssuer)) return [3, 3];
                                         resposeTokensEncoded = this_2.getDataFromQuery("tokens");
                                         try {
                                             tokens = JSON.parse(resposeTokensEncoded);
@@ -539,7 +551,7 @@ var Client = (function () {
                                     case 5: return [3, 7];
                                     case 6:
                                         error_1 = _e.sent();
-                                        errorHandler('popup error', 'error', function () { return _this.eventSender("error", { issuer: issuer, error: error_1 }); }, null, true, false);
+                                        errorHandler("popup error", "error", function () { return _this.eventSender("error", { issuer: issuer, error: error_1 }); }, null, true, false);
                                         return [2, "continue"];
                                     case 7:
                                         logger(2, "tokens:");
@@ -587,7 +599,7 @@ var Client = (function () {
         }
         var tokens;
         try {
-            if ((new URL(issuerConfig.tokenOrigin)).origin !== document.location.origin) {
+            if (new URL(issuerConfig.tokenOrigin).origin !== document.location.origin) {
                 var resposeTokensEncoded = this.getDataFromQuery("tokens");
                 try {
                     tokens = JSON.parse(resposeTokensEncoded);
@@ -637,7 +649,7 @@ var Client = (function () {
                                     case 3:
                                         err_1 = _e.sent();
                                         logger(2, err_1);
-                                        errorHandler('passive loading of tokens error', 'error', function () { return _this.eventSender("error", { issuer: issuerKey, error: err_1 }); }, null, true, false);
+                                        errorHandler("passive loading of tokens error", "error", function () { return _this.eventSender("error", { issuer: issuerKey, error: err_1 }); }, null, true, false);
                                         return [3, 4];
                                     case 4: return [2];
                                 }
@@ -685,7 +697,8 @@ var Client = (function () {
                             tokens[issuer] = { tokens: tokens[issuer] };
                         }
                         this.eventSender("tokens", tokens);
-                        if (this.messaging.core.iframeStorageSupport === false && Object.keys(this.tokenStore.getCurrentTokens(false)).length === 0)
+                        if (this.messaging.core.iframeStorageSupport === false &&
+                            Object.keys(this.tokenStore.getCurrentTokens(false)).length === 0)
                             logger(2, "iFrame storage support not detected: Enable popups via your browser to access off-chain tokens with this negotiation type.");
                         return [2];
                 }
@@ -701,7 +714,7 @@ var Client = (function () {
                     case 0:
                         config = this.tokenStore.getCurrentIssuers()[issuer];
                         if (!config)
-                            errorHandler('Undefined token issuer', 'error', null, null, true, true);
+                            errorHandler("Undefined token issuer", "error", null, null, true, true);
                         if (!(config.onChain === true)) return [3, 3];
                         return [4, this.getWalletProvider()];
                     case 1:
@@ -714,7 +727,7 @@ var Client = (function () {
                         tokens = _b.sent();
                         return [3, 6];
                     case 3:
-                        if (!((new URL(config.tokenOrigin)).origin === document.location.origin)) return [3, 4];
+                        if (!(new URL(config.tokenOrigin).origin === document.location.origin)) return [3, 4];
                         tokens = this.loadLocalOutletTokens(config);
                         return [3, 6];
                     case 4: return [4, this.loadRemoteOutletTokens(config)];
@@ -724,7 +737,9 @@ var Client = (function () {
                     case 6:
                         this.tokenStore.setTokens(issuer, tokens);
                         if (this.config.autoEnableTokens) {
-                            this.eventSender("tokens-selected", { selectedTokens: this.tokenStore.getSelectedTokens() });
+                            this.eventSender("tokens-selected", {
+                                selectedTokens: this.tokenStore.getSelectedTokens(),
+                            });
                         }
                         return [2, tokens];
                 }
@@ -740,16 +755,17 @@ var Client = (function () {
                     case 0:
                         data = {
                             issuer: issuer,
-                            filter: issuer.filters
+                            filter: issuer.filters,
                         };
                         if (issuer.accessRequestType)
                             data.access = issuer.accessRequestType;
                         redirectRequired = this.config.enableOffChainRedirectMode &&
-                            (browserBlocksIframeStorage() && this.config.type === "passive");
+                            browserBlocksIframeStorage() &&
+                            this.config.type === "passive";
                         return [4, this.messaging.sendMessage({
                                 action: OutletAction.GET_ISSUER_TOKENS,
                                 origin: issuer.tokenOrigin,
-                                data: data
+                                data: data,
                             }, this.config.messagingForceTab, this.config.type === "active" ? this.ui : null, redirectRequired ? this.createCurrentUrlWithoutHash() : false)];
                     case 1:
                         res = _c.sent();
@@ -764,7 +780,7 @@ var Client = (function () {
     };
     Client.prototype.updateSelectedTokens = function (selectedTokens) {
         this.tokenStore.setSelectedTokens(selectedTokens);
-        this.eventSender("tokens", { selectedTokens: selectedTokens });
+        this.eventSender("tokens-selected", { selectedTokens: selectedTokens });
     };
     Client.prototype.authenticate = function (authRequest) {
         return __awaiter(this, void 0, void 0, function () {
@@ -782,12 +798,12 @@ var Client = (function () {
                         }
                         config = this.tokenStore.getCurrentIssuers()[issuer];
                         if (!config)
-                            errorHandler("Provided issuer was not found.", 'error', null, null, true, true);
+                            errorHandler("Provided issuer was not found.", "error", null, null, true, true);
                         if (this.ui) {
                             this.ui.showLoaderDelayed([
                                 "<h4>Authenticating...</h4>",
                                 "<small>You may need to sign a new challenge in your wallet</small>",
-                                "<button class='cancel-auth-btn btn-tn' aria-label='Cancel authentication'>Cancel</button>"
+                                "<button class='cancel-auth-btn btn-tn' aria-label='Cancel authentication'>Cancel</button>",
                             ], 600, true);
                             this.enableAuthCancel(issuer);
                         }
@@ -811,7 +827,7 @@ var Client = (function () {
                         res = _a.sent();
                         logger(2, "proof received at ", window.location.href);
                         logger(2, "Ticket proof successfully validated.");
-                        this.eventSender("token-proof", { data: res.data, issuer: issuer });
+                        this.eventSender("token-proof", { data: res.data, error: null, issuer: issuer });
                         return [3, 5];
                     case 4:
                         err_2 = _a.sent();
@@ -819,7 +835,7 @@ var Client = (function () {
                         if (err_2.message === "WALLET_REQUIRED") {
                             return [2, this.handleWalletRequired(authRequest)];
                         }
-                        errorHandler(err_2, 'error', function () { return _this.handleProofError(err_2, issuer); }, null, false, true);
+                        errorHandler(err_2, "error", function () { return _this.handleProofError(err_2, issuer); }, null, false, true);
                         return [3, 5];
                     case 5:
                         if (this.ui) {
@@ -833,11 +849,11 @@ var Client = (function () {
     };
     Client.prototype.enableAuthCancel = function (issuer) {
         var _this = this;
-        waitForElementToExist('.cancel-auth-btn').then(function (cancelAuthButton) {
+        waitForElementToExist(".cancel-auth-btn").then(function (cancelAuthButton) {
             cancelAuthButton.onclick = function () {
-                var err = 'User cancelled authentication';
+                var err = "User cancelled authentication";
                 _this.ui.showError(err);
-                _this.eventSender("token-proof", { issuer: issuer, err: err, data: null });
+                _this.eventSender("token-proof", { issuer: issuer, error: err, data: null });
             };
         });
     };
@@ -860,7 +876,8 @@ var Client = (function () {
                         _a.sent();
                         return [2, this.authenticate(authRequest)];
                     case 4: return [2, new Promise(function (resolve, reject) {
-                            _this.ui.updateUI("wallet", { connectCallback: function () { return __awaiter(_this, void 0, void 0, function () {
+                            _this.ui.updateUI("wallet", {
+                                connectCallback: function () { return __awaiter(_this, void 0, void 0, function () {
                                     var res, e_4;
                                     return __generator(this, function (_a) {
                                         switch (_a.label) {
@@ -881,7 +898,8 @@ var Client = (function () {
                                             case 4: return [2];
                                         }
                                     });
-                                }); } });
+                                }); },
+                            });
                         })];
                 }
             });
@@ -890,10 +908,15 @@ var Client = (function () {
     Client.prototype.handleProofError = function (err, issuer) {
         if (this.ui)
             this.ui.showError(err);
-        this.eventSender("token-proof", { issuer: issuer, error: err, data: null, });
+        this.eventSender("token-proof", { issuer: issuer, error: err, data: null });
     };
     Client.prototype.eventSender = function (eventName, data) {
-        this.on(eventName, null, data);
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                Promise.resolve(this.on(eventName, null, data));
+                return [2];
+            });
+        });
     };
     Client.prototype.getOutletConfigForCurrentOrigin = function () {
         var allIssuers = this.tokenStore.getCurrentIssuers();
@@ -901,7 +924,7 @@ var Client = (function () {
         Object.keys(allIssuers).forEach(function (key) {
             var issuerConfig = allIssuers[key];
             try {
-                if ((new URL(issuerConfig.tokenOrigin)).origin === document.location.origin) {
+                if (new URL(issuerConfig.tokenOrigin).origin === document.location.origin) {
                     currentIssuers.push(issuerConfig);
                 }
             }
@@ -922,7 +945,7 @@ var Client = (function () {
             var issuerConfig = allIssuers[key];
             var thisOneSameOrigin = false;
             try {
-                if ((new URL(issuerConfig.tokenOrigin)).origin === document.location.origin) {
+                if (new URL(issuerConfig.tokenOrigin).origin === document.location.origin) {
                     thisOneSameOrigin = true;
                 }
             }
@@ -948,14 +971,14 @@ var Client = (function () {
                                 action: OutletAction.MAGIC_URL,
                                 origin: url.origin + url.pathname,
                                 data: {
-                                    urlParams: params
-                                }
+                                    urlParams: params,
+                                },
                             }, this.config.messagingForceTab)];
                     case 1:
                         res = _a.sent();
                         if (res.evt === OutletResponseAction.ISSUER_TOKENS)
                             return [2, res.data.tokens];
-                        errorHandler(res.errors.join("\n"), 'error', null, false, true);
+                        errorHandler(res.errors.join("\n"), "error", null, false, true);
                         return [2];
                 }
             });
@@ -963,10 +986,10 @@ var Client = (function () {
     };
     Client.prototype.on = function (type, callback, data) {
         requiredParams(type, "Event type is not defined");
-        if ((type === 'tokens' || type === 'tokens-selected') && callback) {
+        if ((type === "tokens" || type === "tokens-selected") && callback) {
             this.readTokensFromUrl();
         }
-        if (type === 'token-proof' && callback) {
+        if (type === "token-proof" && callback) {
             logger(2, "token-proof listener atteched. check URL HASH for proof callbacks.");
             var action = this.getDataFromQuery("action");
             if (action === "proof-callback") {

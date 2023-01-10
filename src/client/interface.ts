@@ -75,3 +75,22 @@ export interface AuthenticateInterface {
 }
 
 export type TokenNegotiatorEvents = 'token-proof' | 'connected-wallet' | 'disconnected-wallet' | 'tokens-selected' | 'tokens' | 'network-change' | 'error';
+
+export interface EventSenderTokenProof {
+	issuer: string,
+	error: any | null,
+	data?: Object
+}
+export interface EventSenderError {
+	issuer: string,
+	error: Error
+}
+export interface EventSenderTokensSelected {
+	selectedTokens: Object
+}
+export interface EventSenderConnectedWallet {
+	data: Object | null
+}
+export interface EventSenderDisconnectedWallet {
+	data: null
+}
