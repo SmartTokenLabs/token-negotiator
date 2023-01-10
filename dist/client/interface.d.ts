@@ -72,7 +72,7 @@ export type TokenNegotiatorEvents = 'token-proof' | 'connected-wallet' | 'discon
 export interface EventSenderTokenProof {
     issuer: string;
     error: any | null;
-    data?: Object;
+    data: Object | null;
 }
 export interface EventSenderError {
     issuer: string;
