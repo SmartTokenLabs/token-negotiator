@@ -17,13 +17,18 @@ on:
 jobs:
   tn-p1:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v3
+
       - uses: actions/setup-node@v3
         with:
           node-version: 16
           cache: "npm"
           cache-dependency-path: package-lock.json
+
       - name: install dependencies
         run: |
           npm ci
@@ -41,19 +46,53 @@ jobs:
           USE_GITHUB_PACKAGES: ${{ inputs.use_github_packages }}
           GPR_USER: ${{ secrets.GPR_USER }}
           GPR_KEY: ${{ secrets.GPR_KEY }}
+
       - name: build
         run: |
           npm run build
           npm run build-umd
+
       - name: test
         uses: ArtiomTr/jest-coverage-report-action@v2
         with:
+          annotations: failed-tests
           test-script: npm run test
+
       - uses: actions/upload-artifact@v3
         with:
           name: test-report
           path: reports/
+
       - uses: actions/upload-pages-artifact@v1
         if: github.event_name == 'push'
         with:
           path: token-negotiator-dist/
+
+      - name: "Setup registry"
+        if: github.event_name == 'push' && contains('refs/heads/staging refs/heads/main', github.ref)
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16.x'
+          registry-url: 'https://npm.pkg.github.com'
+
+      - uses: actions/delete-package-versions@v4
+        with:
+          package-version-ids:
+
+      - name: "Publish NPM snapshot"
+        if: github.event_name == 'push' && contains('refs/heads/staging refs/heads/main', github.ref)
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SNAPSHOT_VERSION: ${{ github.ref }}
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          SNAP_TAG="SNAPSHOT-$SNAPSHOT_VERSION"
+          ./scripts/set_version.js "$CURRENT_VERSION-$SNAP_TAG.${GITHUB_SHA::6}"
+          npm publish --tag "$SNAP_TAG" --ignore-prepublish --access restricted
+
+      - uses: actions/delete-package-versions@v4
+        with:
+          package-name: token-negotiator
+          package-type: npm
+          min-versions-to-keep: 4
+          delete-only-pre-release-versions: "true"

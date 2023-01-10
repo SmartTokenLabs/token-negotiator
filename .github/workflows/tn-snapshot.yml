@@ -48,5 +48,5 @@ jobs:
         with:
           package-name: token-negotiator
           package-type: npm
-          min-versions-to-keep: 5
+          min-versions-to-keep: 4
           delete-only-pre-release-versions: "true"
