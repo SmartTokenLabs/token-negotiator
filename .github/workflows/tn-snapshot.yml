@@ -40,6 +40,6 @@ jobs:
           SNAPSHOT_VERSION: ${{ github.ref }}
         run: |
           CURRENT_VERSION=$(node -p "require('./package.json').version")
-          NEW_VERSION="SNAPSHOT-%{SNAPSHOT_VERSION}"
+          NEW_VERSION="SNAPSHOT-$SNAPSHOT_VERSION"
           sed -i '' "s/${CURRENT_VERSION}/${NEW_VERSION}/" package.json
           npm publish --tag SNAPSHOT --ignore-prepublish
