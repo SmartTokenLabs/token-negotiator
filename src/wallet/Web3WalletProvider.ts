@@ -2,7 +2,6 @@ import { ethers } from "ethers";
 import { logger } from "../utils";
 import {SafeConnectOptions} from "./SafeConnectProvider";
 import {Client} from "../client";
-import { CUSTOM_RPCS_FOR_WC_V2, WC_V2_CHAINS } from "./WalletConnectProvider";
 
 interface WalletConnectionState {
 	[index: string]: WalletConnection
@@ -257,9 +256,9 @@ export class Web3WalletProvider {
 
 		logger(2, 'connect Wallet Connect V2');
 
-		const walletConnectProvider = await import("./WalletConnectProvider");
+		const walletConnectProvider = await import("./WalletConnectV2Provider");
 
-		const universalWalletConnect = await walletConnectProvider.getWalletConnectUniversalProviderInstance();
+		const universalWalletConnect = await walletConnectProvider.getWalletConnectV2ProviderInstance();
 
 		let QRCodeModal;
 
@@ -289,8 +288,6 @@ export class Web3WalletProvider {
 
 			let pairing;
 
-			console.log('CUSTOM_RPCS_FOR_WC_V2 ==>', CUSTOM_RPCS_FOR_WC_V2.toString());
-
 			await universalWalletConnect.connect({
 				namespaces: {
 					eip155: {
@@ -301,9 +298,9 @@ export class Web3WalletProvider {
 							"personal_sign",
 							"eth_signTypedData",
 						],
-						chains: WC_V2_CHAINS,
+						chains: walletConnectProvider.WC_V2_CHAINS,
 						events: ["chainChanged", "accountsChanged"],
-						rpcMap: CUSTOM_RPCS_FOR_WC_V2
+						rpcMap: walletConnectProvider.CUSTOM_RPCS_FOR_WC_V2
 						// rpcMap: {
 						// 	1: `https://mainnet.infura.io/v3/9f79b2f9274344af90b8d4e244b580ef`
 						// }
