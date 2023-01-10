@@ -42,5 +42,5 @@ jobs:
           CURRENT_VERSION=$(node -p "require('./package.json').version")
           NEW_VERSION="SNAPSHOT-$SNAPSHOT_VERSION"
           ./scripts/set_version.js "$CURRENT_VERSION-$NEW_VERSION"
-          npm unpublish "token-negotiator@$CURRENT_VERSION-$NEW_VERSION" || true
+          npm unpublish -f "token-negotiator@$CURRENT_VERSION-$NEW_VERSION" || true
           npm publish --tag "$NEW_VERSION" --ignore-prepublish
