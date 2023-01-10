@@ -13,7 +13,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
-        while (g && (g = 0, op[0] && (_ = 0)), _) try {
+        while (_) try {
             if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
             if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
@@ -295,40 +295,37 @@ var Client = (function () {
     };
     Client.prototype.enrichTokenLookupDataOnChainTokens = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var issuers, _a, _b, _c, _i, issuer, tokenData, lookupData, e_2;
-            return __generator(this, function (_d) {
-                switch (_d.label) {
+            var issuers, _a, _b, _i, issuer, tokenData, lookupData, e_2;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
                     case 0:
                         this.issuersLoaded = false;
                         this.triggerUiUpdateCallback(0);
                         issuers = this.tokenStore.getCurrentIssuers(true);
-                        _a = issuers;
-                        _b = [];
-                        for (_c in _a)
-                            _b.push(_c);
+                        _a = [];
+                        for (_b in issuers)
+                            _a.push(_b);
                         _i = 0;
-                        _d.label = 1;
+                        _c.label = 1;
                     case 1:
-                        if (!(_i < _b.length)) return [3, 6];
-                        _c = _b[_i];
-                        if (!(_c in _a)) return [3, 5];
-                        issuer = _c;
+                        if (!(_i < _a.length)) return [3, 6];
+                        issuer = _a[_i];
                         tokenData = issuers[issuer];
                         if (tokenData.title)
                             return [3, 5];
-                        _d.label = 2;
+                        _c.label = 2;
                     case 2:
-                        _d.trys.push([2, 4, , 5]);
+                        _c.trys.push([2, 4, , 5]);
                         return [4, getNftCollection(tokenData)];
                     case 3:
-                        lookupData = _d.sent();
+                        lookupData = _c.sent();
                         if (lookupData) {
                             lookupData.onChain = true;
                             this.tokenStore.updateTokenLookupStore(issuer, lookupData);
                         }
                         return [3, 5];
                     case 4:
-                        e_2 = _d.sent();
+                        e_2 = _c.sent();
                         logger(2, "Failed to load contract data for " + issuer + ": " + e_2.message);
                         return [3, 5];
                     case 5:
@@ -451,39 +448,36 @@ var Client = (function () {
     };
     Client.prototype.tokenAutoLoad = function (onLoading, onComplete, refresh) {
         return __awaiter(this, void 0, void 0, function () {
-            var count, _a, _b, _c, _i, issuerKey, tokens, tokens_1, e_3;
-            return __generator(this, function (_d) {
-                switch (_d.label) {
+            var count, _a, _b, _i, issuerKey, tokens, tokens_1, e_3;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
                     case 0:
                         if (this.config.autoLoadTokens === false)
                             return [2];
                         this.cancelAutoload = false;
                         count = 1;
-                        _a = this.tokenStore.getCurrentIssuers();
-                        _b = [];
-                        for (_c in _a)
-                            _b.push(_c);
+                        _a = [];
+                        for (_b in this.tokenStore.getCurrentIssuers())
+                            _a.push(_b);
                         _i = 0;
-                        _d.label = 1;
+                        _c.label = 1;
                     case 1:
-                        if (!(_i < _b.length)) return [3, 7];
-                        _c = _b[_i];
-                        if (!(_c in _a)) return [3, 6];
-                        issuerKey = _c;
+                        if (!(_i < _a.length)) return [3, 7];
+                        issuerKey = _a[_i];
                         tokens = this.tokenStore.getIssuerTokens(issuerKey);
                         if (!refresh && (tokens === null || tokens === void 0 ? void 0 : tokens.length) > 0)
                             return [3, 6];
                         onLoading(issuerKey);
-                        _d.label = 2;
+                        _c.label = 2;
                     case 2:
-                        _d.trys.push([2, 4, , 5]);
+                        _c.trys.push([2, 4, , 5]);
                         return [4, this.connectTokenIssuer(issuerKey)];
                     case 3:
-                        tokens_1 = _d.sent();
+                        tokens_1 = _c.sent();
                         onComplete(issuerKey, tokens_1);
                         return [3, 5];
                     case 4:
-                        e_3 = _d.sent();
+                        e_3 = _c.sent();
                         e_3.message = "Failed to load " + issuerKey + ": " + e_3.message;
                         logger(2, e_3.message);
                         this.eventSender.emitErrorToClient(e_3, issuerKey);
@@ -495,7 +489,7 @@ var Client = (function () {
                             return [3, 6];
                         if (this.cancelAutoload || (this.config.autoLoadTokens !== true && count > this.config.autoLoadTokens))
                             return [3, 7];
-                        _d.label = 6;
+                        _c.label = 6;
                     case 6:
                         _i++;
                         return [3, 1];
@@ -509,23 +503,23 @@ var Client = (function () {
     };
     Client.prototype.setPassiveNegotiationWebTokens = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var issuers, action, _loop_1, this_1, _a, _b, _c, _i, issuer;
+            var issuers, action, _loop_1, this_1, _a, _b, _i, issuer;
             var _this = this;
-            return __generator(this, function (_d) {
-                switch (_d.label) {
+            return __generator(this, function (_c) {
+                switch (_c.label) {
                     case 0:
                         issuers = this.tokenStore.getCurrentIssuers(false);
                         action = this.getDataFromQuery("action");
                         _loop_1 = function (issuer) {
                             var tokens, issuerConfig, resposeIssuer, resposeTokensEncoded, err_1;
-                            return __generator(this, function (_e) {
-                                switch (_e.label) {
+                            return __generator(this, function (_d) {
+                                switch (_d.label) {
                                     case 0:
                                         tokens = void 0;
                                         issuerConfig = this_1.tokenStore.getCurrentIssuers()[issuer];
-                                        _e.label = 1;
+                                        _d.label = 1;
                                     case 1:
-                                        _e.trys.push([1, 6, , 7]);
+                                        _d.trys.push([1, 6, , 7]);
                                         if (!((new URL(issuerConfig.tokenOrigin)).origin === document.location.origin)) return [3, 2];
                                         tokens = this_1.loadLocalOutletTokens(issuerConfig);
                                         return [3, 5];
@@ -544,11 +538,11 @@ var Client = (function () {
                                         return [3, 5];
                                     case 3: return [4, this_1.loadRemoteOutletTokens(issuerConfig)];
                                     case 4:
-                                        tokens = _e.sent();
-                                        _e.label = 5;
+                                        tokens = _d.sent();
+                                        _d.label = 5;
                                     case 5: return [3, 7];
                                     case 6:
-                                        err_1 = _e.sent();
+                                        err_1 = _d.sent();
                                         errorHandler('popup error', 'error', function () { return _this.eventSender.emitErrorToClient(err_1, issuer); }, null, true, false);
                                         return [2, "continue"];
                                     case 7:
@@ -560,21 +554,18 @@ var Client = (function () {
                             });
                         };
                         this_1 = this;
-                        _a = issuers;
-                        _b = [];
-                        for (_c in _a)
-                            _b.push(_c);
+                        _a = [];
+                        for (_b in issuers)
+                            _a.push(_b);
                         _i = 0;
-                        _d.label = 1;
+                        _c.label = 1;
                     case 1:
-                        if (!(_i < _b.length)) return [3, 4];
-                        _c = _b[_i];
-                        if (!(_c in _a)) return [3, 3];
-                        issuer = _c;
+                        if (!(_i < _a.length)) return [3, 4];
+                        issuer = _a[_i];
                         return [5, _loop_1(issuer)];
                     case 2:
-                        _d.sent();
-                        _d.label = 3;
+                        _c.sent();
+                        _c.label = 3;
                     case 3:
                         _i++;
                         return [3, 1];
@@ -621,36 +612,33 @@ var Client = (function () {
     };
     Client.prototype.setPassiveNegotiationOnChainTokens = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var issuers, walletProvider, _a, _b, _c, _i, issuerKey, issuer, tokens, err_2;
-            return __generator(this, function (_d) {
-                switch (_d.label) {
+            var issuers, walletProvider, _a, _b, _i, issuerKey, issuer, tokens, err_2;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
                     case 0:
                         issuers = this.tokenStore.getCurrentIssuers(true);
                         return [4, this.getWalletProvider()];
                     case 1:
-                        walletProvider = _d.sent();
-                        _a = issuers;
-                        _b = [];
-                        for (_c in _a)
-                            _b.push(_c);
+                        walletProvider = _c.sent();
+                        _a = [];
+                        for (_b in issuers)
+                            _a.push(_b);
                         _i = 0;
-                        _d.label = 2;
+                        _c.label = 2;
                     case 2:
-                        if (!(_i < _b.length)) return [3, 7];
-                        _c = _b[_i];
-                        if (!(_c in _a)) return [3, 6];
-                        issuerKey = _c;
+                        if (!(_i < _a.length)) return [3, 7];
+                        issuerKey = _a[_i];
                         issuer = issuers[issuerKey];
-                        _d.label = 3;
+                        _c.label = 3;
                     case 3:
-                        _d.trys.push([3, 5, , 6]);
+                        _c.trys.push([3, 5, , 6]);
                         return [4, getNftTokens(issuer, walletProvider.getConnectedWalletData()[0].address)];
                     case 4:
-                        tokens = _d.sent();
+                        tokens = _c.sent();
                         this.tokenStore.setTokens(issuerKey, tokens);
                         return [3, 6];
                     case 5:
-                        err_2 = _d.sent();
+                        err_2 = _c.sent();
                         logger(2, err_2);
                         this.eventSender.emitErrorToClient(err_2, issuerKey);
                         return [3, 6];

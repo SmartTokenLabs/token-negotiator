@@ -35,7 +35,7 @@ export interface IssuerConfigInterface {
     noTokenMsg?: string;
     hideToggle?: boolean;
 }
-export type Issuer = OffChainTokenConfig | SolanaIssuerConfig | OnChainTokenConfig;
+export declare type Issuer = OffChainTokenConfig | SolanaIssuerConfig | OnChainTokenConfig;
 export interface NegotiationInterface {
     type: string;
     issuers?: Issuer[];
@@ -68,4 +68,4 @@ export interface AuthenticateInterface {
     options?: any;
     blockchain?: string;
 }
-export type TokenNegotiatorEvents = 'token-proof' | 'connected-wallet' | 'disconnected-wallet' | 'tokens-selected' | 'tokens' | 'network-change' | 'error';
+export declare type TokenNegotiatorEvents = 'token-proof' | 'connected-wallet' | 'disconnected-wallet' | 'tokens-selected' | 'tokens' | 'network-change' | 'error';

@@ -4,7 +4,7 @@ interface TokenLookup {
         timestamp: number;
     };
 }
-type TokenConfig = (OnChainTokenConfig | OffChainTokenConfig | SolanaIssuerConfig);
+declare type TokenConfig = (OnChainTokenConfig | OffChainTokenConfig | SolanaIssuerConfig);
 export declare class TokenStore {
     private autoEnableTokens;
     private tokenPersistenceTTL;

@@ -13,7 +13,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
-        while (g && (g = 0, op[0] && (_ = 0)), _) try {
+        while (_) try {
             if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
             if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
@@ -36,7 +36,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 import { ethers } from "ethers";
 import { logger } from "../utils";
-import { CUSTOM_RPCS_FOR_WC_V2, WC_V2_CHAINS } from "./WalletConnectProvider";
 var Web3WalletProvider = (function () {
     function Web3WalletProvider(client, safeConnectOptions) {
         this.connections = {};
@@ -80,9 +79,9 @@ var Web3WalletProvider = (function () {
     };
     Web3WalletProvider.prototype.loadConnections = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var data, state, _a, _b, _c, _i, address, connection, e_1;
-            return __generator(this, function (_d) {
-                switch (_d.label) {
+            var data, state, _a, _b, _i, address, connection, e_1;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
                     case 0:
                         data = localStorage.getItem(Web3WalletProvider.LOCAL_STORAGE_KEY);
                         if (!data)
@@ -90,27 +89,24 @@ var Web3WalletProvider = (function () {
                         state = JSON.parse(data);
                         if (!state)
                             return [2];
-                        _a = state;
-                        _b = [];
-                        for (_c in _a)
-                            _b.push(_c);
+                        _a = [];
+                        for (_b in state)
+                            _a.push(_b);
                         _i = 0;
-                        _d.label = 1;
+                        _c.label = 1;
                     case 1:
-                        if (!(_i < _b.length)) return [3, 6];
-                        _c = _b[_i];
-                        if (!(_c in _a)) return [3, 5];
-                        address = _c;
+                        if (!(_i < _a.length)) return [3, 6];
+                        address = _a[_i];
                         connection = state[address];
-                        _d.label = 2;
+                        _c.label = 2;
                     case 2:
-                        _d.trys.push([2, 4, , 5]);
+                        _c.trys.push([2, 4, , 5]);
                         return [4, this.connectWith(connection.providerType, true)];
                     case 3:
-                        _d.sent();
+                        _c.sent();
                         return [3, 5];
                     case 4:
-                        e_1 = _d.sent();
+                        e_1 = _c.sent();
                         console.log("Wallet couldn't connect: " + e_1.message);
                         delete state[address];
                         this.saveConnections();
@@ -268,10 +264,10 @@ var Web3WalletProvider = (function () {
                 switch (_a.label) {
                     case 0:
                         logger(2, 'connect Wallet Connect V2');
-                        return [4, import("./WalletConnectProvider")];
+                        return [4, import("./WalletConnectV2Provider")];
                     case 1:
                         walletConnectProvider = _a.sent();
-                        return [4, walletConnectProvider.getWalletConnectUniversalProviderInstance()];
+                        return [4, walletConnectProvider.getWalletConnectV2ProviderInstance()];
                     case 2:
                         universalWalletConnect = _a.sent();
                         universalWalletConnect.on("display_uri", function (uri) { return __awaiter(_this, void 0, void 0, function () {
@@ -300,7 +296,6 @@ var Web3WalletProvider = (function () {
                         });
                         if (!!checkConnectionOnly) return [3, 4];
                         pairing = void 0;
-                        console.log('CUSTOM_RPCS_FOR_WC_V2 ==>', CUSTOM_RPCS_FOR_WC_V2.toString());
                         return [4, universalWalletConnect.connect({
                                 namespaces: {
                                     eip155: {
@@ -311,9 +306,9 @@ var Web3WalletProvider = (function () {
                                             "personal_sign",
                                             "eth_signTypedData",
                                         ],
-                                        chains: WC_V2_CHAINS,
+                                        chains: walletConnectProvider.WC_V2_CHAINS,
                                         events: ["chainChanged", "accountsChanged"],
-                                        rpcMap: CUSTOM_RPCS_FOR_WC_V2
+                                        rpcMap: walletConnectProvider.CUSTOM_RPCS_FOR_WC_V2
                                     },
                                 },
                                 pairingTopic: pairing === null || pairing === void 0 ? void 0 : pairing.topic,

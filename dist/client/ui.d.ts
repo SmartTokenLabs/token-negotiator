@@ -1,9 +1,9 @@
 import { Client } from "./index";
 import { ViewInterface, ViewComponent } from "./views/view-interface";
-export type UIType = "popup" | "inline";
-export type PopupPosition = 'bottom-right' | 'bottom-left' | 'top-left' | 'top-right';
-export type UItheme = 'light' | 'dark';
-export type ViewType = "start" | "main" | "wallet";
+export declare type UIType = "popup" | "inline";
+export declare type PopupPosition = 'bottom-right' | 'bottom-left' | 'top-left' | 'top-right';
+export declare type UItheme = 'light' | 'dark';
+export declare type ViewType = "start" | "main" | "wallet";
 export interface UIOptionsInterface {
     uiType?: UIType;
     containerElement?: string;

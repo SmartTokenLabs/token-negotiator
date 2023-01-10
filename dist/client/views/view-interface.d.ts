@@ -3,8 +3,8 @@ import { Ui } from "../ui";
 export interface ViewConstructor<T> {
     new (client: Client, popup: Ui, viewContainer: any, params: any): T;
 }
-export type ViewFactory = (client: Client, popup: Ui, viewContainer: any, params: any) => ViewInterface;
-export type ViewComponent = ViewFactory | ViewConstructor<ViewInterface>;
+export declare type ViewFactory = (client: Client, popup: Ui, viewContainer: any, params: any) => ViewInterface;
+export declare type ViewComponent = ViewFactory | ViewConstructor<ViewInterface>;
 export interface ViewInterface {
     client: Client;
     ui: Ui;

@@ -4,7 +4,7 @@ export declare enum SafeConnectAction {
     CONNECT = "connect",
     NEW_CHALLENGE = "new_challenge"
 }
-export type ProofType = "address_attest" | "simple_challenge" | "nft_attest";
+export declare type ProofType = "address_attest" | "simple_challenge" | "nft_attest";
 export interface SafeConnectOptions {
     url: string;
     initialProof: ProofType | false;
