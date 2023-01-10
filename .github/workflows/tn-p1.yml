@@ -76,10 +76,6 @@ jobs:
           node-version: '16.x'
           registry-url: 'https://npm.pkg.github.com'
 
-      - uses: actions/delete-package-versions@v4
-        with:
-          package-version-ids:
-
       - name: "Publish NPM snapshot"
         if: github.event_name == 'push' && contains('refs/heads/staging refs/heads/main', github.ref)
         env:
