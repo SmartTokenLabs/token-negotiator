@@ -18,8 +18,10 @@ jobs:
   tn-p1:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
+      checks: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v3
 
