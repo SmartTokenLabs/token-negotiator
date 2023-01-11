@@ -112,12 +112,15 @@ export function browserBlocksIframeStorage(): boolean {
 }
 
 export function shouldUseRedirectMode(redirectConfig?: "always" | "never") {
+
+	let browserData = getBrowserData();
+
 	switch (redirectConfig){
 	case "always":
 		return true;
 	case "never":
 		return false;
 	default:
-		return browserBlocksIframeStorage();
+		return isBrave() || (browserData.iOS && !isSafari());
 	}
 }

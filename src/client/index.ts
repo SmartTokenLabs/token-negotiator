@@ -14,7 +14,7 @@ import { isUserAgentSupported, validateBlockchain } from '../utils/support/isSup
 import Web3WalletProvider from '../wallet/Web3WalletProvider';
 import {LocalOutlet} from "../outlet/localOutlet";
 import {Outlet, OutletInterface} from "../outlet";
-import { browserBlocksIframeStorage } from "../utils/support/getBrowserData";
+import { shouldUseRedirectMode } from "../utils/support/getBrowserData";
 import { waitForElementToExist, errorHandler } from '../utils';
 import { VERSION } from "../version"
 
