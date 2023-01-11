@@ -226,13 +226,12 @@ describe('client spec', () => {
 		}).toThrow('Event type is not defined');
 	});
   
-	// TODO include logic to detect the event recieved from triggering hooks
 	test('tokenNegotiatorClient method eventSender event hook functions', async () => {
 		const tokenNegotiatorClient = getOffChainConfigClient();
-		tokenNegotiatorClient.eventSender.emitAllTokensToClient([]);
-		tokenNegotiatorClient.eventSender.emitSelectedTokensToClient();
-		tokenNegotiatorClient.eventSender.emitProofToClient('test', 'devcon');
-		tokenNegotiatorClient.eventSender.emitNetworkChange('0x1');
+		tokenNegotiatorClient.eventSender("emitAllTokensToClient", []);
+		tokenNegotiatorClient.eventSender("emitSelectedTokensToClient", { selectedTokens: null });
+		tokenNegotiatorClient.eventSender("emitProofToClient", { data: 'test', issuer: 'devcon', error: null });
+		tokenNegotiatorClient.eventSender("emitNetworkChange", '0x1');
 	});
   
 	test('tokenNegotiatorClient method connectTokenIssuer with unknown issuer', async () => {
