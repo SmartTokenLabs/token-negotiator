@@ -98,7 +98,7 @@ export class Web3WalletProvider {
 			try {
 				await this.connectWith(connection.providerType, true);
 			} catch(e){
-				console.log("Wallet couldn't connect" + e.message);
+				console.log("Wallet couldn't connect: " + e.message);
 				delete state[address];
 				this.saveConnections();
 				this.emitSavedConnection(address);
@@ -124,9 +124,7 @@ export class Web3WalletProvider {
 			return address;
              
 		} else {
-
 			throw new Error('Wallet type not found');
-
 		}
 
 	}
@@ -163,7 +161,6 @@ export class Web3WalletProvider {
 	}
 
 	private async registerProvider(provider: ethers.providers.Web3Provider, providerName: string){
-
 		const accounts = await provider.listAccounts();
 		const chainId = (await provider.detectNetwork()).chainId;
 
@@ -246,13 +243,85 @@ export class Web3WalletProvider {
 			}
 
 			walletConnect.enable().then(() => {
-				const provider = new ethers.providers.Web3Provider(walletConnect);
+				const provider = new ethers.providers.Web3Provider(walletConnect, "any");
 
 				resolve(this.registerProvider(provider, "WalletConnect"));
 			}).catch((e) => reject(e));
 
 		})
 
+	}
+
+	async WalletConnectV2 (checkConnectionOnly: boolean) {
+
+		logger(2, 'connect Wallet Connect V2');
+
+		const walletConnectProvider = await import("./WalletConnectV2Provider");
+
+		const universalWalletConnect = await walletConnectProvider.getWalletConnectV2ProviderInstance();
+
+		let QRCodeModal;
+
+		universalWalletConnect.on("display_uri", async (uri: string) => {
+			console.log("EVENT", "QR Code Modal open");
+
+			QRCodeModal = (await import("@walletconnect/qrcode-modal")).default;
+	
+			QRCodeModal.open(uri, () => {
+				this.client.getUi().showError('User closed modal');
+			});
+		});
+  
+		// Subscribe to session delete
+		universalWalletConnect.on("session_delete", ({ id, topic }: { id: number; topic: string }) => {
+			console.log("WC V2 EVENT", "session_deleted");
+			// TODO: There is currently a bug in the universal provider that prevents this handler from being called.
+			//  After this is fixed, this should handle the event correctly
+			//  https://github.com/WalletConnect/walletconnect-monorepo/issues/1772
+			this.client.disconnectWallet();
+			const ui = this.client.getUi();
+			if (ui)
+				ui.updateUI("wallet");
+		});
+
+		if (!checkConnectionOnly){
+
+			let pairing;
+
+			await universalWalletConnect.connect({
+				namespaces: {
+					eip155: {
+						methods: [
+							"eth_sendTransaction",
+							"eth_signTransaction",
+							"eth_sign",
+							"personal_sign",
+							"eth_signTypedData",
+						],
+						chains: walletConnectProvider.WC_V2_CHAINS,
+						events: ["chainChanged", "accountsChanged"],
+						rpcMap: walletConnectProvider.CUSTOM_RPCS_FOR_WC_V2
+						// rpcMap: {
+						// 	1: `https://mainnet.infura.io/v3/9f79b2f9274344af90b8d4e244b580ef`
+						// }
+					},
+				},
+				pairingTopic: pairing?.topic,
+			});
+
+			QRCodeModal.close();
+		}
+
+		return new Promise((resolve, reject) => {
+			universalWalletConnect.enable().then(() => {
+				const provider = new ethers.providers.Web3Provider(universalWalletConnect);
+
+				resolve(this.registerProvider(provider, "WalletConnectV2"));
+			}).catch((e) => {
+				reject(e)
+			});
+
+		})
 	}
 
 	async Torus (checkConnectionOnly: boolean) {
@@ -265,7 +334,7 @@ export class Web3WalletProvider {
 
 		await torus.login();
 
-		const provider = new ethers.providers.Web3Provider(torus.provider);
+		const provider = new ethers.providers.Web3Provider(torus.provider, "any");
 
 		return this.registerProvider(provider, "Torus");
 

@@ -14,10 +14,11 @@ import { isUserAgentSupported, validateBlockchain } from '../utils/support/isSup
 import Web3WalletProvider from '../wallet/Web3WalletProvider';
 import {LocalOutlet} from "../outlet/localOutlet";
 import {Outlet, OutletInterface} from "../outlet";
-import {shouldUseRedirectMode} from "../utils/support/getBrowserData";
+import { browserBlocksIframeStorage } from "../utils/support/getBrowserData";
 import { waitForElementToExist, errorHandler } from '../utils';
+import { VERSION } from "../version"
 
-if(typeof window !== "undefined") window.tn = { version: "2.2.0" };
+if(typeof window !== "undefined") window.tn = { VERSION };
 
 declare global {
 	interface Window {
