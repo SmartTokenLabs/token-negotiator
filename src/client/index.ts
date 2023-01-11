@@ -1,7 +1,7 @@
 import { OutletAction, OutletResponseAction, Messaging } from "./messaging";
 import { Ui, UiInterface, UItheme } from "./ui";
 import { logger, requiredParams } from "../utils";
-import { getNftCollection, getNftTokens } from "../utils/token/nftProvider";
+import { getNftCollection, getNftTokens, waitForElementToExist, errorHandler } from "../utils/token/nftProvider";
 import "./../vendor/keyShape";
 import { Authenticator } from "@tokenscript/attestation";
 import { TokenStore } from "./tokenStore";
@@ -30,9 +30,10 @@ import Web3WalletProvider from "../wallet/Web3WalletProvider";
 import { LocalOutlet } from "../outlet/localOutlet";
 import { Outlet, OutletInterface } from "../outlet";
 import { browserBlocksIframeStorage } from "../utils/support/getBrowserData";
+import { VERSION } from "../version"
 import { waitForElementToExist, errorHandler } from "../utils/index";
 
-if (typeof window !== "undefined") window.tn = { version: "2.2.0" };
+if(typeof window !== "undefined") window.tn = { VERSION };
 
 interface EventSenderTokens {
   data: any[];
