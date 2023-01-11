@@ -16,9 +16,9 @@ import {LocalOutlet} from "../outlet/localOutlet";
 import {Outlet, OutletInterface} from "../outlet";
 import { browserBlocksIframeStorage } from "../utils/support/getBrowserData";
 import { waitForElementToExist, errorHandler } from '../utils/index';
-import { version } from "../../package.json"
+import { VERSION } from "../version"
 
-if(typeof window !== "undefined") window.tn = { version };
+if(typeof window !== "undefined") window.tn = { VERSION };
 
 declare global {
 	interface Window {

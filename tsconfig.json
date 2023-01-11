@@ -20,6 +20,6 @@
     "resolveJsonModule": true
   },
   "include": ["src"],
-  "exclude": ["node_modules", "**/__tests__/*", "examples"],
+  "exclude": ["node_modules", "**/__tests__/*", "examples", "package.json"],
   "plugins": [{ "name": "typescript-plugin-css-modules" }]
 }
