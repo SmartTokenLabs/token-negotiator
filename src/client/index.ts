@@ -1,7 +1,7 @@
 
 import {OutletAction, OutletResponseAction, Messaging} from "./messaging";
 import {Ui, UiInterface, UItheme} from './ui';
-import { logger, requiredParams } from "../utils";
+import { logger, requiredParams, waitForElementToExist, errorHandler } from "../utils";
 import {getNftCollection, getNftTokens} from "../utils/token/nftProvider";
 import "./../vendor/keyShape";
 import { Authenticator } from "@tokenscript/attestation";
@@ -15,7 +15,6 @@ import Web3WalletProvider from '../wallet/Web3WalletProvider';
 import {LocalOutlet} from "../outlet/localOutlet";
 import {Outlet, OutletInterface} from "../outlet";
 import { shouldUseRedirectMode } from "../utils/support/getBrowserData";
-import { waitForElementToExist, errorHandler } from '../utils';
 import { VERSION } from "../version"
 
 if(typeof window !== "undefined") window.tn = { VERSION };
