@@ -42,19 +42,6 @@ export class Messaging {
 
 	async sendMessage(request: RequestInterfaceBase, forceTab = false, redirectUrl: false|string = false): Promise<ResponseInterfaceBase> {
 
-		if (!forceTab && this.iframeStorageSupport === null) {
-			// TODO: temp to test safari top level context access.
-			// TODO do we need this verificaton?
-			// if (document.location.hash !== "#safari-iframe-test")
-
-			// 
-				// this.iframeStorageSupport = !isMacOrIOS() && !isBrave();
-			this.iframeStorageSupport = !browserBlocksIframeStorage();
-		}
-
-		// Uncomment to test popup mode
-		// this.iframeStorageSupport = false;
-
 		logger(2,"Send request: ");
 		logger(2,request);
 
@@ -62,6 +49,19 @@ export class Messaging {
 			this.sendRedirect(request, redirectUrl);
 			return;
 		}
+
+		if (!forceTab && this.iframeStorageSupport === null) {
+			// TODO: temp to test safari top level context access.
+			// TODO do we need this verificaton?
+			// if (document.location.hash !== "#safari-iframe-test")
+
+			//
+			// this.iframeStorageSupport = !isMacOrIOS() && !isBrave();
+			this.iframeStorageSupport = !browserBlocksIframeStorage();
+		}
+
+		// Uncomment to test popup mode
+		// this.iframeStorageSupport = false;
 
 		if (!forceTab && this.iframeStorageSupport !== false){
 			try {

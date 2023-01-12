@@ -47,8 +47,8 @@ export interface NegotiationInterface {
     autoEnableTokens?: boolean;
     messagingForceTab?: boolean;
     safeConnectOptions?: SafeConnectOptions;
-    // force redirect flow in "active" mode on negotiate()
-    enableOffChainRedirectMode?: boolean;
+    // force enable/disable redirect mode. The default (undefined) is to only use redirect for browsers where iframes are not possible.
+    offChainRedirectMode?: "always" | "never";
 	tokenPersistenceTTL?: number;
     unSupportedUserAgent?: {
         authentication?: {

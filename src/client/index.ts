@@ -1,10 +1,11 @@
-import { OutletAction, OutletResponseAction, Messaging } from "./messaging";
-import { Ui, UiInterface, UItheme } from "./ui";
+
+import {OutletAction, OutletResponseAction, Messaging} from "./messaging";
+import {Ui, UiInterface, UItheme} from './ui';
 import { logger, requiredParams, waitForElementToExist, errorHandler } from "../utils";
-import { getNftCollection, getNftTokens } from "../utils/token/nftProvider";
+import {getNftCollection, getNftTokens} from "../utils/token/nftProvider";
 import "./../vendor/keyShape";
 import { Authenticator } from "@tokenscript/attestation";
-import { TokenStore } from "./tokenStore";
+import {TokenStore} from "./tokenStore";
 import {
 	OffChainTokenConfig,
 	OnChainTokenConfig,
@@ -19,17 +20,14 @@ import {
 	EventSenderDisconnectedWallet,
 	EventSenderError
 } from "./interface";
-import { SignedUNChallenge } from "./auth/signedUNChallenge";
-import { TicketZKProof } from "./auth/ticketZKProof";
-import { AuthenticationMethod } from "./auth/abstractAuthentication";
-import {
-	isUserAgentSupported,
-	validateBlockchain,
-} from "../utils/support/isSupported";
-import Web3WalletProvider from "../wallet/Web3WalletProvider";
-import { LocalOutlet } from "../outlet/localOutlet";
-import { Outlet, OutletInterface } from "../outlet";
-import { browserBlocksIframeStorage } from "../utils/support/getBrowserData";
+import {SignedUNChallenge} from "./auth/signedUNChallenge";
+import {TicketZKProof} from "./auth/ticketZKProof";
+import {AuthenticationMethod} from "./auth/abstractAuthentication";
+import { isUserAgentSupported, validateBlockchain } from '../utils/support/isSupported';
+import Web3WalletProvider from '../wallet/Web3WalletProvider';
+import {LocalOutlet} from "../outlet/localOutlet";
+import {Outlet, OutletInterface} from "../outlet";
+import { shouldUseRedirectMode } from "../utils/support/getBrowserData";
 import { VERSION } from "../version"
 
 if(typeof window !== "undefined") window.tn = { VERSION };
@@ -39,17 +37,16 @@ interface EventSenderTokens {
 }
 
 declare global {
-  interface Window {
-    KeyshapeJS?: any;
-    tokenToggleSelection: any;
-    ethereum: any;
-    solana: any;
-    tn: unknown;
-  }
+	interface Window {
+		KeyshapeJS?: any;
+		tokenToggleSelection: any;
+		ethereum: any;
+		solana: any;
+		tn: unknown;
+	}
 }
 
-const NOT_SUPPORTED_ERROR =
-  "This browser is not supported. Please try using Chrome, Edge, FireFox or Safari.";
+const NOT_SUPPORTED_ERROR = "This browser is not supported. Please try using Chrome, Edge, FireFox or Safari.";
 
 export const defaultConfig: NegotiationInterface = {
 	type: "active",
@@ -67,7 +64,6 @@ export const defaultConfig: NegotiationInterface = {
 	autoLoadTokens: true,
 	autoEnableTokens: true,
 	messagingForceTab: false,
-	enableOffChainRedirectMode: false,
 	tokenPersistenceTTL: 600,
 	unSupportedUserAgent: {
 		authentication: {
@@ -129,6 +125,7 @@ export class Client {
 			this.urlParams = new URLSearchParams(window.location.hash.substring(1));
 			let action = this.getDataFromQuery("action");
 			logger(2, `Client() fired. Action = "${action}"`);
+			this.removeCallbackParamsFromUrl();
 		}
 
 		this.config = this.mergeConfig(defaultConfig, config);
@@ -163,10 +160,36 @@ export class Client {
 		const attest = this.getDataFromQuery("attestation");
 		const error = this.getDataFromQuery("error");
 
+		this.removeCallbackFromUrlSearchParams(this.urlParams);
+
 		this.emitRedirectProofEvent(issuer, attest, error);
 	}
 
-	private registerOutletProofEventListener() {
+	private removeCallbackParamsFromUrl(){
+
+		let params = new URLSearchParams(document.location.hash.substring(1));
+
+		params = this.removeCallbackFromUrlSearchParams(params);
+
+		document.location.hash = "#" + params.toString();
+	}
+
+	private removeCallbackFromUrlSearchParams(params: URLSearchParams, paramNames: string[] = [
+		"action",
+		"issuer",
+		"tokens",
+		"attestation",
+		"error"
+	]){
+		for (let paramName of paramNames){
+			if (params.has(paramName))
+				params.delete(paramName)
+		}
+
+		return params;
+	}
+
+	private registerOutletProofEventListener(){
 		window.addEventListener("auth-callback", (e: CustomEvent) => {
 			this.emitRedirectProofEvent(
 				e.detail.issuer,
@@ -351,16 +374,14 @@ export class Client {
 		);
 	}
 
-	public getNoTokenMsg(collectionID: string) {
+	public getNoTokenMsg (collectionID: string) {
 		const store = this.getTokenStore().getCurrentIssuers();
 		const collectionNoTokenMsg = store[collectionID]?.noTokenMsg;
 		return collectionNoTokenMsg ? collectionNoTokenMsg : "";
 	}
 
-	async negotiate(
-		issuers?: (OnChainTokenConfig | OffChainTokenConfig)[],
-		openPopup = false
-	) {
+	async negotiate(issuers?: (OnChainTokenConfig | OffChainTokenConfig)[], openPopup = false, refreshTokens = false) {
+
 		let currentIssuer = this.getOutletConfigForCurrentOrigin();
 		if (currentIssuer) {
 			logger(
@@ -386,11 +407,11 @@ export class Client {
 
 			await this.activeNegotiationStrategy(openPopup);
 		} else {
-			// TODO build logic to allow to connect with wallectConnect, Torus etc.
-			// Logic to ask user to connect to wallet when they have provided web3 tokens to negotiate with.
-			// See other TODO's in this flow.
-			// if (window.ethereum && onChainTokens.tokenKeys.length > 0) await this.web3WalletProvider.connectWith('MetaMask');
+
 			await this.enrichTokenLookupDataOnChainTokens();
+
+			if (refreshTokens)
+				this.getTokenStore().clearCachedTokens();
 
 			await this.passiveNegotiationStrategy();
 		}
@@ -440,9 +461,10 @@ export class Client {
 		let count = 1;
 
 		for (let issuerKey in this.tokenStore.getCurrentIssuers()) {
-			let tokens = this.tokenStore.getIssuerTokens(issuerKey);
+			let tokens = this.tokenStore.getIssuerTokens(issuerKey)
 
-			if (!refresh && tokens?.length > 0) continue;
+			if (!refresh && tokens != null)
+				continue;
 
 			onLoading(issuerKey);
 
@@ -499,25 +521,33 @@ export class Client {
 				) {
 					tokens = this.loadLocalOutletTokens(issuerConfig);
 				} else {
-					// TODO make solution:
-					// in case if we have multiple tokens then redirect flow will not work
-					// because page will reload on first remote token
-					let resposeIssuer = this.getDataFromQuery("issuer");
+
+					// Check response URL for redirect result for this issuer.
+					let responseIssuer = this.getDataFromQuery("issuer");
 
 					if (
-						(action === OutletAction.GET_ISSUER_TOKENS + "-response" ||
-              // have to read tokens from "proof-callback" action,
-              // in other way page will be redirected in loop
-              action === "proof-callback") &&
-            issuer === resposeIssuer
+						(
+							action === OutletAction.GET_ISSUER_TOKENS + "-response"
+							// have to read tokens from "proof-callback" action,
+							// in other way page will be redirected in loop
+							|| action === "proof-callback"
+						)
+						&& issuer === responseIssuer
 					) {
-						let resposeTokensEncoded = this.getDataFromQuery("tokens");
+						let responseTokensEncoded = this.getDataFromQuery("tokens");
 						try {
-							tokens = JSON.parse(resposeTokensEncoded);
-						} catch (e) {
+							tokens = JSON.parse(responseTokensEncoded);
+							this.removeCallbackFromUrlSearchParams(this.urlParams);
+						} catch (e){
 							logger(2, "Error parse tokens from Response. ", e);
 						}
 					} else {
+
+						tokens = this.tokenStore.getIssuerTokens(issuer);
+
+						if (tokens !== null)
+							continue;
+
 						tokens = await this.loadRemoteOutletTokens(issuerConfig);
 					}
 				}
@@ -542,6 +572,12 @@ export class Client {
 
 	readTokensFromUrl() {
 		let issuers = this.tokenStore.getCurrentIssuers(false);
+
+		let action = this.getDataFromQuery("action");
+
+		if (action !== OutletAction.GET_ISSUER_TOKENS + "-response")
+			return;
+
 		let issuer = this.getDataFromQuery("issuer");
 
 		if (!issuer) {
@@ -571,6 +607,8 @@ export class Client {
 				} catch (e) {
 					logger(2, "Error parse tokens from Response. ", e);
 				}
+
+				this.removeCallbackFromUrlSearchParams(this.urlParams);
 			}
 		} catch (err) {
 			logger(1, "Error read tokens from URL");
@@ -592,7 +630,13 @@ export class Client {
 		let issuers = this.tokenStore.getCurrentIssuers(true);
 		let walletProvider = await this.getWalletProvider();
 
-		for (let issuerKey in issuers) {
+		for (let issuerKey in issuers){
+
+			let tokens = this.tokenStore.getIssuerTokens(issuerKey);
+
+			if (tokens !== null)
+				continue;
+
 			let issuer: Issuer = issuers[issuerKey];
 
 			try {
@@ -692,10 +736,7 @@ export class Client {
 
 		if (issuer.accessRequestType) data.access = issuer.accessRequestType;
 
-		let redirectRequired =
-      this.config.enableOffChainRedirectMode &&
-      browserBlocksIframeStorage() &&
-      this.config.type === "passive";
+		const redirectRequired = shouldUseRedirectMode(this.config.offChainRedirectMode);
 
 		const res = await this.messaging.sendMessage(
 			{
@@ -705,7 +746,7 @@ export class Client {
 			},
 			this.config.messagingForceTab,
 			this.config.type === "active" ? this.ui : null,
-			redirectRequired ? this.createCurrentUrlWithoutHash() : false
+			redirectRequired ? document.location.href : false
 		);
 
 		return res.data?.tokens ?? [];
@@ -866,11 +907,11 @@ export class Client {
 
 	// eventSender overrides
 	async eventSender(
-    eventName: "tokens", 
+    eventName: "tokens",
     data: EventSenderTokens
   );
 	async eventSender(
-    eventName: "token-proof", 
+    eventName: "token-proof",
     data: EventSenderTokenProof
   );
 	async eventSender(
@@ -890,7 +931,7 @@ export class Client {
     data: string
   );
 	async eventSender(
-    eventName: "error", 
+    eventName: "error",
     data: EventSenderError
   );
 
@@ -989,8 +1030,6 @@ export class Client {
 
 			if (action === "proof-callback") {
 				this.readProofCallback();
-				// TODO This should target removal of the specific hash values of this library only.
-				document.location.hash = "";
 			} else if (action === "email-callback") {
 				let currentIssuer = this.getOutletConfigForCurrentOrigin();
 
@@ -1002,8 +1041,6 @@ export class Client {
 						outlet = null;
 					});
 				}
-				// TODO This should target removal of the specific hash values of this library only.
-				document.location.hash = "";
 			}
 		}
 

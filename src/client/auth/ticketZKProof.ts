@@ -7,6 +7,7 @@ import {UNInterface} from "./util/UN";
 import {LocalOutlet} from "../../outlet/localOutlet";
 import {OutletInterface} from "../../outlet";
 import { logger } from "../../utils";
+import {shouldUseRedirectMode} from "../../utils/support/getBrowserData";
 
 export class TicketZKProof extends AbstractAuthentication implements AuthenticationMethod {
 
@@ -21,10 +22,10 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 		if (issuerConfig.onChain === true)
 			throw new Error(this.TYPE + " is not available for off-chain tokens.");
 
-		let redirectMode: false|string = request?.options?.useRedirect || false;
+		let redirectMode: false|string = request?.options?.useRedirect || shouldUseRedirectMode(this.client.config.offChainRedirectMode) || false;
 
 		if (redirectMode)
-			redirectMode = request?.options?.redirectUrl || document.location.origin + document.location.pathname + document.location.search;
+			redirectMode = request?.options?.redirectUrl || document.location.href;
 
 		let useEthKey: UNInterface|null = null;
 
@@ -66,7 +67,7 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 			}, request.options.messagingForceTab, this.client.getUi(), redirectMode);
 
 			// Since sendMessage is an async function, we need to add a delay here to prevent an exception
-			// from being thrown as redirect code-path returns void
+			// from being thrown as redirect code-path returns void. We presume the redirect will be completed after 20 seconds
 			if (redirectMode) {
 				return new Promise((resolve, reject) => {
 					setTimeout(() => {
