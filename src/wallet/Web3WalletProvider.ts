@@ -381,7 +381,6 @@ export class Web3WalletProvider {
 
 	async flowSubscribe (fcl, currentUser) {
 		try {
-			console.log("current user ==>", currentUser);
 			if (currentUser.addr) {
 				this.registerNewWalletAddress(currentUser.addr, 1, "flow", fcl);
 	
