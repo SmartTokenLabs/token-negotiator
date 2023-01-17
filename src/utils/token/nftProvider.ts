@@ -2,7 +2,6 @@
 import { OnChainTokenConfig, Issuer, SolanaIssuerConfig, IssuerConfigInterface } from '../../client/interface';
 import { validateBlockchain } from '../support/isSupported';
 
-
 const baseURL = "https://api.token-discovery.tokenscript.org";
 
 export const getNftCollection = async (
@@ -13,6 +12,8 @@ export const getNftCollection = async (
   
 	if ('blockchain' in issuer && issuer.blockchain === "solana") {
 		query = getSolanaNftCollectionUrl(issuer as SolanaIssuerConfig, ipfsBaseUrl);
+	} else if ('blockchain' in issuer && issuer.blockchain === "flow") {
+		query = getFlowNftCollectionUrl(issuer as OnChainTokenConfig);
 	} else {
 		query = getEvmNftCollectionUrl(issuer as OnChainTokenConfig, ipfsBaseUrl);
 	}
@@ -35,6 +36,12 @@ export const getSolanaNftCollectionUrl = (issuer: SolanaIssuerConfig, ipfsBaseUr
 	return query;
 };
 
+export const getFlowNftCollectionUrl = (issuer: OnChainTokenConfig) => {
+	const {contract, chain } = issuer;
+	let query = `${baseURL}/get-token-collection?smartContract=${contract}&chain=${chain}&blockchain=flow`;
+	return query;
+};
+
 export const getNftTokens = (
 	issuer: Issuer,
 	owner: string,
@@ -43,6 +50,8 @@ export const getNftTokens = (
 	let query: string;
 	if ('blockchain' in issuer && issuer.blockchain === "solana") {
 		query = getSolanaNftTokensUrl(issuer as SolanaIssuerConfig, owner, ipfsBaseUrl);
+	} else if ('blockchain' in issuer && issuer.blockchain === "flow") {
+		query = getFlowNftTokensUrl(issuer, owner);
 	} else {
 		query = getEvmNftTokensUrl(issuer, owner, ipfsBaseUrl);
 	}
@@ -84,6 +93,14 @@ export const getSolanaNftTokensUrl = (
 	if (tokenProgram) query += `&tokenProgram=${tokenProgram}`;
 	if (collectionAddress) query += `&collectionAddress=${collectionAddress}`;
 	if (updateAuthority) query += `&updateAuthority=${updateAuthority}`;
+	return query;
+};
+
+export const getFlowNftTokensUrl = (issuer: any, owner: string) => {
+	const { contract, chain } = issuer;
+	const blockchain = validateBlockchain(issuer?.blockchain ?? "");
+	if(!contract || !chain) return undefined;
+	let query = `${baseURL}/get-owner-tokens?smartContract=${contract}&chain=${chain}&owner=${owner}&blockchain=${blockchain}`;
 	return query;
 };
 

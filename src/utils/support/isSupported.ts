@@ -59,6 +59,10 @@ export const validateBlockchain = (blockchain: string) => {
 		return "evm";
 	}
 
+	if (blockchain === "flow") {
+		return "flow";
+	}
+
 	if (SUPPORTED_EVM_BLOCKCHAINS.includes(blockchain.toLowerCase())) {
 		errorHandler("We recommend you to set `blockchain` as 'evm'.", 'warning', null, null);
 		return "evm";

@@ -381,7 +381,6 @@ export class Client {
 	}
 
 	async negotiate(issuers?: (OnChainTokenConfig | OffChainTokenConfig)[], openPopup = false, refreshTokens = false) {
-
 		let currentIssuer = this.getOutletConfigForCurrentOrigin();
 		if (currentIssuer) {
 			logger(
