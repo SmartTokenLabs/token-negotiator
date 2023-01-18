@@ -47,8 +47,8 @@ export interface NegotiationInterface {
     autoEnableTokens?: boolean;
     messagingForceTab?: boolean;
     safeConnectOptions?: SafeConnectOptions;
-    // force redirect flow in "active" mode on negotiate()
-    enableOffChainRedirectMode?: boolean;
+    // force enable/disable redirect mode. The default (undefined) is to only use redirect for browsers where iframes are not possible.
+    offChainRedirectMode?: "always" | "never";
 	tokenPersistenceTTL?: number;
     unSupportedUserAgent?: {
         authentication?: {
@@ -75,3 +75,22 @@ export interface AuthenticateInterface {
 }
 
 export type TokenNegotiatorEvents = 'token-proof' | 'connected-wallet' | 'disconnected-wallet' | 'tokens-selected' | 'tokens' | 'network-change' | 'error';
+
+export interface EventSenderTokenProof {
+	issuer: string,
+	error: any | null,
+	data: Object | null
+}
+export interface EventSenderError {
+	issuer: string,
+	error: Error
+}
+export interface EventSenderTokensSelected {
+	selectedTokens: Object
+}
+export interface EventSenderConnectedWallet {
+	data: Object | null
+}
+export interface EventSenderDisconnectedWallet {
+	data: null
+}

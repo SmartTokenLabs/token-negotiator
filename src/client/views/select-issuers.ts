@@ -147,7 +147,7 @@ export class SelectIssuers extends AbstractView {
 
 		for (let issuerKey in issuers){
 			let data = issuers[issuerKey];
-			let tokens = this.client.getTokenStore().getIssuerTokens(issuerKey);
+			let tokens = this.client.getTokenStore().getIssuerTokens(issuerKey) ?? [];
 
 			let title = data.title ?
 				data.title : data.collectionID.replace(/[-,_]+/g, " ");
@@ -240,7 +240,7 @@ export class SelectIssuers extends AbstractView {
 		} catch (err){
 			logger(2, err);
 			this.ui.showError(err);
-			this.client.eventSender.emitErrorToClient(err, issuer);
+			this.client.eventSender("error", { issuer, error: err });
 			return;
 		}
 
@@ -307,7 +307,7 @@ export class SelectIssuers extends AbstractView {
 
 		const tokenStore = this.client.getTokenStore();
 		const config = tokenStore.getCurrentIssuers()[issuer];
-		const tokenData = tokenStore.getIssuerTokens(issuer);
+		const tokenData = tokenStore.getIssuerTokens(issuer) ?? [];
 
 		if (config.title)
 			document.getElementsByClassName("headline-tn token-name")[0].innerHTML = config.title;
