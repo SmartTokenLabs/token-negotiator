@@ -940,7 +940,7 @@ export class Client {
 	}
 
 	getOutletConfigForCurrentOrigin() {
-		let allIssuers = this.tokenStore.getCurrentIssuers();
+		let allIssuers = this.tokenStore.getCurrentIssuers(false);
 		let currentIssuers = [];
 
 		Object.keys(allIssuers).forEach((key) => {
@@ -967,7 +967,7 @@ export class Client {
 	}
 
 	onlySameOrigin() {
-		let allIssuers = this.tokenStore.getCurrentIssuers();
+		let allIssuers = this.tokenStore.getCurrentIssuers(false);
 		let onlySameOriginFlag = true;
 
 		Object.keys(allIssuers).forEach((key) => {
