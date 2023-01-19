@@ -19,7 +19,7 @@
     "test-watch": "jest --watch",
     "compile-scss": "sass ./src/theme/style.scss dist/theme/style.css",
     "compile-scss-umd": "sass ./src/theme/style.scss token-negotiator-dist/theme/style.css",
-    "write-version-constant": "CURRENT_VERSION=$(node -p \"require('./package.json').version\") && echo \"// managed by build process. \nexport const VERSION = \\\"$CURRENT_VERSION\\\";\" > src/version.ts "
+    "write-version-constant": "CURRENT_VERSION=$(node -p \"require('./package.json').version\") && echo \"// do not modify directly, managed by build process. \nexport const VERSION = \\\"$CURRENT_VERSION\\\";\" > src/version.ts "
   },
   "repository": {
     "type": "git",
