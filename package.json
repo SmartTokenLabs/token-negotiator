@@ -1,6 +1,6 @@
 {
   "name": "@tokenscript/token-negotiator",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Token-negotiator a token attestation bridge between web 2.0 and 3.0.",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "npm run clean && npm run write-version-constant && tsc --outDir dist && npm run compile-scss && npm run copy-assets",
-    "build-umd": "shx rm -rf token-negotiator-dist && webpack && npm run compile-scss-umd && npm run copy-assets-umd",
+    "build-umd": "shx rm -rf token-negotiator-dist && npm run write-version-constant && webpack && npm run compile-scss-umd && npm run copy-assets-umd",
     "clean": "shx rm -rf dist",
     "copy-assets": "copyfiles ./src/vendor/*.js dist/vendor -V --flat",
     "copy-assets-umd": "copyfiles ./src/vendor/*.js token-negotiator-dist/vendor -V --flat",
@@ -19,7 +19,7 @@
     "test-watch": "jest --watch",
     "compile-scss": "sass ./src/theme/style.scss dist/theme/style.css",
     "compile-scss-umd": "sass ./src/theme/style.scss token-negotiator-dist/theme/style.css",
-    "write-version-constant": "CURRENT_VERSION=$(node -p \"require('./package.json').version\") && echo \"export const VERSION = \\\"$CURRENT_VERSION\\\";\" > src/version.ts "
+    "write-version-constant": "CURRENT_VERSION=$(node -p \"require('./package.json').version\") && echo \"// modified by build process. \nexport const VERSION = \\\"$CURRENT_VERSION\\\";\" > src/version.ts "
   },
   "repository": {
     "type": "git",
