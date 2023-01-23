@@ -10,9 +10,10 @@
   "scripts": {
     "build": "npm run clean && npm run write-version-constant && tsc --outDir dist && npm run compile-scss && npm run copy-assets",
     "build-umd": "shx rm -rf token-negotiator-dist && npm run write-version-constant && webpack && npm run compile-scss-umd && npm run copy-assets-umd",
+    "build-umd-dev": "shx rm -rf token-negotiator-dist && webpack && npm run compile-scss-umd && npm run copy-assets-umd",
     "clean": "shx rm -rf dist",
     "copy-assets": "copyfiles ./src/vendor/*.js dist/vendor -V --flat",
-    "copy-assets-umd": "copyfiles ./src/vendor/*.js token-negotiator-dist/vendor -V --flat",
+    "copy-assets-umd": "copyfiles ./src/vendor/*.js token-negotiator-dist/vendor -V --flat && copyfiles ./src/images/*.* token-negotiator-dist/images -V --flat",
     "prepublishOnly": "npm run build",
     "lint": "eslint . --quiet",
     "test": "jest",
