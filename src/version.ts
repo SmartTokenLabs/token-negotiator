@@ -1,1 +1,2 @@
-export const VERSION = '2.2.0'
+// modified by build process. 
+export const VERSION = "2.3.0";
