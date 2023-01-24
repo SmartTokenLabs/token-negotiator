@@ -1,75 +1,70 @@
-import {AuthenticateInterface, OffChainTokenConfig, OnChainTokenConfig} from "../interface";
-import {Client} from "../index";
+import { AuthenticateInterface, OffChainTokenConfig, OnChainTokenConfig } from '../interface'
+import { Client } from '../index'
 
 export interface AuthenticationResult {
-	type: string,
-	data: any,
+	type: string
+	data: any
 	target: {
-		address?: string,
+		address?: string
 		tokens?: []
 	}
 }
 
 export interface AuthenticationMethod {
-	TYPE: string;
-	getTokenProof(issuerConfig: OnChainTokenConfig | OffChainTokenConfig, tokens: Array<any>, request: AuthenticateInterface): Promise<AuthenticationResult>;
+	TYPE: string
+	getTokenProof(
+		issuerConfig: OnChainTokenConfig | OffChainTokenConfig,
+		tokens: Array<any>,
+		request: AuthenticateInterface,
+	): Promise<AuthenticationResult>
 }
 
 export abstract class AbstractAuthentication {
+	public abstract TYPE: string
 
-	public abstract TYPE: string;
+	public static STORAGE_KEY = 'tn-proof'
 
-	public static STORAGE_KEY = "tn-proof";
-
-	protected client: Client;
+	protected client: Client
 
 	constructor(client?: Client) {
-		this.client = client;
+		this.client = client
 	}
 
-	public saveProof(key: string, proof: AuthenticationResult){
+	public saveProof(key: string, proof: AuthenticationResult) {
+		const challenges = this.getProofs()
 
-		const challenges = this.getProofs();
+		challenges[this.getFullKey(key)] = proof
 
-		challenges[this.getFullKey(key)] = proof;
-
-		localStorage.setItem(
-			AbstractAuthentication.STORAGE_KEY,
-			JSON.stringify(challenges)
-		);
+		localStorage.setItem(AbstractAuthentication.STORAGE_KEY, JSON.stringify(challenges))
 	}
 
-	protected getSavedProof(key: string){
+	protected getSavedProof(key: string) {
+		const challenges = this.getProofs()
+		const fullKey = this.getFullKey(key)
 
-		const challenges = this.getProofs();
-		const fullKey = this.getFullKey(key);
-
-		if (challenges[fullKey]){
-			return challenges[fullKey];
+		if (challenges[fullKey]) {
+			return challenges[fullKey]
 		}
 
-		return null;
+		return null
 	}
 
-	protected deleteProof(key: string){
+	protected deleteProof(key: string) {
+		const challenges = this.getProofs()
+		const fullKey = this.getFullKey(key)
 
-		const challenges = this.getProofs();
-		const fullKey = this.getFullKey(key);
+		if (challenges[fullKey]) delete challenges[fullKey]
 
-		if (challenges[fullKey])
-			delete challenges[fullKey];
-
-		localStorage.setItem(AbstractAuthentication.STORAGE_KEY, JSON.stringify(challenges));
+		localStorage.setItem(AbstractAuthentication.STORAGE_KEY, JSON.stringify(challenges))
 	}
 
-	private getFullKey(key: string){
-		return this.TYPE + "-" + key.toLowerCase();
+	private getFullKey(key: string) {
+		return this.TYPE + '-' + key.toLowerCase()
 	}
 
-	private getProofs(): {[key: string]: AuthenticationResult}{
-		const data = localStorage.getItem(AbstractAuthentication.STORAGE_KEY);
+	private getProofs(): { [key: string]: AuthenticationResult } {
+		const data = localStorage.getItem(AbstractAuthentication.STORAGE_KEY)
 
-		return data && data.length ? JSON.parse(data) : {};
+		return data && data.length ? JSON.parse(data) : {}
 	}
 }
-

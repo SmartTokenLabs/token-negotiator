@@ -1,8 +1,8 @@
-import {TextDecoder, TextEncoder} from 'text-encoding';
-global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder;
+import { TextDecoder, TextEncoder } from 'text-encoding'
+global.TextEncoder = TextEncoder
+global.TextDecoder = TextDecoder
 
-import UniversalProvider from "@walletconnect/universal-provider/dist/index.umd";
+import UniversalProvider from '@walletconnect/universal-provider/dist/index.umd'
 
 export const CUSTOM_RPCS_FOR_WC_V2 = {
 	1: 'https://ethereum.publicnode.com', // mainnet
@@ -19,7 +19,7 @@ export const CUSTOM_RPCS_FOR_WC_V2 = {
 	// 338: 'https://evm-t3.cronos.org', // Cronos testnet(Rinkeby)
 	42161: 'https://arb1.arbitrum.io/rpc', // Arbitrum
 	// 421613: 'https://arb-goerli.g.alchemy.com/v2/nFrflomLgsQQL5NWjGileAVqIGGxZWce', // Arbitrum goerli,
-	10: 'https://mainnet.optimism.io' // Optimism
+	10: 'https://mainnet.optimism.io', // Optimism
 }
 
 // https://ethereum.publicnode.com
@@ -34,16 +34,15 @@ export const WC_V2_CHAINS = [
 	// 'eip155:43114',
 	// 'eip155:43113',
 	'eip155:250', // Fantom
-	'eip155:25',  // Cronos
+	'eip155:25', // Cronos
 	'eip155:42161', // Arbitrum
-	'eip155:10'   // Optimism
-];
+	'eip155:10', // Optimism
+]
 
 export const getWalletConnectV2ProviderInstance = async () => {
-
 	return await UniversalProvider.init({
 		projectId: '2ec7ead81da1226703ad789c0b2f7b30',
-		logger: "debug",
-		relayUrl: "wss://relay.walletconnect.com",
-	});
+		logger: 'debug',
+		relayUrl: 'wss://relay.walletconnect.com',
+	})
 }

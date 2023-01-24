@@ -71,6 +71,7 @@
     "jest-junit": "^14.0.0",
     "loader-utils": "^2.0.4",
     "os-browserify": "^0.3.0",
+    "prettier": "^2.8.3",
     "process": "^0.11.10",
     "sass": "^1.56.1",
     "shx": "^0.3.3",

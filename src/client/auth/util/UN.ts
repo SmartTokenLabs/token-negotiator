@@ -1,52 +1,46 @@
-import {ethers} from "ethers";
+import { ethers } from 'ethers'
 
 export interface UNInterface {
-	expiration: number;
-	domain: string;
-	randomness: string;
-	UN: string;
-	messageToSign: string;
-	address?: string;
-	signature?: string;
+	expiration: number
+	domain: string
+	randomness: string
+	UN: string
+	messageToSign: string
+	address?: string
+	signature?: string
 }
 
 export class UN {
-
 	public static async getNewUN(endPoint: string): Promise<UNInterface> {
-
 		try {
-			const response = await fetch(endPoint);
+			const response = await fetch(endPoint)
 
-			return await response.json();
-
+			return await response.json()
 		} catch (e: any) {
-			throw new Error("Failed to fetch UN challenge: " + e.message);
+			throw new Error('Failed to fetch UN challenge: ' + e.message)
 		}
 	}
 
-	public static recoverAddress(un: UNInterface){
+	public static recoverAddress(un: UNInterface) {
+		if (!un.signature) throw new Error('Null signature')
 
-		if (!un.signature)
-			throw new Error("Null signature");
-
-		const msgHash = ethers.utils.hashMessage(un.messageToSign);
-		const msgHashBytes = ethers.utils.arrayify(msgHash);
-		return ethers.utils.recoverAddress(msgHashBytes, un.signature).toLowerCase();
+		const msgHash = ethers.utils.hashMessage(un.messageToSign)
+		const msgHashBytes = ethers.utils.arrayify(msgHash)
+		return ethers.utils.recoverAddress(msgHashBytes, un.signature).toLowerCase()
 	}
 
 	public static async validateChallenge(endPoint: string, data: UNInterface) {
-
 		const response = await fetch(endPoint, {
-			method: "POST",
-			cache: "no-cache",
-			headers: { "Content-Type": "application/json" },
-			redirect: "follow",
-			referrerPolicy: "no-referrer",
+			method: 'POST',
+			cache: 'no-cache',
+			headers: { 'Content-Type': 'application/json' },
+			redirect: 'follow',
+			referrerPolicy: 'no-referrer',
 			body: JSON.stringify(data),
-		});
+		})
 
-		const json = await response.json();
+		const json = await response.json()
 
-		return json.address;
+		return json.address
 	}
 }

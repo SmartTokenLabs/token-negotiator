@@ -1,94 +1,102 @@
-import {KeyStore} from "@tokenscript/attestation/dist/safe-connect/KeyStore";
-import {uint8tohex} from "@tokenscript/attestation/dist/libs/utils";
-import {EthereumKeyLinkingAttestation} from "@tokenscript/attestation/dist/safe-connect/EthereumKeyLinkingAttestation";
+import { KeyStore } from '@tokenscript/attestation/dist/safe-connect/KeyStore'
+import { uint8tohex } from '@tokenscript/attestation/dist/libs/utils'
+import { EthereumKeyLinkingAttestation } from '@tokenscript/attestation/dist/safe-connect/EthereumKeyLinkingAttestation'
 
 export interface ChallengeInterface {
-	expiry: number;
-	messageToSign: string;
-	address: string;
-	signature?: string;
+	expiry: number
+	messageToSign: string
+	address: string
+	signature?: string
 }
 
 export interface ProofRequestInterface {
-	type: string;
-	subject: string;
-	signature: string;
-	address: string;
-	data?: any;
+	type: string
+	subject: string
+	signature: string
+	address: string
+	data?: any
 }
 
 export interface ProofResponseInterface {
-	type: string;
-	expiry: number;
-	data?: any;
+	type: string
+	expiry: number
+	data?: any
 }
 
 export class SafeConnect {
+	public static HOLDING_KEY_ALGORITHM = 'RSASSA-PKCS1-v1_5'
 
-	public static HOLDING_KEY_ALGORITHM = "RSASSA-PKCS1-v1_5";
+	public static keyStore = new KeyStore()
 
-	public static keyStore = new KeyStore();
-
-	public static async getLinkPrivateKey(){
-		let keys = await SafeConnect.keyStore.getOrCreateKey(SafeConnect.HOLDING_KEY_ALGORITHM);
-		return keys.attestHoldingKey.privateKey;
+	public static async getLinkPrivateKey() {
+		let keys = await SafeConnect.keyStore.getOrCreateKey(SafeConnect.HOLDING_KEY_ALGORITHM)
+		return keys.attestHoldingKey.privateKey
 	}
 
-	public static async getLinkPublicKey(){
-		let keys = await SafeConnect.keyStore.getOrCreateKey(SafeConnect.HOLDING_KEY_ALGORITHM);
-		return uint8tohex(keys.holdingPubKey);
+	public static async getLinkPublicKey() {
+		let keys = await SafeConnect.keyStore.getOrCreateKey(SafeConnect.HOLDING_KEY_ALGORITHM)
+		return uint8tohex(keys.holdingPubKey)
 	}
 
-	public static async getChallenge(safeConnectUrl: string, address: string){
+	public static async getChallenge(safeConnectUrl: string, address: string) {
 		try {
-			return await this.apiRequest(safeConnectUrl, "POST", "get-challenge", { address: address }) as ChallengeInterface
+			return (await this.apiRequest(safeConnectUrl, 'POST', 'get-challenge', {
+				address: address,
+			})) as ChallengeInterface
 		} catch (e) {
-			throw new Error("Failed to get address challenge: " + e.message);
+			throw new Error('Failed to get address challenge: ' + e.message)
 		}
 	}
 
-	public static async getAttestation(safeConnectUrl: string, serverPayload: ProofRequestInterface){
+	public static async getAttestation(safeConnectUrl: string, serverPayload: ProofRequestInterface) {
 		try {
-			return await this.apiRequest(safeConnectUrl, "POST", "issue-attestation", serverPayload) as ProofResponseInterface;
+			return (await this.apiRequest(
+				safeConnectUrl,
+				'POST',
+				'issue-attestation',
+				serverPayload,
+			)) as ProofResponseInterface
 		} catch (e) {
-			throw new Error("Failed to get address attestation: " + e.message);
+			throw new Error('Failed to get address attestation: ' + e.message)
 		}
 	}
 
-	private static async apiRequest(url: string, method: string, path: string, data?: any){
-
-		let res = await fetch(url + "api/" + path, {
+	private static async apiRequest(url: string, method: string, path: string, data?: any) {
+		let res = await fetch(url + 'api/' + path, {
 			method: method,
 			body: JSON.stringify(data),
 			credentials: 'include',
 			headers: {
-				"Content-Type": "application/json"
-			}
-		});
+				'Content-Type': 'application/json',
+			},
+		})
 
 		if (res.status > 299 || res.status < 200) {
-			let msg;
+			let msg
 
 			try {
-				msg = (await res.json()).error;
-			} catch (e){
-				msg = "HTTP Request error: " + res.statusText;
+				msg = (await res.json()).error
+			} catch (e) {
+				msg = 'HTTP Request error: ' + res.statusText
 			}
 
-			throw new Error(msg);
+			throw new Error(msg)
 		}
 
-		return await res.json();
+		return await res.json()
 	}
 
-	public static async createAndSignLinkAttestation(addressAttest: string, linkedEthAddress: string, holdingPrivKey: CryptoKey){
+	public static async createAndSignLinkAttestation(
+		addressAttest: string,
+		linkedEthAddress: string,
+		holdingPrivKey: CryptoKey,
+	) {
+		const linkAttest = new EthereumKeyLinkingAttestation()
 
-		const linkAttest = new EthereumKeyLinkingAttestation();
+		linkAttest.create(addressAttest, linkedEthAddress, 3600 + 600, undefined, Math.round(Date.now() / 1000) - 600)
 
-		linkAttest.create(addressAttest, linkedEthAddress, 3600 + 600, undefined, Math.round(Date.now() / 1000) - 600);
+		await linkAttest.sign(holdingPrivKey)
 
-		await linkAttest.sign(holdingPrivKey);
-
-		return linkAttest.getBase64();
+		return linkAttest.getBase64()
 	}
 }
