@@ -12,12 +12,12 @@
 }
 
 .overlay-tn.dark-tn .wallet-selection-view-tn,
-.overlay-tn.dark-tn .overlay-content-tn .opening-content-view-tn  {
+.overlay-tn.dark-tn .overlay-content-tn .opening-content-view-tn {
   background: #000;
 }
 
-
-.overlay-tn.dark-tn .opening-heading-tn, .overlay-tn.dark-tn .wallet-button-tn p {
+.overlay-tn.dark-tn .opening-heading-tn,
+.overlay-tn.dark-tn .wallet-button-tn p {
   color: darkgrey;
 }
 
@@ -42,10 +42,11 @@
   fill: black !important;
 }
 
-.overlay-tn.dark-tn #svg-tn-right, #svg-tn-left {
+.overlay-tn.dark-tn #svg-tn-right,
+#svg-tn-left {
   fill: #fff;
 }
- 
+
 .overlay-tn.popup-tn.dark-tn .overlay-content-tn:hover {
   box-shadow: 0 2px 3px 0 #676767;
 }
@@ -70,8 +71,7 @@
 
 .overlay-tn.dark-tn .overlay-content-tn .headline-tn,
 .overlay-tn.dark-tn .overlay-content-tn .token-tn .detail-tn,
-.overlay-tn.dark-tn .overlay-content-tn .token-tn .title-tn
-{
+.overlay-tn.dark-tn .overlay-content-tn .token-tn .title-tn {
   color: white;
 }
 
@@ -83,7 +83,7 @@
 }
 
 .overlay-tn.dark-tn .opening-btn-tn,
-.overlay-tn.dark-tn li.issuer-connect-banner-tn .connect-btn-tn, 
+.overlay-tn.dark-tn li.issuer-connect-banner-tn .connect-btn-tn,
 .overlay-tn.dark-tn li.issuer-connect-banner-tn .tokens-btn-tn,
 .overlay-tn.dark-tn .btn-tn {
   color: white;
@@ -102,21 +102,21 @@
   background: black;
 }
 
-.overlay-tn.dark-tn .overlay-content-tn .toggle-tn input.mobileToggle-tn+label {
+.overlay-tn.dark-tn .overlay-content-tn .toggle-tn input.mobileToggle-tn + label {
   border: 3px solid black;
   background: white;
 }
 
-.overlay-tn.dark-tn .overlay-content-tn .toggle-tn input.mobileToggle-tn+label:after {
+.overlay-tn.dark-tn .overlay-content-tn .toggle-tn input.mobileToggle-tn + label:after {
   background: #282828;
   border: 1px solid #323232;
 }
 
-.overlay-tn.dark-tn .overlay-content-tn .toggle-tn input.mobileToggle-tn:checked+label {
+.overlay-tn.dark-tn .overlay-content-tn .toggle-tn input.mobileToggle-tn:checked + label {
   border: 3px solid #723f00;
 }
 
-.overlay-tn.dark-tn .overlay-content-tn .toggle-tn input.mobileToggle-tn:checked+label:before {
+.overlay-tn.dark-tn .overlay-content-tn .toggle-tn input.mobileToggle-tn:checked + label:before {
   background: #723f00;
 }
 
@@ -124,7 +124,7 @@
   color: white;
 }
 
-.overlay-tn.dark-tn .overlay-content-tn .toggle-tn input:focus+label {
+.overlay-tn.dark-tn .overlay-content-tn .toggle-tn input:focus + label {
   border: 3px solid #dd980f !important;
 }
 

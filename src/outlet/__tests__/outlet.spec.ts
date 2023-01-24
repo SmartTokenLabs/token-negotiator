@@ -1,4 +1,4 @@
-import { Outlet } from '../index';
+import { Outlet } from '../index'
 
 /*
   TODO: Find a solution for TypeError: Cannot convert a BigInt value to a number at Math.pow (<anonymous>)
@@ -6,14 +6,12 @@ import { Outlet } from '../index';
 */
 
 describe('Outlet spec', () => {
-
 	test('placeholder test', () => {
-		expect(true).toBe(true);
-	});
+		expect(true).toBe(true)
+	})
 
 	//   test('Create outlet from token name', () => {
 	//     const outlet = new Outlet({ config: {tokenName: 'devcon-remote'}});
 	//     console.log(outlet);
 	//   });
-
-});
+})

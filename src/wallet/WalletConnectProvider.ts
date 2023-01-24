@@ -1,8 +1,8 @@
-import WalletConnectProvider from "@walletconnect/web3-provider/dist/umd/index.min";
+import WalletConnectProvider from '@walletconnect/web3-provider/dist/umd/index.min'
 
 export const getWalletConnectProviderInstance = async (checkConnectionOnly?: boolean) => {
 	return new WalletConnectProvider({
-		infuraId: "7753fa7b79d2469f97c156780fce37ac",
+		infuraId: '7753fa7b79d2469f97c156780fce37ac',
 		qrcode: !checkConnectionOnly,
 		rpc: {
 			5: 'https://eth-goerli.g.alchemy.com/v2/yVhq9zPJorAWsw-F87fEabSUl7cCU6z4', // Goerli
@@ -18,7 +18,7 @@ export const getWalletConnectProviderInstance = async (checkConnectionOnly?: boo
 			338: 'https://evm-t3.cronos.org', // Cronos testnet(Rinkeby)
 			42161: 'https://arb1.arbitrum.io/rpc', // Arbitrum
 			421613: 'https://arb-goerli.g.alchemy.com/v2/nFrflomLgsQQL5NWjGileAVqIGGxZWce', // Arbitrum goerli,
-			10: 'https://mainnet.optimism.io'
-		}
-	});
-};
+			10: 'https://mainnet.optimism.io',
+		},
+	})
+}

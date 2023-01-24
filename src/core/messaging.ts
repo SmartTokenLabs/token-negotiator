@@ -1,53 +1,55 @@
-import {attachPostMessageListener, logger, removePostMessageListener} from "../utils";
-import {ClientError} from "../client";
-import { browserBlocksIframeStorage} from "../utils/support/getBrowserData";
+import { attachPostMessageListener, logger, removePostMessageListener } from '../utils'
+import { ClientError } from '../client'
+import { browserBlocksIframeStorage } from '../utils/support/getBrowserData'
 
-// TODO move Message related interfaces/enum in to shared location /core 
+// TODO move Message related interfaces/enum in to shared location /core
 
 export interface RequestInterfaceBase {
-    action: string,
-	origin: string,
-	timeout?: number,
-	data: {[key: string]: any}
+	action: string
+	origin: string
+	timeout?: number
+	data: { [key: string]: any }
 }
 
 export interface ResponseInterfaceBase {
-    evtid: any,
-    evt: string,
-    data?: any,
-	errors?: string[],
-	max_width?: string,
+	evtid: any
+	evt: string
+	data?: any
+	errors?: string[]
+	max_width?: string
 	min_height?: string
 }
 
 export enum ResponseActionBase {
-	COOKIE_CHECK = "cookie-check",
-    ERROR = "error",
-    SHOW_FRAME = "show-frame" // User input required in the iframe - don't resolve promise yet, setup iframe view if required.
-    // USER_CANCEL = "user_cancel" Could be handled different to an error
+	COOKIE_CHECK = 'cookie-check',
+	ERROR = 'error',
+	SHOW_FRAME = 'show-frame', // User input required in the iframe - don't resolve promise yet, setup iframe view if required.
+	// USER_CANCEL = "user_cancel" Could be handled different to an error
 }
 
 declare global {
-    interface Window {
-        NEGOTIATOR_DEBUG: boolean;
-        safari?: any
-    }
+	interface Window {
+		NEGOTIATOR_DEBUG: boolean
+		safari?: any
+	}
 }
 
 export class Messaging {
+	iframeStorageSupport: null | boolean = null
+	iframe: any = null
+	listenerSet = false
 
-	iframeStorageSupport: null|boolean = null;
-	iframe: any = null;
-	listenerSet = false;
+	async sendMessage(
+		request: RequestInterfaceBase,
+		forceTab = false,
+		redirectUrl: false | string = false,
+	): Promise<ResponseInterfaceBase> {
+		logger(2, 'Send request: ')
+		logger(2, request)
 
-	async sendMessage(request: RequestInterfaceBase, forceTab = false, redirectUrl: false|string = false): Promise<ResponseInterfaceBase> {
-
-		logger(2,"Send request: ");
-		logger(2,request);
-
-		if (redirectUrl){
-			this.sendRedirect(request, redirectUrl);
-			return;
+		if (redirectUrl) {
+			this.sendRedirect(request, redirectUrl)
+			return
 		}
 
 		if (!forceTab && this.iframeStorageSupport === null) {
@@ -57,120 +59,112 @@ export class Messaging {
 
 			//
 			// this.iframeStorageSupport = !isMacOrIOS() && !isBrave();
-			this.iframeStorageSupport = !browserBlocksIframeStorage();
+			this.iframeStorageSupport = !browserBlocksIframeStorage()
 		}
 
 		// Uncomment to test popup mode
 		// this.iframeStorageSupport = false;
 
-		if (!forceTab && this.iframeStorageSupport !== false){
+		if (!forceTab && this.iframeStorageSupport !== false) {
 			try {
-				return await this.sendIframe(request);
-			} catch (e){
-				if (e === "IFRAME_STORAGE"){
-					return this.sendPopup(request);
+				return await this.sendIframe(request)
+			} catch (e) {
+				if (e === 'IFRAME_STORAGE') {
+					return this.sendPopup(request)
 				}
-				throw e;
+				throw e
 			}
 		} else {
-			return this.sendPopup(request);
+			return this.sendPopup(request)
 		}
 	}
 
-	private sendRedirect(request: RequestInterfaceBase, redirectUrl: string){
+	private sendRedirect(request: RequestInterfaceBase, redirectUrl: string) {
+		let id = Messaging.getUniqueEventId()
+		const url = this.constructUrl(id, request)
 
-		let id = Messaging.getUniqueEventId();
-		const url = this.constructUrl(id, request);
+		let newLocation = `${url}&redirect=true&requestor=${encodeURIComponent(redirectUrl)}`
 
-		let newLocation = `${url}&redirect=true&requestor=${encodeURIComponent(redirectUrl)}`;
+		logger(2, `redirect from ${document.location.href} to ${newLocation}`)
 
-		logger(2, `redirect from ${document.location.href} to ${newLocation}`);
-
-		document.location.href = newLocation;
+		document.location.href = newLocation
 	}
 
-	private sendIframe(request: RequestInterfaceBase): Promise<ResponseInterfaceBase>{
-
+	private sendIframe(request: RequestInterfaceBase): Promise<ResponseInterfaceBase> {
 		return new Promise((resolve, reject) => {
-
-			let id = Messaging.getUniqueEventId();
-			let url = this.constructUrl(id, request);
+			let id = Messaging.getUniqueEventId()
+			let url = this.constructUrl(id, request)
 
 			this.iframe = this.createIframe(() => {
-				this.listenerSet = false;
-				this.removeModal();
-				reject(ClientError.USER_ABORT);
-			});
+				this.listenerSet = false
+				this.removeModal()
+				reject(ClientError.USER_ABORT)
+			})
 
-			if (!this.listenerSet){
-				this.listenerSet = true;
-				this.setResponseListener(id, request.origin, request.timeout, resolve, reject,
-					() => {
-						this.listenerSet = false;
-						this.removeModal();
-					}
-				);
+			if (!this.listenerSet) {
+				this.listenerSet = true
+				this.setResponseListener(id, request.origin, request.timeout, resolve, reject, () => {
+					this.listenerSet = false
+					this.removeModal()
+				})
 			}
 
-			this.iframe.src = url;
-
-		});
+			this.iframe.src = url
+		})
 	}
 
-	private sendPopup(request: RequestInterfaceBase): Promise<ResponseInterfaceBase>{
-
+	private sendPopup(request: RequestInterfaceBase): Promise<ResponseInterfaceBase> {
 		return new Promise((resolve, reject) => {
+			let id = Messaging.getUniqueEventId()
 
-			let id = Messaging.getUniqueEventId();
+			let tabRef: any = null
 
-			let tabRef: any = null;
+			this.setResponseListener(id, request.origin, request.timeout, resolve, reject, () => {
+				if (tabRef) tabRef.close()
+			})
 
-			this.setResponseListener(id, request.origin, request.timeout, resolve, reject, ()=>{
-				if (tabRef)
-					tabRef.close();
-			});
+			tabRef = this.openTab(this.constructUrl(id, request))
 
-			tabRef = this.openTab(this.constructUrl(id, request));
-
-			if (!tabRef || tabRef.closed || typeof tabRef.closed == "undefined"){
-				reject(ClientError.POPUP_BLOCKED);
-				return;
+			if (!tabRef || tabRef.closed || typeof tabRef.closed == 'undefined') {
+				reject(ClientError.POPUP_BLOCKED)
+				return
 			}
 
-			let tabCloseCheck = setInterval(()=>{
+			let tabCloseCheck = setInterval(() => {
 				if (!tabRef || tabRef.closed) {
-					clearInterval(tabCloseCheck);
-					reject(ClientError.USER_ABORT);
+					clearInterval(tabCloseCheck)
+					reject(ClientError.USER_ABORT)
 				}
-			}, 500);
-
-		});
-
+			}, 500)
+		})
 	}
 
-	private setResponseListener(id: any, origin: string, timeout: number|undefined, resolve: any, reject: any, cleanUpCallback: any){
-
-		let received = false;
-		let timer: any = null;
+	private setResponseListener(
+		id: any,
+		origin: string,
+		timeout: number | undefined,
+		resolve: any,
+		reject: any,
+		cleanUpCallback: any,
+	) {
+		let received = false
+		let timer: any = null
 
 		let listener = (event: any) => {
-
 			if (event.data.target) {
 				// we dont use this field at the moment
-				return;
+				return
 			}
 
-			let response: ResponseInterfaceBase = event.data;
-			let requestUrl = new URL(origin);
-			
-			if (response.evtid === id) {
-				
-				if (requestUrl.origin === event.origin && response.evt){
-					
-					logger(2,"event response received");
-					logger(2,event.data);
+			let response: ResponseInterfaceBase = event.data
+			let requestUrl = new URL(origin)
 
-					received = true;
+			if (response.evtid === id) {
+				if (requestUrl.origin === event.origin && response.evt) {
+					logger(2, 'event response received')
+					logger(2, event.data)
+
+					received = true
 
 					// TODO: revert to tab when requestStorageAccess error is encountered in outlet - but only for browsers that support new tabs (no wallet dapp browsers)
 					/* if (response.evt === ResponseActionBase.COOKIE_CHECK){
@@ -186,83 +180,72 @@ export class Messaging {
 					}*/
 
 					if (response.evt === ResponseActionBase.ERROR) {
-
-						if (response.errors[0] === "IFRAME_STORAGE") {
-							this.iframeStorageSupport = false;
-							reject("IFRAME_STORAGE");
+						if (response.errors[0] === 'IFRAME_STORAGE') {
+							this.iframeStorageSupport = false
+							reject('IFRAME_STORAGE')
 						} else {
-							reject(new Error(response.errors.join(". ")));
+							reject(new Error(response.errors.join('. ')))
 						}
-
-					} else if (response.evt === ResponseActionBase.SHOW_FRAME){
-
-						if (timer)
-							clearTimeout(timer);
+					} else if (response.evt === ResponseActionBase.SHOW_FRAME) {
+						if (timer) clearTimeout(timer)
 
 						if (this.iframe) {
-							let modal = this.getModal();
-							modal.style.display = "block";
+							let modal = this.getModal()
+							modal.style.display = 'block'
 
 							if (response.max_width) {
-								let modalContent: HTMLElement = modal.querySelector(".modal-content-tn");
-								if (modalContent){
-									modalContent.style.maxWidth = response.max_width;
+								let modalContent: HTMLElement = modal.querySelector('.modal-content-tn')
+								if (modalContent) {
+									modalContent.style.maxWidth = response.max_width
 								}
 							}
 
 							if (response.min_height) {
-								let iframe: HTMLElement = modal.querySelector("iframe");
-								if (iframe){
-									iframe.style.minHeight = response.min_height;
+								let iframe: HTMLElement = modal.querySelector('iframe')
+								if (iframe) {
+									iframe.style.minHeight = response.min_height
 								}
 							}
 						}
 
-						return;
+						return
 					} else {
-						resolve(response);
+						resolve(response)
 					}
 
-					afterResolveOrError();
-
+					afterResolveOrError()
 				} else {
-					logger(2,"Does not match origin " + event.origin);
+					logger(2, 'Does not match origin ' + event.origin)
 				}
 			}
 		}
 
 		let afterResolveOrError = () => {
-			if (timer)
-				clearTimeout(timer);
-			removePostMessageListener(listener);
-			if (!window.NEGOTIATOR_DEBUG)
-				cleanUpCallback();
-		};
+			if (timer) clearTimeout(timer)
+			removePostMessageListener(listener)
+			if (!window.NEGOTIATOR_DEBUG) cleanUpCallback()
+		}
 
-		attachPostMessageListener(listener);
+		attachPostMessageListener(listener)
 
-		if (timeout === undefined)
-			timeout = 20000;
+		if (timeout === undefined) timeout = 20000
 
 		if (timeout > 0)
-			timer = setTimeout(()=>{
-				if (!received)
-					reject(new Error("Failed to receive response from window/iframe"));
-				afterResolveOrError();
-			}, timeout);
+			timer = setTimeout(() => {
+				if (!received) reject(new Error('Failed to receive response from window/iframe'))
+				afterResolveOrError()
+			}, timeout)
 	}
 
-	private getModal(closedCallback?){
+	private getModal(closedCallback?) {
+		let modal = document.getElementById('modal-tn')
 
-		let modal = document.getElementById("modal-tn");
+		if (modal || !closedCallback) return modal
 
-		if (modal || !closedCallback)
-			return modal;
-
-		modal = document.createElement('div');
-		modal.id = "modal-tn";
-		modal.className = "modal-tn";
-		modal.style.display = "none";
+		modal = document.createElement('div')
+		modal.id = 'modal-tn'
+		modal.className = 'modal-tn'
+		modal.style.display = 'none'
 
 		modal.innerHTML = `
             <div class="modal-content-tn">
@@ -271,79 +254,72 @@ export class Messaging {
                 </div>
                 <div class="modal-body-tn"></div>
             </div>
-        `;
+        `
 
-		document.body.appendChild(modal);
+		document.body.appendChild(modal)
 
 		modal.getElementsByClassName('modal-close-tn')[0].addEventListener('click', () => {
-			closedCallback();
-		});
+			closedCallback()
+		})
 
-		return modal;
+		return modal
 	}
 
-	private removeModal(){
-		let modal = this.getModal();
+	private removeModal() {
+		let modal = this.getModal()
 		if (modal) {
-			modal.style.display = "none";
-			modal.remove();
+			modal.style.display = 'none'
+			modal.remove()
 		}
 	}
 
-	private constructUrl(id: any, request: RequestInterfaceBase){
-
-		let url = `${request.origin}#evtid=${id}&action=${request.action}`;
+	private constructUrl(id: any, request: RequestInterfaceBase) {
+		let url = `${request.origin}#evtid=${id}&action=${request.action}`
 
 		// in request to Outlet() to get tokens we dont have any token
-		if (typeof request.data.token !== "undefined") {
-			url += `&token=${encodeURIComponent(JSON.stringify(request.data.token))}`;
+		if (typeof request.data.token !== 'undefined') {
+			url += `&token=${encodeURIComponent(JSON.stringify(request.data.token))}`
 		}
 
-		for (let key in request.data){
-			let value = request.data[key];
+		for (let key in request.data) {
+			let value = request.data[key]
 
-			// no sense to send issuer config. Outlet() use own config, 
+			// no sense to send issuer config. Outlet() use own config,
 			// it can be dangerous if Outlet beleive to external config from URL HASH
-			if (key === "issuer")
-				continue;
+			if (key === 'issuer') continue
 
-			if (!value)
-				continue;
+			if (!value) continue
 
-			if (value instanceof Array || value instanceof Object){
-				url += `&${key}=${JSON.stringify(value)}`;
+			if (value instanceof Array || value instanceof Object) {
+				url += `&${key}=${JSON.stringify(value)}`
 			} else {
-				if (key === "urlParams"){
-					url += `&${value}`;
+				if (key === 'urlParams') {
+					url += `&${value}`
 				} else {
-					url += `&${key}=${value}`;
+					url += `&${key}=${value}`
 				}
 			}
 		}
 
-		return url;
+		return url
 	}
 
-	public openTab(url: string){
-		return window.open(
-			url,
-			"_blank"
-		);
+	public openTab(url: string) {
+		return window.open(url, '_blank')
 	}
 
 	public createIframe(closeCallback?) {
+		const iframe = document.createElement('iframe')
+		iframe.setAttribute('allow', 'clipboard-read')
 
-		const iframe = document.createElement('iframe');
-		iframe.setAttribute('allow',"clipboard-read");
+		let modal = this.getModal(closeCallback)
 
-		let modal = this.getModal(closeCallback);
+		modal.getElementsByClassName('modal-body-tn')[0].appendChild(iframe)
 
-		modal.getElementsByClassName('modal-body-tn')[0].appendChild(iframe);
-
-		return iframe;
+		return iframe
 	}
 
-	private static getUniqueEventId(){
-		return new Date().getTime().toString();
+	private static getUniqueEventId() {
+		return new Date().getTime().toString()
 	}
 }
