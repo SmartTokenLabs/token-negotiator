@@ -15,12 +15,14 @@
     "copy-assets": "copyfiles ./src/vendor/*.js dist/vendor -V --flat",
     "copy-assets-umd": "copyfiles ./src/vendor/*.js token-negotiator-dist/vendor -V --flat",
     "prepublishOnly": "npm run build",
-    "lint": "eslint . --quiet",
+    "lint": "eslint . --quiet --fix",
+    "prettier": "prettier --write src/{,**/}*.{ts,scss}",
     "test": "jest",
     "test-watch": "jest --watch",
     "compile-scss": "sass ./src/theme/style.scss dist/theme/style.css",
     "compile-scss-umd": "sass ./src/theme/style.scss token-negotiator-dist/theme/style.css",
-    "write-version-constant": "CURRENT_VERSION=$(node -p \"require('./package.json').version\") && echo \"// modified by build process. \nexport const VERSION = \\\"$CURRENT_VERSION\\\";\" > src/version.ts "
+    "write-version-constant": "CURRENT_VERSION=$(node -p \"require('./package.json').version\") && echo \"// modified by build process.\nexport const VERSION = '$CURRENT_VERSION'\" > src/version.ts ",
+    "prepare": "husky install"
   },
   "repository": {
     "type": "git",
@@ -66,6 +68,7 @@
     "eslint": "^8.18.0",
     "file-loader": "^6.2.0",
     "https-browserify": "^1.0.0",
+    "husky": "^8.0.0",
     "jest": "^28.1.0",
     "jest-environment-jsdom": "^28.1.0",
     "jest-junit": "^14.0.0",

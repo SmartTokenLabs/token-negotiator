@@ -135,7 +135,9 @@ it('get nft collection token meta from punks to fail', async () => {
 			openSeaSlug: 'stl-rnd-zed',
 		})
 		expect(test).toThrow(expect.any(Function))
-	} catch (e: any) {}
+	} catch (e: any) {
+		// no-op
+	}
 })
 
 it('get correct nft tokens query string solana', async () => {
