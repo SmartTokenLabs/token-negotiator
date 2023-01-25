@@ -171,27 +171,27 @@ export class SelectIssuers extends AbstractView {
 	issuerConnectMarkup(title: string, image: string | undefined, issuer: string, tokens: any[]) {
 		return `
             <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
-              <div tabindex="0" style="display: flex; align-items: center;">
-                <div class="img-container-tn issuer-icon-tn shimmer-tn" data-image-src="${image}" data-token-title="${title}"></div>
-                <p class="issuer-connect-title">${title}</p>
-              </div>
-              <button aria-label="connect with the token issuer ${issuer}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" 
+				<div tabindex="0" style="display: flex; align-items: center;">
+					<div class="img-container-tn issuer-icon-tn shimmer-tn" data-image-src="${image}" data-token-title="${title}"></div>
+					<p class="issuer-connect-title">${title}</p>
+				</div>
+				<button aria-label="connect with the token issuer ${issuer}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" 
 					class="connect-btn-tn"
 					style="${tokens?.length ? 'display: none;' : ''}"
 					data-issuer="${issuer}"
 					${this.client.issuersLoaded === true ? '' : 'disabled'}
 				>
-				${
-	this.client.issuersLoaded === true
-		? 'Load'
-		: '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
-}
-			  </button>
-              <button aria-label="tokens available from token issuer ${issuer}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" 
-              			class="tokens-btn-tn" style="${tokens?.length ? 'display: block;' : ''}" data-issuer="${issuer}">${
-	tokens?.length
-} token${tokens?.length ? 's' : ''} available</button>
-            </li>
+					${
+						this.client.issuersLoaded === true
+							? 'Load'
+							: '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
+					}
+				</button>
+				<button aria-label="tokens available from token issuer ${issuer}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" 
+						class="tokens-btn-tn" style="${tokens?.length ? 'display: block;' : ''}" data-issuer="${issuer}">
+					${tokens?.length} token${tokens?.length ? 's' : ''} available
+				</button>
+			</li>
         `
 	}
 
