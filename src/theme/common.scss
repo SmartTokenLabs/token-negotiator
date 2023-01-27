@@ -106,6 +106,8 @@
     width: 55px;
     height: 55px;
     animation: closeAnimation 0.2s steps(4);
+    -webkit-animation: closeAnimation 0.2s steps(4);
+    will-change: animation;
     animation-fill-mode: forwards;
   }
 }
@@ -151,6 +153,8 @@
   .overlay-fab-button-tn-img-container {
     background-position: -220px 0px;
     animation: openAnimation 0.2s steps(4);
+    -webkit-animation: openAnimation 0.2s steps(4);
+    will-change: animation;
   }
 }
 
