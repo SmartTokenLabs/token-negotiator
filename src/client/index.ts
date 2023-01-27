@@ -860,7 +860,10 @@ export class Client {
 
 	async addTokenViaMagicLink(magicLink: any) {
 		let url = new URL(magicLink)
-		let params = url.hash.length > 1 ? url.hash.substring(1) : url.search.substring(1)
+		let params = url.hash.length > 1 ? url.hash.substring(1) : url.search.substring(1);
+
+		const redirectRequired = shouldUseRedirectMode(this.config.offChainRedirectMode);
+
 		let res = await this.messaging.sendMessage(
 			{
 				action: OutletAction.MAGIC_URL,
@@ -870,6 +873,8 @@ export class Client {
 				},
 			},
 			this.config.messagingForceTab,
+			undefined,
+			redirectRequired ? document.location.href : false
 		)
 		if (res.evt === OutletResponseAction.ISSUER_TOKENS) return res.data.tokens
 		errorHandler(res.errors.join('\n'), 'error', null, false, true)
