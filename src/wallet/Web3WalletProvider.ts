@@ -2,7 +2,6 @@ import { ethers } from 'ethers'
 import { logger } from '../utils'
 import { SafeConnectOptions } from './SafeConnectProvider'
 import { Client } from '../client'
-import { TokenNegotiatorEvents } from 'src/client/interface'
 
 interface WalletConnectionState {
 	[index: string]: WalletConnection
@@ -281,7 +280,7 @@ export class Web3WalletProvider {
 			universalWalletConnect
 				.enable()
 				.then(() => {
-					const provider = new ethers.providers.Web3Provider(universalWalletConnect)
+					const provider = new ethers.providers.Web3Provider(universalWalletConnect, 'any')
 
 					resolve(this.registerProvider(provider, 'WalletConnectV2'))
 				})
