@@ -31,25 +31,26 @@ const flowSVG = `
 `
 
 export class SelectWallet extends AbstractView {
-
-	render(){
-
+	render() {
 		// TODO only show the wallets that relate to the tokens available.
 
-		const MetaMaskButton = (typeof window.ethereum !== 'undefined') ?
-			`<button class="wallet-button-tn" data-wallet="MetaMask" aria-label="Metamask wallet button">
+		const MetaMaskButton =
+			typeof window.ethereum !== 'undefined'
+				? `<button class="wallet-button-tn" data-wallet="MetaMask" aria-label="Metamask wallet button">
                 ${metaMaskSVG}
                 <p>MetaMask</p>
-            </button>` : '';
-		
-		const PhantomButton = this.client.solanaAvailable() ?
-			`<button class="wallet-button-tn" data-wallet="Phantom">
+            </button>`
+				: ''
+
+		const PhantomButton = this.client.solanaAvailable()
+			? `<button class="wallet-button-tn" data-wallet="Phantom">
                 ${phantomSVG}
                 <p>Phantom</p>
-            </button>` : '';
+            </button>`
+			: ''
 
-		const SafeConnectButton = this.client.safeConnectAvailable() ?
-			`<button class="wallet-button-tn" data-wallet="SafeConnect" aria-label="Safe connect wallet button">
+		const SafeConnectButton = this.client.safeConnectAvailable()
+			? `<button class="wallet-button-tn" data-wallet="SafeConnect" aria-label="Safe connect wallet button">
 			  ${safeConnectSVG}
 			  <p>Safe Connect</p>
 			</button>` : '';
@@ -90,11 +91,11 @@ export class SelectWallet extends AbstractView {
                 </div>
               </div>
             </div>
-        `;
+        `
 
 		this.viewContainer.querySelectorAll('.wallet-button-tn').forEach((elem: any) => {
-			elem.addEventListener('click', this.connectWallet.bind(this));
-		});
+			elem.addEventListener('click', this.connectWallet.bind(this))
+		})
 
 		// TODO - Add to attestation.id to enable e2e support of additional Wallet Technologies.
 		// <button class="wallet-button-tn" class="" onClick="negotiatorConnectToWallet('Fortmatic')">
@@ -111,19 +112,18 @@ export class SelectWallet extends AbstractView {
 		// </button>
 	}
 
-	async connectWallet(e: any){
+	async connectWallet(e: any) {
+		let wallet: any = e.currentTarget.dataset.wallet
 
-		let wallet: any = e.currentTarget.dataset.wallet;
+		logger(2, 'Connect wallet: ' + wallet)
 
-		logger(2, "Connect wallet: " + wallet);
-
-		this.ui.showLoaderDelayed([
-			"<h4>Connecting to " + wallet + "...</h4>",
-			"<small>You may need to unlock your wallet to continue.</small>"
-		], 500);
+		this.ui.showLoaderDelayed(
+			['<h4>Connecting to ' + wallet + '...</h4>', '<small>You may need to unlock your wallet to continue.</small>'],
+			500,
+		)
 
 		try {
-			await this.client.negotiatorConnectToWallet(wallet);
+			await this.client.negotiatorConnectToWallet(wallet)
 
 			if (wallet !== "Flow") {
 				this.ui.dismissLoader();
@@ -141,5 +141,4 @@ export class SelectWallet extends AbstractView {
 			return;
 		}
 	}
-
 }
