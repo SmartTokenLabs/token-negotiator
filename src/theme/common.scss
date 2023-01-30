@@ -109,6 +109,7 @@
     -webkit-animation: closeAnimation 0.2s steps(4);
     will-change: animation;
     animation-fill-mode: forwards;
+    transition: background-image 0.2s;
   }
 }
 
