@@ -3,8 +3,6 @@ import { validateBlockchain } from '../support/isSupported'
 
 const baseURL = 'https://api.token-discovery.tokenscript.org'
 
-const baseURL = "https://api.token-discovery.tokenscript.org";
-
 export const getNftCollection = async (
 	issuer: Issuer,
 	ipfsBaseUrl?: string
