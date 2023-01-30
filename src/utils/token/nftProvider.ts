@@ -3,16 +3,13 @@ import { validateBlockchain } from '../support/isSupported'
 
 const baseURL = 'https://api.token-discovery.tokenscript.org'
 
-export const getNftCollection = async (
-	issuer: Issuer,
-	ipfsBaseUrl?: string
-) => {
-	let query: string;
-  
-	if ('blockchain' in issuer && issuer.blockchain === "solana") {
-		query = getSolanaNftCollectionUrl(issuer as SolanaIssuerConfig, ipfsBaseUrl);
-	} else if ('blockchain' in issuer && issuer.blockchain === "flow") {
-		query = getFlowNftCollectionUrl(issuer as OnChainTokenConfig);
+export const getNftCollection = async (issuer: Issuer, ipfsBaseUrl?: string) => {
+	let query: string
+
+	if ('blockchain' in issuer && issuer.blockchain === 'solana') {
+		query = getSolanaNftCollectionUrl(issuer as SolanaIssuerConfig, ipfsBaseUrl)
+	} else if ('blockchain' in issuer && issuer.blockchain === 'flow') {
+		query = getFlowNftCollectionUrl(issuer as OnChainTokenConfig)
 	} else {
 		query = getEvmNftCollectionUrl(issuer as OnChainTokenConfig, ipfsBaseUrl)
 	}
@@ -36,21 +33,17 @@ export const getSolanaNftCollectionUrl = (issuer: SolanaIssuerConfig, ipfsBaseUr
 }
 
 export const getFlowNftCollectionUrl = (issuer: OnChainTokenConfig) => {
-	const {contract, chain } = issuer;
-	let query = `${baseURL}/get-token-collection?smartContract=${contract}&chain=${chain}&blockchain=flow`;
-	return query;
-};
+	const { contract, chain } = issuer
+	let query = `${baseURL}/get-token-collection?smartContract=${contract}&chain=${chain}&blockchain=flow`
+	return query
+}
 
-export const getNftTokens = (
-	issuer: Issuer,
-	owner: string,
-	ipfsBaseUrl?: string
-) => {
-	let query: string;
-	if ('blockchain' in issuer && issuer.blockchain === "solana") {
-		query = getSolanaNftTokensUrl(issuer as SolanaIssuerConfig, owner, ipfsBaseUrl);
-	} else if ('blockchain' in issuer && issuer.blockchain === "flow") {
-		query = getFlowNftTokensUrl(issuer, owner);
+export const getNftTokens = (issuer: Issuer, owner: string, ipfsBaseUrl?: string) => {
+	let query: string
+	if ('blockchain' in issuer && issuer.blockchain === 'solana') {
+		query = getSolanaNftTokensUrl(issuer as SolanaIssuerConfig, owner, ipfsBaseUrl)
+	} else if ('blockchain' in issuer && issuer.blockchain === 'flow') {
+		query = getFlowNftTokensUrl(issuer, owner)
 	} else {
 		query = getEvmNftTokensUrl(issuer, owner, ipfsBaseUrl)
 	}
@@ -82,17 +75,14 @@ export const getSolanaNftTokensUrl = (issuer: SolanaIssuerConfig, owner: string,
 }
 
 export const getFlowNftTokensUrl = (issuer: any, owner: string) => {
-	const { contract, chain } = issuer;
-	const blockchain = validateBlockchain(issuer?.blockchain ?? "");
-	if(!contract || !chain) return undefined;
-	let query = `${baseURL}/get-owner-tokens?smartContract=${contract}&chain=${chain}&owner=${owner}&blockchain=${blockchain}`;
-	return query;
-};
+	const { contract, chain } = issuer
+	const blockchain = validateBlockchain(issuer?.blockchain ?? '')
+	if (!contract || !chain) return undefined
+	let query = `${baseURL}/get-owner-tokens?smartContract=${contract}&chain=${chain}&owner=${owner}&blockchain=${blockchain}`
+	return query
+}
 
-export const tokenRequest = async (
-	query: string,
-	silenceRequestError: boolean
-) => {
+export const tokenRequest = async (query: string, silenceRequestError: boolean) => {
 	try {
 		const response = await fetch(query)
 		const ok = response.status >= 200 && response.status <= 299
