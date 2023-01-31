@@ -1,146 +1,131 @@
-import {
-	base64ToUint8array,
-	compareObjects,
-} from "../utils/index";
+import { base64ToUint8array, compareObjects } from '../utils/index'
 
 interface FilterInterface {
-  [key: string]: any;
+	[key: string]: any
 }
 
-export const filterTokens = (
-	decodedTokens: any,
-	filter: FilterInterface = []
-) => {
-	let res: any = [];
+export const filterTokens = (decodedTokens: any, filter: FilterInterface = []) => {
+	let res: any = []
 
-	if (
-		decodedTokens.length &&
-    typeof filter === "object" &&
-    Object.keys(filter).length
-	) {
-		let filterKeys = Object.keys(filter);
+	if (decodedTokens.length && typeof filter === 'object' && Object.keys(filter).length) {
+		let filterKeys = Object.keys(filter)
 
 		decodedTokens.forEach((token: any) => {
-			let fitFilter = 1;
+			let fitFilter = 1
 
 			filterKeys.forEach((key) => {
-				if (token[key] && token[key].toString() !== filter[key].toString())
-					fitFilter = 0;
-			});
+				if (token[key] && token[key].toString() !== filter[key].toString()) fitFilter = 0
+			})
 
-			if (fitFilter) res.push(token);
-		});
+			if (fitFilter) res.push(token)
+		})
 
-		return res;
+		return res
 	} else {
-		return decodedTokens;
+		return decodedTokens
 	}
-};
+}
 
 export const readTokens = (itemStorageKey: any) => {
-	const storageTickets = localStorage.getItem(itemStorageKey);
+	const storageTickets = localStorage.getItem(itemStorageKey)
 
-	let tokens: any = [];
+	let tokens: any = []
 
-	let output: any = { tokens: [], noTokens: true, success: true };
+	let output: any = { tokens: [], noTokens: true, success: true }
 
 	try {
 		if (storageTickets && storageTickets.length) {
-			tokens = JSON.parse(storageTickets);
+			tokens = JSON.parse(storageTickets)
 
 			if (tokens.length !== 0) {
 				tokens.forEach((item: any) => {
-					if (item.token && item.secret) output.tokens.push(item);
-				});
+					if (item.token && item.secret) output.tokens.push(item)
+				})
 			}
 
 			if (output.tokens.length) {
-				output.noTokens = false;
+				output.noTokens = false
 			}
 		}
 	} catch (e) {
-		output.success = false;
+		output.success = false
 	}
 
-	return output;
-};
+	return output
+}
 
 export const decodeTokens = (
 	rawTokens: any,
 	tokenParser: any,
 	unsignedTokenDataName: string,
-	includeSignedToken = false
+	includeSignedToken = false,
 ) => {
-	const x = JSON.parse(rawTokens);
+	const x = JSON.parse(rawTokens)
 
 	if (x.length) {
 		return x.map((tokenData: any) => {
 			if (tokenData.token) {
-				let decodedToken = new tokenParser(
-					base64ToUint8array(tokenData.token).buffer
-				);
+				let decodedToken = new tokenParser(base64ToUint8array(tokenData.token).buffer)
 
-				if (decodedToken && decodedToken[unsignedTokenDataName]){
-					let token = decodedToken[unsignedTokenDataName];
+				if (decodedToken && decodedToken[unsignedTokenDataName]) {
+					let token = decodedToken[unsignedTokenDataName]
 
-					token = propsArrayBufferToArray(token);
+					token = propsArrayBufferToArray(token)
 
-					return includeSignedToken ? {signedToken: tokenData.token, ...token} : token;
+					return includeSignedToken ? { signedToken: tokenData.token, ...token } : token
 				}
 			}
-		});
+		})
 	} else {
-		return [];
+		return []
 	}
-};
+}
 
-function propsArrayBufferToArray(obj: any){
-	Object.keys(obj).forEach(key => {
-		if (obj[key] instanceof ArrayBuffer){
-			obj[key] = Array.from( new Uint8Array(obj[key]) );
+function propsArrayBufferToArray(obj: any) {
+	Object.keys(obj).forEach((key) => {
+		if (obj[key] instanceof ArrayBuffer) {
+			obj[key] = Array.from(new Uint8Array(obj[key]))
 		}
-	});
-	return obj;
+	})
+	return obj
 }
 
 export const storeMagicURL = (tokens: any, itemStorageKey: string) => {
 	if (tokens) {
-		localStorage.setItem(itemStorageKey, JSON.stringify(tokens));
+		localStorage.setItem(itemStorageKey, JSON.stringify(tokens))
 	}
-};
+}
 
 export const readMagicUrl = (
 	tokenUrlName: string,
 	tokenSecretName: string,
 	tokenIdName: string,
 	itemStorageKey: string,
-	urlParams: URLSearchParams | null = null
+	urlParams: URLSearchParams | null = null,
 ) => {
-	if (urlParams === null)
-		urlParams = new URLSearchParams(window.location.search);
+	if (urlParams === null) urlParams = new URLSearchParams(window.location.search)
 
-	const tokenFromQuery = urlParams.get(tokenUrlName);
+	const tokenFromQuery = urlParams.get(tokenUrlName)
 
-	const secretFromQuery = urlParams.get(tokenSecretName);
+	const secretFromQuery = urlParams.get(tokenSecretName)
 
 	let tmp = urlParams.get(tokenIdName)
-	const idFromQuery = tmp ? tmp: "";
+	const idFromQuery = tmp ? tmp : ''
 
-	if (!(tokenFromQuery && secretFromQuery))
-		throw new Error("Incomplete token params in URL.");
+	if (!(tokenFromQuery && secretFromQuery)) throw new Error('Incomplete token params in URL.')
 
-	let tokensOutput = readTokens(itemStorageKey);
+	let tokensOutput = readTokens(itemStorageKey)
 
-	let isNewQueryTicket = true;
+	let isNewQueryTicket = true
 
 	// TODO: use loop here instead
 	let tokens = tokensOutput.tokens.map((tokenData: any) => {
 		if (tokenData.token === tokenFromQuery) {
-			isNewQueryTicket = false;
+			isNewQueryTicket = false
 		}
 
-		return tokenData;
-	});
+		return tokenData
+	})
 
 	if (isNewQueryTicket) {
 		tokens.push({
@@ -148,85 +133,83 @@ export const readMagicUrl = (
 			secret: secretFromQuery,
 			id: decodeURIComponent(idFromQuery),
 			magic_link: window.location.href,
-		});
-		return tokens;
+		})
+		return tokens
 	}
 
-	throw new Error("Token already added.");
-};
+	throw new Error('Token already added.')
+}
 
 export const rawTokenCheck = async (unsignedToken: any, tokenIssuer: any) => {
 	// currently meta mask is needed to move beyond this point.
 	// however the err msg given is not obvious that this is the issue.
 
 	// metamask is only one of the wallets, we have to use walletConnect to
-	// check if user have some wallet immediately before use wallet 
+	// check if user have some wallet immediately before use wallet
 	// requiredParams(window.ethereum, "Please install metamask to continue.");
 
-	let rawTokenData = getRawToken(unsignedToken, tokenIssuer);
+	let rawTokenData = getRawToken(unsignedToken, tokenIssuer)
 
-	if (!rawTokenData) return null;
-
-	// @ts-ignore
-	let base64ticket = rawTokenData.token;
+	if (!rawTokenData) return null
 
 	// @ts-ignore
-	let ticketSecret = rawTokenData.secret;
+	let base64ticket = rawTokenData.token
+
+	// @ts-ignore
+	let ticketSecret = rawTokenData.secret
 
 	let tokenObj = {
 		ticketBlob: base64ticket,
 		ticketSecret: ticketSecret,
 		attestationOrigin: tokenIssuer.attestationOrigin,
-	};
-
-	// @ts-ignore
-	if (rawTokenData && rawTokenData.id) tokenObj.email = rawTokenData.id;
-
-	// @ts-ignore
-	if (rawTokenData && rawTokenData.magic_link){
-		// @ts-ignore
-		tokenObj.magicLink = rawTokenData.magic_link;
 	}
 
 	// @ts-ignore
-	if (tokenIssuer.attestationInTab) tokenObj.attestationInTab = true;
+	if (rawTokenData && rawTokenData.id) tokenObj.email = rawTokenData.id
 
-	return tokenObj;
-};
+	// @ts-ignore
+	if (rawTokenData && rawTokenData.magic_link) {
+		// @ts-ignore
+		tokenObj.magicLink = rawTokenData.magic_link
+	}
+
+	// @ts-ignore
+	if (tokenIssuer.attestationInTab) tokenObj.attestationInTab = true
+
+	return tokenObj
+}
 
 export const getRawToken = (unsignedToken: any, tokenIssuer: any) => {
-	if (!unsignedToken || !Object.keys(unsignedToken).length) return;
+	if (!unsignedToken || !Object.keys(unsignedToken).length) return
 
-	let tokensOutput = readTokens(tokenIssuer.itemStorageKey);
+	let tokensOutput = readTokens(tokenIssuer.itemStorageKey)
 
 	if (tokensOutput.success && !tokensOutput.noTokens) {
-		let rawTokens = tokensOutput.tokens;
+		let rawTokens = tokensOutput.tokens
 
-		let token = {};
+		let token = {}
 
 		if (rawTokens.length) {
 			rawTokens.forEach((tokenData: any) => {
 				if (tokenData.token) {
-					const _tokenParser = tokenIssuer.tokenParser;
+					const _tokenParser = tokenIssuer.tokenParser
 
-					let decodedToken = new _tokenParser(
-						base64ToUint8array(tokenData.token).buffer
-					);
+					let decodedToken = new _tokenParser(base64ToUint8array(tokenData.token).buffer)
 
 					if (decodedToken && decodedToken[tokenIssuer.unsignedTokenDataName]) {
-						let decodedTokenData = decodedToken[tokenIssuer.unsignedTokenDataName];
-						decodedTokenData = propsArrayBufferToArray(decodedTokenData);
+						let decodedTokenData = decodedToken[tokenIssuer.unsignedTokenDataName]
+						decodedTokenData = propsArrayBufferToArray(decodedTokenData)
 
 						if (compareObjects(decodedTokenData, unsignedToken)) {
-							token = tokenData;
+							token = tokenData
 						}
 					}
 				}
-			});
+			})
 		}
-		
-		return token;
+
+		return token
 	}
 
-	return null;
-};
+	return null
+}
