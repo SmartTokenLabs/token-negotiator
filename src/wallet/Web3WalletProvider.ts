@@ -68,6 +68,8 @@ export class Web3WalletProvider {
 		this.connections = {}
 		localStorage.removeItem(Web3WalletProvider.LOCAL_STORAGE_KEY)
 		localStorage.removeItem('walletconnect')
+		// remove session storage for the case of flow network
+		sessionStorage.removeItem('CURRENT_USER')
 	}
 
 	async loadConnections() {
@@ -98,14 +100,13 @@ export class Web3WalletProvider {
 
 		if (this[walletType as keyof Web3WalletProvider]) {
 			// @ts-ignore
+			// TODO: this address is null for the flow network
+			// Actual connected address is get in flowSubscribe function
 			const address = await this[walletType as keyof Web3WalletProvider](checkConnectionOnly)
-
 			logger(2, 'address', address)
 
 			this.saveConnections()
-
 			this.emitSavedConnection(address)
-
 			return address
 		} else {
 			throw new Error('Wallet type not found')
@@ -140,7 +141,6 @@ export class Web3WalletProvider {
 		blockchain = 'evm',
 	) {
 		this.connections[address.toLowerCase()] = { address, chainId, providerType, provider, blockchain, ethers }
-
 		return address
 	}
 
@@ -329,6 +329,37 @@ export class Web3WalletProvider {
 		this.registerNewWalletAddress(address, 1, 'SafeConnect', provider)
 
 		return address
+	}
+
+	async flowSubscribe(fcl, currentUser) {
+		try {
+			if (currentUser.addr) {
+				this.registerNewWalletAddress(currentUser.addr, 1, 'flow', fcl)
+
+				const ui = this.client.getUi()
+
+				if (ui) ui.dismissLoader()
+
+				this.client.enrichTokenLookupDataOnChainTokens()
+				if (ui) ui.updateUI('main')
+			}
+		} catch (e) {
+			console.error('flow wallet connection error ==>', e)
+			this.client.getUi().showError('Flow wallet connection error.')
+		}
+	}
+
+	async Flow() {
+		try {
+			const flowProvider = await import('./FlowProvider')
+			const fcl = flowProvider.getFlowProvider()
+
+			fcl.currentUser.subscribe((currentUser) => this.flowSubscribe(fcl, currentUser))
+			fcl.authenticate()
+		} catch (e) {
+			console.error('error ==>', e)
+		}
+		return ''
 	}
 
 	safeConnectAvailable() {
