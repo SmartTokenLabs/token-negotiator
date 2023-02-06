@@ -13,6 +13,28 @@ const torusSVG =
 	'<svg width="62px" height="62px" viewBox="0 0 319 319" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;"><title>Torus logo</title><g transform="matrix(1.9124,0,0,1.9124,159.3,159.3)"><g transform="matrix(1,0,0,1,-107.5,-107.5)"><path d="M57.267,51.007L56.757,84.626L85.505,85.297L85.565,164.593L119.635,164.873L119.472,51.399L57.267,51.007Z" style="fill:rgb(57,150,254);"/><g transform="matrix(1.06773,0,0,1.04155,-3.94432,-8.22515)"><circle cx="139.434" cy="73.102" r="16.365" style="fill:rgb(57,150,254);"/></g></g></g></svg>'
 const safeConnectSVG =
 	'<svg style="pointer-events: none" xmlns="http://www.w3.org/2000/svg" width="55" height="55" viewBox="0 0 55 55"><title>Safe connect button</title><path fill="rgb(5, 26, 245)" d="M25.5 26h-5c0-2.9-0.6-5.6-1.7-8.1c-1-2.3-2.4-4.3-4.2-6.1c-1.9-1.9-4.3-3.4-6.8-4.4c-2.3-0.9-4.8-1.4-7.3-1.4v-5h7h18v6.2v5.6v6.2Z" transform="translate(13,28.5) translate(0,0) translate(-13,-13.5)"/><path fill="rgb(5, 26, 245)" d="M53 1v11.9v6.1v7h-12.8h-6.1h-6.1v-13.4v-5.2v-6.4h12.6h5.3Z" transform="translate(41.5,28.7) translate(0,0) translate(-40.5,-13.5)"/></svg>'
+const flowSVG = `
+	<svg xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="svg32" x="0px" y="0px" viewBox="0 0 256 256" width="62px" height="62px" style="enable-background:new 0 0 256 256;" xml:space="preserve">
+		<style type="text/css">
+			.flow-st0{fill:#00EF8B;}
+			.flow-st1{fill:#FFFFFF;}
+			.flow-st2{fill:#16FF99;}
+		</style>
+		<sodipodi:namedview bordercolor="#666666" borderopacity="1" fit-margin-bottom="0" fit-margin-left="0" fit-margin-right="0" fit-margin-top="0" gridtolerance="10" guidetolerance="10" id="namedview34" inkscape:current-layer="Layer_1-2" inkscape:cx="-165.09584" inkscape:cy="294.4716" inkscape:pageopacity="0" inkscape:pageshadow="2" inkscape:window-height="878" inkscape:window-maximized="1" inkscape:window-width="1440" inkscape:window-x="0" inkscape:window-y="0" inkscape:zoom="0.40971549" objecttolerance="10" pagecolor="#ffffff" showgrid="false">
+		</sodipodi:namedview>
+		<g id="Layer_2_1_">
+			<g id="Layer_1-2">
+				<g id="g43" transform="scale(2.56)">
+					<circle id="circle20" class="flow-st0" cx="50" cy="50" r="50"/>
+					<rect id="rect22" x="57.8" y="42.2" class="flow-st1" width="14.1" height="14.1"/>
+					<path id="path24" class="flow-st1" d="M43.7,61.6c0,2.9-2.4,5.3-5.3,5.3s-5.3-2.4-5.3-5.3c0-2.9,2.4-5.3,5.3-5.3c0,0,0,0,0,0h5.3V42.2 h-5.3C27.7,42.2,19,50.9,19,61.6S27.7,81,38.4,81s19.4-8.7,19.4-19.4l0,0v-5.3H43.7V61.6z"/>
+					<path id="path26" class="flow-st1" d="M63.1,35.1H79V21H63.1c-10.7,0-19.4,8.7-19.4,19.4v1.8h14.1v-1.8C57.8,37.5,60.2,35.1,63.1,35.1 z"/>
+					<polygon id="polygon28" class="flow-st2" points="57.8,42.2 57.8,42.2 43.7,42.2 43.7,56.3 57.8,56.3"/>
+				</g>
+			</g>
+		</g>
+	</svg>
+`
 
 export class SelectWallet extends AbstractView {
 	render() {
@@ -40,6 +62,13 @@ export class SelectWallet extends AbstractView {
 			</button>`
 			: ''
 
+		const FlowButton = `
+			<button class="wallet-button-tn" data-wallet="Flow" aria-label="Safe connect wallet button">
+				${flowSVG}
+				<p>Flow</p>
+			</button>
+		`
+
 		this.viewContainer.innerHTML = `
             <div class="inner-content-tn scroll-tn">
               <div class="wallet-selection-view-tn">
@@ -64,6 +93,7 @@ export class SelectWallet extends AbstractView {
                       <p>Torus</p>
                     </button>
                     ${PhantomButton}
+					${FlowButton}
                   </div>
                 </div>
               </div>
@@ -102,14 +132,16 @@ export class SelectWallet extends AbstractView {
 		try {
 			await this.client.negotiatorConnectToWallet(wallet)
 
-			this.ui.dismissLoader()
+			if (wallet !== 'Flow') {
+				this.ui.dismissLoader()
 
-			if (this.params?.data?.connectCallback) {
-				this.params?.data?.connectCallback()
-			} else {
-				// TODO: It may be better/faster to fire this on view load.
-				this.client.enrichTokenLookupDataOnChainTokens()
-				this.ui.updateUI('main')
+				if (this.params?.data?.connectCallback) {
+					this.params?.data?.connectCallback()
+				} else {
+					// TODO: It may be better/faster to fire this on view load.
+					this.client.enrichTokenLookupDataOnChainTokens()
+					this.ui.updateUI('main')
+				}
 			}
 		} catch (err: any) {
 			this.ui.showError(err)
