@@ -1,14 +1,18 @@
-// @ts-nocheck
 
+
+
+// @ts-nocheck
+import { tokenRequest } from './../../index';
 import {
 	getNftCollection,
-	tokenRequest,
 	getNftTokens,
 	getSolanaNftTokensUrl,
 	getEvmNftCollectionUrl,
 	getSolanaNftCollectionUrl,
 	getEvmNftTokensUrl,
-} from './../../../utils/token/nftProvider'
+} from './../../../utils/token/nftProvider';
+
+import { getFungibleTokens, getEvmFungibleTokens, getSolanaFungibleTokens } from '../fungibleTokenProvider';
 
 const mockZedRunCollection = {
 	assets: [
@@ -21,6 +25,16 @@ const mockZedRunCollection = {
 		},
 	],
 }
+
+const mockFungibleTokensResponse = [{
+	"token_address": "0x52459834ca561cb55411699e9c2143683bcf865f",
+	"name": "VOOFTALIK BUTERIN",
+	"symbol": "VOOF",
+	"logo": null,
+	"thumbnail": null,
+	"decimals": 18,
+	"balance": "1000000000000000000000000000000"
+}];
 
 const mockPunkTokens = [
 	{
@@ -255,3 +269,35 @@ it('get evm Nft Collection Url', async () => {
 		'https://api.token-discovery.tokenscript.org/get-token-collection?collectionAddress=bf0aae3dd0078a9feb975f1e3242ddcb7774d551c7fd2a3f07a89c827ed606b2&chain=eth&blockchain=solana',
 	)
 })
+
+it('get evm fungible tokens', async () => {
+	global.fetch = jest.fn(() => Promise.resolve({ status: 200, json: () => Promise.resolve(mockFungibleTokensResponse) }))
+	const evmtokens = await getEvmFungibleTokens({
+		contract: '0x52459834ca561cb55411699e9c2143683bcf865f',
+		chain: 'eth',
+		erc: 200
+	});
+	expect(evmtokens).toEqual('https://api.token-discovery.tokenscript.org/get-fungible-token?owner=0x52459834ca561cb55411699e9c2143683bcf865f&chain=eth&blockchain=evm');
+});
+
+it('get  solana fungible tokens', async () => {
+	global.fetch = jest.fn(() => Promise.resolve({ status: 200, json: () => Promise.resolve(mockFungibleTokensResponse) }))
+	const solanatokens = await getSolanaFungibleTokens({
+		collectionAddress: '0x52459834ca561cb55411699e9c2143683bcf865f',
+		chain: 'eth',
+		blockchain: 'solana',
+		erc: 200
+	});
+	expect(solanatokens).toEqual('https://api.token-discovery.tokenscript.org/get-fungible-token?owner=0x52459834ca561cb55411699e9c2143683bcf865f&chain=eth&blockchain=solana');
+});
+
+it('get fungible tokens', async () => {
+	global.fetch = jest.fn(() => Promise.resolve({ status: 200, json: () => Promise.resolve(mockFungibleTokensResponse) }))
+	const tokens = await getFungibleTokens({
+		owner: '0x52459834ca561cb55411699e9c2143683bcf865f',
+		chain: 'eth',
+		erc: 200
+	});
+	expect(tokens).toEqual(mockFungibleTokensResponse);
+});
+

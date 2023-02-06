@@ -1,4 +1,6 @@
-import { OnChainTokenConfig, Issuer, SolanaIssuerConfig, IssuerConfigInterface } from '../../client/interface'
+import { tokenRequest } from './../index';
+
+import { OnChainTokenConfig, Issuer, SolanaIssuerConfig } from '../../client/interface'
 import { validateBlockchain } from '../support/isSupported'
 
 const baseURL = 'https://api.token-discovery.tokenscript.org';
@@ -83,17 +85,3 @@ export const getFlowNftTokensUrl = (issuer: any, owner: string) => {
 	return query
 }
 
-export const tokenRequest = async (query: string, silenceRequestError: boolean) => {
-	try {
-		const response = await fetch(query)
-		const ok = response.status >= 200 && response.status <= 299
-		if (!ok && silenceRequestError === true) {
-			console.warn('token api request failed: ', query)
-			return
-		}
-		if (ok) return response.json()
-		else throw new Error(`HTTP error! status: ${response.status}`)
-	} catch (msg: any) {
-		throw new Error(`HTTP error.`)
-	}
-}

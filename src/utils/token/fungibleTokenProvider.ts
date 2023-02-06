@@ -1,3 +1,4 @@
+import { tokenRequest } from './../index';
 import { OnChainTokenConfig, SolanaIssuerConfig } from '../../client/interface';
 
 const baseURL = 'https://api.token-discovery.tokenscript.org';
@@ -26,20 +27,4 @@ export const getSolanaFungibleTokens = (issuer: SolanaIssuerConfig, ipfsBaseUrl:
 	let query = `${baseURL}/get-fungible-token?owner=${collectionAddress}&chain=${chain}&blockchain=solana`;
 	if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`
 	return query
-}
-
-
-export const tokenRequest = async (query: string, silenceRequestError: boolean) => {
-	try {
-		const response = await fetch(query)
-		const ok = response.status >= 200 && response.status <= 299
-		if (!ok && silenceRequestError === true) {
-			console.warn('token api request failed: ', query)
-			return
-		}
-		if (ok) return response.json()
-		else throw new Error(`HTTP error! status: ${response.status}`)
-	} catch (msg: any) {
-		throw new Error(`HTTP error.`)
-	}
 }
