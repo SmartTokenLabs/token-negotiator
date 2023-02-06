@@ -1,8 +1,7 @@
 import { OnChainTokenConfig, Issuer, SolanaIssuerConfig, IssuerConfigInterface } from '../../client/interface'
 import { validateBlockchain } from '../support/isSupported'
 
-// const baseURL = 'https://api.token-discovery.tokenscript.org';
-const baseURL = 'http://127.0.0.1:3000'; // TODO: remove this
+const baseURL = 'https://api.token-discovery.tokenscript.org';
 
 
 export const getNftCollection = async (issuer: Issuer, ipfsBaseUrl?: string) => {
