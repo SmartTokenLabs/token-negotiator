@@ -28,6 +28,7 @@ import { LocalOutlet } from '../outlet/localOutlet'
 import { Outlet, OutletInterface } from '../outlet'
 import { shouldUseRedirectMode } from '../utils/support/getBrowserData'
 import { VERSION } from '../version'
+import { getFungibleTokens } from '../utils/token/fungibleTokenProvider'
 
 if (typeof window !== 'undefined') window.tn = { VERSION }
 
@@ -293,7 +294,11 @@ export class Client {
 			if (tokenData.title) continue
 
 			try {
-				let lookupData = await getNftCollection(tokenData)
+				let lookupData
+				if (Object.keys(tokenData).includes('erc') && tokenData['erc'] === 20) {
+					lookupData = await getFungibleTokens(tokenData)
+				}
+				lookupData = await getNftCollection(tokenData)
 				if (lookupData) {
 					// TODO: this might be redundant
 					lookupData.onChain = true
@@ -609,7 +614,6 @@ export class Client {
 
 	async connectTokenIssuer(issuer: string) {
 		const config = this.tokenStore.getCurrentIssuers()[issuer]
-
 		if (!config) errorHandler('Undefined token issuer', 'error', null, null, true, true)
 
 		let tokens
@@ -622,7 +626,11 @@ export class Client {
 			requiredParams(issuer, 'issuer is required.')
 			requiredParams(walletAddress, 'wallet address is missing.')
 
-			tokens = await getNftTokens(config, walletAddress)
+			if (Object.keys(config).includes('erc') && config['erc'] === 20) {
+				tokens = await getFungibleTokens(config)
+			} else {
+				tokens = await getNftTokens(config, walletAddress)
+			}
 		} else {
 			if (new URL(config.tokenOrigin).origin === document.location.origin) {
 				tokens = this.loadLocalOutletTokens(config)

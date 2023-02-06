@@ -182,10 +182,10 @@ export class SelectIssuers extends AbstractView {
 					${this.client.issuersLoaded === true ? '' : 'disabled'}
 				>
 					${
-						this.client.issuersLoaded === true
-							? 'Load'
-							: '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
-					}
+	this.client.issuersLoaded === true
+		? 'Load'
+		: '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
+}
 				</button>
 				<button aria-label="tokens available from token issuer ${issuer}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" 
 						class="tokens-btn-tn" style="${tokens?.length ? 'display: block;' : ''}" data-issuer="${issuer}">
@@ -300,7 +300,9 @@ export class SelectIssuers extends AbstractView {
 		const config = tokenStore.getCurrentIssuers()[issuer]
 		const tokenData = tokenStore.getIssuerTokens(issuer) ?? []
 
-		if (config.title) document.getElementsByClassName('headline-tn token-name')[0].innerHTML = config.title
+		config?.title ?
+			document.getElementsByClassName('headline-tn token-name')[0].innerHTML = config.title
+			: document.getElementsByClassName('headline-tn token-name')[0].innerHTML = config.collectionID;
 
 		let tokens: TokenListItemInterface[] = []
 
@@ -310,7 +312,12 @@ export class SelectIssuers extends AbstractView {
 			// TODO Define a constant value that can be checked regardless of which issuer token to speed up this check.
 			tokenStore.getSelectedTokens()[issuer]?.tokens.map((st: any) => {
 				if (JSON.stringify(t) === JSON.stringify(st)) isSelected = true
-			})
+			});
+
+			if (Object.keys(t).includes('balance')) {
+				t.title = t.name;
+				t.image = t.logo ?? t.thumbnail;
+			}
 
 			if (config.onChain === false) {
 				const { title, image } = config
@@ -323,6 +330,7 @@ export class SelectIssuers extends AbstractView {
 					image: image,
 					toggleState: isSelected,
 					hideToggle: config?.hideToggle,
+					balance: t.balance
 				})
 			} else {
 				const tokenId = t.tokenId ?? i.toString()
@@ -333,6 +341,7 @@ export class SelectIssuers extends AbstractView {
 					index: tokenId,
 					title: t.title,
 					image: t.image,
+					balance: t.balance,
 					toggleState: isSelected,
 					hideToggle: config?.hideToggle,
 				})

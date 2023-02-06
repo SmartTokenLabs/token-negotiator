@@ -8,6 +8,7 @@ export interface TokenListItemInterface {
 	index: string
 	image: string
 	data: any
+	balance?: string;
 	toggleState: boolean
 	hideToggle?: boolean
 }
@@ -134,7 +135,7 @@ export class TokenList extends AbstractView {
 	}
 
 	createTokenMarkup(config: TokenListItemInterface) {
-		const { tokenIssuerKey, title, data, index, image, toggleState, hideToggle } = config
+		const { tokenIssuerKey, title, data, index, image, toggleState, hideToggle, balance } = config
 
 		const tokenId =
 			index.length > 15 ? index.substring(0, 5) + '...' + index.substring(index.length - 5, index.length) : index
@@ -148,7 +149,8 @@ export class TokenList extends AbstractView {
               <div class='data-tn'>
                   <p class='token-title-tn'>${title}</p>
                   <p class='detail-tn' title="${index}">#${tokenId}</p>
-                </div>` +
+									${balance ? "<p class='detail-tn'>Balance:" + balance+ "</p>": null }
+                </div>` + 
 			(hideToggle
 				? ''
 				: `<div class='toggle-tn'>
