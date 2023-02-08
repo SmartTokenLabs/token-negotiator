@@ -2,7 +2,6 @@ import { OutletAction, OutletResponseAction, Messaging } from './messaging'
 import { Ui, UiInterface, UItheme } from './ui'
 import { logger, requiredParams, waitForElementToExist, errorHandler } from '../utils'
 import { getNftCollection, getNftTokens } from '../utils/token/nftProvider'
-import './../vendor/keyShape'
 import { Authenticator } from '@tokenscript/attestation'
 import { TokenStore } from './tokenStore'
 import {
@@ -37,11 +36,10 @@ interface EventSenderTokens {
 
 declare global {
 	interface Window {
-		KeyshapeJS?: any
-		tokenToggleSelection: any
-		ethereum: any
-		solana: any
-		tn: unknown
+		tokenToggleSelection: any;
+		ethereum: any;
+		solana: any;
+		tn: unknown;
 	}
 }
 

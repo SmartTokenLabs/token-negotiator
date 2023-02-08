@@ -13,7 +13,7 @@
     "build-umd-dev": "shx rm -rf token-negotiator-dist && webpack && npm run compile-scss-umd && npm run copy-assets-umd",
     "clean": "shx rm -rf dist",
     "copy-assets": "copyfiles ./src/vendor/*.js dist/vendor -V --flat",
-    "copy-assets-umd": "copyfiles ./src/vendor/*.js token-negotiator-dist/vendor -V --flat",
+    "copy-assets-umd": "copyfiles ./src/vendor/*.js token-negotiator-dist/vendor -V --flat && copyfiles ./src/images/*.* token-negotiator-dist/images -V --flat",
     "prepublishOnly": "npm run build",
     "lint": "eslint . --quiet --fix",
     "prettier": "prettier --write src/{,**/}*.{ts,scss}",
