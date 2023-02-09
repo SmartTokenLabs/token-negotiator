@@ -66,7 +66,7 @@ export class TokenStore {
 		if (Object.keys(this.currentIssuers).length > 0) {
 			this.selectedTokens = {}
 		}
-		this.prePopulateTokenLookupStore(issuers);
+		this.prePopulateTokenLookupStore(issuers)
 	}
 
 	public clearCachedTokens(onChain?: boolean) {
@@ -93,7 +93,7 @@ export class TokenStore {
 			if (onChainFilter === undefined || onChainFilter === this.currentIssuers[collectionId])
 				current[collectionId] = this.tokenLookup[collectionId]
 		}
-		return current;
+		return current
 	}
 
 	public getCurrentTokens(onChainFilter?: boolean) {
@@ -150,7 +150,7 @@ export class TokenStore {
 	}
 
 	private async prePopulateTokenLookupStore(issuers: TokenConfig[]) {
-		let collectionIds: { [issuer: string]: boolean } = {};
+		let collectionIds: { [issuer: string]: boolean } = {}
 		issuers.forEach((issuer: TokenConfig, i) => {
 			if (!issuer.collectionID) return
 
@@ -174,7 +174,7 @@ export class TokenStore {
 			if (!this.tokenLookup[issuer.collectionID]) this.updateTokenLookupStore(issuer.collectionID, issuer, false)
 
 			collectionIds[issuer.collectionID] = issuer.onChain
-		});
+		})
 		this.currentIssuers = collectionIds
 	}
 

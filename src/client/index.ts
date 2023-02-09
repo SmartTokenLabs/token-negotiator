@@ -283,7 +283,7 @@ export class Client {
 		this.issuersLoaded = false
 		this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADING)
 
-		let issuers = this.tokenStore.getCurrentIssuers(true);
+		let issuers = this.tokenStore.getCurrentIssuers(true)
 
 		for (let issuer in issuers) {
 			let tokenData = issuers[issuer]
@@ -295,10 +295,10 @@ export class Client {
 				let lookupData
 
 				if (Object.keys(tokenData).includes('erc') && tokenData['erc'] === 20) {
-					lookupData = await getFungibleTokens(tokenData);
+					lookupData = await getFungibleTokens(tokenData)
 				}
 
-				lookupData = await getNftCollection(tokenData);
+				lookupData = await getNftCollection(tokenData)
 				if (lookupData) {
 					// TODO: this might be redundant
 					lookupData.onChain = true
@@ -348,7 +348,7 @@ export class Client {
 	}
 
 	async negotiate(issuers?: (OnChainTokenConfig | OffChainTokenConfig)[], openPopup = false, refreshTokens = false) {
-		let currentIssuer = this.getOutletConfigForCurrentOrigin();
+		let currentIssuer = this.getOutletConfigForCurrentOrigin()
 
 		if (currentIssuer) {
 			logger(2, 'Sync Outlet fired in Client to read MagicLink before negotiate().')
@@ -357,10 +357,10 @@ export class Client {
 			outlet = null
 		}
 
-		await this.checkUserAgentSupport('full');
+		await this.checkUserAgentSupport('full')
 		if (issuers) {
-			this.tokenStore.updateIssuers(issuers);
-		} 
+			this.tokenStore.updateIssuers(issuers)
+		}
 
 		requiredParams(Object.keys(this.tokenStore.getCurrentIssuers()).length, 'issuers are missing.')
 
