@@ -18,6 +18,7 @@ export const getFungibleTokens = async (issuer: any, ipfsBaseUrl?: string) => {
 export const getEvmFungibleTokens = (issuer: OnChainTokenConfig, ipfsBaseUrl: string) => {
 	const { contract, chain } = issuer
 	let query = `${baseURL}/get-fungible-token?owner=${contract}&chain=${chain}&blockchain=evm`;
+	if (issuer.symbol) query += `&symbol=${issuer.symbol}`;
 	if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`
 	return query;
 }

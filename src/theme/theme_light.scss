@@ -21,6 +21,7 @@
 
 .overlay-tn.light-tn .opening-btn-tn:hover,
 .overlay-tn.light-tn .tokens-btn-tn:hover,
+.overlay-tn.light-tn .fungible-token-btn:hover,
 .overlay-tn.light-tn .connect-btn-tn:hover,
 .overlay-tn.light-tn .btn-tn:hover {
   background: #c5c5c5 !important;
@@ -29,6 +30,7 @@
 .overlay-tn.light-tn .opening-btn-tn,
 .overlay-tn.light-tn li.issuer-connect-banner-tn .connect-btn-tn,
 .overlay-tn.light-tn li.issuer-connect-banner-tn .tokens-btn-tn,
+.overlay-tn.light-tn li.issuer-connect-banner-tn .fungible-token-btn,
 .overlay-tn.light-tn .btn-tn {
   color: black;
   background: #efefef;
@@ -37,6 +39,7 @@
 
 .overlay-tn.light-tn li.issuer-connect-banner-tn .connect-btn-tn,
 .overlay-tn.light-tn li.issuer-connect-banner-tn .tokens-btn-tn,
+.overlay-tn.light-tn li.issuer-connect-banner-tn .fungible-token-btn,
 .overlay-tn.light-tn .btn-tn {
   border: 1px solid #efefef;
 }

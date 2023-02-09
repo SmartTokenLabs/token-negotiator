@@ -22,8 +22,12 @@ export class SelectIssuers extends AbstractView {
 	}
 
 	render() {
-		this.renderContent()
-		this.afterRender()
+		this.renderContent();
+		this.afterRender();
+		this.client.on("tokens-selected", () => {
+			// Update view
+			this.populateIssuers();
+		});
 	}
 
 	protected renderContent() {
@@ -133,18 +137,22 @@ export class SelectIssuers extends AbstractView {
 
 	// TODO: back to wallet selection?
 
-	populateIssuers() {
+	async populateIssuers() {
 		let html = ''
 
-		let issuers = this.client.getTokenStore().getCurrentIssuers()
+		let issuers = this.client.getTokenStore().getCurrentIssuers();
 
 		for (let issuerKey in issuers) {
 			let data = issuers[issuerKey]
 			let tokens = this.client.getTokenStore().getIssuerTokens(issuerKey) ?? []
 
-			let title = data.title ? data.title : data.collectionID.replace(/[-,_]+/g, ' ')
+			let title = data.title ? data.title : data.collectionID.replace(/[-,_]+/g, ' ');
+			if (data.fungible && tokens.length) {
+				tokens.map(token => html += this.fungibleTokensMarkup(token));
+			} else {
+				html += this.issuerConnectMarkup(title, data.image, issuerKey, tokens);
+			}
 
-			html += this.issuerConnectMarkup(title, data.image, issuerKey, tokens)
 		}
 
 		this.issuerListContainer.innerHTML = html
@@ -162,8 +170,12 @@ export class SelectIssuers extends AbstractView {
 			if (e.target.classList.contains('connect-btn-tn')) {
 				this.connectTokenIssuer(e)
 			} else if (e.target.classList.contains('tokens-btn-tn')) {
-				const issuer = e.target.parentNode.dataset.issuer
+				const issuer = e.target.parentNode.dataset.issuer;
 				this.navigateToTokensView(issuer)
+			} else if (e.target.classList.contains('fungible-token-btn')) {
+				const token = e.target.parentNode.dataset;
+				console.log('show token view', token);
+				// this.showTokenView(token)
 			}
 		})
 	}
@@ -193,6 +205,22 @@ export class SelectIssuers extends AbstractView {
 				</button>
 			</li>
         `
+	}
+
+	fungibleTokensMarkup(token: any) {
+		return `
+      <li class="issuer-connect-banner-tn" data-issuer="${token}" role="menuitem">
+				<div tabindex="0" style="display: flex; align-items: center;">
+					<div class="img-container-tn issuer-icon-tn shimmer-tn" data-image-src="${token.logo}" data-token-title="${token.name}"></div>
+					<p class="issuer-connect-title">${token.name}</p>
+				</div>
+				${ token.balance ?
+		`<button aria-label="tokens balance available from ${token.name}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" 
+				class="fungible-token-btn" style="${token.balance ? 'display: block;' : ''}" data-token="${token.token_address}">
+				Token Balance Found
+			</button>`
+		: null}
+			</li>`
 	}
 
 	backToIssuers() {
@@ -287,8 +315,6 @@ export class SelectIssuers extends AbstractView {
 
 	navigateToTokensView(issuer: string) {
 		this.updateTokensView(issuer)
-
-		this.showTokenView(issuer)
 	}
 
 	updateTokensView(issuer: string) {
@@ -351,8 +377,9 @@ export class SelectIssuers extends AbstractView {
 		this.tokenListView?.update({ issuer: issuer, tokens: tokens })
 	}
 
-	showTokenView(issuer: string) {
-		this.viewContainer.querySelector('.issuer-slider-tn').classList.toggle('open')
+
+
+	showTokenView(token: any) {
 
 		// TODO review and uplift this code, its not working as expected.
 
@@ -367,5 +394,6 @@ export class SelectIssuers extends AbstractView {
 
 		// issuerViewEl.setAttribute('aria-hidden', false);
 		// tokenViewEl.setAttribute('aria-hidden', true);
+		
 	}
 }

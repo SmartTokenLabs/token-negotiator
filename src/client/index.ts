@@ -133,11 +133,9 @@ export class Client {
 		this.negotiateAlreadyFired = false
 
 		this.tokenStore = new TokenStore(this.config.autoEnableTokens, this.config.tokenPersistenceTTL)
-
 		if (this.config.issuers?.length > 0) this.tokenStore.updateIssuers(this.config.issuers)
 
 		this.messaging = new Messaging()
-
 		this.registerOutletProofEventListener()
 	}
 
@@ -285,7 +283,7 @@ export class Client {
 		this.issuersLoaded = false
 		this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADING)
 
-		let issuers = this.tokenStore.getCurrentIssuers(true)
+		let issuers = this.tokenStore.getCurrentIssuers(true);
 
 		for (let issuer in issuers) {
 			let tokenData = issuers[issuer]
@@ -295,10 +293,12 @@ export class Client {
 
 			try {
 				let lookupData
+
 				if (Object.keys(tokenData).includes('erc') && tokenData['erc'] === 20) {
-					lookupData = await getFungibleTokens(tokenData)
+					lookupData = await getFungibleTokens(tokenData);
 				}
-				lookupData = await getNftCollection(tokenData)
+
+				lookupData = await getNftCollection(tokenData);
 				if (lookupData) {
 					// TODO: this might be redundant
 					lookupData.onChain = true
@@ -348,7 +348,8 @@ export class Client {
 	}
 
 	async negotiate(issuers?: (OnChainTokenConfig | OffChainTokenConfig)[], openPopup = false, refreshTokens = false) {
-		let currentIssuer = this.getOutletConfigForCurrentOrigin()
+		let currentIssuer = this.getOutletConfigForCurrentOrigin();
+
 		if (currentIssuer) {
 			logger(2, 'Sync Outlet fired in Client to read MagicLink before negotiate().')
 			let outlet = new Outlet(currentIssuer, true)
@@ -356,9 +357,10 @@ export class Client {
 			outlet = null
 		}
 
-		await this.checkUserAgentSupport('full')
-
-		if (issuers) this.tokenStore.updateIssuers(issuers)
+		await this.checkUserAgentSupport('full');
+		if (issuers) {
+			this.tokenStore.updateIssuers(issuers);
+		} 
 
 		requiredParams(Object.keys(this.tokenStore.getCurrentIssuers()).length, 'issuers are missing.')
 

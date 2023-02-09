@@ -36,6 +36,7 @@ export interface IssuerConfigInterface {
 	filters?: {}
 	noTokenMsg?: string
 	hideToggle?: boolean
+	fungible?: boolean
 }
 
 export type Issuer = OffChainTokenConfig | SolanaIssuerConfig | OnChainTokenConfig
