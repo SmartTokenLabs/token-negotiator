@@ -263,6 +263,8 @@ export class Ui implements UiInterface {
 				return this.dismissLoader()
 			}
 			error = error.message ? error.message : error.toString()
+		} else {
+			if (error === ClientError.USER_ABORT) return this.dismissLoader()
 		}
 
 		this.loadContainer.querySelector('.loader-tn').style.display = 'none'
@@ -317,11 +319,10 @@ export class Ui implements UiInterface {
 	}
 
 	protected setTheme(theme: UItheme) {
-		let refTokenSelector = document.querySelector('.overlay-tn')
-		if (refTokenSelector) {
-			refTokenSelector.classList.remove(this.options.theme + '-tn')
+		if (this.popupContainer) {
+			this.popupContainer.classList.remove(this.options.theme + '-tn')
 			theme = this.validateTheme(theme)
-			refTokenSelector.classList.add(theme + '-tn')
+			this.popupContainer.classList.add(theme + '-tn')
 			this.options.theme = theme
 		}
 	}

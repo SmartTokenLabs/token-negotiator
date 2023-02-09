@@ -111,8 +111,7 @@ export function isSafari() {
 
 export function browserBlocksIframeStorage(): boolean {
 	let browserData = getBrowserData()
-	// TODO remove Chrome from list
-	return browserData.iOS || isSafari() || isBrave()
+	return browserData.iOS || isSafari() || isBrave() || browserData.fireFox
 }
 
 export function shouldUseRedirectMode(redirectConfig?: 'always' | 'never') {
