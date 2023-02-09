@@ -273,8 +273,7 @@ export class Ui implements UiInterface {
 			}
 			error = error.message ? error.message : error.toString()
 		} else {
-			if (error === ClientError.USER_ABORT)
-				return this.dismissLoader();
+			if (error === ClientError.USER_ABORT) return this.dismissLoader()
 		}
 
 		this.loadContainer.querySelector('.loader-tn').style.display = 'none'

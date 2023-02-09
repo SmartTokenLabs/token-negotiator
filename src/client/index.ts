@@ -498,9 +498,9 @@ export class Client {
 
 		let action = this.getDataFromQuery('action')
 
-		if (action === "error"){
-			this.handleRedirectTokensError();
-			return;
+		if (action === 'error') {
+			this.handleRedirectTokensError()
+			return
 		}
 
 		if (action !== OutletAction.GET_ISSUER_TOKENS + '-response') return
@@ -551,16 +551,16 @@ export class Client {
 		this.tokenStore.setTokens(issuer, tokens)
 	}
 
-	private async handleRedirectTokensError(){
-		const error = this.getDataFromQuery('error');
+	private async handleRedirectTokensError() {
+		const error = this.getDataFromQuery('error')
 
-		if (this.config.type === "active") {
-			this.createUiInstance();
-			await this.ui.initialize();
-			this.ui.showError(error);
+		if (this.config.type === 'active') {
+			this.createUiInstance()
+			await this.ui.initialize()
+			this.ui.showError(error)
 		}
 
-		console.log("Error loading tokens from outlet: ", error);
+		console.log('Error loading tokens from outlet: ', error)
 	}
 
 	async setPassiveNegotiationOnChainTokens() {
