@@ -201,16 +201,16 @@ export class Ui implements UiInterface {
 	}
 
 	closeOverlay() {
-		if (this.options.uiType === "inline") return;
-		this.popupContainer.classList.remove("open");
+		if (this.options.uiType === 'inline') return
+		this.popupContainer.classList.remove('open')
 	}
 
 	openOverlay() {
 		if (this.options.uiType === 'inline') return
 		// Prevent out-of-popup click from closing the popup straight away
-		setTimeout(()=> {
-			this.popupContainer.classList.add("open");
-		}, 10);
+		setTimeout(() => {
+			this.popupContainer.classList.add('open')
+		}, 10)
 	}
 
 	togglePopup() {
