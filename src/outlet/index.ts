@@ -532,6 +532,7 @@ export class Outlet {
 			target.postMessage(response, '*')
 		}
 
+		// TODO: this is probably no longer needed as brave is set to always use redirect mode now
 		if (!this.isSameOrigin()) {
 			// At least Brave iOS browser blocks close(), so user have to see the message and close tab.
 			// Message appears when tokens succesully sent with postMessage
