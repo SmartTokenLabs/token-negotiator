@@ -208,7 +208,7 @@ export class Outlet {
 			}
 		} catch (e: any) {
 			console.error(e)
-			this.sendErrorResponse(evtid, e.message)
+			this.sendErrorResponse(evtid, e?.message ?? e)
 		}
 	}
 
@@ -461,6 +461,23 @@ export class Outlet {
 	}
 
 	public sendErrorResponse(evtid: any, error: string) {
+		let requestor = this.getDataFromQuery('requestor')
+
+		if (requestor) {
+			let url = new URL(requestor)
+
+			const params = new URLSearchParams(url.hash.substring(1))
+			params.set('action', ResponseActionBase.ERROR)
+			params.set('error', error)
+
+			console.log('Redirecting error: ', error)
+
+			url.hash = '#' + params.toString()
+
+			document.location.href = url.href
+			return
+		}
+
 		this.sendMessageResponse({
 			evtid: evtid,
 			evt: ResponseActionBase.ERROR,
@@ -515,6 +532,7 @@ export class Outlet {
 			target.postMessage(response, '*')
 		}
 
+		// TODO: this is probably no longer needed as brave is set to always use redirect mode now
 		if (!this.isSameOrigin()) {
 			// At least Brave iOS browser blocks close(), so user have to see the message and close tab.
 			// Message appears when tokens succesully sent with postMessage

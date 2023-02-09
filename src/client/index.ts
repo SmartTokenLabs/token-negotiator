@@ -2,7 +2,6 @@ import { OutletAction, OutletResponseAction, Messaging } from './messaging'
 import { Ui, UiInterface, UItheme } from './ui'
 import { logger, requiredParams, waitForElementToExist, errorHandler } from '../utils'
 import { getNftCollection, getNftTokens } from '../utils/token/nftProvider'
-import './../vendor/keyShape'
 import { Authenticator } from '@tokenscript/attestation'
 import { TokenStore } from './tokenStore'
 import {
@@ -38,7 +37,6 @@ interface EventSenderTokens {
 
 declare global {
 	interface Window {
-		KeyshapeJS?: any
 		tokenToggleSelection: any
 		ethereum: any
 		solana: any
@@ -505,6 +503,11 @@ export class Client {
 
 		let action = this.getDataFromQuery('action')
 
+		if (action === 'error') {
+			this.handleRedirectTokensError()
+			return
+		}
+
 		if (action !== OutletAction.GET_ISSUER_TOKENS + '-response') return
 
 		let issuer = this.getDataFromQuery('issuer')
@@ -551,6 +554,18 @@ export class Client {
 		logger(2, tokens)
 
 		this.tokenStore.setTokens(issuer, tokens)
+	}
+
+	private async handleRedirectTokensError() {
+		const error = this.getDataFromQuery('error')
+
+		if (this.config.type === 'active') {
+			this.createUiInstance()
+			await this.ui.initialize()
+			this.ui.showError(error)
+		}
+
+		console.log('Error loading tokens from outlet: ', error)
 	}
 
 	async setPassiveNegotiationOnChainTokens() {

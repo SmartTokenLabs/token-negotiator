@@ -47,7 +47,7 @@ export class TokenList extends AbstractView {
 								this.loadMoreTokens()
 							}
 						},
-						{ root: document.querySelector('.view-content-tn') },
+						{ root: this.viewContainer.querySelector('.view-content-tn') },
 					)
 
 				this.interceptObs.observe(loadMoreElem)
