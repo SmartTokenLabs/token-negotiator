@@ -36,10 +36,10 @@ interface EventSenderTokens {
 
 declare global {
 	interface Window {
-		tokenToggleSelection: any;
-		ethereum: any;
-		solana: any;
-		tn: unknown;
+		tokenToggleSelection: any
+		ethereum: any
+		solana: any
+		tn: unknown
 	}
 }
 
