@@ -16,7 +16,7 @@
     "copy-assets-umd": "copyfiles ./src/vendor/*.js token-negotiator-dist/vendor -V --flat && copyfiles ./src/images/*.* token-negotiator-dist/images -V --flat",
     "prepublishOnly": "npm run build",
     "lint": "eslint . --quiet --fix",
-    "prettier": "prettier --write src/{,**/}*.{ts,scss}",
+    "prettier": "prettier --write src/**/*.{ts,scss}",
     "test": "jest",
     "test-watch": "jest --watch",
     "compile-scss": "sass ./src/theme/style.scss dist/theme/style.css",
