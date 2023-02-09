@@ -1,41 +1,38 @@
-import {defaultConfig, OutletInterface, readSignedTicket} from "./index";
-import {decodeTokens, filterTokens, rawTokenCheck} from "../core";
-import {AuthHandler} from "./auth-handler";
-import {OffChainTokenConfig} from "../client/interface";
+import { defaultConfig, OutletInterface, readSignedTicket } from './index'
+import { decodeTokens, filterTokens, rawTokenCheck } from '../core'
+import { AuthHandler } from './auth-handler'
+import { OffChainTokenConfig } from '../client/interface'
 
 export class LocalOutlet {
-
-	private tokenConfig;
+	private tokenConfig
 
 	constructor(config: OutletInterface & OffChainTokenConfig) {
-		this.tokenConfig = Object.assign(defaultConfig, config);
+		this.tokenConfig = Object.assign(defaultConfig, config)
 
 		// set default tokenReader
 		if (!this.tokenConfig.tokenParser) {
-			this.tokenConfig.tokenParser = readSignedTicket;
+			this.tokenConfig.tokenParser = readSignedTicket
 		}
 	}
 
-	getTokens(){
+	getTokens() {
+		const storageTokens = localStorage.getItem(this.tokenConfig.itemStorageKey)
 
-		const storageTokens = localStorage.getItem(this.tokenConfig.itemStorageKey);
-
-		if (!storageTokens) return [];
+		if (!storageTokens) return []
 
 		const decodedTokens = decodeTokens(
 			storageTokens,
 			this.tokenConfig.tokenParser,
 			this.tokenConfig.unsignedTokenDataName,
-			true
-		);
+			true,
+		)
 
-		return filterTokens(decodedTokens, this.tokenConfig.filter);
+		return filterTokens(decodedTokens, this.tokenConfig.filter)
 	}
 
-	async authenticate(unsignedToken: any, address: string, wallet: string, redirectMode: false|string = false){
-
+	async authenticate(unsignedToken: any, address: string, wallet: string, redirectMode: false | string = false) {
 		// check if token issuer
-		let tokenObj = await rawTokenCheck(unsignedToken, this.tokenConfig);
+		let tokenObj = await rawTokenCheck(unsignedToken, this.tokenConfig)
 
 		let authHandler = new AuthHandler(
 			null,
@@ -45,10 +42,9 @@ export class LocalOutlet {
 			address,
 			wallet,
 			redirectMode,
-			unsignedToken
-		);
+			unsignedToken,
+		)
 
-		return await authHandler.authenticate();
+		return await authHandler.authenticate()
 	}
-
 }

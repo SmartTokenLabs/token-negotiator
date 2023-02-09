@@ -1,390 +1,376 @@
-import { ethers } from "ethers";
-import { logger } from "../utils";
-import {SafeConnectOptions} from "./SafeConnectProvider";
-import {Client} from "../client";
-import { TokenNegotiatorEvents } from "src/client/interface";
+import { ethers } from 'ethers'
+import { logger } from '../utils'
+import { SafeConnectOptions } from './SafeConnectProvider'
+import { Client } from '../client'
 
 interface WalletConnectionState {
 	[index: string]: WalletConnection
 }
 
 interface WalletConnection {
-	address: string,
-	chainId: number|string,
-	providerType: string,
-	blockchain: string,
-	provider?: ethers.providers.Web3Provider,
+	address: string
+	chainId: number | string
+	providerType: string
+	blockchain: string
+	provider?: ethers.providers.Web3Provider
 	ethers?: any
 }
 
 export class Web3WalletProvider {
+	private static LOCAL_STORAGE_KEY = 'tn-wallet-connections'
 
-	private static LOCAL_STORAGE_KEY = "tn-wallet-connections";
+	connections: WalletConnectionState = {}
 
-	connections: WalletConnectionState = {};
-
-	safeConnectOptions?: SafeConnectOptions;
-	client: Client;
+	safeConnectOptions?: SafeConnectOptions
+	client: Client
 
 	constructor(client: Client, safeConnectOptions?: SafeConnectOptions) {
-		this.client = client;
-		this.safeConnectOptions = safeConnectOptions;
+		this.client = client
+		this.safeConnectOptions = safeConnectOptions
 	}
 
-	saveConnections(){
+	saveConnections() {
+		let savedConnections: WalletConnectionState = {}
 
-		let savedConnections: WalletConnectionState = {};
-
-		for (let address in this.connections){
-			let con = this.connections[address];
+		for (let address in this.connections) {
+			let con = this.connections[address]
 
 			savedConnections[address] = {
 				address: con.address,
 				chainId: con.chainId,
 				providerType: con.providerType,
 				blockchain: con.blockchain,
-				ethers: ethers
-			};
-			
+				ethers: ethers,
+			}
 		}
 
-		localStorage.setItem(Web3WalletProvider.LOCAL_STORAGE_KEY, JSON.stringify(savedConnections));
-
+		localStorage.setItem(Web3WalletProvider.LOCAL_STORAGE_KEY, JSON.stringify(savedConnections))
 	}
 
 	emitSavedConnection(address: string) {
-		if(
-			Object.keys(this.connections).length &&
-			address
-		) {
-			this.client.eventSender("connected-wallet", { data: this.connections[address.toLocaleLowerCase()] });
-			return this.connections[address.toLocaleLowerCase()];
+		if (Object.keys(this.connections).length && address) {
+			this.client.eventSender('connected-wallet', { data: this.connections[address.toLocaleLowerCase()] })
+			return this.connections[address.toLocaleLowerCase()]
 		} else {
-			return null;
+			return null
 		}
 	}
-	
+
 	emitNetworkChange(chainId: string) {
+		if (chainId) {
+			this.client.eventSender('network-change', chainId)
 
-		if(chainId) {
-
-			this.client.eventSender("network-change", chainId);
-
-			return chainId;
-			
+			return chainId
 		}
-
 	}
 
-	deleteConnections(){
-		this.connections = {};
-		localStorage.removeItem(Web3WalletProvider.LOCAL_STORAGE_KEY);
-		localStorage.removeItem("walletconnect");
+	deleteConnections() {
+		this.connections = {}
+		localStorage.removeItem(Web3WalletProvider.LOCAL_STORAGE_KEY)
+		localStorage.removeItem('walletconnect')
+		// remove session storage for the case of flow network
+		sessionStorage.removeItem('CURRENT_USER')
 	}
 
-	async loadConnections(){
+	async loadConnections() {
+		let data = localStorage.getItem(Web3WalletProvider.LOCAL_STORAGE_KEY)
 
-		let data = localStorage.getItem(Web3WalletProvider.LOCAL_STORAGE_KEY);
+		if (!data) return
 
-		if (!data) return;
+		let state = JSON.parse(data)
 
-		let state = JSON.parse(data);
+		if (!state) return
 
-		if (!state) return;
-
-		for (let address in state){
-
-			let connection = state[address];
+		for (let address in state) {
+			let connection = state[address]
 
 			try {
-				await this.connectWith(connection.providerType, true);
-			} catch(e){
-				console.log("Wallet couldn't connect: " + e.message);
-				delete state[address];
-				this.saveConnections();
-				this.emitSavedConnection(address);
+				await this.connectWith(connection.providerType, true)
+			} catch (e) {
+				console.log("Wallet couldn't connect: " + e.message)
+				delete state[address]
+				this.saveConnections()
+				this.emitSavedConnection(address)
 			}
 		}
 	}
 
-	async connectWith ( walletType: string, checkConnectionOnly = false ) {
+	async connectWith(walletType: string, checkConnectionOnly = false) {
+		if (!walletType) throw new Error('Please provide a Wallet type to connect with.')
 
-		if(!walletType) throw new Error('Please provide a Wallet type to connect with.');
-
-		if(this[walletType as keyof Web3WalletProvider]) {
-
+		if (this[walletType as keyof Web3WalletProvider]) {
 			// @ts-ignore
-			const address = await this[walletType as keyof Web3WalletProvider](checkConnectionOnly);
+			// TODO: this address is null for the flow network
+			// Actual connected address is get in flowSubscribe function
+			const address = await this[walletType as keyof Web3WalletProvider](checkConnectionOnly)
+			logger(2, 'address', address)
 
-			logger(2, 'address', address);
-
-			this.saveConnections();
-
-			this.emitSavedConnection(address);
-
-			return address;
-             
+			this.saveConnections()
+			this.emitSavedConnection(address)
+			return address
 		} else {
-			throw new Error('Wallet type not found');
+			throw new Error('Wallet type not found')
 		}
-
 	}
 
 	async signMessage(address: string, message: string) {
+		let provider = this.getWalletProvider(address)
 
-		let provider = this.getWalletProvider(address);
+		let signer = provider.getSigner(address)
 
-		let signer = provider.getSigner(address);
-
-		return await signer.signMessage(message);
-
+		return await signer.signMessage(message)
 	}
 
 	getWalletProvider(address: string) {
+		address = address.toLowerCase()
 
-		address = address.toLowerCase();
+		if (!this.connections[address]?.provider) throw new Error('Wallet provider not found for address')
 
-		if (!this.connections[address]?.provider)
-			throw new Error("Wallet provider not found for address");
-
-		return this.connections[address].provider;
+		return this.connections[address].provider
 	}
 
 	getConnectedWalletData() {
-		return Object.values(this.connections);
+		return Object.values(this.connections)
 	}
 
-	registerNewWalletAddress ( address: string, chainId: number|string, providerType: string, provider: any, blockchain = 'evm' ) {
-
-		this.connections[address.toLowerCase()] = { address, chainId, providerType, provider, blockchain, ethers };
-
-		return address;
+	registerNewWalletAddress(
+		address: string,
+		chainId: number | string,
+		providerType: string,
+		provider: any,
+		blockchain = 'evm',
+	) {
+		this.connections[address.toLowerCase()] = { address, chainId, providerType, provider, blockchain, ethers }
+		return address
 	}
 
-	private async registerProvider(provider: ethers.providers.Web3Provider, providerName: string){
-		const accounts = await provider.listAccounts();
-		const chainId = (await provider.detectNetwork()).chainId;
+	private async registerProvider(provider: ethers.providers.Web3Provider, providerName: string) {
+		const accounts = await provider.listAccounts()
+		const chainId = (await provider.detectNetwork()).chainId
 
-		if (accounts.length === 0){
-			throw new Error("No accounts found via wallet-connect.");
+		if (accounts.length === 0) {
+			throw new Error('No accounts found via wallet-connect.')
 		}
 
-		let curAccount = accounts[0];
+		let curAccount = accounts[0]
 
-		this.registerNewWalletAddress(curAccount, chainId, providerName, provider);
-
-		// @ts-ignore
-		provider.provider.on("accountsChanged", (accounts) => {
-
-			if (curAccount === accounts[0])
-				return;
-
-			delete this.connections[curAccount.toLowerCase()];
-
-			curAccount = accounts[0];
-
-			this.registerNewWalletAddress(curAccount, chainId, providerName, provider);
-
-			this.saveConnections();
-
-			this.emitSavedConnection(curAccount);
-
-			this.client.getTokenStore().clearCachedTokens();
-			this.client.enrichTokenLookupDataOnChainTokens();
-		});
+		this.registerNewWalletAddress(curAccount, chainId, providerName, provider)
 
 		// @ts-ignore
-		provider.provider.on("chainChanged", (_chainId: any) => {
-			
-			this.registerNewWalletAddress(accounts[0], _chainId, providerName, provider);
+		provider.provider.on('accountsChanged', (accounts) => {
+			if (curAccount === accounts[0]) return
 
-			this.saveConnections();
+			delete this.connections[curAccount.toLowerCase()]
 
-			this.emitNetworkChange(_chainId);
-			
-		});
+			curAccount = accounts[0]
 
-		return accounts[0];
-	}
+			this.registerNewWalletAddress(curAccount, chainId, providerName, provider)
 
-	async MetaMask (checkConnectionOnly: boolean) {
+			this.saveConnections()
 
-		logger(2, 'connect MetaMask');
-      
-		if (typeof window.ethereum !== 'undefined') {
+			this.emitSavedConnection(curAccount)
 
-			await window.ethereum.enable(); // fall back may be needed for FF to open Extension Prompt.
-
-			const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
-
-			return this.registerProvider(provider, "MetaMask");
-
-		} else {
-
-			throw new Error("MetaMask is not available. Please check the extension is supported and active.");
-
-		}
-        
-	}
-
-	async WalletConnect (checkConnectionOnly: boolean) {
-
-		logger(2, 'connect Wallet Connect');
-
-		const walletConnectProvider = await import("./WalletConnectProvider");
-
-		const walletConnect = await walletConnectProvider.getWalletConnectProviderInstance(checkConnectionOnly);
-
-		return new Promise((resolve, reject) => {
-
-			if (checkConnectionOnly){
-				walletConnect.connector.on("display_uri", (err, payload) => {
-					reject(new Error("Connection expired"));
-				});
-			}
-
-			walletConnect.enable().then(() => {
-				const provider = new ethers.providers.Web3Provider(walletConnect, "any");
-
-				resolve(this.registerProvider(provider, "WalletConnect"));
-			}).catch((e) => reject(e));
-
+			this.client.getTokenStore().clearCachedTokens()
+			this.client.enrichTokenLookupDataOnChainTokens()
 		})
 
+		// @ts-ignore
+		provider.provider.on('chainChanged', (_chainId: any) => {
+			this.registerNewWalletAddress(accounts[0], _chainId, providerName, provider)
+
+			this.saveConnections()
+
+			this.emitNetworkChange(_chainId)
+		})
+
+		return accounts[0]
 	}
 
-	async WalletConnectV2 (checkConnectionOnly: boolean) {
+	async MetaMask(checkConnectionOnly: boolean) {
+		logger(2, 'connect MetaMask')
 
-		logger(2, 'connect Wallet Connect V2');
+		if (typeof window.ethereum !== 'undefined') {
+			await window.ethereum.enable() // fall back may be needed for FF to open Extension Prompt.
 
-		const walletConnectProvider = await import("./WalletConnectV2Provider");
+			const provider = new ethers.providers.Web3Provider(window.ethereum, 'any')
 
-		const universalWalletConnect = await walletConnectProvider.getWalletConnectV2ProviderInstance();
+			return this.registerProvider(provider, 'MetaMask')
+		} else {
+			throw new Error('MetaMask is not available. Please check the extension is supported and active.')
+		}
+	}
 
-		let QRCodeModal;
+	async WalletConnect(checkConnectionOnly: boolean) {
+		logger(2, 'connect Wallet Connect')
 
-		universalWalletConnect.on("display_uri", async (uri: string) => {
-			console.log("EVENT", "QR Code Modal open");
+		const walletConnectProvider = await import('./WalletConnectProvider')
 
-			QRCodeModal = (await import("@walletconnect/qrcode-modal")).default;
-	
+		const walletConnect = await walletConnectProvider.getWalletConnectProviderInstance(checkConnectionOnly)
+
+		return new Promise((resolve, reject) => {
+			if (checkConnectionOnly) {
+				walletConnect.connector.on('display_uri', (err, payload) => {
+					reject(new Error('Connection expired'))
+				})
+			}
+
+			walletConnect
+				.enable()
+				.then(() => {
+					const provider = new ethers.providers.Web3Provider(walletConnect, 'any')
+
+					resolve(this.registerProvider(provider, 'WalletConnect'))
+				})
+				.catch((e) => reject(e))
+		})
+	}
+
+	async WalletConnectV2(checkConnectionOnly: boolean) {
+		logger(2, 'connect Wallet Connect V2')
+
+		const walletConnectProvider = await import('./WalletConnectV2Provider')
+
+		const universalWalletConnect = await walletConnectProvider.getWalletConnectV2ProviderInstance()
+
+		let QRCodeModal
+
+		universalWalletConnect.on('display_uri', async (uri: string) => {
+			console.log('EVENT', 'QR Code Modal open')
+
+			QRCodeModal = (await import('@walletconnect/qrcode-modal')).default
+
 			QRCodeModal.open(uri, () => {
-				this.client.getUi().showError('User closed modal');
-			});
-		});
-  
+				this.client.getUi().showError('User closed modal')
+			})
+		})
+
 		// Subscribe to session delete
-		universalWalletConnect.on("session_delete", ({ id, topic }: { id: number; topic: string }) => {
-			console.log("WC V2 EVENT", "session_deleted");
+		universalWalletConnect.on('session_delete', ({ id, topic }: { id: number; topic: string }) => {
+			console.log('WC V2 EVENT', 'session_deleted')
 			// TODO: There is currently a bug in the universal provider that prevents this handler from being called.
 			//  After this is fixed, this should handle the event correctly
 			//  https://github.com/WalletConnect/walletconnect-monorepo/issues/1772
-			this.client.disconnectWallet();
-			const ui = this.client.getUi();
-			if (ui)
-				ui.updateUI("wallet");
-		});
+			this.client.disconnectWallet()
+			const ui = this.client.getUi()
+			if (ui) ui.updateUI('wallet')
+		})
 
-		if (!checkConnectionOnly){
-
-			let pairing;
+		if (!checkConnectionOnly) {
+			let pairing
 
 			await universalWalletConnect.connect({
 				namespaces: {
 					eip155: {
-						methods: [
-							"eth_sendTransaction",
-							"eth_signTransaction",
-							"eth_sign",
-							"personal_sign",
-							"eth_signTypedData",
-						],
+						methods: ['eth_sendTransaction', 'eth_signTransaction', 'eth_sign', 'personal_sign', 'eth_signTypedData'],
 						chains: walletConnectProvider.WC_V2_CHAINS,
-						events: ["chainChanged", "accountsChanged"],
-						rpcMap: walletConnectProvider.CUSTOM_RPCS_FOR_WC_V2
+						events: ['chainChanged', 'accountsChanged'],
+						rpcMap: walletConnectProvider.CUSTOM_RPCS_FOR_WC_V2,
 						// rpcMap: {
 						// 	1: `https://mainnet.infura.io/v3/9f79b2f9274344af90b8d4e244b580ef`
 						// }
 					},
 				},
 				pairingTopic: pairing?.topic,
-			});
+			})
 
-			QRCodeModal.close();
+			QRCodeModal.close()
 		}
 
 		return new Promise((resolve, reject) => {
-			universalWalletConnect.enable().then(() => {
-				const provider = new ethers.providers.Web3Provider(universalWalletConnect);
+			universalWalletConnect
+				.enable()
+				.then(() => {
+					const provider = new ethers.providers.Web3Provider(universalWalletConnect, 'any')
 
-				resolve(this.registerProvider(provider, "WalletConnectV2"));
-			}).catch((e) => {
-				reject(e)
-			});
-
+					resolve(this.registerProvider(provider, 'WalletConnectV2'))
+				})
+				.catch((e) => {
+					reject(e)
+				})
 		})
 	}
 
-	async Torus (checkConnectionOnly: boolean) {
+	async Torus(checkConnectionOnly: boolean) {
+		const TorusProvider = await import('./TorusProvider')
 
-		const TorusProvider = await import("./TorusProvider");
+		const torus = await TorusProvider.getTorusProviderInstance()
 
-		const torus = await TorusProvider.getTorusProviderInstance();
-        
-		await torus.init();
+		await torus.init()
 
-		await torus.login();
+		await torus.login()
 
-		const provider = new ethers.providers.Web3Provider(torus.provider, "any");
+		const provider = new ethers.providers.Web3Provider(torus.provider, 'any')
 
-		return this.registerProvider(provider, "Torus");
-
+		return this.registerProvider(provider, 'Torus')
 	}
 
-	async Phantom () {
-
-		logger(2, 'connect Phantom');
+	async Phantom() {
+		logger(2, 'connect Phantom')
 
 		if (typeof window.solana !== 'undefined') {
+			const connection = await window.solana.connect()
 
-			const connection = await window.solana.connect();
-
-			const accountAddress: string = connection.publicKey.toBase58();
+			const accountAddress: string = connection.publicKey.toBase58()
 
 			// mainnet-beta,
-			return this.registerNewWalletAddress(accountAddress, "mainnet-beta", 'phantom', window.solana, 'solana');
-
+			return this.registerNewWalletAddress(accountAddress, 'mainnet-beta', 'phantom', window.solana, 'solana')
 		} else {
-
-			throw new Error("MetaMask is not available. Please check the extension is supported and active.");
-
+			throw new Error('MetaMask is not available. Please check the extension is supported and active.')
 		}
-
 	}
 
-	async SafeConnect(){
+	async SafeConnect() {
+		logger(2, 'connect SafeConnect')
 
-		logger(2, 'connect SafeConnect');
+		const provider = await this.getSafeConnectProvider()
 
-		const provider = await this.getSafeConnectProvider();
+		const address = await provider.initSafeConnect()
 
-		const address = await provider.initSafeConnect();
+		this.registerNewWalletAddress(address, 1, 'SafeConnect', provider)
 
-		this.registerNewWalletAddress(address, 1, "SafeConnect", provider);
-
-		return address;
+		return address
 	}
 
-	safeConnectAvailable(){
-		return this.safeConnectOptions !== undefined;
+	async flowSubscribe(fcl, currentUser) {
+		try {
+			if (currentUser.addr) {
+				this.registerNewWalletAddress(currentUser.addr, 1, 'flow', fcl)
+
+				const ui = this.client.getUi()
+
+				if (ui) ui.dismissLoader()
+
+				this.client.enrichTokenLookupDataOnChainTokens()
+				if (ui) ui.updateUI('main')
+			}
+		} catch (e) {
+			console.error('flow wallet connection error ==>', e)
+			this.client.getUi().showError('Flow wallet connection error.')
+		}
 	}
 
-	async getSafeConnectProvider(){
+	async Flow() {
+		try {
+			const flowProvider = await import('./FlowProvider')
+			const fcl = flowProvider.getFlowProvider()
 
-		const {SafeConnectProvider} = await import("./SafeConnectProvider");
+			fcl.currentUser.subscribe((currentUser) => this.flowSubscribe(fcl, currentUser))
+			fcl.authenticate()
+		} catch (e) {
+			console.error('error ==>', e)
+		}
+		return ''
+	}
 
-		return new SafeConnectProvider(this.client.getUi(), this.safeConnectOptions);
+	safeConnectAvailable() {
+		return this.safeConnectOptions !== undefined
+	}
+
+	async getSafeConnectProvider() {
+		const { SafeConnectProvider } = await import('./SafeConnectProvider')
+
+		return new SafeConnectProvider(this.client.getUi(), this.safeConnectOptions)
 	}
 }
 
-export default Web3WalletProvider;
+export default Web3WalletProvider
