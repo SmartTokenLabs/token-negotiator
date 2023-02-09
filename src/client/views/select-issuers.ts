@@ -85,8 +85,8 @@ export class SelectIssuers extends AbstractView {
 			this.autoLoadTokens(true)
 		})
 
-		this.issuerListContainer = document.querySelector('.token-issuer-list-container-tn')
-		this.tokensContainer = document.getElementsByClassName('token-view-tn')[0]
+		this.issuerListContainer = this.viewContainer.querySelector('.token-issuer-list-container-tn')
+		this.tokensContainer = this.viewContainer.getElementsByClassName('token-view-tn')[0]
 
 		if (!this.issuerListContainer) {
 			logger(2, 'Element .token-issuer-list-container-tn not found')
@@ -300,7 +300,7 @@ export class SelectIssuers extends AbstractView {
 		const config = tokenStore.getCurrentIssuers()[issuer]
 		const tokenData = tokenStore.getIssuerTokens(issuer) ?? []
 
-		if (config.title) document.getElementsByClassName('headline-tn token-name')[0].innerHTML = config.title
+		if (config.title) this.viewContainer.getElementsByClassName('headline-tn token-name')[0].innerHTML = config.title
 
 		let tokens: TokenListItemInterface[] = []
 
