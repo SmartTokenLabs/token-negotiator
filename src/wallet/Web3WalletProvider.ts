@@ -158,6 +158,11 @@ export class Web3WalletProvider {
 
 		// @ts-ignore
 		provider.provider.on('accountsChanged', (accounts) => {
+			if (!accounts || accounts.length === 0) {
+				this.client.disconnectWallet()
+				return
+			}
+
 			if (curAccount === accounts[0]) return
 
 			delete this.connections[curAccount.toLowerCase()]
@@ -176,11 +181,18 @@ export class Web3WalletProvider {
 
 		// @ts-ignore
 		provider.provider.on('chainChanged', (_chainId: any) => {
+			console.log('chainChanged ==>', _chainId)
 			this.registerNewWalletAddress(accounts[0], _chainId, providerName, provider)
 
 			this.saveConnections()
 
 			this.emitNetworkChange(_chainId)
+		})
+
+		// @ts-ignore
+		// walletconnect
+		provider.provider.on('disconnect', (reason: any) => {
+			this.client.disconnectWallet()
 		})
 
 		return accounts[0]
@@ -251,8 +263,6 @@ export class Web3WalletProvider {
 			//  After this is fixed, this should handle the event correctly
 			//  https://github.com/WalletConnect/walletconnect-monorepo/issues/1772
 			this.client.disconnectWallet()
-			const ui = this.client.getUi()
-			if (ui) ui.updateUI('wallet')
 		})
 
 		if (!checkConnectionOnly) {
