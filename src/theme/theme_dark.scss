@@ -38,8 +38,8 @@
   box-shadow: 0 2px 5px 0 #676767;
 }
 
-.overlay-tn.dark-tn .overlay-fab-button-tn svg path {
-  fill: black !important;
+.overlay-tn.dark-tn .overlay-fab-button-tn-img-container {
+  background-color: #000; /* set fill color of SVG image mask */
 }
 
 .overlay-tn.dark-tn #svg-tn-right,

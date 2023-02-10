@@ -4,6 +4,10 @@
   box-shadow: 0 2px 5px 0 #676767;
 }
 
+.overlay-tn.light-tn .overlay-fab-button-tn-img-container {
+  background-color: #fff; /* set fill color of SVG image mask */
+}
+
 .overlay-tn.light-tn .overlay-content-tn .opening-content-view-tn {
   background: white;
 }
