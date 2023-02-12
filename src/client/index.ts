@@ -292,8 +292,8 @@ export class Client {
 			try {
 				let lookupData
 
-				if (Object.keys(tokenData).includes('erc') && tokenData['erc'] === 20) {
-					lookupData = await getFungibleTokens(tokenData)
+				if (Object.keys(tokenData).includes('fungible') && tokenData.fungible) {
+					lookupData = await getFungibleTokens(tokenData);
 				}
 
 				lookupData = await getNftCollection(tokenData)
@@ -638,12 +638,12 @@ export class Client {
 		if (config.onChain === true) {
 			let walletProvider = await this.getWalletProvider()
 
-			const walletAddress = walletProvider.getConnectedWalletData()[0]?.address
+			const walletAddress = walletProvider.getConnectedWalletData()[0]?.address;
 
 			requiredParams(issuer, 'issuer is required.')
 			requiredParams(walletAddress, 'wallet address is missing.')
 
-			if (Object.keys(config).includes('erc') && config['erc'] === 20) {
+			if (Object.keys(config).includes('fungible') && config.fungible) {
 				tokens = await getFungibleTokens(config)
 			} else {
 				tokens = await getNftTokens(config, walletAddress)
