@@ -155,9 +155,11 @@
 .overlay-tn.popup-tn.open .overlay-fab-button-tn {
   .overlay-fab-button-tn-img-container {
     mask-position: -220px 0px;
-    animation: openAnimation 0.2s steps(4);
-    -webkit-animation: openAnimation 0.2s steps(4);
+    --webkit-mask-position: -220px 0px;
+    animation: openAnimation 0.1s steps(4);
+    -webkit-animation: openAnimation 0.1s steps(4);
     will-change: animation;
+    animation-fill-mode: forwards;
   }
 }
 
