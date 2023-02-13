@@ -266,6 +266,9 @@ export class Client {
 		this.tokenStore.clearCachedTokens()
 		this.eventSender('connected-wallet', null)
 		this.eventSender('disconnected-wallet', null)
+		if (this.ui) {
+			this.ui.updateUI('wallet')
+		}
 	}
 
 	async negotiatorConnectToWallet(walletType: string) {
