@@ -293,7 +293,7 @@ export class Client {
 				let lookupData
 
 				if (Object.keys(tokenData).includes('fungible') && tokenData.fungible) {
-					lookupData = await getFungibleTokens(tokenData);
+					lookupData = await getFungibleTokens(tokenData)
 				}
 
 				lookupData = await getNftCollection(tokenData)
@@ -638,7 +638,7 @@ export class Client {
 		if (config.onChain === true) {
 			let walletProvider = await this.getWalletProvider()
 
-			const walletAddress = walletProvider.getConnectedWalletData()[0]?.address;
+			const walletAddress = walletProvider.getConnectedWalletData()[0]?.address
 
 			requiredParams(issuer, 'issuer is required.')
 			requiredParams(walletAddress, 'wallet address is missing.')
