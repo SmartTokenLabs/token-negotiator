@@ -107,11 +107,6 @@
     -webkit-mask-image: var(--stl-anim);
     width: 55px;
     height: 55px;
-    animation: closeAnimation 0.1s steps(4);
-    -webkit-animation: closeAnimation 0.1s steps(4);
-    will-change: animation;
-    animation-fill-mode: forwards;
-    transition: mask-image 0.1s;
   }
 }
 
@@ -158,6 +153,15 @@
     --webkit-mask-position: -220px 0px;
     animation: openAnimation 0.1s steps(4);
     -webkit-animation: openAnimation 0.1s steps(4);
+    will-change: animation;
+    animation-fill-mode: forwards;
+  }
+}
+
+.overlay-tn.popup-tn.close .overlay-fab-button-tn {
+  .overlay-fab-button-tn-img-container {
+    animation: closeAnimation 0.1s steps(4);
+    -webkit-animation: closeAnimation 0.1s steps(4);
     will-change: animation;
     animation-fill-mode: forwards;
   }
