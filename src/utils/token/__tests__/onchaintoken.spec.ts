@@ -277,7 +277,7 @@ it('get evm fungible tokens', async () => {
 		chain: 'eth',
 		erc: 200
 	});
-	expect(evmtokens).toEqual('https://api.token-discovery.tokenscript.org/get-fungible-token?owner=0x52459834ca561cb55411699e9c2143683bcf865f&chain=eth&blockchain=evm');
+	expect(evmtokens).toEqual('https://api.token-discovery.tokenscript.org/get-owner-fungible-tokens?addresses=0x52459834ca561cb55411699e9c2143683bcf865f&chain=eth&blockchain=evm');
 });
 
 it('get  solana fungible tokens', async () => {
@@ -288,7 +288,7 @@ it('get  solana fungible tokens', async () => {
 		blockchain: 'solana',
 		erc: 200
 	});
-	expect(solanatokens).toEqual('https://api.token-discovery.tokenscript.org/get-fungible-token?owner=0x52459834ca561cb55411699e9c2143683bcf865f&chain=eth&blockchain=solana');
+	expect(solanatokens).toEqual('https://api.token-discovery.tokenscript.org/get-owner-fungible-tokens?addresses=0x52459834ca561cb55411699e9c2143683bcf865f&chain=eth&blockchain=solana');
 });
 
 it('get fungible tokens', async () => {

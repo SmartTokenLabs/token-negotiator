@@ -180,7 +180,7 @@ export class SelectIssuers extends AbstractView {
 	}
 
 	issuerConnectMarkup(title: string, image: string | undefined, issuer: string, tokens: any[], data: Issuer) {
-		const tokenText = tokens.length && data.fungible ? 'Balance found' : ``;
+		const tokenText = tokens.length && data?.fungible ? 'Balance found' : ``;
 		return `
             <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
               <div tabindex="0" style="display: flex; align-items: center;">
@@ -246,7 +246,7 @@ export class SelectIssuers extends AbstractView {
 		} catch (err) {
 			logger(2, err);
 			this.ui.showError(err);
-			this.client.eventSender.emitErrorToClient(err, issuer);
+			// this.client.eventSender.emitErrorToClient(err, issuer);
 			return;
 		}
 
