@@ -672,7 +672,7 @@ export class Client {
 
 		// When using redirect mode, in order to prevent loops, we set tokens to a null array before redirecting.
 		// This will ensure that if the page fails to load or the user rejects the request, they will need to manually refresh to try again
-		this.tokenStore.setTokens(issuer.collectionID, [])
+		if (redirectRequired) this.tokenStore.setTokens(issuer.collectionID, [])
 
 		const res = await this.messaging.sendMessage(
 			{
