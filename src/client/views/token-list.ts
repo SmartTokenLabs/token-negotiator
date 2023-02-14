@@ -8,7 +8,9 @@ export interface TokenListItemInterface {
 	index: string
 	image: string
 	data: any
-	balance?: string;
+	balance?: string
+	block_number?: string
+	name?: string
 	toggleState: boolean
 	hideToggle?: boolean
 }
@@ -135,7 +137,7 @@ export class TokenList extends AbstractView {
 	}
 
 	createTokenMarkup(config: TokenListItemInterface) {
-		const { tokenIssuerKey, title, data, index, image, toggleState, hideToggle, balance } = config
+		const { tokenIssuerKey, title, data, index, image, toggleState, hideToggle, balance } = config;
 
 		const tokenId =
 			index.length > 15 ? index.substring(0, 5) + '...' + index.substring(index.length - 5, index.length) : index
@@ -145,10 +147,10 @@ export class TokenList extends AbstractView {
 		return (
 			`
             <li class='token-tn'>
-              <div class="img-container-tn image-tn shimmer-tn" data-image-src="${image}" data-token-title="${title}"></div>
+              <div class="img-container-tn image-tn shimmer-tn" data-image-src="${image ?? data.thumbnail}" data-token-title="${title ?? data.logo}"></div>
               <div class='data-tn'>
-                  <p class='token-title-tn'>${title}</p>
-                  <p class='detail-tn' title="${index}">#${tokenId}</p>
+                  <p class='token-title-tn'>${title ?? data.name }</p>
+                  <p class='detail-tn' title="${index}">#${tokenId ?? data.block_number}</p>
 									${balance ? "<p class='detail-tn'>Balance:" + balance+ "</p>": null }
                 </div>` + 
 			(hideToggle

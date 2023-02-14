@@ -116,16 +116,37 @@
                   // { collectionID: 'Town-Hall', onChain: true, contract: '0x81b30ff521D1fEB67EDE32db726D95714eb00637', chain: 'Optimism' },
                   { collectionID: 'Blusteak Kangaroo #64', onChain: true, contract: '0xa996F7F3BC647EebC98C684aB0A302c9b85d2FA1', chain: 'Avalanche' },
                   { collectionID: 'Alone Pirate', onChain: true, contract: '0x36535ec384B94342558e37282527b5052587af6A', chain: 'Arbitrum' },
+                  // {
+                  //   onChain: true,
+                  //   erc: 20,
+                  //   fungible: true,
+                  //   collectionID: "polygon",
+                  //   contract: '0x52459834ca561cb55411699e9c2143683bcf865f',
+                  //   chain: 'matic',
+                  //   blockchain: "evm",
+                  //   // Add fungible as a boolean
+                  //   // symbol: 'USX'
+                  // },
                   {
+                    contract: "0x107065a122f92636a1358a70a0efe0f1a080a7e5",
                     onChain: true,
-                    erc: 20,
                     fungible: true,
-                    collectionID: "polygon",
-                    contract: '0x52459834ca561cb55411699e9c2143683bcf865f',
+                    collectionID: "USX",
                     chain: 'matic',
-                    blockchain: "evm",
-                    // Add fungible as a boolean
-                    // symbol: 'USX'
+                  },
+                  {
+                    contract: "0x429f49faec3d568ef83ec803e02df78e25d5ee7d",
+                    onChain: true,
+                    fungible: true,
+                    collectionID: "Ella",
+                    chain: 'matic',
+                  },
+                  {
+                    contract: "0xaaa5b9e6c589642f98a1cda99b9d024b8407285a",
+                    onChain: true,
+                    fungible: true,
+                    collectionID: "TITAN",
+                    chain: 'matic',
                   },
                 ],
                 uiOptions: {
@@ -182,12 +203,8 @@
       }
 
       function switchTheme() {
-        console.log('old theme ==>', theme);
-
         theme = theme === 'dark' ? 'light' : 'dark';
         window.negotiator.switchTheme(theme);
-
-        console.log('new theme ==>', theme);
       }
     </script>
   </body>
