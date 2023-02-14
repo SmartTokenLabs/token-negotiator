@@ -1,10 +1,9 @@
-import { tokenRequest } from './../index';
+import { tokenRequest } from './../index'
 
 import { OnChainTokenConfig, Issuer, SolanaIssuerConfig } from '../../client/interface'
 import { validateBlockchain } from '../support/isSupported'
 
-const baseURL = 'https://api.token-discovery.tokenscript.org';
-
+const baseURL = 'https://api.token-discovery.tokenscript.org'
 
 export const getNftCollection = async (issuer: Issuer, ipfsBaseUrl?: string) => {
 	let query: string
@@ -84,4 +83,3 @@ export const getFlowNftTokensUrl = (issuer: any, owner: string) => {
 	let query = `${baseURL}/get-owner-tokens?smartContract=${contract}&chain=${chain}&owner=${owner}&blockchain=${blockchain}`
 	return query
 }
-
