@@ -16,7 +16,7 @@ import {
 	EventSenderTokensSelected,
 	EventSenderConnectedWallet,
 	EventSenderDisconnectedWallet,
-	EventSenderError,
+	EventSenderError, OnChainIssuer,
 } from './interface'
 import { SignedUNChallenge } from './auth/signedUNChallenge'
 import { TicketZKProof } from './auth/ticketZKProof'
@@ -27,7 +27,7 @@ import { LocalOutlet } from '../outlet/localOutlet'
 import { Outlet, OutletInterface } from '../outlet'
 import { shouldUseRedirectMode } from '../utils/support/getBrowserData'
 import { VERSION } from '../version'
-import { getFungibleTokens } from '../utils/token/fungibleTokenProvider'
+import {getFungibleTokenBalances, getFungibleTokensMeta} from '../utils/token/fungibleTokenProvider'
 
 if (typeof window !== 'undefined') window.tn = { VERSION }
 
@@ -284,7 +284,7 @@ export class Client {
 		let issuers = this.tokenStore.getCurrentIssuers(true)
 
 		for (let issuer in issuers) {
-			let tokenData = issuers[issuer]
+			let tokenData = issuers[issuer] as OnChainIssuer
 
 			// Issuer contract data already loaded
 			if (tokenData.title) continue
@@ -293,13 +293,17 @@ export class Client {
 				let lookupData
 
 				if (Object.keys(tokenData).includes('fungible') && tokenData.fungible) {
-					lookupData = await getFungibleTokens(tokenData)
+					lookupData = await getFungibleTokensMeta(tokenData)
+				} else {
+					lookupData = await getNftCollection(tokenData)
 				}
 
-				lookupData = await getNftCollection(tokenData)
 				if (lookupData) {
 					// TODO: this might be redundant
 					lookupData.onChain = true
+
+					if (!lookupData.title)
+						lookupData.title = tokenData.collectionID
 
 					// enrich the tokenLookup store with contract meta data
 					this.tokenStore.updateTokenLookupStore(issuer, lookupData)
@@ -577,7 +581,7 @@ export class Client {
 
 			if (tokens !== null) continue
 
-			let issuer: Issuer = issuers[issuerKey]
+			let issuer = issuers[issuerKey] as OnChainIssuer;
 
 			try {
 				const tokens = await getNftTokens(issuer, walletProvider.getConnectedWalletData()[0].address)
@@ -644,7 +648,7 @@ export class Client {
 			requiredParams(walletAddress, 'wallet address is missing.')
 
 			if (Object.keys(config).includes('fungible') && config.fungible) {
-				tokens = await getFungibleTokens(config)
+				tokens = await getFungibleTokenBalances(config, walletAddress)
 			} else {
 				tokens = await getNftTokens(config, walletAddress)
 			}

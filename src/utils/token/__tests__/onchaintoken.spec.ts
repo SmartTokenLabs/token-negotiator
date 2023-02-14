@@ -9,7 +9,7 @@ import {
 	getEvmNftTokensUrl,
 } from './../../../utils/token/nftProvider'
 
-import { getFungibleTokens, getEvmFungibleTokens, getSolanaFungibleTokens } from '../fungibleTokenProvider'
+import { getFungibleTokenBalances, getEvmFungibleTokensBalance, getSolanaFungibleTokensBalance } from '../fungibleTokenProvider'
 
 const mockZedRunCollection = {
 	assets: [
@@ -273,7 +273,7 @@ it('get evm fungible tokens', async () => {
 	global.fetch = jest.fn(() =>
 		Promise.resolve({ status: 200, json: () => Promise.resolve(mockFungibleTokensResponse) }),
 	)
-	const evmtokens = await getEvmFungibleTokens({
+	const evmtokens = await getEvmFungibleTokensBalance({
 		contract: '0x52459834ca561cb55411699e9c2143683bcf865f',
 		chain: 'eth',
 		erc: 200,
@@ -287,7 +287,7 @@ it('get  solana fungible tokens', async () => {
 	global.fetch = jest.fn(() =>
 		Promise.resolve({ status: 200, json: () => Promise.resolve(mockFungibleTokensResponse) }),
 	)
-	const solanatokens = await getSolanaFungibleTokens({
+	const solanatokens = await getSolanaFungibleTokensBalance({
 		collectionAddress: '0x52459834ca561cb55411699e9c2143683bcf865f',
 		chain: 'eth',
 		blockchain: 'solana',
@@ -302,7 +302,7 @@ it('get fungible tokens', async () => {
 	global.fetch = jest.fn(() =>
 		Promise.resolve({ status: 200, json: () => Promise.resolve(mockFungibleTokensResponse) }),
 	)
-	const tokens = await getFungibleTokens({
+	const tokens = await getFungibleTokenBalances({
 		owner: '0x52459834ca561cb55411699e9c2143683bcf865f',
 		chain: 'eth',
 		erc: 200,
