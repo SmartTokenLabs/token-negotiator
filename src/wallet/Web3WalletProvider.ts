@@ -181,12 +181,14 @@ export class Web3WalletProvider {
 
 		// @ts-ignore
 		provider.provider.on('chainChanged', (_chainId: any) => {
-			console.log('chainChanged ==>', _chainId)
 			this.registerNewWalletAddress(accounts[0], _chainId, providerName, provider)
 
 			this.saveConnections()
 
 			this.emitNetworkChange(_chainId)
+
+			this.client.getTokenStore().clearCachedTokens()
+			this.client.enrichTokenLookupDataOnChainTokens()
 		})
 
 		// @ts-ignore
