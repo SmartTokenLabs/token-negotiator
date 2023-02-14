@@ -1,5 +1,5 @@
 import { tokenRequest } from './../index'
-import { Issuer, OnChainIssuer, OnChainTokenConfig, SolanaIssuerConfig } from '../../client/interface'
+import { OnChainIssuer } from '../../client/interface'
 import { BASE_TOKEN_DISCOVERY_URL } from './nftProvider'
 
 export const getFungibleTokenBalances = async (issuer: OnChainIssuer, owner: string, ipfsBaseUrl?: string) => {

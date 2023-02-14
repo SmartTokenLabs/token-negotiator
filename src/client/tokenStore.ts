@@ -1,4 +1,4 @@
-import { OffChainTokenConfig, OnChainIssuer, OnChainTokenConfig, SolanaIssuerConfig } from './interface'
+import { OffChainTokenConfig, OnChainTokenConfig, SolanaIssuerConfig } from './interface'
 
 import { logger } from '../utils'
 

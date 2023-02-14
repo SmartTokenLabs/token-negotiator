@@ -3,7 +3,7 @@ import { TokenListItemInterface, TokenList } from './token-list'
 import { IconView } from './icon-view'
 import { logger } from '../../utils'
 import { UIUpdateEventType } from '../index'
-import { Issuer, OnChainIssuer, OnChainTokenConfig } from '../interface'
+import { Issuer } from '../interface'
 
 export class SelectIssuers extends AbstractView {
 	issuerListContainer: any
@@ -170,6 +170,11 @@ export class SelectIssuers extends AbstractView {
 	}
 
 	issuerConnectMarkup(title: string, image: string | undefined, issuer: string, tokens: any[], data: Issuer) {
+		let buttonText = ''
+
+		if (tokens?.length)
+			buttonText = data?.fungible ? 'Balance found' : `${tokens.length} token${tokens.length > 1 ? 's' : ''} available`
+
 		return `
             <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
               <div tabindex="0" style="display: flex; align-items: center;">
@@ -195,14 +200,8 @@ export class SelectIssuers extends AbstractView {
 											aria-expanded="false" aria-controls="token-list-container-tn" 
               				class="tokens-btn-tn" style="${tokens?.length ? 'display: block;' : ''}" 
 											data-issuer="${issuer}">
-					${
-						tokens?.length
-							? data?.fungible
-								? 'Balance found'
-								: `${tokens.length} token${tokens.length > 1 ? 's' : ''} available`
-							: ``
-					}
-							</button>
+					${buttonText}
+			  </button>
             </li>
         `
 	}

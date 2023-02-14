@@ -9,9 +9,7 @@ import {
 	getEvmNftTokensUrl,
 } from './../../../utils/token/nftProvider'
 
-import {
-	getFungibleTokenBalances
-} from '../fungibleTokenProvider'
+import { getFungibleTokenBalances } from '../fungibleTokenProvider'
 
 const mockZedRunCollection = {
 	assets: [
@@ -271,7 +269,7 @@ it('get evm Nft Collection Url', async () => {
 	)
 })
 
-/*it('get evm fungible tokens', async () => {
+/* it('get evm fungible tokens', async () => {
 	global.fetch = jest.fn(() =>
 		Promise.resolve({ status: 200, json: () => Promise.resolve(mockFungibleTokensResponse) }),
 	)
@@ -305,9 +303,12 @@ it('get fungible tokens', async () => {
 	global.fetch = jest.fn(() =>
 		Promise.resolve({ status: 200, json: () => Promise.resolve(mockFungibleTokensResponse) }),
 	)
-	const tokens = await getFungibleTokenBalances({
-		contract: '0xe0ad1806fd3e7edf6ff52fdb822432e847411033',
-		chain: 'eth'
-	}, '0x52459834ca561cb55411699e9c2143683bcf865f')
+	const tokens = await getFungibleTokenBalances(
+		{
+			contract: '0xe0ad1806fd3e7edf6ff52fdb822432e847411033',
+			chain: 'eth',
+		},
+		'0x52459834ca561cb55411699e9c2143683bcf865f',
+	)
 	expect(tokens).toEqual(mockFungibleTokensResponse)
 })
