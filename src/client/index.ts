@@ -16,7 +16,8 @@ import {
 	EventSenderTokensSelected,
 	EventSenderConnectedWallet,
 	EventSenderDisconnectedWallet,
-	EventSenderError, OnChainIssuer,
+	EventSenderError,
+	OnChainIssuer,
 } from './interface'
 import { SignedUNChallenge } from './auth/signedUNChallenge'
 import { TicketZKProof } from './auth/ticketZKProof'
@@ -27,7 +28,7 @@ import { LocalOutlet } from '../outlet/localOutlet'
 import { Outlet, OutletInterface } from '../outlet'
 import { shouldUseRedirectMode } from '../utils/support/getBrowserData'
 import { VERSION } from '../version'
-import {getFungibleTokenBalances, getFungibleTokensMeta} from '../utils/token/fungibleTokenProvider'
+import { getFungibleTokenBalances, getFungibleTokensMeta } from '../utils/token/fungibleTokenProvider'
 
 if (typeof window !== 'undefined') window.tn = { VERSION }
 
@@ -302,8 +303,7 @@ export class Client {
 					// TODO: this might be redundant
 					lookupData.onChain = true
 
-					if (!lookupData.title)
-						lookupData.title = tokenData.collectionID
+					if (!lookupData.title) lookupData.title = tokenData.collectionID
 
 					// enrich the tokenLookup store with contract meta data
 					this.tokenStore.updateTokenLookupStore(issuer, lookupData)
@@ -581,7 +581,7 @@ export class Client {
 
 			if (tokens !== null) continue
 
-			let issuer = issuers[issuerKey] as OnChainIssuer;
+			let issuer = issuers[issuerKey] as OnChainIssuer
 
 			try {
 				const tokens = await getNftTokens(issuer, walletProvider.getConnectedWalletData()[0].address)

@@ -9,7 +9,11 @@ import {
 	getEvmNftTokensUrl,
 } from './../../../utils/token/nftProvider'
 
-import { getFungibleTokenBalances, getEvmFungibleTokensBalance, getSolanaFungibleTokensBalance } from '../fungibleTokenProvider'
+import {
+	getFungibleTokenBalances,
+	getEvmFungibleTokensBalance,
+	getSolanaFungibleTokensBalance,
+} from '../fungibleTokenProvider'
 
 const mockZedRunCollection = {
 	assets: [

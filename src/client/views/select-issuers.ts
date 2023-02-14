@@ -3,7 +3,7 @@ import { TokenListItemInterface, TokenList } from './token-list'
 import { IconView } from './icon-view'
 import { logger } from '../../utils'
 import { UIUpdateEventType } from '../index'
-import {Issuer, OnChainIssuer, OnChainTokenConfig} from '../interface'
+import { Issuer, OnChainIssuer, OnChainTokenConfig } from '../interface'
 
 export class SelectIssuers extends AbstractView {
 	issuerListContainer: any
@@ -173,7 +173,9 @@ export class SelectIssuers extends AbstractView {
 		return `
             <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
               <div tabindex="0" style="display: flex; align-items: center;">
-                <div class="img-container-tn issuer-icon-tn shimmer-tn" data-image-src="${image ?? ''}" data-token-title="${title}"></div>
+                <div class="img-container-tn issuer-icon-tn shimmer-tn" data-image-src="${
+									image ?? ''
+								}" data-token-title="${title}"></div>
                 <p class="issuer-connect-title">${title}</p>
               </div>
               <button aria-label="connect with the token issuer ${issuer}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" 
@@ -193,7 +195,13 @@ export class SelectIssuers extends AbstractView {
 											aria-expanded="false" aria-controls="token-list-container-tn" 
               				class="tokens-btn-tn" style="${tokens?.length ? 'display: block;' : ''}" 
 											data-issuer="${issuer}">
-					${tokens?.length ? (data?.fungible ? 'Balance found' : `${tokens.length} token${tokens.length > 1 ? 's' : ''} available`) : ``}
+					${
+						tokens?.length
+							? data?.fungible
+								? 'Balance found'
+								: `${tokens.length} token${tokens.length > 1 ? 's' : ''} available`
+							: ``
+					}
 							</button>
             </li>
         `

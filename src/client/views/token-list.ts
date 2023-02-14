@@ -1,7 +1,7 @@
 import { AbstractView } from './view-interface'
 import { IconView } from './icon-view'
 import { logger } from '../../utils'
-import {ethers} from "ethers";
+import { ethers } from 'ethers'
 
 export interface TokenListItemInterface {
 	tokenIssuerKey: string
@@ -139,18 +139,21 @@ export class TokenList extends AbstractView {
 	}
 
 	createTokenMarkup(config: TokenListItemInterface) {
-		const { tokenIssuerKey, title, data, index, image, toggleState, hideToggle, balance, fungible, decimals, symbol} = config
+		const { tokenIssuerKey, title, data, index, image, toggleState, hideToggle, balance, fungible, decimals, symbol } =
+			config
 
-		let detail, abrieviated;
+		let detail, abrieviated
 
-		if (!fungible){
+		if (!fungible) {
 			detail = index
-			abrieviated = '#' + (index.length > 15 ? index.substring(0, 5) + '...' + index.substring(index.length - 5, index.length) : index)
+			abrieviated =
+				'#' +
+				(index.length > 15 ? index.substring(0, 5) + '...' + index.substring(index.length - 5, index.length) : index)
 		} else {
-			const balanceTxt = ethers.utils.formatUnits(balance, decimals);
+			const balanceTxt = ethers.utils.formatUnits(balance, decimals)
 
-			detail = balanceTxt + " " + symbol;
-			abrieviated = (balanceTxt.length > 15 ? balanceTxt.substring(0, 12) + "... " : balanceTxt) + " " + symbol;
+			detail = balanceTxt + ' ' + symbol
+			abrieviated = (balanceTxt.length > 15 ? balanceTxt.substring(0, 12) + '... ' : balanceTxt) + ' ' + symbol
 		}
 
 		const isChecked = toggleState ? 'checked' : ''
@@ -158,7 +161,9 @@ export class TokenList extends AbstractView {
 		return (
 			`
             <li class='token-tn'>
-              <div class="img-container-tn image-tn shimmer-tn" data-image-src="${image ?? ''}" data-token-title="${title}"></div>
+              <div class="img-container-tn image-tn shimmer-tn" data-image-src="${
+								image ?? ''
+							}" data-token-title="${title}"></div>
               <div class='data-tn'>
                   <p class='token-title-tn'>${title}</p>
                   <p class='detail-tn' title="${detail}">
