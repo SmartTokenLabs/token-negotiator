@@ -186,14 +186,13 @@ export class Web3WalletProvider {
 			this.saveConnections()
 
 			this.emitNetworkChange(_chainId)
-
-			this.client.getTokenStore().clearCachedTokens()
-			this.client.enrichTokenLookupDataOnChainTokens()
 		})
 
 		// @ts-ignore
 		// walletconnect
 		provider.provider.on('disconnect', (reason: any) => {
+			if (reason?.message && reason.message.indexOf('MetaMask: Disconnected from chain') > -1) return
+
 			this.client.disconnectWallet()
 		})
 
