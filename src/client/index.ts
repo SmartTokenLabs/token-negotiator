@@ -387,7 +387,12 @@ export class Client {
 		if (this.ui) {
 			autoOpenPopup = this.tokenStore.hasUnloadedTokens()
 
-			if (this.ui.viewIsNotStart() && this.tokenStore.hasUnloadedIssuers()) this.enrichTokenLookupDataOnChainTokens()
+			if (this.ui.viewIsNotStart() && this.tokenStore.hasUnloadedIssuers()) {
+				this.enrichTokenLookupDataOnChainTokens()
+			} else {
+				// Main screen may be shown so it requires an update event though tokens are already loaded for the updated issuers
+				this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADED)
+			}
 		} else {
 			this.createUiInstance()
 			await this.ui.initialize()

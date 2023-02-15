@@ -181,7 +181,6 @@ export class Web3WalletProvider {
 
 		// @ts-ignore
 		provider.provider.on('chainChanged', (_chainId: any) => {
-			console.log('chainChanged ==>', _chainId)
 			this.registerNewWalletAddress(accounts[0], _chainId, providerName, provider)
 
 			this.saveConnections()
@@ -192,6 +191,8 @@ export class Web3WalletProvider {
 		// @ts-ignore
 		// walletconnect
 		provider.provider.on('disconnect', (reason: any) => {
+			if (reason?.message && reason.message.indexOf('MetaMask: Disconnected from chain') > -1) return
+
 			this.client.disconnectWallet()
 		})
 
