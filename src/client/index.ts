@@ -266,6 +266,9 @@ export class Client {
 		this.tokenStore.clearCachedTokens()
 		this.eventSender('connected-wallet', null)
 		this.eventSender('disconnected-wallet', null)
+		if (this.ui) {
+			this.ui.updateUI('wallet')
+		}
 	}
 
 	async negotiatorConnectToWallet(walletType: string) {
@@ -680,6 +683,10 @@ export class Client {
 		if (issuer.accessRequestType) data.access = issuer.accessRequestType
 
 		const redirectRequired = shouldUseRedirectMode(this.config.offChainRedirectMode)
+
+		// When using redirect mode, in order to prevent loops, we set tokens to a null array before redirecting.
+		// This will ensure that if the page fails to load or the user rejects the request, they will need to manually refresh to try again
+		if (redirectRequired) this.tokenStore.setTokens(issuer.collectionID, [])
 
 		const res = await this.messaging.sendMessage(
 			{

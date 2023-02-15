@@ -38,8 +38,8 @@
   box-shadow: 0 2px 5px 0 #676767;
 }
 
-.overlay-tn.dark-tn .overlay-fab-button-tn svg path {
-  fill: black !important;
+.overlay-tn.dark-tn .overlay-fab-button-tn-img-container {
+  background-color: #000; /* set fill color of SVG image mask */
 }
 
 .overlay-tn.dark-tn #svg-tn-right,
@@ -59,6 +59,9 @@
   box-shadow: 0 2px 4px 0 rgba(103, 103, 103, 0.5);
   background-color: black;
   border-top: 4px solid white;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 4px;
+  border-top-left-radius: 3px;
 }
 
 .overlay-tn.dark-tn .overlay-content-tn .token-tn {

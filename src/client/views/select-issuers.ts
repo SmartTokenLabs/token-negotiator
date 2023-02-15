@@ -123,7 +123,6 @@ export class SelectIssuers extends AbstractView {
 
 			walletBtn.addEventListener('click', () => {
 				this.client.disconnectWallet()
-				this.ui.updateUI('wallet')
 			})
 		}
 	}
