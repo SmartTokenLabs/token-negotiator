@@ -3,6 +3,7 @@ import { TokenListItemInterface, TokenList } from './token-list'
 import { IconView } from './icon-view'
 import { logger } from '../../utils'
 import { UIUpdateEventType } from '../index'
+import { Issuer } from '../interface'
 
 export class SelectIssuers extends AbstractView {
 	issuerListContainer: any
@@ -143,7 +144,7 @@ export class SelectIssuers extends AbstractView {
 
 			let title = data.title ? data.title : data.collectionID.replace(/[-,_]+/g, ' ')
 
-			html += this.issuerConnectMarkup(title, data.image, issuerKey, tokens)
+			html += this.issuerConnectMarkup(title, data.image, issuerKey, tokens, data)
 		}
 
 		this.issuerListContainer.innerHTML = html
@@ -167,30 +168,40 @@ export class SelectIssuers extends AbstractView {
 		})
 	}
 
-	issuerConnectMarkup(title: string, image: string | undefined, issuer: string, tokens: any[]) {
+	issuerConnectMarkup(title: string, image: string | undefined, issuer: string, tokens: any[], data: Issuer) {
+		let buttonText = ''
+
+		if (tokens?.length)
+			buttonText = data?.fungible ? 'Balance found' : `${tokens.length} token${tokens.length > 1 ? 's' : ''} available`
+
 		return `
             <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
-				<div tabindex="0" style="display: flex; align-items: center;">
-					<div class="img-container-tn issuer-icon-tn shimmer-tn" data-image-src="${image}" data-token-title="${title}"></div>
-					<p class="issuer-connect-title">${title}</p>
-				</div>
-				<button aria-label="connect with the token issuer ${issuer}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" 
+              <div tabindex="0" style="display: flex; align-items: center;">
+                <div class="img-container-tn issuer-icon-tn shimmer-tn" data-image-src="${
+									image ?? ''
+								}" data-token-title="${title}"></div>
+                <p class="issuer-connect-title">${title}</p>
+              </div>
+              <button aria-label="connect with the token issuer ${issuer}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" 
 					class="connect-btn-tn"
 					style="${tokens?.length ? 'display: none;' : ''}"
 					data-issuer="${issuer}"
 					${this.client.issuersLoaded === true ? '' : 'disabled'}
 				>
-					${
-						this.client.issuersLoaded === true
-							? 'Load'
-							: '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
-					}
-				</button>
-				<button aria-label="tokens available from token issuer ${issuer}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" 
-						class="tokens-btn-tn" style="${tokens?.length ? 'display: block;' : ''}" data-issuer="${issuer}">
-					${tokens?.length} token${tokens?.length ? 's' : ''} available
-				</button>
-			</li>
+				${
+					this.client.issuersLoaded === true
+						? 'Load'
+						: '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
+				}
+			  </button>
+              <button aria-label="tokens available from token issuer ${issuer}" 
+										  aria-haspopup="true"
+											aria-expanded="false" aria-controls="token-list-container-tn" 
+              				class="tokens-btn-tn" style="${tokens?.length ? 'display: block;' : ''}" 
+											data-issuer="${issuer}">
+					${buttonText}
+			  </button>
+            </li>
         `
 	}
 
@@ -274,7 +285,12 @@ export class SelectIssuers extends AbstractView {
 		connectBtn.setAttribute('tabIndex', -1)
 
 		tokenBtn.style.display = 'block'
-		tokenBtn.innerHTML = `${tokens.length} token${tokens.length > 1 ? 's' : ''} available`
+		let issuers = this.client.getTokenStore().getCurrentIssuers()
+
+		tokenBtn.innerHTML =
+			tokens.length && issuers[issuer].fungible
+				? 'Balance found'
+				: `${tokens.length} token${tokens.length > 1 ? 's' : ''} available`
 		tokenBtn.setAttribute('aria-label', `Navigate to select from ${tokens.length} of your ${issuer} tokens`)
 		tokenBtn.setAttribute('tabIndex', 1)
 
@@ -331,7 +347,11 @@ export class SelectIssuers extends AbstractView {
 					tokenIssuerKey: issuer,
 					index: tokenId,
 					title: t.title,
-					image: t.image,
+					image: t.image ?? config.image,
+					fungible: config.fungible,
+					decimals: config.decimals,
+					symbol: config.symbol,
+					balance: t.balance,
 					toggleState: isSelected,
 					hideToggle: config?.hideToggle,
 				})

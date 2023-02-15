@@ -1,6 +1,7 @@
 import { AbstractView } from './view-interface'
 import { IconView } from './icon-view'
 import { logger } from '../../utils'
+import { ethers } from 'ethers'
 
 export interface TokenListItemInterface {
 	tokenIssuerKey: string
@@ -8,6 +9,10 @@ export interface TokenListItemInterface {
 	index: string
 	image: string
 	data: any
+	fungible: boolean
+	decimals?: number
+	balance?: string
+	symbol?: string
 	toggleState: boolean
 	hideToggle?: boolean
 }
@@ -134,20 +139,36 @@ export class TokenList extends AbstractView {
 	}
 
 	createTokenMarkup(config: TokenListItemInterface) {
-		const { tokenIssuerKey, title, data, index, image, toggleState, hideToggle } = config
+		const { tokenIssuerKey, title, data, index, image, toggleState, hideToggle, balance, fungible, decimals, symbol } =
+			config
 
-		const tokenId =
-			index.length > 15 ? index.substring(0, 5) + '...' + index.substring(index.length - 5, index.length) : index
+		let detail, abrieviated
+
+		if (!fungible) {
+			detail = index
+			abrieviated =
+				'#' +
+				(index.length > 15 ? index.substring(0, 5) + '...' + index.substring(index.length - 5, index.length) : index)
+		} else {
+			const balanceTxt = ethers.utils.formatUnits(balance, decimals)
+
+			detail = balanceTxt + ' ' + symbol
+			abrieviated = (balanceTxt.length > 15 ? balanceTxt.substring(0, 12) + '... ' : balanceTxt) + ' ' + symbol
+		}
 
 		const isChecked = toggleState ? 'checked' : ''
 
 		return (
 			`
             <li class='token-tn'>
-              <div class="img-container-tn image-tn shimmer-tn" data-image-src="${image}" data-token-title="${title}"></div>
+              <div class="img-container-tn image-tn shimmer-tn" data-image-src="${
+								image ?? ''
+							}" data-token-title="${title}"></div>
               <div class='data-tn'>
                   <p class='token-title-tn'>${title}</p>
-                  <p class='detail-tn' title="${index}">#${tokenId}</p>
+                  <p class='detail-tn' title="${detail}">
+                  	${abrieviated}
+				  </p>
                 </div>` +
 			(hideToggle
 				? ''

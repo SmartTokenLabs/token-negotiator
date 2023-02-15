@@ -9,7 +9,6 @@ import {
 	OnChainTokenConfig,
 	AuthenticateInterface,
 	NegotiationInterface,
-	Issuer,
 	SolanaIssuerConfig,
 	TokenNegotiatorEvents,
 	EventSenderTokenProof,
@@ -17,6 +16,7 @@ import {
 	EventSenderConnectedWallet,
 	EventSenderDisconnectedWallet,
 	EventSenderError,
+	OnChainIssuer,
 } from './interface'
 import { SignedUNChallenge } from './auth/signedUNChallenge'
 import { TicketZKProof } from './auth/ticketZKProof'
@@ -27,6 +27,7 @@ import { LocalOutlet } from '../outlet/localOutlet'
 import { Outlet, OutletInterface } from '../outlet'
 import { shouldUseRedirectMode } from '../utils/support/getBrowserData'
 import { VERSION } from '../version'
+import { getFungibleTokenBalances, getFungibleTokensMeta } from '../utils/token/fungibleTokenProvider'
 
 if (typeof window !== 'undefined') window.tn = { VERSION }
 
@@ -130,11 +131,9 @@ export class Client {
 		this.negotiateAlreadyFired = false
 
 		this.tokenStore = new TokenStore(this.config.autoEnableTokens, this.config.tokenPersistenceTTL)
-
 		if (this.config.issuers?.length > 0) this.tokenStore.updateIssuers(this.config.issuers)
 
 		this.messaging = new Messaging()
-
 		this.registerOutletProofEventListener()
 	}
 
@@ -288,16 +287,25 @@ export class Client {
 		let issuers = this.tokenStore.getCurrentIssuers(true)
 
 		for (let issuer in issuers) {
-			let tokenData = issuers[issuer]
+			let tokenData = issuers[issuer] as OnChainIssuer
 
 			// Issuer contract data already loaded
 			if (tokenData.title) continue
 
 			try {
-				let lookupData = await getNftCollection(tokenData)
+				let lookupData
+
+				if (tokenData.fungible) {
+					lookupData = await getFungibleTokensMeta(tokenData)
+				} else {
+					lookupData = await getNftCollection(tokenData)
+				}
+
 				if (lookupData) {
 					// TODO: this might be redundant
 					lookupData.onChain = true
+
+					if (!lookupData.title) lookupData.title = tokenData.collectionID
 
 					// enrich the tokenLookup store with contract meta data
 					this.tokenStore.updateTokenLookupStore(issuer, lookupData)
@@ -345,6 +353,7 @@ export class Client {
 
 	async negotiate(issuers?: (OnChainTokenConfig | OffChainTokenConfig)[], openPopup = false, refreshTokens = false) {
 		let currentIssuer = this.getOutletConfigForCurrentOrigin()
+
 		if (currentIssuer) {
 			logger(2, 'Sync Outlet fired in Client to read MagicLink before negotiate().')
 			let outlet = new Outlet(currentIssuer, true)
@@ -353,8 +362,9 @@ export class Client {
 		}
 
 		await this.checkUserAgentSupport('full')
-
-		if (issuers) this.tokenStore.updateIssuers(issuers)
+		if (issuers) {
+			this.tokenStore.updateIssuers(issuers)
+		}
 
 		requiredParams(Object.keys(this.tokenStore.getCurrentIssuers()).length, 'issuers are missing.')
 
@@ -573,7 +583,7 @@ export class Client {
 
 			if (tokens !== null) continue
 
-			let issuer: Issuer = issuers[issuerKey]
+			let issuer = issuers[issuerKey] as OnChainIssuer
 
 			try {
 				const tokens = await getNftTokens(issuer, walletProvider.getConnectedWalletData()[0].address)
@@ -627,7 +637,6 @@ export class Client {
 
 	async connectTokenIssuer(issuer: string) {
 		const config = this.tokenStore.getCurrentIssuers()[issuer]
-
 		if (!config) errorHandler('Undefined token issuer', 'error', null, null, true, true)
 
 		let tokens
@@ -640,7 +649,11 @@ export class Client {
 			requiredParams(issuer, 'issuer is required.')
 			requiredParams(walletAddress, 'wallet address is missing.')
 
-			tokens = await getNftTokens(config, walletAddress)
+			if (config.fungible) {
+				tokens = await getFungibleTokenBalances(config, walletAddress)
+			} else {
+				tokens = await getNftTokens(config, walletAddress)
+			}
 		} else {
 			if (new URL(config.tokenOrigin).origin === document.location.origin) {
 				tokens = this.loadLocalOutletTokens(config)

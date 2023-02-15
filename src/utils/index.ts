@@ -127,3 +127,18 @@ export class NegotiatorError extends Error {
 		super(message)
 	}
 }
+
+export const tokenRequest = async (query: string, silenceRequestError: boolean) => {
+	try {
+		const response = await fetch(query)
+		const ok = response.status >= 200 && response.status <= 299
+		if (!ok && silenceRequestError === true) {
+			console.warn('token api request failed: ', query)
+			return
+		}
+		if (ok) return response.json()
+		else throw new Error(`HTTP error! status: ${response.status}`)
+	} catch (msg: any) {
+		throw new Error(`HTTP error.`)
+	}
+}

@@ -8,3 +8,4 @@ bundles
 dist/
 token-negotiator-dist/
 
+.sass-cache

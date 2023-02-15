@@ -65,6 +65,7 @@
 .overlay-tn .wallet-button-tn,
 .overlay-tn .opening-btn-tn,
 .overlay-tn .tokens-btn-tn,
+.overlay-tn .fungible-token-btn,
 .overlay-tn .connect-btn-tn,
 .overlay-tn .btn-tn {
   transition: all 0.25s;
@@ -516,7 +517,8 @@ li.token-tn,
 
 .overlay-tn .opening-btn-tn,
 li.issuer-connect-banner-tn .connect-btn-tn,
-li.issuer-connect-banner-tn .tokens-btn-tn {
+li.issuer-connect-banner-tn .tokens-btn-tn,
+li.issuer-connect-banner-tn .fungible-token-btn {
   font-size: 0.75rem;
   font-size: max(0.75rem, 12px);
   font-weight: 200;
@@ -534,6 +536,7 @@ li.issuer-connect-banner-tn .tokens-btn-tn {
 .opening-btn-tn,
 li.issuer-connect-banner-tn .connect-btn-tn,
 li.issuer-connect-banner-tn .tokens-btn-tn,
+li.issuer-connect-banner-tn .fungible-token-btn,
 .btn-tn {
   font-size: 0.75rem;
   font-size: max(0.75rem, 12px);
@@ -558,7 +561,8 @@ li.issuer-connect-banner-tn .tokens-btn-tn,
   font-size: max(0.75rem, 12px);
 }
 
-li.issuer-connect-banner-tn .tokens-btn-tn {
+li.issuer-connect-banner-tn .tokens-btn-tn,
+li.issuer-connect-banner-tn .fungible-token-btn {
   display: none;
   width: auto;
   margin: 0;

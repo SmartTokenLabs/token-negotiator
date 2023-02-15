@@ -66,7 +66,6 @@ export class TokenStore {
 		if (Object.keys(this.currentIssuers).length > 0) {
 			this.selectedTokens = {}
 		}
-
 		this.prePopulateTokenLookupStore(issuers)
 	}
 
@@ -152,7 +151,6 @@ export class TokenStore {
 
 	private prePopulateTokenLookupStore(issuers: TokenConfig[]) {
 		let collectionIds: { [issuer: string]: boolean } = {}
-
 		issuers.forEach((issuer: TokenConfig, i) => {
 			if (!issuer.collectionID) return
 
@@ -177,7 +175,6 @@ export class TokenStore {
 
 			collectionIds[issuer.collectionID] = issuer.onChain
 		})
-
 		this.currentIssuers = collectionIds
 	}
 
