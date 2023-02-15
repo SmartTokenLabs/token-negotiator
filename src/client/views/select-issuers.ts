@@ -286,7 +286,7 @@ export class SelectIssuers extends AbstractView {
 
 		tokenBtn.style.display = 'block'
 		let issuers = this.client.getTokenStore().getCurrentIssuers()
-		// tokenBtn.innerHTML = `${tokens.length} token${(tokens.length > 1 ? "s" : "")} available`;
+
 		tokenBtn.innerHTML =
 			tokens.length && issuers[issuer].fungible
 				? 'Balance found'

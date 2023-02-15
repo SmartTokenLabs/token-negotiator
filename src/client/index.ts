@@ -9,7 +9,6 @@ import {
 	OnChainTokenConfig,
 	AuthenticateInterface,
 	NegotiationInterface,
-	Issuer,
 	SolanaIssuerConfig,
 	TokenNegotiatorEvents,
 	EventSenderTokenProof,
