@@ -33,6 +33,7 @@ export interface IssuerConfigInterface {
 	title?: string
 	image?: string
 	symbol?: string
+	decimals?: number
 	filters?: {}
 	noTokenMsg?: string
 	hideToggle?: boolean
@@ -40,6 +41,7 @@ export interface IssuerConfigInterface {
 }
 
 export type Issuer = OffChainTokenConfig | SolanaIssuerConfig | OnChainTokenConfig
+export type OnChainIssuer = SolanaIssuerConfig | OnChainTokenConfig
 export interface NegotiationInterface {
 	type: string
 	issuers?: Issuer[]

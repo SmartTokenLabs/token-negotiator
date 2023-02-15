@@ -1,56 +1,27 @@
 import { tokenRequest } from './../index'
-import { OnChainTokenConfig, SolanaIssuerConfig } from '../../client/interface'
+import { OnChainIssuer } from '../../client/interface'
+import { BASE_TOKEN_DISCOVERY_URL } from './nftProvider'
 
-const baseURL = 'https://api.token-discovery.tokenscript.org'
+export const getFungibleTokenBalances = async (issuer: OnChainIssuer, owner: string, ipfsBaseUrl?: string) => {
+	const { contract, chain } = issuer
 
-export const getFungibleTokens = async (issuer: any, ipfsBaseUrl?: string) => {
-	let query: string
-	if ('blockchain' in issuer && issuer.blockchain === 'solana') {
-		query = getSolanaFungibleTokens(issuer as SolanaIssuerConfig, ipfsBaseUrl)
-	} else {
-		query = getEvmFungibleTokens(issuer as OnChainTokenConfig, ipfsBaseUrl)
-	}
+	let query = `${BASE_TOKEN_DISCOVERY_URL}/get-owner-fungible-tokens?collectionAddress=${contract}&owner=${owner}&chain=${chain}&blockchain=${
+		issuer.blockchain ?? 'evm'
+	}`
+	if (issuer.symbol) query += `&symbol=${issuer.symbol}`
+	if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`
 
 	return tokenRequest(query, true)
 }
 
-export const getEvmFungibleTokens = (issuer: OnChainTokenConfig, ipfsBaseUrl: string) => {
+export const getFungibleTokensMeta = async (issuer: OnChainIssuer, ipfsBaseUrl?: string) => {
 	const { contract, chain } = issuer
-	let query = `${baseURL}/get-owner-fungible-tokens?addresses=${[contract]}&chain=${chain}&blockchain=evm`
+
+	let query = `${BASE_TOKEN_DISCOVERY_URL}/get-fungible-token?collectionAddress=${contract}&chain=${chain}&blockchain=${
+		issuer.blockchain ?? 'evm'
+	}`
 	if (issuer.symbol) query += `&symbol=${issuer.symbol}`
 	if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`
-	return query
-}
-
-export const getSolanaFungibleTokens = (issuer: SolanaIssuerConfig, ipfsBaseUrl: string) => {
-	const { collectionAddress, chain } = issuer
-	let query = `${baseURL}/get-owner-fungible-tokens?addresses=${[collectionAddress]}&chain=${chain}&blockchain=solana`
-	if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`
-	return query
-}
-
-export const getFungibleTokensCollection = async (issuer: any, ipfsBaseUrl?: string) => {
-	let query: string
-	if ('blockchain' in issuer && issuer.blockchain === 'solana') {
-		query = getSolanaFungibleTokens(issuer as SolanaIssuerConfig, ipfsBaseUrl)
-	} else {
-		query = getEvmFungibleTokens(issuer as OnChainTokenConfig, ipfsBaseUrl)
-	}
 
 	return tokenRequest(query, true)
-}
-
-export const getEvmFungibleTokensCollection = (issuer: OnChainTokenConfig, ipfsBaseUrl: string) => {
-	const { contract, chain } = issuer
-	let query = `${baseURL}/get-fungible-token?owner=${contract}&chain=${chain}&blockchain=evm`
-	if (issuer.symbol) query += `&symbol=${issuer.symbol}`
-	if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`
-	return query
-}
-
-export const getSolanaFungibleTokensCollection = (issuer: SolanaIssuerConfig, ipfsBaseUrl: string) => {
-	const { collectionAddress, chain } = issuer
-	let query = `${baseURL}/get-fungible-token?owner=${collectionAddress}&chain=${chain}&blockchain=solana`
-	if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`
-	return query
 }
