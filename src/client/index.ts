@@ -296,7 +296,7 @@ export class Client {
 			try {
 				let lookupData
 
-				if (Object.keys(tokenData).includes('fungible') && tokenData.fungible) {
+				if (tokenData.fungible) {
 					lookupData = await getFungibleTokensMeta(tokenData)
 				} else {
 					lookupData = await getNftCollection(tokenData)
@@ -650,7 +650,7 @@ export class Client {
 			requiredParams(issuer, 'issuer is required.')
 			requiredParams(walletAddress, 'wallet address is missing.')
 
-			if (Object.keys(config).includes('fungible') && config.fungible) {
+			if (config.fungible) {
 				tokens = await getFungibleTokenBalances(config, walletAddress)
 			} else {
 				tokens = await getNftTokens(config, walletAddress)
