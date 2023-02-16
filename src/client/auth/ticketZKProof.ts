@@ -70,13 +70,14 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 				redirectMode,
 			)
 
-			// Since sendMessage is an async function, we need to add a delay here to prevent an exception
-			// from being thrown as redirect code-path returns void. We presume the redirect will be completed after 20 seconds
-			if (redirectMode) {
+			// Since sendMessage can return void in case of redirect, we need a promise here to prevent an exception.
+			// We presume the redirect will be completed after 30 seconds. We could change the "authenticate" function
+			// public interface to return void, but this would change the API which is not desired for obvious reasons.
+			if (!res) {
 				return new Promise((resolve, reject) => {
 					setTimeout(() => {
 						reject(new Error('The outlet failed to load.'))
-					}, 20000)
+					}, 30000)
 				})
 			}
 

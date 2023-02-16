@@ -58,6 +58,8 @@ export class Outlet {
 
 	singleUse = false
 
+	redirectCallbackUrl?: URL
+
 	constructor(config: OutletInterface, singleUse = false, urlParams: any = null) {
 		this.tokenConfig = Object.assign(defaultConfig, config)
 		this.singleUse = singleUse
@@ -103,6 +105,10 @@ export class Outlet {
 		const action = this.getDataFromQuery('action')
 		const access = this.getDataFromQuery('access')
 
+		const requester = this.getDataFromQuery('requestor')
+
+		if (requester) this.redirectCallbackUrl = new URL(requester)
+
 		// disable this check, because mostly user will open MagicLink from QR code reader or by MagicLink click at email, so document.referrer will be empty
 		// if (!document.referrer && !this.getDataFromQuery('DEBUG'))
 		//   return;
@@ -122,7 +128,7 @@ export class Outlet {
 					break
 				}
 				case OutletAction.EMAIL_ATTEST_CALLBACK: {
-					const requestorURL = new URL(this.getDataFromQuery('requestor'))
+					const requesterURL = this.redirectCallbackUrl
 					const issuer = this.getDataFromQuery('issuer')
 
 					try {
@@ -145,8 +151,8 @@ export class Outlet {
 						const useToken = await authHandler.getUseToken(attestationBlob, attestationSecret)
 
 						// re-direct back to origin
-						if (requestorURL) {
-							const params = new URLSearchParams(requestorURL.hash.substring(1))
+						if (requesterURL) {
+							const params = new URLSearchParams(requesterURL.hash.substring(1))
 							params.set('action', 'proof-callback')
 							params.set('issuer', issuer)
 							params.set('attestation', useToken as string)
@@ -161,11 +167,11 @@ export class Outlet {
 
 							params.set('tokens', JSON.stringify(issuerTokens))
 
-							requestorURL.hash = '#' + params.toString()
+							requesterURL.hash = '#' + params.toString()
 
-							console.log('urlToRedirect from OutletAction.EMAIL_ATTEST_CALLBACK: ', requestorURL.href)
+							console.log('urlToRedirect from OutletAction.EMAIL_ATTEST_CALLBACK: ', requesterURL.href)
 
-							document.location.href = requestorURL.href
+							document.location.href = requesterURL.href
 
 							return
 						}
@@ -173,7 +179,7 @@ export class Outlet {
 						// Same origin request, emit event
 						this.dispatchAuthCallbackEvent(issuer, useToken, null)
 					} catch (e: any) {
-						if (requestorURL) return this.proofRedirectError(issuer, e.message)
+						if (requesterURL) return this.proofRedirectError(issuer, e.message)
 
 						this.dispatchAuthCallbackEvent(issuer, null, e.message)
 					}
@@ -255,12 +261,16 @@ export class Outlet {
 
 		let accessWhitelist = JSON.parse(localStorage.getItem('tn-whitelist')) ?? {}
 
-		const storageAccessRequired = document.hasStorageAccess && !(await document.hasStorageAccess())
+		// TODO: Storage access API no longer gives access to localStorage in firefox, only cookies like Safari
+		//		I'm keeping this here in case chrome implements state partitioning in the same way as Firefox
+		//		originally did. If chrome goes the way of Mozilla & Apple then this can be removed
+		// const storageAccessRequired = document.hasStorageAccess && !(await document.hasStorageAccess())
+
 		const needsPermission =
 			this.tokenConfig.signedTokenWhitelist.indexOf(origin) === -1 &&
 			(!accessWhitelist[origin] || (accessWhitelist[origin].type === 'read' && whiteListType === 'write'))
 
-		if (needsPermission || storageAccessRequired) {
+		if (needsPermission /* || storageAccessRequired */) {
 			return new Promise<void>((resolve, reject) => {
 				const typeTxt = whiteListType === 'read' ? 'read' : 'read & write'
 				const permissionTxt = `${origin} is requesting ${typeTxt} access to your ${this.tokenConfig.title} tickets`
@@ -293,7 +303,7 @@ export class Outlet {
 				document.body.insertAdjacentHTML('beforeend', content)
 
 				document.getElementById('tn-access-accept').addEventListener('click', async () => {
-					if (storageAccessRequired) {
+					/* if (storageAccessRequired) {
 						try {
 							await document.requestStorageAccess()
 						} catch (e) {
@@ -304,7 +314,7 @@ export class Outlet {
 						// Ensure whitelist is loaded from top-level storage context
 						// this is not required if already granted or using a browser without the storageAccess API
 						accessWhitelist = JSON.parse(localStorage.getItem('tn-whitelist')) ?? {}
-					}
+					}*/
 
 					if (!accessWhitelist[origin] || whiteListType !== accessWhitelist[origin].type) {
 						accessWhitelist[origin] = {
@@ -425,11 +435,9 @@ export class Outlet {
 
 		logger(2, 'issuerTokens: (Outlet.sendTokens)', issuerTokens)
 
-		let requestor = this.getDataFromQuery('requestor')
-
-		if (requestor) {
+		if (this.redirectCallbackUrl) {
 			try {
-				let url = new URL(requestor)
+				let url = this.redirectCallbackUrl
 
 				const params = new URLSearchParams(url.hash.substring(1))
 				params.set('action', OutletAction.GET_ISSUER_TOKENS + '-response')
@@ -461,10 +469,8 @@ export class Outlet {
 	}
 
 	public sendErrorResponse(evtid: any, error: string) {
-		let requestor = this.getDataFromQuery('requestor')
-
-		if (requestor) {
-			let url = new URL(requestor)
+		if (this.redirectCallbackUrl) {
+			let url = this.redirectCallbackUrl
 
 			const params = new URLSearchParams(url.hash.substring(1))
 			params.set('action', ResponseActionBase.ERROR)
@@ -486,14 +492,14 @@ export class Outlet {
 	}
 
 	public proofRedirectError(issuer: string, error: string) {
-		const requestorURL = this.getDataFromQuery('requestor')
+		const requesterURL = this.redirectCallbackUrl.href
 
 		const params = new URLSearchParams()
 		params.set('action', 'proof-callback')
 		params.set('issuer', issuer)
 		params.set('error', error)
 
-		document.location.href = requestorURL + '#' + params.toString()
+		document.location.href = requesterURL + '#' + params.toString()
 	}
 
 	private isSameOrigin() {

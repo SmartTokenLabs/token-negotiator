@@ -43,7 +43,7 @@ export class Messaging {
 		request: RequestInterfaceBase,
 		forceTab = false,
 		redirectUrl: false | string = false,
-	): Promise<ResponseInterfaceBase> {
+	): Promise<ResponseInterfaceBase | void> {
 		logger(2, 'Send request: ')
 		logger(2, request)
 

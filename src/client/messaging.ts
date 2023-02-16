@@ -23,7 +23,7 @@ export class Messaging {
 		forceTab = false,
 		ui?: UiInterface,
 		redirectUrl: false | string = false,
-	): Promise<ResponseInterfaceBase> {
+	): Promise<ResponseInterfaceBase | void> {
 		try {
 			return await this.core.sendMessage(request, forceTab, redirectUrl)
 		} catch (e) {
@@ -46,7 +46,7 @@ export class Messaging {
 	}
 
 	private handleUserClose(request: RequestInterfaceBase, ui: UiInterface, forceTab) {
-		return new Promise<ResponseInterfaceBase>((resolve, reject) => {
+		return new Promise<ResponseInterfaceBase | void>((resolve, reject) => {
 			ui.showError('Mmmmm looks like your popup blocker is getting in the way.')
 
 			ui.setErrorRetryCallback(() => {
