@@ -214,7 +214,7 @@ export class Outlet {
 			}
 		} catch (e: any) {
 			console.error(e)
-			this.sendErrorResponse(evtid, e?.message ?? e)
+			this.sendErrorResponse(evtid, e?.message ?? e, this.getDataFromQuery('issuer'))
 		}
 	}
 
@@ -468,12 +468,13 @@ export class Outlet {
 		})
 	}
 
-	public sendErrorResponse(evtid: any, error: string) {
+	public sendErrorResponse(evtid: any, error: string, issuer?: string) {
 		if (this.redirectCallbackUrl) {
 			let url = this.redirectCallbackUrl
 
 			const params = new URLSearchParams(url.hash.substring(1))
 			params.set('action', ResponseActionBase.ERROR)
+			params.set('issuer', issuer)
 			params.set('error', error)
 
 			console.log('Redirecting error: ', error)

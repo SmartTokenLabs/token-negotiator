@@ -580,6 +580,11 @@ export class Client {
 			this.ui.showError(error)
 		}
 
+		this.eventSender('error', {
+			issuer: this.getDataFromQuery('issuer'),
+			error: new Error(error),
+		})
+
 		console.log('Error loading tokens from outlet: ', error)
 	}
 
@@ -932,7 +937,10 @@ export class Client {
 				redirectRequired ? document.location.href : false,
 			)
 
-			if (!res) return // Site is redirecting
+			if (!res)
+				return new Promise((_resolve) => {
+					return
+				}) // Site is redirecting
 
 			if (res.evt === OutletResponseAction.ISSUER_TOKENS) {
 				// Store tokens if origin exists in config - this is a workaround for devcon
