@@ -431,6 +431,8 @@ export class Client {
 			try {
 				let tokens = await this.connectTokenIssuer(issuerKey)
 
+				if (!tokens) return // Site is redirecting
+
 				onComplete(issuerKey, tokens)
 			} catch (e) {
 				e.message = 'Failed to load ' + issuerKey + ': ' + e.message
@@ -458,7 +460,7 @@ export class Client {
 		this.cancelAutoload = true
 	}
 
-	async setPassiveNegotiationWebTokens() {
+	async setPassiveNegotiationWebTokens(): Promise<void> {
 		let issuers = this.tokenStore.getCurrentIssuers(false)
 
 		let action = this.getDataFromQuery('action')
@@ -495,6 +497,8 @@ export class Client {
 						if (tokens !== null) continue
 
 						tokens = await this.loadRemoteOutletTokens(issuerConfig)
+
+						if (!tokens) return // Site is redirecting
 					}
 				}
 			} catch (error) {
@@ -576,6 +580,11 @@ export class Client {
 			this.ui.showError(error)
 		}
 
+		this.eventSender('error', {
+			issuer: this.getDataFromQuery('issuer'),
+			error: new Error(error),
+		})
+
 		console.log('Error loading tokens from outlet: ', error)
 	}
 
@@ -640,7 +649,7 @@ export class Client {
 			)
 	}
 
-	async connectTokenIssuer(issuer: string) {
+	async connectTokenIssuer(issuer: string): Promise<unknown[] | void> {
 		const config = this.tokenStore.getCurrentIssuers()[issuer]
 		if (!config) errorHandler('Undefined token issuer', 'error', null, null, true, true)
 
@@ -664,6 +673,8 @@ export class Client {
 				tokens = this.loadLocalOutletTokens(config)
 			} else {
 				tokens = await this.loadRemoteOutletTokens(config)
+
+				if (!tokens) return // Site is redirecting
 			}
 		}
 
@@ -678,8 +689,12 @@ export class Client {
 		return tokens
 	}
 
-	private async loadRemoteOutletTokens(issuer: OffChainTokenConfig) {
-		const data: any = {
+	private async loadRemoteOutletTokens(issuer: OffChainTokenConfig): Promise<unknown[] | void> {
+		const data: {
+			issuer: OffChainTokenConfig
+			filter?: {}
+			access?: string
+		} = {
 			issuer: issuer,
 			filter: issuer.filters,
 		}
@@ -702,6 +717,8 @@ export class Client {
 			this.config.type === 'active' ? this.ui : null,
 			redirectRequired ? document.location.href : false,
 		)
+
+		if (!res) return // Site is redirecting
 
 		return res.data?.tokens ?? []
 	}
@@ -768,6 +785,8 @@ export class Client {
 			logger(2, 'get proof at ', window.location.href)
 
 			res = await authenticator.getTokenProof(config, [authRequest.unsignedToken], authRequest)
+
+			if (!res) return // Site is redirecting
 
 			logger(2, 'proof received at ', window.location.href)
 
@@ -846,7 +865,7 @@ export class Client {
 		Promise.resolve(this.on(eventName, null, data))
 	}
 
-	getOutletConfigForCurrentOrigin() {
+	getOutletConfigForCurrentOrigin(origin: string = document.location.origin) {
 		let allIssuers = this.tokenStore.getCurrentIssuers(false)
 		let currentIssuers = []
 
@@ -855,7 +874,7 @@ export class Client {
 
 			try {
 				if (
-					new URL(issuerConfig.tokenOrigin).origin === document.location.origin
+					new URL(issuerConfig.tokenOrigin).origin === origin
 					// should not be 2 tokens with same origin
 					// && issuerConfig.collectionID == issuer
 				) {
@@ -904,20 +923,35 @@ export class Client {
 
 		const redirectRequired = shouldUseRedirectMode(this.config.offChainRedirectMode)
 
-		let res = await this.messaging.sendMessage(
-			{
-				action: OutletAction.MAGIC_URL,
-				origin: url.origin + url.pathname,
-				data: {
-					urlParams: params,
+		try {
+			let res = await this.messaging.sendMessage(
+				{
+					action: OutletAction.MAGIC_URL,
+					origin: url.origin + url.pathname,
+					data: {
+						urlParams: params,
+					},
 				},
-			},
-			this.config.messagingForceTab,
-			undefined,
-			redirectRequired ? document.location.href : false,
-		)
-		if (res.evt === OutletResponseAction.ISSUER_TOKENS) return res.data.tokens
-		errorHandler(res.errors.join('\n'), 'error', null, false, true)
+				this.config.messagingForceTab,
+				undefined,
+				redirectRequired ? document.location.href : false,
+			)
+
+			if (!res)
+				return new Promise((_resolve) => {
+					return
+				}) // Site is redirecting
+
+			if (res.evt === OutletResponseAction.ISSUER_TOKENS) {
+				// Store tokens if origin exists in config - this is a workaround for devcon
+				const issuerConfig = this.getOutletConfigForCurrentOrigin(url.origin)
+				if (issuerConfig) this.tokenStore.setTokens(issuerConfig.collectionID, res.data.tokens)
+
+				return res.data.tokens
+			}
+		} catch (e) {
+			errorHandler(e.message, 'error', null, false, true)
+		}
 	}
 
 	on(type: TokenNegotiatorEvents, callback?: any, data?: any) {

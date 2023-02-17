@@ -1,4 +1,3 @@
-import { ResponseInterfaceBase } from '../core/messaging'
 import { Messaging } from '../client/messaging'
 import { KeyStore } from '@tokenscript/attestation/dist/safe-connect/KeyStore'
 import { AbstractAuthentication, AuthenticationResult } from '../client/auth/abstractAuthentication'
@@ -32,7 +31,7 @@ export class SafeConnectProvider {
 	}
 
 	public async initSafeConnect() {
-		let res: ResponseInterfaceBase = await this.messaging.sendMessage(
+		let res = await this.messaging.sendMessage(
 			{
 				action: SafeConnectAction.CONNECT,
 				origin: this.options.url,
@@ -42,6 +41,8 @@ export class SafeConnectProvider {
 			true,
 			this.ui,
 		)
+
+		if (!res) return // Site is redirecting
 
 		if (!this.options.initialProof) return res.data.address
 
@@ -107,7 +108,7 @@ export class SafeConnectProvider {
 	}
 
 	public async signUNChallenge(un: UNInterface) {
-		let res: ResponseInterfaceBase = await this.messaging.sendMessage(
+		let res = await this.messaging.sendMessage(
 			{
 				action: SafeConnectAction.CONNECT,
 				origin: this.options.url,
@@ -120,6 +121,8 @@ export class SafeConnectProvider {
 			true,
 			this.ui,
 		)
+
+		if (!res) return // Site is redirecting
 
 		return res.data.data.signature
 	}

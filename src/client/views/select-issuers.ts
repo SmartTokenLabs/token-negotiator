@@ -236,12 +236,14 @@ export class SelectIssuers extends AbstractView {
 
 		const issuer = data.issuer
 
-		let tokens: any[] = []
+		let tokens: unknown[] | void = []
 
 		this.ui.showLoader('<h4>Loading tokens...</h4>')
 
 		try {
 			tokens = await this.client.connectTokenIssuer(issuer)
+
+			if (!tokens) return // Site is redirecting
 		} catch (err) {
 			logger(2, err)
 			this.ui.showError(err)

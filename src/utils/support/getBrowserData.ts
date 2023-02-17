@@ -123,6 +123,6 @@ export function shouldUseRedirectMode(redirectConfig?: 'always' | 'never') {
 		case 'never':
 			return false
 		default:
-			return isBrave() || (browserData.iOS && !isSafari())
+			return isBrave() || browserData.fireFox || (browserData.iOS && !isSafari())
 	}
 }
