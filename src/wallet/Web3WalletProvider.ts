@@ -49,7 +49,7 @@ export class Web3WalletProvider {
 
 	emitSavedConnection(address: string) {
 		if (Object.keys(this.connections).length && address) {
-			this.client.eventSender('connected-wallet', { data: this.connections[address.toLocaleLowerCase()] })
+			this.client.eventSender('connected-wallet', this.connections[address.toLocaleLowerCase()])
 			return this.connections[address.toLocaleLowerCase()]
 		} else {
 			return null
