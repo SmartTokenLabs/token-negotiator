@@ -24,12 +24,13 @@ export class Start extends AbstractView {
 
 	async goToWalletSelection() {
 		this.ui.showLoaderDelayed(['Initializing wallet..'], 500)
+		const opt = { viewTransition: 'slide-in-right' }
 
 		if (await this.ui.canSkipWalletSelection()) {
 			this.client.enrichTokenLookupDataOnChainTokens()
-			this.ui.updateUI('main', { viewName: 'main' })
+			this.ui.updateUI('main', { viewName: 'main' }, opt)
 		} else {
-			this.ui.updateUI('wallet', { viewName: 'wallet' })
+			this.ui.updateUI('wallet', { viewName: 'main' }, opt)
 		}
 
 		this.ui.dismissLoader()

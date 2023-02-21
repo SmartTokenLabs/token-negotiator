@@ -579,7 +579,7 @@ li.issuer-connect-banner-tn .fungible-token-btn {
   display: flex;
   position: relative;
   left: 0;
-  transition: all 0.2s ease-out;
+  transition: all 0.25s ease-out;
   height: 100%;
 }
 
@@ -689,8 +689,111 @@ li.issuer-connect-banner-tn .fungible-token-btn {
   width: 100%;
 }
 
+.transition-wrapper-tn {
+  height: 100%;
+  display: flex;
+}
+
 .view-content-tn {
   height: 100%;
+  flex: 50%;
+  position: relative;
+}
+
+.transition-wrapper-tn {
+  position: absolute;
+  width: 100%;
+
+  &.slide-in-left-tn,
+  &.slide-in-right-tn {
+    width: 200% !important;
+  }
+
+  &.slide-in-left-tn {
+    right: 0;
+    &.slide-in {
+      animation: slide-in-left 0.25s forwards ease-out;
+      -webkit-animation: slide-in-left 0.25s forwards ease-out;
+    }
+  }
+
+  &.slide-in-right-tn {
+    left: 0;
+    &.slide-in {
+      animation: slide-in-right 0.25s forwards ease-out;
+      -webkit-animation: slide-in-right 0.25s forwards ease-out;
+    }
+  }
+
+  &.slide-in-top-tn,
+  &.slide-in-bottom-tn {
+    height: 200% !important;
+    flex-direction: column;
+  }
+
+  &.slide-in-top-tn {
+    bottom: 0;
+    &.slide-in {
+      animation: slide-in-top 0.25s forwards ease-out;
+      -webkit-animation: slide-in-top 0.25s forwards ease-out;
+    }
+  }
+
+  &.slide-in-bottom-tn {
+    top: 0;
+    &.slide-in {
+      animation: slide-in-bottom 0.25s forwards ease-out;
+      -webkit-animation: slide-in-bottom 0.25s forwards ease-out;
+    }
+  }
+}
+
+@keyframes slide-in-left {
+  100% {
+    transform: translateX(50%);
+  }
+}
+
+@-webkit-keyframes slide-in-left {
+  100% {
+    -webkit-transform: translateX(50%);
+  }
+}
+
+@keyframes slide-in-right {
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@-webkit-keyframes slide-in-right {
+  100% {
+    -webkit-transform: translateX(-50%);
+  }
+}
+
+@keyframes slide-in-top {
+  100% {
+    transform: translateY(50%);
+  }
+}
+
+@-webkit-keyframes slide-in-top {
+  100% {
+    -webkit-transform: translateY(50%);
+  }
+}
+
+@keyframes slide-in-bottom {
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@-webkit-keyframes slide-in-bottom {
+  100% {
+    -webkit-transform: translateY(-50%);
+  }
 }
 
 .scroll-tn {
