@@ -9,7 +9,7 @@ for both on and off chain tokens.
 
 ### Breaking Changes
 
-* EventSenderConnectedWallet & EventSenderDisconnectedWallet event parameters have changed
+[none]
 
 ### New Features
 
