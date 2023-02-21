@@ -2,6 +2,7 @@ import { UIOptionsInterface } from './ui'
 import { AuthenticationMethod } from './auth/abstractAuthentication'
 import { SafeConnectOptions } from '../wallet/SafeConnectProvider'
 import { BrowserDataInterface } from '../utils/support/isSupported'
+import { WalletConnection } from '../wallet/Web3WalletProvider'
 
 export interface OffChainTokenConfig extends IssuerConfigInterface {
 	onChain: false
@@ -98,9 +99,7 @@ export interface EventSenderError {
 export interface EventSenderTokensSelected {
 	selectedTokens: Object
 }
-export interface EventSenderConnectedWallet {
-	data: Object | null
-}
+export type EventSenderConnectedWallet = WalletConnection | null
 export interface EventSenderDisconnectedWallet {
 	data: null
 }
