@@ -5,36 +5,25 @@ for both on and off chain tokens.
 
 ### Upgrade Steps
 
-* Update NPM package to version 2.2.0
+* Update NPM package to version 2.3.0
 
 ### Breaking Changes
 
-[none]
+* EventSenderConnectedWallet & EventSenderDisconnectedWallet event parameters have changed
 
 ### New Features
 
-* RPC end points added for all supported networks
-* UX smooth loading sequence auto load animation of tokens  
-* UX use evm config when developer config network is not found for on chain tokens
-* UX cancel authentication process button (signing of wallet)
-* UX modal with user options added for off chain flow (connecting with cross origin site to learn tokens)
-* UX hide toggle switches to simplify the active flow
-* White listing functionality added for off chain flow
-* New library hooks for wallet network change
-* Multi-key off chain attestation support
-* Off Chain Re-direct settings and UX enhancements to support wallet, desktop, mobile browsers
-* Exposed ethers library instance
-* Wallet Disconnect SVG added / remove the disconnect text
-* UX/UI Refresh button and functionality added
-* UX/UI Alignment for refresh / disconnect icons
-* Added support for networks, mainnet and test net (see read me)
+* ERC20 support 
+* Flow Network support
+* Redirect mode now enabled by default in browsers that do not support iframe or tab
+* Remove KeyShape JS popup animation - now using CSS for all animations
 
 ### Bug Fixes
 
-* CSS vertical alignment for multi-line token title
-* Safari token title fix
-* Code Quality, non functionality changing updates made
-* Off chain attestation browser support fixes
+* Re-direct enhancements and fixes
+* Remove the need for node polyfills when importing the project from NPM
+* Enable closing of Token Outlet across all mobile browsers
+* Use redirect mode for Firefox - iframe no longer works due to changes in storage state partitioning
 
 ### Performance Improvements
 
@@ -42,8 +31,10 @@ for both on and off chain tokens.
  
 ### Other Changes
 
-* Unit test uplift
-* MIT license added to package
+* Husky and Prettier used for code quality / formatting
+* Update to image in docs
+* Add automatic version variable to build
+* CI snapshot builds for staging & main via GH package registry
 
 **Full Change log**: 
 
