@@ -7,7 +7,7 @@ interface WalletConnectionState {
 	[index: string]: WalletConnection
 }
 
-interface WalletConnection {
+export interface WalletConnection {
 	address: string
 	chainId: number | string
 	providerType: string

@@ -856,8 +856,8 @@ export class Client {
 	async eventSender(eventName: 'tokens', data: EventSenderTokens)
 	async eventSender(eventName: 'token-proof', data: EventSenderTokenProof)
 	async eventSender(eventName: 'tokens-selected', data: EventSenderTokensSelected)
-	async eventSender(eventName: 'connected-wallet', EventSenderConnectedWallet)
-	async eventSender(eventName: 'disconnected-wallet', EventSenderDisconnectedWallet)
+	async eventSender(eventName: 'connected-wallet', data: EventSenderConnectedWallet)
+	async eventSender(eventName: 'disconnected-wallet', data: EventSenderDisconnectedWallet)
 	async eventSender(eventName: 'network-change', data: string)
 	async eventSender(eventName: 'error', data: EventSenderError)
 
