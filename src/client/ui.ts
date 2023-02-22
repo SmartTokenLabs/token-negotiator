@@ -16,6 +16,7 @@ export interface UIOptionsInterface {
 	uiType?: UIType
 	containerElement?: string
 	openingHeading?: string
+	openingButtonText?: string
 	issuerHeading?: string
 	repeatAction?: string
 	theme?: UItheme
@@ -232,7 +233,7 @@ export class Ui implements UiInterface {
 	}
 
 	updateUI(viewFactory: ViewComponent | ViewType, data?: any, options?: any) {
-		let viewOptions = {}
+		let viewOptions: any = {}
 
 		if (typeof viewFactory === 'string') {
 			this.isStartView = viewFactory === 'start'
@@ -245,7 +246,7 @@ export class Ui implements UiInterface {
 		}
 
 		// Manually specified view options can override ones set in the viewOverrides config
-		if (options) viewOptions = { ...viewOptions, options }
+		if (options) viewOptions = { ...viewOptions, ...options }
 
 		if (!this.viewContainer) {
 			logger(3, 'Element .view-content-tn not found: popup not initialized')
@@ -258,8 +259,8 @@ export class Ui implements UiInterface {
 
 		const AVAILABLE_TRANSITIONS = ['slide-in-left', 'slide-in-right', 'slide-in-top', 'slide-in-bottom']
 
-		if (options?.viewTransition && AVAILABLE_TRANSITIONS.indexOf(options?.viewTransition) > -1) {
-			transitionClass = options?.viewTransition + '-tn'
+		if (viewOptions?.viewTransition && AVAILABLE_TRANSITIONS.indexOf(viewOptions?.viewTransition) > -1) {
+			transitionClass = viewOptions?.viewTransition + '-tn'
 
 			// Keep reference to old view for cleanup
 			oldViewRef = this.viewContainer
@@ -364,7 +365,6 @@ export class Ui implements UiInterface {
 
 	showLoader(...message: string[]) {
 		this.cancelDelayedLoader()
-
 		;(this.loadContainer.querySelector('.loader-tn') as HTMLDivElement).style.display = 'block'
 		;(this.loadContainer.querySelector('.dismiss-error-tn') as HTMLDivElement).style.display = 'none'
 
