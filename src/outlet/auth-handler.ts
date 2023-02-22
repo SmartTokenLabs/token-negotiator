@@ -1,10 +1,10 @@
 // @ts-nocheck
 
-import { ResponseActionBase } from '../core/messaging'
+import { ResponseActionBase, URLNS } from '../core/messaging'
 import { OutletAction } from '../client/messaging'
 import { Outlet, OutletInterface } from './index'
 import { Authenticator } from '@tokenscript/attestation'
-import { logger } from '../utils'
+import { logger, removeUrlSearchParams } from '../utils'
 import { isBrave, isMacOrIOS } from '../utils/support/getBrowserData'
 
 export interface DevconToken {
@@ -241,18 +241,28 @@ export class AuthHandler {
 			if (this.redirectUrl) {
 				const curParams = new URLSearchParams(document.location.hash.substring(1))
 
+				// Request parameters for attestation.id
 				const params = new URLSearchParams()
-				params.set('action', OutletAction.EMAIL_ATTEST_CALLBACK)
 				params.set('email', this.email)
 				params.set('address', this.address)
 				params.set('wallet', this.wallet)
-				params.set('issuer', this.tokenDef.collectionID)
-				params.set('token', JSON.stringify(this.unsignedToken))
-				params.set('email-attestation-callback', this.redirectUrl)
 
-				const requestor = curParams.get('requestor')
+				// Add extra params that will be required for the Attestation.id -> Outlet callback URL
+				const callbackUrl = new URL(this.redirectUrl)
+				const callbackParams = removeUrlSearchParams(new URLSearchParams(callbackUrl.hash.substring(1)))
+				callbackParams.set(URLNS + 'action', OutletAction.EMAIL_ATTEST_CALLBACK)
+				callbackParams.set(URLNS + 'issuer', this.tokenDef.collectionID)
+				callbackParams.set(URLNS + 'token', JSON.stringify(this.unsignedToken))
 
-				if (requestor) params.set('requestor', requestor)
+				// Outlet -> Client callback
+				const requestor = curParams.get(URLNS + 'requestor')
+				if (requestor) {
+					callbackParams.set(URLNS + 'requestor', requestor)
+				}
+
+				callbackUrl.hash = callbackParams.toString()
+
+				params.set('email-attestation-callback', callbackUrl.href)
 
 				const goto = `${this.attestationOrigin}#${params.toString()}`
 				logger(2, 'authenticate. go to: ', goto)

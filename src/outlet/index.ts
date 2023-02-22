@@ -1,11 +1,11 @@
 import { rawTokenCheck, readMagicUrl, storeMagicURL, decodeTokens, filterTokens } from '../core'
-import { logger, requiredParams, uint8toBuffer } from '../utils'
+import { logger, removeUrlSearchParams, requiredParams, uint8toBuffer } from '../utils'
 import { OutletAction, OutletResponseAction } from '../client/messaging'
 import { AuthHandler } from './auth-handler'
 // requred for default TicketDecoder.
 import { SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
 import { AsnParser } from '@peculiar/asn1-schema'
-import { ResponseActionBase, ResponseInterfaceBase } from '../core/messaging'
+import { ResponseActionBase, ResponseInterfaceBase, URLNS } from '../core/messaging'
 
 export interface OutletInterface {
 	collectionID: string
@@ -90,9 +90,9 @@ export class Outlet {
 		}
 	}
 
-	getDataFromQuery(itemKey: any): string {
-		const val = this.urlParams ? this.urlParams.get(itemKey) : ''
-		return val ? val : ''
+	getDataFromQuery(itemKey: string, namespaced = true): string {
+		itemKey = (namespaced ? URLNS : '') + itemKey
+		return this.urlParams ? this.urlParams.get(itemKey) : ''
 	}
 
 	getFilter() {
@@ -134,8 +134,10 @@ export class Outlet {
 					try {
 						const tokenString = this.getDataFromQuery('token')
 						let token = JSON.parse(tokenString)
-						const attestationBlob = this.getDataFromQuery('attestation')
-						const attestationSecret = '0x' + this.getDataFromQuery('requestSecret')
+
+						// Note: these params come from attestation.id and are not namespaced
+						const attestationBlob = this.getDataFromQuery('attestation', false)
+						const attestationSecret = '0x' + this.getDataFromQuery('requestSecret', false)
 
 						let authHandler = new AuthHandler(
 							this,
@@ -153,9 +155,9 @@ export class Outlet {
 						// re-direct back to origin
 						if (requesterURL) {
 							const params = new URLSearchParams(requesterURL.hash.substring(1))
-							params.set('action', 'proof-callback')
-							params.set('issuer', issuer)
-							params.set('attestation', useToken as string)
+							params.set(URLNS + 'action', 'proof-callback')
+							params.set(URLNS + 'issuer', issuer)
+							params.set(URLNS + 'attestation', useToken as string)
 
 							// add tokens to avoid redirect loop
 							// when use redirect to get tokens
@@ -165,9 +167,9 @@ export class Outlet {
 
 							logger(2, 'issuerTokens: ', issuerTokens)
 
-							params.set('tokens', JSON.stringify(issuerTokens))
+							params.set(URLNS + 'tokens', JSON.stringify(issuerTokens))
 
-							requesterURL.hash = '#' + params.toString()
+							requesterURL.hash = params.toString()
 
 							console.log('urlToRedirect from OutletAction.EMAIL_ATTEST_CALLBACK: ', requesterURL.href)
 
@@ -184,7 +186,12 @@ export class Outlet {
 						this.dispatchAuthCallbackEvent(issuer, null, e.message)
 					}
 
-					document.location.hash = ''
+					document.location.hash = removeUrlSearchParams(this.urlParams, [
+						'attestation',
+						'requestSecret',
+						'address',
+						'wallet',
+					]).toString()
 
 					break
 				}
@@ -380,10 +387,7 @@ export class Outlet {
 
 		const unsignedToken = JSON.parse(token)
 
-		const redirect =
-			this.urlParams.get('redirect') === 'true'
-				? document.location.origin + document.location.pathname + document.location.search
-				: false
+		const redirect = this.getDataFromQuery('redirect') === 'true' ? document.location.href : false
 
 		try {
 			// check if token issuer
@@ -431,6 +435,7 @@ export class Outlet {
 		}
 	}
 
+	// TODO: Consolidate redirect callback for tokens, proof & errors into the sendMessageResponse function to remove duplication
 	private sendTokens(evtid: any) {
 		let issuerTokens = this.prepareTokenOutput(this.getFilter())
 
@@ -441,9 +446,9 @@ export class Outlet {
 				let url = this.redirectCallbackUrl
 
 				const params = new URLSearchParams(url.hash.substring(1))
-				params.set('action', OutletAction.GET_ISSUER_TOKENS + '-response')
-				params.set('issuer', this.tokenConfig.collectionID)
-				params.set('tokens', JSON.stringify(issuerTokens))
+				params.set(URLNS + 'action', OutletAction.GET_ISSUER_TOKENS + '-response')
+				params.set(URLNS + 'issuer', this.tokenConfig.collectionID)
+				params.set(URLNS + 'tokens', JSON.stringify(issuerTokens))
 
 				url.hash = '#' + params.toString()
 
@@ -474,9 +479,9 @@ export class Outlet {
 			let url = this.redirectCallbackUrl
 
 			const params = new URLSearchParams(url.hash.substring(1))
-			params.set('action', ResponseActionBase.ERROR)
-			params.set('issuer', issuer)
-			params.set('error', error)
+			params.set(URLNS + 'action', ResponseActionBase.ERROR)
+			params.set(URLNS + 'issuer', issuer)
+			params.set(URLNS + 'error', error)
 
 			console.log('Redirecting error: ', error)
 
@@ -497,9 +502,9 @@ export class Outlet {
 		const requesterURL = this.redirectCallbackUrl.href
 
 		const params = new URLSearchParams()
-		params.set('action', 'proof-callback')
-		params.set('issuer', issuer)
-		params.set('error', error)
+		params.set(URLNS + 'action', 'proof-callback')
+		params.set(URLNS + 'issuer', issuer)
+		params.set(URLNS + 'error', error)
 
 		document.location.href = requesterURL + '#' + params.toString()
 	}
