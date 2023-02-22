@@ -17,6 +17,7 @@ for both on and off chain tokens.
 * Flow Network support
 * Redirect mode now enabled by default in browsers that do not support iframe or tab
 * Remove KeyShape JS popup animation - now using CSS for all animations
+* Wallet Connect V2 added (Experimental Use Only)
 
 ### Bug Fixes
 
