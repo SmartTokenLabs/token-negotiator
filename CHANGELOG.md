@@ -39,4 +39,4 @@ for both on and off chain tokens.
 
 **Full Change log**: 
 
-https://github.com/TokenScript/token-negotiator/compare/v2.1.0...v2.2.0
+https://github.com/TokenScript/token-negotiator/compare/v2.2.0...v2.3.0
