@@ -105,8 +105,8 @@ The following types of tokens are supported:
 <table>
   <thead>
     <tr>
-      <th>Wallet</th>
       <th>Chain</th>
+      <th>Wallet</th>
     </tr>
   </thead>
   <tbody>
