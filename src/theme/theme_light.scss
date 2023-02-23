@@ -4,13 +4,18 @@
   box-shadow: 0 2px 5px 0 #676767;
 }
 
+.overlay-tn.light-tn .overlay-fab-button-tn-img-container {
+  background-color: #fff; /* set fill color of SVG image mask */
+}
+
 .overlay-tn.light-tn .overlay-content-tn .opening-content-view-tn {
   background: white;
 }
 
-.overlay-tn.light-tn .overlay-content-tn .toggle-tn input.mobileToggle-tn+label:after {
+.overlay-tn.light-tn .overlay-content-tn .toggle-tn input.mobileToggle-tn + label:after {
   background: #f1f1f1;
-  box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.1), 0 4px 0px 0 hsla(0, 0%, 0%, 0.04), 0 4px 9px hsla(0, 0%, 0%, 0.13), 0 3px 3px hsla(0, 0%, 0%, 0.05);
+  box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.1), 0 4px 0px 0 hsla(0, 0%, 0%, 0.04), 0 4px 9px hsla(0, 0%, 0%, 0.13),
+    0 3px 3px hsla(0, 0%, 0%, 0.05);
 }
 
 .overlay-tn.light-tn li.issuer-connect-banner-tn {
@@ -20,6 +25,7 @@
 
 .overlay-tn.light-tn .opening-btn-tn:hover,
 .overlay-tn.light-tn .tokens-btn-tn:hover,
+.overlay-tn.light-tn .fungible-token-btn:hover,
 .overlay-tn.light-tn .connect-btn-tn:hover,
 .overlay-tn.light-tn .btn-tn:hover {
   background: #c5c5c5 !important;
@@ -28,6 +34,7 @@
 .overlay-tn.light-tn .opening-btn-tn,
 .overlay-tn.light-tn li.issuer-connect-banner-tn .connect-btn-tn,
 .overlay-tn.light-tn li.issuer-connect-banner-tn .tokens-btn-tn,
+.overlay-tn.light-tn li.issuer-connect-banner-tn .fungible-token-btn,
 .overlay-tn.light-tn .btn-tn {
   color: black;
   background: #efefef;
@@ -36,6 +43,7 @@
 
 .overlay-tn.light-tn li.issuer-connect-banner-tn .connect-btn-tn,
 .overlay-tn.light-tn li.issuer-connect-banner-tn .tokens-btn-tn,
+.overlay-tn.light-tn li.issuer-connect-banner-tn .fungible-token-btn,
 .overlay-tn.light-tn .btn-tn {
   border: 1px solid #efefef;
 }
@@ -76,24 +84,25 @@
   background: white;
 }
 
-.overlay-tn.light-tn .overlay-content-tn .toggle-tn input.mobileToggle-tn+label {
+.overlay-tn.light-tn .overlay-content-tn .toggle-tn input.mobileToggle-tn + label {
   border: 3px solid #c6c5c5;
   background: #c6c5c5;
 }
 
-.overlay-tn.light-tn .overlay-content-tn .toggle-tn input.mobileToggle-tn:checked+label {
+.overlay-tn.light-tn .overlay-content-tn .toggle-tn input.mobileToggle-tn:checked + label {
   border: 3px solid #88bff6;
 }
 
-.overlay-tn.light-tn .overlay-content-tn .toggle-tn input.mobileToggle-tn:checked+label:before {
+.overlay-tn.light-tn .overlay-content-tn .toggle-tn input.mobileToggle-tn:checked + label:before {
   background: #88bff6;
 }
 
-.overlay-tn.light-tn .overlay-content-tn .toggle-tn input:focus+label {
+.overlay-tn.light-tn .overlay-content-tn .toggle-tn input:focus + label {
   border: 3px solid #005fcc !important;
 }
 
-.overlay-tn.light-tn #svg-tn-right, #svg-tn-left {
+.overlay-tn.light-tn #svg-tn-right,
+#svg-tn-left {
   fill: white;
 }
 

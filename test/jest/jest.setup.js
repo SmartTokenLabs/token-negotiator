@@ -7,7 +7,7 @@ jest.spyOn(global.console, 'error').mockImplementation((message) => {
 
 import crypto from "crypto";
 
-Object.defineProperty(global.self, "crypto", {
+Object.defineProperty(global.self, "crypto", { // eslint-disable-line
 	value: {
 		subtle: crypto.webcrypto.subtle,
 	},
@@ -32,6 +32,6 @@ const localStorageMock = (function() {
 	}
 })()
 
-Object.defineProperty(window, 'localStorage', {
+Object.defineProperty(window, 'localStorage', { // eslint-disable-line
 	value: localStorageMock
 })
