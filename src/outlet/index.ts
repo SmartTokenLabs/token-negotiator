@@ -1,4 +1,12 @@
-import { rawTokenCheck, readMagicUrl, storeMagicURL, decodeTokens, filterTokens } from '../core'
+import {
+	rawTokenCheck,
+	readMagicUrl,
+	storeMagicURL,
+	decodeTokens,
+	decodeToken,
+	filterTokens,
+	readTokens,
+} from '../core'
 import { logger, requiredParams, uint8toBuffer } from '../utils'
 import { OutletAction, OutletResponseAction } from '../client/messaging'
 import { AuthHandler } from './auth-handler'
@@ -224,11 +232,44 @@ export class Outlet {
 		const { tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey } = this.tokenConfig
 
 		try {
-			const tokens = readMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey, this.urlParams)
+			const newToken = readMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey, this.urlParams)
+			let tokensOutput = readTokens(itemStorageKey)
+
+			let isNewQueryTicket = true
+
+			// loop tokens and remove the tokens having same ids
+			let tokens = []
+			const decodedNewToken = decodeToken(
+				newToken,
+				this.tokenConfig.tokenParser,
+				this.tokenConfig.unsignedTokenDataName,
+				false,
+			)
+
+			for (const tokenData of tokensOutput.tokens) {
+				if (tokenData.token === newToken.token) {
+					isNewQueryTicket = false
+					break
+				}
+
+				const decodedTokenData = decodeToken(
+					tokenData,
+					this.tokenConfig.tokenParser,
+					this.tokenConfig.unsignedTokenDataName,
+					false,
+				)
+				// hard-coded for temporary solution
+				if (decodedNewToken['ticketIdNumber'] !== decodedTokenData['ticketIdNumber']) {
+					tokens.push(tokenData)
+				}
+			}
+
+			if (isNewQueryTicket) {
+				tokens.push(newToken)
+				storeMagicURL(tokens, itemStorageKey)
+			}
 
 			await this.whitelistCheck(evtid, 'write')
-
-			storeMagicURL(tokens, itemStorageKey)
 
 			const event = new Event('tokensupdated')
 
@@ -237,6 +278,7 @@ export class Outlet {
 			document.body.dispatchEvent(event)
 		} catch (e) {
 			// no-op
+			console.log('errror  +>', e)
 		}
 	}
 
