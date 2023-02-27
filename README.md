@@ -12,7 +12,7 @@ The following types of tokens are supported:
 
 (for new token issuers who are interested in using TokenScript please visit the following WIKI page: https://github.com/TokenScript/token-negotiator/wiki/Token-Issuer-Page).
 
-### Token Negotiator supports NFT Tokens across the following blockchains and networks:
+### Supported Blockchains and Networks:
 
 <table>
   <thead>
@@ -97,10 +97,15 @@ The following types of tokens are supported:
       <td>devnet</td>
       <td>Y</td>
     </tr>
+    <tr>
+	    <td>flow</td>
+      <td>mainnet</td>
+      <td>Y</td>
+    </tr>
   </tbody>
 </table>
 
-## Wallet Support
+### Wallet Support
 
 <table>
   <thead>
@@ -141,10 +146,6 @@ The following types of tokens are supported:
     </tr>
     <tr>
       <td>flow</td>
-      <td>Blockto</td>
-    </tr>
-    <tr>
-      <td>flow</td>
       <td>Lillico</td>
     </tr>
     <tr>
@@ -158,15 +159,15 @@ The following types of tokens are supported:
   </tbody>
 </table>
 
-Within your application install the token negotiator:
+### Getting Started
 
-NPM
+Using NPM
 
 ```sh
   npm i @tokenscript/token-negotiator
 ```
 
-Browser build
+Or Browser
 
 ```html
 <script
@@ -179,21 +180,15 @@ Browser build
 />
 ```
 
-## Reading Tokens into a website or web application.
+## Read Tokens from within a website.
 
-This library provides two ways to load tokens into your application, active or passive.
+This library provides two ways to load tokens into your application, active (with UI) or passive (No UI / Custom).
 
 ### Active Negotiation of tokens
 
-This approach embeds a html element UI widget into the web page.
-
-As the web developer you can configure which collections are supported by your website to provide custom experiences to token holders.
-
-Token holders can then attest ownership of tokens within collections, to access custom tokenised web experiences you design.
-
 <img src="https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/tn-example.png" alt="token negotiator component" style="width:280px;"/>
 
-To start, first include the following html element into your page, this is where the token negotiator overlay widget will be embedded into the page.
+Include the following html element into your page, this is where the token negotiator overlay widget will be embedded into the page.
 
 ```html
 <div class="overlay-tn"></div>
@@ -206,7 +201,7 @@ import { Client } from "@tokenscript/token-negotiator";
 import "@tokenscript/token-negotiator/dist/theme/style.css";
 ```
 
-Include the following Javascript to configure the Token Negotiator with issuers that your website will recognise.
+This code example configures the Token Negotiator to connect with the expansion punks non-fungible collection. If the end user has tokens inside this collection, the event hook 'tokens-selected' will be triggered.
 
 ```javascript
 import { Client } from "@tokenscript/token-negotiator";
@@ -253,7 +248,7 @@ negotiator.on("token-proof", (proof) => {
 
 ### Passive Negotiation of tokens
 
-This approach is designed for a fully custom ui/ux experience, where a list of all tokens are learnt by the client on negotiation.
+Passive mode can be used when the UI is not needed, or you wish to build your own utilising the hooks available.
 
 ```javascript
 import { Client } from "@tokenscript/token-negotiator";
@@ -261,21 +256,6 @@ import { Client } from "@tokenscript/token-negotiator";
 const negotiator = new Client({
 	type: "passive",
 	issuers: [
-		{
-			collectionID: "devcon",
-			title: "Devcon",
-			onChain: false,
-			tokenOrigin: "http://localhost:3002/",
-			attestationOrigin: "https://stage.attestation.id/",
-			unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
-			image:
-				"https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
-			base64senderPublicKeys: {
-				AttestationDAO: "MFYwEAYHKoZIzj0CAQYFK...",
-			},
-			base64attestorPubKey:
-				"MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ=",
-		},
 		{
 			blockchain: "evm",
 			collectionID: "expansion-punks",
@@ -342,6 +322,26 @@ const onChainIssuer = {
 	tokenProgram: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
 	symbol: "CCC",
 	updateAuthority: "CCCUzWanUNegjGby11DjujDvPaNN68jd9Rimwk2MZzqZ",
+};
+```
+
+### Managing Issuers on chain (Flow)
+
+```javascript
+/**
+ * @param {String} blockchain string of which blockchain is needed (optional input: default is 'evm')
+ * @param {Boolean} onChain boolean if this token is on / off chain
+ * @param {String} collectionID your own reference key to identify the collection by.
+ * @param {String} collectionAddress collection identifier
+ * @param {String} chain smart contract address chain
+ */
+
+const onChainIssuer = {
+	collectionID: "TopShot",
+	onChain: true,
+	contract: "A.0b2a3299cc857e29.TopShot",
+	chain: "mainnet",
+	blockchain: "flow",
 };
 ```
 
@@ -451,11 +451,9 @@ Changing the theme.
 negotiator.switchTheme("dark");
 ```
 
-### For projects where you are not using a Node.js work flow. Or would prefer to inject the library into the html (polyfills included).
+### When working without NPM
 
-1. Go to the following URL: https://github.com/TokenScript/token-negotiator
-
-2. Download and then install this folder into your project `/token-negotiator-dist`
+For projects where you are not using a Node.js work flow. Or would prefer to inject the library into the html (polyfills included).
 
 Configure the library using the following example.
 
@@ -487,7 +485,7 @@ Configure the library using the following example.
 					{
 						hideToggle: true,
 						noTokenMsg:
-							"<p>If you have a token please:</p><p>1. Open your magic link inside this browser.<br/>2. Refresh this page.</p>",
+							"<p>If you have a token please:</p><p>1. Open your magic link inside this browser.2. Refresh this page.</p>",
 						onChain: true,
 						collectionID: "bsc-collection-test",
 						contract: "0xF5db804101d8600c26598A1Ba465166c33CdAA4b",
