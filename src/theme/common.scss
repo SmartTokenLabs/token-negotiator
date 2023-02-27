@@ -689,11 +689,6 @@ li.issuer-connect-banner-tn .fungible-token-btn {
   width: 100%;
 }
 
-.transition-wrapper-tn {
-  height: 100%;
-  display: flex;
-}
-
 .view-content-tn {
   height: 100%;
   flex: 50%;
@@ -703,6 +698,8 @@ li.issuer-connect-banner-tn .fungible-token-btn {
 .transition-wrapper-tn {
   position: absolute;
   width: 100%;
+  height: 100%;
+  display: flex;
 
   &.slide-in-left-tn,
   &.slide-in-right-tn {

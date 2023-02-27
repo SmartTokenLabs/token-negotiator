@@ -199,7 +199,7 @@ export class Ui implements UiInterface {
 
 				break
 			case 'inline':
-				this.popupContainer.innerHTML = Ui.UI_CONTAINER_HTML
+				this.popupContainer.innerHTML = this.getUIContainer()
 
 				break
 		}
@@ -328,7 +328,9 @@ export class Ui implements UiInterface {
 			if (error === ClientError.USER_ABORT) return this.dismissLoader()
 		}
 
-		;(this.loadContainer.querySelector('.loader-tn') as HTMLDivElement).style.display = 'none'
+		const loader = this.loadContainer.querySelector('.loader-tn') as HTMLDivElement
+		loader.style.display = 'none'
+
 		this.retryButton.style.display = 'block'
 
 		this.loadContainer.querySelector('.loader-msg-tn').innerHTML = error
@@ -336,7 +338,8 @@ export class Ui implements UiInterface {
 		this.loadContainer.style.display = 'flex'
 
 		if (!canDismiss) {
-			;(this.loadContainer.querySelector('.dismiss-error-tn') as HTMLDivElement).style.display = 'none'
+			const dismissBtn = this.loadContainer.querySelector('.dismiss-error-tn') as HTMLDivElement
+			dismissBtn.style.display = 'none'
 		}
 	}
 
@@ -365,8 +368,10 @@ export class Ui implements UiInterface {
 
 	showLoader(...message: string[]) {
 		this.cancelDelayedLoader()
-		;(this.loadContainer.querySelector('.loader-tn') as HTMLDivElement).style.display = 'block'
-		;(this.loadContainer.querySelector('.dismiss-error-tn') as HTMLDivElement).style.display = 'none'
+		const loader = this.loadContainer.querySelector('.loader-tn') as HTMLDivElement
+		loader.style.display = 'block'
+		const dismissBtn = this.loadContainer.querySelector('.dismiss-error-tn') as HTMLDivElement
+		dismissBtn.style.display = 'none'
 
 		this.loadContainer.querySelector('.loader-msg-tn').innerHTML = message.join('\n')
 
