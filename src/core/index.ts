@@ -118,7 +118,6 @@ export const readMagicUrl = (
 
 	let isNewQueryTicket = true
 
-	// TODO: use loop here instead
 	let tokens = tokensOutput.tokens.map((tokenData: any) => {
 		if (tokenData.token === tokenFromQuery) {
 			isNewQueryTicket = false

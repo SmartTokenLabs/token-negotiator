@@ -379,6 +379,8 @@ export class Client {
 
 			await this.passiveNegotiationStrategy()
 		}
+
+		// this.eventSender('loaded', null);
 	}
 
 	async activeNegotiationStrategy(openPopup: boolean) {

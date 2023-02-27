@@ -198,7 +198,11 @@
         window.negotiator.on("token-proof", (proof) => {
           console.log(proof);
         });
-
+        
+        window.negotiator.on("loaded", (proof) => {
+          console.log('loaded');
+        });
+        
         window.negotiator.negotiate();
       }
 

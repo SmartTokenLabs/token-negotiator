@@ -83,6 +83,7 @@ export class SelectIssuers extends AbstractView {
 		const refreshBtn = this.viewContainer.querySelector('.refresh-tn')
 
 		refreshBtn.addEventListener('click', () => {
+			this.client.eventSender('tokens-refreshed', null);
 			this.autoLoadTokens(true)
 		})
 
@@ -178,8 +179,8 @@ export class SelectIssuers extends AbstractView {
             <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
               <div tabindex="0" style="display: flex; align-items: center;">
                 <div class="img-container-tn issuer-icon-tn shimmer-tn" data-image-src="${
-									image ?? ''
-								}" data-token-title="${title}"></div>
+	image ?? ''
+}" data-token-title="${title}"></div>
                 <p class="issuer-connect-title">${title}</p>
               </div>
               <button aria-label="connect with the token issuer ${issuer}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" 
@@ -189,10 +190,10 @@ export class SelectIssuers extends AbstractView {
 					${this.client.issuersLoaded === true ? '' : 'disabled'}
 				>
 				${
-					this.client.issuersLoaded === true
-						? 'Load'
-						: '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
-				}
+	this.client.issuersLoaded === true
+		? 'Load'
+		: '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
+}
 			  </button>
               <button aria-label="tokens available from token issuer ${issuer}" 
 										  aria-haspopup="true"
