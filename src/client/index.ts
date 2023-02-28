@@ -16,7 +16,12 @@ import {
 	EventSenderConnectedWallet,
 	EventSenderDisconnectedWallet,
 	EventSenderError,
+	EventSenderViewChanged,
 	OnChainIssuer,
+	EventSenderViewLoaded,
+	EventSenderOpenedOverlay,
+	EventSenderClosedOverlay,
+	EventSenderTokensRefreshed,
 } from './interface'
 import { SignedUNChallenge } from './auth/signedUNChallenge'
 import { TicketZKProof } from './auth/ticketZKProof'
@@ -380,7 +385,7 @@ export class Client {
 			await this.passiveNegotiationStrategy()
 		}
 
-		// this.eventSender('loaded', null);
+		this.eventSender('loaded', null)
 	}
 
 	async activeNegotiationStrategy(openPopup: boolean) {
@@ -855,6 +860,11 @@ export class Client {
 	}
 
 	// eventSender overrides
+	async eventSender(eventName: 'loaded', data: EventSenderViewLoaded)
+	async eventSender(eventName: 'tokens-refreshed', data: EventSenderTokensRefreshed)
+	async eventSender(eventName: 'closed-overlay', data: EventSenderOpenedOverlay)
+	async eventSender(eventName: 'opened-overlay', data: EventSenderClosedOverlay)
+	async eventSender(eventName: 'view-changed', data: EventSenderViewChanged)
 	async eventSender(eventName: 'tokens', data: EventSenderTokens)
 	async eventSender(eventName: 'token-proof', data: EventSenderTokenProof)
 	async eventSender(eventName: 'tokens-selected', data: EventSenderTokensSelected)

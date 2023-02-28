@@ -204,14 +204,14 @@ export class Ui implements UiInterface {
 		if (this.options.uiType === 'inline') return
 		this.popupContainer.classList.add('close')
 		this.popupContainer.classList.remove('open')
-		// this.client.eventSender('closed-overlay', null);
+		this.client.eventSender('closed-overlay', null)
 	}
 
 	openOverlay() {
 		if (this.options.uiType === 'inline') return
 		// Prevent out-of-popup click from closing the popup straight away
 		setTimeout(() => {
-			// this.client.eventSender('opened-overlay', null);
+			this.client.eventSender('opened-overlay', null)
 			this.popupContainer.classList.add('open')
 			this.popupContainer.classList.remove('close')
 		}, 10)
@@ -252,7 +252,7 @@ export class Ui implements UiInterface {
 			data: data,
 		})
 
-		// this.client.eventSender('view-changed', { viewFactory, data });
+		this.client.eventSender('view-changed', { viewFactory, data })
 
 		this.currentView.render()
 	}

@@ -83,7 +83,7 @@ export class SelectIssuers extends AbstractView {
 		const refreshBtn = this.viewContainer.querySelector('.refresh-tn')
 
 		refreshBtn.addEventListener('click', () => {
-			this.client.eventSender('tokens-refreshed', null);
+			this.client.eventSender('tokens-refreshed', null)
 			this.autoLoadTokens(true)
 		})
 
