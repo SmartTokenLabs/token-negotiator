@@ -5,7 +5,10 @@
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist/"
+    "dist/",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "npm run clean && npm run write-version-constant && tsc --outDir dist && npm run compile-scss && npm run copy-assets",
