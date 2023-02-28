@@ -2,15 +2,7 @@
 
 import { SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
 
-import {
-	filterTokens,
-	readTokens,
-	decodeTokens,
-	storeMagicURL,
-	readMagicUrl,
-	readTokenFromMagicUrl,
-	ethKeyIsValid,
-} from './../index'
+import { filterTokens, readTokens, decodeTokens, storeMagicURL, readTokenFromMagicUrl, ethKeyIsValid } from './../index'
 import { readSignedTicket } from '../../outlet'
 
 // const mockToken = `?ticket="MIGWMA0MATYCBWE3ap3-AgEABEEEKJZVxMEXbkSZZBWnNUTX_5ieu8GUqf0bx_a0tBPF6QYskABaMJBYhDOXsmQt3csk_TfMZ2wdmfRkK7ePCOI2kgNCAOOZKRpcE6tLBuPbfE_SmwPk2wNjbj5vpa6kkD7eqQXvBOCa0WNo8dEHKvipeUGZZEWWjJKxooB44dEYdQO70Vgc"&secret=45845870684&id="mah@mah.com"`
@@ -120,26 +112,6 @@ describe('core Spec', () => {
 
 	// Jest Test onerror
 	// https://stackoverflow.com/questions/28584773/xmlhttprequest-testing-in-jest
-
-	test('expect to read new magic link', () => {
-		window.history.pushState(
-			{},
-			'Test Title',
-			'/?ticket=MIGSMAkMATkCAQUCAQwEQQQsUB1tp0mEn0Zoc8Lu-c0ZJOHis3ynlUAuplV8jpJhMgGMuP4i2msZihJq0VeBBOhGLU-vhfkn_0DYsJ9J8djgA0IAScs-3TwdMQ6XSIu1z1nDRCWEzAMBWaVEHONiRlW0j5kTEXBKvgNHS5DsjGm2S84BKqHl3qucBHUOGjpt-6hEuxw=&secret=285996413010999512790264856198259265088323878963947294417758116344175800611&id=nicktaras83@gmail.com',
-		)
-		readMagicUrl('ticket', 'secret', 'id', 'dcTokens')
-	})
-
-	test('expect to re-read magic link which is not pushed to state', () => {
-		window.history.pushState(
-			{},
-			'Test Title',
-			'/?ticket=MIGSMAkMATkCAQUCAQwEQQQsUB1tp0mEn0Zoc8Lu-c0ZJOHis3ynlUAuplV8jpJhMgGMuP4i2msZihJq0VeBBOhGLU-vhfkn_0DYsJ9J8djgA0IAScs-3TwdMQ6XSIu1z1nDRCWEzAMBWaVEHONiRlW0j5kTEXBKvgNHS5DsjGm2S84BKqHl3qucBHUOGjpt-6hEuxw=&secret=285996413010999512790264856198259265088323878963947294417758116344175800611&id=nicktaras83@gmail.com',
-		)
-		readMagicUrl('ticket', 'secret', 'id', 'dcTokens')
-		// try to add again. This time it will exist and not be added to array.
-		readMagicUrl('ticket', 'secret', 'id', 'dcTokens')
-	})
 
 	test('expect to read token from a magic link', () => {
 		window.history.pushState(

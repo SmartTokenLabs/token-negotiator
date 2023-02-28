@@ -266,7 +266,7 @@ export class Outlet {
 
 		const newTokenId = this.getUniqueTokenId(decodedNewToken)
 
-		for (const [index, tokenData] of existingTokens) {
+		for (const tokenData of existingTokens) {
 			// Nothing required, this token already exists
 			if (tokenData.token === newToken.token) {
 				return false
@@ -283,6 +283,7 @@ export class Outlet {
 
 			// Overwrite existing token
 			if (newTokenId === tokenId) {
+				const index = existingTokens.indexOf(tokenData)
 				existingTokens[index] = newToken
 				return existingTokens
 			}
