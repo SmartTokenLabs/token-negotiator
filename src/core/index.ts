@@ -107,11 +107,10 @@ export const storeMagicURL = (tokens: any, itemStorageKey: string) => {
 	}
 }
 
-export const readMagicUrl = (
+export const readTokenFromMagicUrl = (
 	tokenUrlName: string,
 	tokenSecretName: string,
 	tokenIdName: string,
-	itemStorageKey: string,
 	urlParams: URLSearchParams | null = null,
 ) => {
 	if (urlParams === null) urlParams = new URLSearchParams(window.location.search)
@@ -131,6 +130,50 @@ export const readMagicUrl = (
 		id: decodeURIComponent(idFromQuery),
 		magic_link: window.location.href,
 	}
+}
+
+export const readMagicUrl = (
+	tokenUrlName: string,
+	tokenSecretName: string,
+	tokenIdName: string,
+	itemStorageKey: string,
+	urlParams: URLSearchParams | null = null,
+) => {
+	if (urlParams === null) urlParams = new URLSearchParams(window.location.search)
+
+	const tokenFromQuery = urlParams.get(tokenUrlName)
+
+	const secretFromQuery = urlParams.get(tokenSecretName)
+
+	let tmp = urlParams.get(tokenIdName)
+	const idFromQuery = tmp ? tmp : ''
+
+	if (!(tokenFromQuery && secretFromQuery)) throw new Error('Incomplete token params in URL.')
+
+	let tokensOutput = readTokens(itemStorageKey)
+
+	let isNewQueryTicket = true
+
+	// TODO: use loop here instead
+	let tokens = tokensOutput.tokens.map((tokenData: any) => {
+		if (tokenData.token === tokenFromQuery) {
+			isNewQueryTicket = false
+		}
+
+		return tokenData
+	})
+
+	if (isNewQueryTicket) {
+		tokens.push({
+			token: tokenFromQuery,
+			secret: secretFromQuery,
+			id: decodeURIComponent(idFromQuery),
+			magic_link: window.location.href,
+		})
+		return tokens
+	}
+
+	throw new Error('Token already added.')
 }
 
 export const rawTokenCheck = async (unsignedToken: any, tokenIssuer: any) => {

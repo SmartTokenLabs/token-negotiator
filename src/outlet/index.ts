@@ -1,6 +1,6 @@
 import {
 	rawTokenCheck,
-	readMagicUrl,
+	readTokenFromMagicUrl,
 	storeMagicURL,
 	decodeTokens,
 	decodeToken,
@@ -232,7 +232,7 @@ export class Outlet {
 		const { tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey } = this.tokenConfig
 
 		try {
-			const newToken = readMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey, this.urlParams)
+			const newToken = readTokenFromMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, this.urlParams)
 			let tokensOutput = readTokens(itemStorageKey)
 
 			let isNewQueryTicket = true
@@ -258,8 +258,12 @@ export class Outlet {
 					this.tokenConfig.unsignedTokenDataName,
 					false,
 				)
+
 				// hard-coded for temporary solution
-				if (decodedNewToken['ticketIdNumber'] !== decodedTokenData['ticketIdNumber']) {
+				if (
+					decodedNewToken['devconId'] !== decodedTokenData['devconId'] ||
+					decodedNewToken['ticketIdNumber'] !== decodedTokenData['ticketIdNumber']
+				) {
 					tokens.push(tokenData)
 				}
 			}
@@ -278,7 +282,6 @@ export class Outlet {
 			document.body.dispatchEvent(event)
 		} catch (e) {
 			// no-op
-			console.log('errror  +>', e)
 		}
 	}
 
