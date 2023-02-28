@@ -364,7 +364,7 @@ export class Outlet {
 			includeSigned = true
 		}
 
-		const decodedTokens = decodeTokens(
+		let decodedTokens = decodeTokens(
 			storageTokens,
 			this.tokenConfig.tokenParser,
 			this.tokenConfig.unsignedTokenDataName,
@@ -372,6 +372,12 @@ export class Outlet {
 		)
 
 		return filterTokens(decodedTokens, filter)
+	}
+
+	removeDuplicatesByKey(objectArr: any, filterKey: string) {
+		return objectArr.filter(
+			(value: any, index: number, self: any) => index === self.findIndex((t: any) => t[filterKey] === value[filterKey]),
+		)
 	}
 
 	async sendTokenProof(evtid: any, token: any, address: string, wallet: string) {
@@ -432,6 +438,7 @@ export class Outlet {
 
 	private sendTokens(evtid: any) {
 		let issuerTokens = this.prepareTokenOutput(this.getFilter())
+		issuerTokens = this.removeDuplicatesByKey(issuerTokens, 'ticketIdNumber')
 
 		logger(2, 'issuerTokens: (Outlet.sendTokens)', issuerTokens)
 
