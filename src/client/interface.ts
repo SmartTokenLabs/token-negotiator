@@ -93,16 +93,16 @@ export type TokenNegotiatorEvents =
 	| 'error'
 
 export interface EventSenderViewLoaded {
-	data: any | null
+	data: any
 }
 export interface EventSenderClosedOverlay {
-	data: any | null
+	data: any
 }
 export interface EventSenderOpenedOverlay {
-	data: any | null
+	data: any
 }
 export interface EventSenderTokensRefreshed {
-	data: any | null
+	data: any
 }
 export interface EventSenderTokenProof {
 	issuer: string
