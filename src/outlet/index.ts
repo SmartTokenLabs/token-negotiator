@@ -364,7 +364,7 @@ export class Outlet {
 			includeSigned = true
 		}
 
-		let decodedTokens = decodeTokens(
+		const decodedTokens = decodeTokens(
 			storageTokens,
 			this.tokenConfig.tokenParser,
 			this.tokenConfig.unsignedTokenDataName,
