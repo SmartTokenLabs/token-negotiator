@@ -108,7 +108,7 @@ export class Ui implements UiInterface {
 			}
 		})
 
-		this.updateUI(await this.getStartScreen())
+		this.updateUI(await this.getStartScreen(), { viewName: 'start' })
 	}
 
 	public getViewFactory(type: ViewType): [ViewComponent, { [key: string]: any }] {
@@ -252,7 +252,10 @@ export class Ui implements UiInterface {
 			data: data,
 		})
 
-		this.client.eventSender('view-changed', { viewFactory, data })
+		let viewName = typeof viewFactory === 'string' ? viewFactory : ''
+		if (!viewName) viewName = data.viewName
+
+		this.client.eventSender('view-changed', { viewName, data })
 
 		this.currentView.render()
 	}

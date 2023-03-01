@@ -271,7 +271,7 @@ export class Client {
 		this.eventSender('connected-wallet', null)
 		this.eventSender('disconnected-wallet', null)
 		if (this.ui) {
-			this.ui.updateUI('wallet')
+			this.ui.updateUI('wallet', { viewName: 'wallet' })
 		}
 	}
 
@@ -841,8 +841,9 @@ export class Client {
 
 		return new Promise((resolve, reject) => {
 			this.ui.updateUI('wallet', {
+				viewName: 'wallet',
 				connectCallback: async () => {
-					this.ui.updateUI('main')
+					this.ui.updateUI('main', { viewName: 'main' })
 					try {
 						let res = await this.authenticate(authRequest)
 						resolve(res)
