@@ -1,16 +1,32 @@
 import { base64ToUint8array, compareObjects } from '../utils/index'
+import { OutletInterface } from '../outlet'
+
+export interface OffChainTokenData {
+	token: string
+	secret: string
+	id: string
+	magic_link: string
+}
+
+export interface DecodedToken {
+	devconId: string
+	ticketIdNumber?: string
+	ticketIdString?: number
+	ticketClass: number
+	commitment: Uint8Array
+}
 
 interface FilterInterface {
 	[key: string]: any
 }
 
-export const filterTokens = (decodedTokens: any, filter: FilterInterface = []) => {
-	let res: any = []
+export const filterTokens = (decodedTokens: DecodedToken[], filter: FilterInterface = {}) => {
+	let res: DecodedToken[] = []
 
 	if (decodedTokens.length && typeof filter === 'object' && Object.keys(filter).length) {
 		let filterKeys = Object.keys(filter)
 
-		decodedTokens.forEach((token: any) => {
+		decodedTokens.forEach((token: DecodedToken) => {
 			let fitFilter = 1
 
 			filterKeys.forEach((key) => {
@@ -26,19 +42,23 @@ export const filterTokens = (decodedTokens: any, filter: FilterInterface = []) =
 	}
 }
 
-export const readTokens = (itemStorageKey: any) => {
+export const readTokens = (itemStorageKey: string) => {
 	const storageTickets = localStorage.getItem(itemStorageKey)
 
-	let tokens: any = []
+	let tokens: OffChainTokenData[] = []
 
-	let output: any = { tokens: [], noTokens: true, success: true }
+	let output: { tokens: OffChainTokenData[]; noTokens: boolean; success: boolean } = {
+		tokens: [],
+		noTokens: true,
+		success: true,
+	}
 
 	try {
 		if (storageTickets && storageTickets.length) {
 			tokens = JSON.parse(storageTickets)
 
 			if (tokens.length !== 0) {
-				tokens.forEach((item: any) => {
+				tokens.forEach((item: OffChainTokenData) => {
 					if (item.token && item.secret) output.tokens.push(item)
 				})
 			}
@@ -55,7 +75,7 @@ export const readTokens = (itemStorageKey: any) => {
 }
 
 export const decodeTokens = (
-	rawTokens: any,
+	rawTokens: string,
 	tokenParser: any,
 	unsignedTokenDataName: string,
 	includeSignedToken = false,
@@ -74,7 +94,7 @@ export const decodeTokens = (
 }
 
 export const decodeToken = (
-	tokenData: any,
+	tokenData: OffChainTokenData,
 	tokenParser: any,
 	unsignedTokenDataName: string,
 	includeSignedToken = false,
@@ -92,7 +112,7 @@ export const decodeToken = (
 	}
 }
 
-function propsArrayBufferToArray(obj: any) {
+function propsArrayBufferToArray(obj: { [key: string]: any }) {
 	Object.keys(obj).forEach((key) => {
 		if (obj[key] instanceof ArrayBuffer) {
 			obj[key] = Array.from(new Uint8Array(obj[key]))
@@ -101,7 +121,7 @@ function propsArrayBufferToArray(obj: any) {
 	return obj
 }
 
-export const storeMagicURL = (tokens: any, itemStorageKey: string) => {
+export const storeMagicURL = (tokens: OffChainTokenData[], itemStorageKey: string) => {
 	if (tokens) {
 		localStorage.setItem(itemStorageKey, JSON.stringify(tokens))
 	}
@@ -112,7 +132,7 @@ export const readTokenFromMagicUrl = (
 	tokenSecretName: string,
 	tokenIdName: string,
 	urlParams: URLSearchParams | null = null,
-) => {
+): OffChainTokenData => {
 	if (urlParams === null) urlParams = new URLSearchParams(window.location.search)
 
 	const tokenFromQuery = urlParams.get(tokenUrlName)
@@ -132,14 +152,7 @@ export const readTokenFromMagicUrl = (
 	}
 }
 
-export const rawTokenCheck = async (unsignedToken: any, tokenIssuer: any) => {
-	// currently meta mask is needed to move beyond this point.
-	// however the err msg given is not obvious that this is the issue.
-
-	// metamask is only one of the wallets, we have to use walletConnect to
-	// check if user have some wallet immediately before use wallet
-	// requiredParams(window.ethereum, "Please install metamask to continue.");
-
+export const rawTokenCheck = async (unsignedToken: DecodedToken, tokenIssuer: OutletInterface) => {
 	let rawTokenData = getRawToken(unsignedToken, tokenIssuer)
 
 	if (!rawTokenData) return null
@@ -171,7 +184,7 @@ export const rawTokenCheck = async (unsignedToken: any, tokenIssuer: any) => {
 	return tokenObj
 }
 
-export const getRawToken = (unsignedToken: any, tokenIssuer: any) => {
+export const getRawToken = (unsignedToken: DecodedToken, tokenIssuer: OutletInterface): OffChainTokenData => {
 	if (!unsignedToken || !Object.keys(unsignedToken).length) return
 
 	let tokensOutput = readTokens(tokenIssuer.itemStorageKey)
@@ -182,7 +195,7 @@ export const getRawToken = (unsignedToken: any, tokenIssuer: any) => {
 		let token = {}
 
 		if (rawTokens.length) {
-			rawTokens.forEach((tokenData: any) => {
+			rawTokens.forEach((tokenData: OffChainTokenData) => {
 				if (tokenData.token) {
 					const _tokenParser = tokenIssuer.tokenParser
 
@@ -200,7 +213,7 @@ export const getRawToken = (unsignedToken: any, tokenIssuer: any) => {
 			})
 		}
 
-		return token
+		return token as OffChainTokenData
 	}
 
 	return null

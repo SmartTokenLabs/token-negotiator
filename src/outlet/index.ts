@@ -6,6 +6,8 @@ import {
 	decodeToken,
 	filterTokens,
 	readTokens,
+	OffChainTokenData,
+	DecodedToken,
 } from '../core'
 import { logger, requiredParams, uint8toBuffer } from '../utils'
 import { OutletAction, OutletResponseAction } from '../client/messaging'
@@ -256,7 +258,7 @@ export class Outlet {
 	 * @private
 	 * @returns false when no changes to the data are required - the token is already added
 	 */
-	private mergeNewToken(newToken: any, existingTokens: any[]): any[] | false {
+	public mergeNewToken(newToken: OffChainTokenData, existingTokens: OffChainTokenData[]): OffChainTokenData[] | false {
 		const decodedNewToken = decodeToken(
 			newToken,
 			this.tokenConfig.tokenParser,
@@ -266,7 +268,7 @@ export class Outlet {
 
 		const newTokenId = this.getUniqueTokenId(decodedNewToken)
 
-		for (const tokenData of existingTokens) {
+		for (const [index, tokenData] of existingTokens.entries()) {
 			// Nothing required, this token already exists
 			if (tokenData.token === newToken.token) {
 				return false
@@ -283,7 +285,6 @@ export class Outlet {
 
 			// Overwrite existing token
 			if (newTokenId === tokenId) {
-				const index = existingTokens.indexOf(tokenData)
 				existingTokens[index] = newToken
 				return existingTokens
 			}
@@ -298,7 +299,7 @@ export class Outlet {
 	 * Calculates a unique token ID to identify this ticket. Tickets can be reissued and have a different commitment, but are still the same token
 	 * @private
 	 */
-	private getUniqueTokenId(decodedToken: any) {
+	private getUniqueTokenId(decodedToken: DecodedToken) {
 		return `${decodedToken.devconId}-${decodedToken.ticketIdNumber ?? decodedToken.ticketIdString}`
 	}
 
