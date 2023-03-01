@@ -114,7 +114,7 @@ export interface EventSenderError {
 	error: Error
 }
 export interface EventSenderViewChanged {
-	viewName: any
+	viewName: string
 	data: any
 }
 
