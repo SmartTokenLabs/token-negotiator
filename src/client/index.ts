@@ -863,8 +863,8 @@ export class Client {
 	// eventSender overrides
 	async eventSender(eventName: 'loaded', data: EventSenderViewLoaded)
 	async eventSender(eventName: 'tokens-refreshed', data: EventSenderTokensRefreshed)
-	async eventSender(eventName: 'closed-overlay', data: EventSenderOpenedOverlay)
-	async eventSender(eventName: 'opened-overlay', data: EventSenderClosedOverlay)
+	async eventSender(eventName: 'closed-overlay', data: EventSenderClosedOverlay)
+	async eventSender(eventName: 'opened-overlay', data: EventSenderOpenedOverlay)
 	async eventSender(eventName: 'view-changed', data: EventSenderViewChanged)
 	async eventSender(eventName: 'tokens', data: EventSenderTokens)
 	async eventSender(eventName: 'token-proof', data: EventSenderTokenProof)
