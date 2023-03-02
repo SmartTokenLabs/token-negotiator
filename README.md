@@ -377,6 +377,78 @@ const offChainIssuer = {
 };
 ```
 
+### Utilising event hooks
+
+Hooks can be used to capture events triggered within the library.
+
+<br/>
+
+```javascript
+// example use of an event hook
+negotiator.on("tokens-selected", callback);
+```
+
+<br/>
+
+<table>
+  <thead>
+    <tr>
+      <th>Hook Type</th>
+      <th>Returns</th>
+    </tr>
+  </thead>
+  <tbody>
+		<tr>
+			<td>'tokens-selected'</td>
+			<td>Tokens selected data</td>
+		</tr>
+		<tr>
+			<td>'tokens'</td>
+			<td>Tokens when using passive mode (auto selected)</td>
+		</tr>
+		<tr>
+			<td>'network-change'</td>
+			<td>Chain</td>
+		</tr>
+				<tr>
+			<td>'token-proof'</td>
+			<td>Proof data</td>
+		</tr>
+		<tr>
+			<td>'connected-wallet'</td>
+			<td>Wallet data</td>
+		</tr>
+		<tr>
+			<td>'error'</td>
+			<td>Error data</td>
+		</tr>
+		<tr>
+			<td>View and data</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>'tokens-refreshed'</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>'opened-overlay'</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>'closed-overlay'</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>'loaded'</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>'disconnected-wallet'</td>
+			<td></td>
+		</tr>
+  </tbody>
+</table>
+
 ### Authenticate ownership of off chain Token
 
 Authenticating ownership of the token will provide a proof with a limited expiry.
@@ -393,50 +465,6 @@ negotiator.authenticate({
 
 negotiator.on("proof", () => {
 	// the proof will be received here (valid or failed)
-});
-```
-
-### Utilise the wallet provider instance hook
-
-Once connected to Token Negotiator, the wallet instance can be used.
-
-```javascript
-/**
- * @returns {String} blockchain
- * @returns {String} wallet address
- * @return {String} chain id
- * @return {String} providerType 'MetaMask'
- * @return {Object} provider instance
- * @return {Object} ethers library instance
- */
-negotiator.on("connected-wallet", (connectedWallet) => {
-	// handle the wallet instance as required by your application
-	// { ... }
-});
-```
-
-### Wallet disconnection hook
-
-This event is triggered when the user disconnects their wallet from Token Negotiator.
-
-```javascript
-negotiator.on("disconnected-wallet", () => {
-	// handle the wallet disconnection event as required by your application
-	// { ... }
-});
-```
-
-### Wallet network change hook (evm wallets only at this time)
-
-This event is triggered when the user changes their current connected wallets network
-
-```javascript
-/**
- * @returns {String|Number} chain
- */
-negotiator.on("network-change", (chain) => {
-	// handle the wallet network change as required by your application
-	// { ... }
 });
 ```
 

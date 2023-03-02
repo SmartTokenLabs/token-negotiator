@@ -219,14 +219,27 @@
 				window.negotiator.on("disconnected-wallet", () => {
 					console.log("wallet successfully disconnected");
 				});
-
+				window.negotiator.on("loaded", () => {
+					console.log("token negotiator loaded");
+				});
+				window.negotiator.on("tokens-refreshed", () => {
+					console.log("tokens-refreshed");
+				});
+				window.negotiator.on("opened-overlay", () => {
+					console.log("opened overlay");
+				});
+				window.negotiator.on("closed-overlay", () => {
+					console.log("closed overlay");
+				});
+				window.negotiator.on("view-changed", (data) => {
+					console.log("view change", data);
+				});
 				window.negotiator.on("token-proof", (proof) => {
 					console.log(proof);
 				});
 
 				window.negotiator.negotiate();
 			}
-
 			function switchTheme() {
 				theme = theme === "dark" ? "light" : "dark";
 				window.negotiator.switchTheme(theme);

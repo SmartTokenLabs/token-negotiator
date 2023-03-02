@@ -27,9 +27,9 @@ export class Start extends AbstractView {
 
 		if (await this.ui.canSkipWalletSelection()) {
 			this.client.enrichTokenLookupDataOnChainTokens()
-			this.ui.updateUI('main')
+			this.ui.updateUI('main', { viewName: 'main' })
 		} else {
-			this.ui.updateUI('wallet')
+			this.ui.updateUI('wallet', { viewName: 'wallet' })
 		}
 
 		this.ui.dismissLoader()
