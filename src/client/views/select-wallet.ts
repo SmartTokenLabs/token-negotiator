@@ -40,7 +40,7 @@ const flowSVG = `
 export class SelectWallet extends AbstractView {
 	render() {
 
-		const evmOrOffChain = this.client.evmAvailable() || this.client.offChainAvailable();
+		const evmOrOffChain = this.client.hasIssuerForBlockchain("evm");
 
 		const SafeConnectButton = this.client.safeConnectAvailable()
 			? `<button class="wallet-button-tn" data-wallet="SafeConnect" aria-label="Safe connect wallet button">
@@ -70,13 +70,13 @@ export class SelectWallet extends AbstractView {
 				<p>Wallet Connect V2</p>
 			</button>` : ""
 
-		const torusButton = evmOrOffChain 
+		const torusButton = evmOrOffChain
 			? `<button class="wallet-button-tn" data-wallet="Torus" aria-label="Torus wallet button">
 				${torusSVG}
 				<p>Torus</p>
 			</button>` : ""
 
-		const PhantomButton = this.client.solanaAvailable()
+		const PhantomButton = this.client.hasIssuerForBlockchain("solana")
 			? `<button class="wallet-button-tn" data-wallet="Phantom">
                 ${phantomSVG}
                 <p>Phantom</p>
@@ -85,7 +85,7 @@ export class SelectWallet extends AbstractView {
 
 		
 		// TODO stop connect to Flow when popup closed
-		const FlowButton = this.client.flowAvailable() ? `
+		const FlowButton = this.client.hasIssuerForBlockchain("flow") ? `
 			<button class="wallet-button-tn" data-wallet="Flow" aria-label="Safe connect wallet button">
 				${flowSVG}
 				<p>Flow</p>
