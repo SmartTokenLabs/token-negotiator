@@ -35,29 +35,29 @@ export class SelectIssuers extends AbstractView {
                 <div class="headline-container-tn">
                   <div>
                   	<p class="headline-tn">${this.params.options.issuerHeading}</p>
-										<div class="toolbar-tn">
-				  						<button class="btn-tn refresh-tn" aria-label="Refresh Tokens">
-                  			<svg class="refresh-icon-tn" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"\t viewBox="0 0 383.748 383.748" style="enable-background:new 0 0 383.748 383.748;" xml:space="preserve"><g>\t<path d="M62.772,95.042C90.904,54.899,137.496,30,187.343,30c83.743,0,151.874,68.13,151.874,151.874h30\t\tC369.217,81.588,287.629,0,187.343,0c-35.038,0-69.061,9.989-98.391,28.888C70.368,40.862,54.245,56.032,41.221,73.593\t\tL2.081,34.641v113.365h113.91L62.772,95.042z"/>\t<path d="M381.667,235.742h-113.91l53.219,52.965c-28.132,40.142-74.724,65.042-124.571,65.042\t\tc-83.744,0-151.874-68.13-151.874-151.874h-30c0,100.286,81.588,181.874,181.874,181.874c35.038,0,69.062-9.989,98.391-28.888\t\tc18.584-11.975,34.707-27.145,47.731-44.706l39.139,38.952V235.742z"/></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g></svg>
-				  						</button>
-											<button class="btn-tn dis-wallet-tn" style="display: none;" aria-label="Disconnect Wallet">
-												<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-												<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-												<svg width="12px" height="100%" viewBox="0 0 384 384" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
-														<g id="Layer1">
-																<path d="M194.449,-0.378L194.449,29.622L29.577,29.622C29.577,95.909 30.577,354.191 30.577,354.191L194.449,354.191L194.449,384.191L16.077,384.191C7.517,384.191 0.577,377.251 0.577,368.691L0.577,15.122C0.577,6.562 7.517,-0.378 16.077,-0.378L194.449,-0.378Z"/>
-																<g transform="matrix(1.39537,0,0,2.43013,-54.9803,-262.053)">
-																		<path d="M99.772,200.171L99.772,165.725L228.493,165.725L228.493,133.741L314.191,182.948L228.493,232.156L228.493,200.171L99.772,200.171Z"/>
-																</g>
-														</g>
-												</svg>											
-											</button>
-				  					</div>                  	
+						<div class="toolbar-tn">
+				  			<button class="btn-tn refresh-tn" aria-label="Refresh Tokens">
+                  				<svg class="refresh-icon-tn" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 383.748 383.748" style="enable-background:new 0 0 383.748 383.748;" xml:space="preserve"><g><path d="M62.772,95.042C90.904,54.899,137.496,30,187.343,30c83.743,0,151.874,68.13,151.874,151.874h30 C369.217,81.588,287.629,0,187.343,0c-35.038,0-69.061,9.989-98.391,28.888C70.368,40.862,54.245,56.032,41.221,73.593 L2.081,34.641v113.365h113.91L62.772,95.042z"/><path d="M381.667,235.742h-113.91l53.219,52.965c-28.132,40.142-74.724,65.042-124.571,65.042 c-83.744,0-151.874-68.13-151.874-151.874h-30c0,100.286,81.588,181.874,181.874,181.874c35.038,0,69.062-9.989,98.391-28.888 c18.584-11.975,34.707-27.145,47.731-44.706l39.139,38.952V235.742z"/></g></svg>
+				  			</button>
+							<button class="btn-tn dis-wallet-tn" style="display: none;" aria-label="Disconnect Wallet">
+								<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+								<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+								<svg width="12px" height="100%" viewBox="0 0 384 384" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+									<g id="Layer1">
+										<path d="M194.449,-0.378L194.449,29.622L29.577,29.622C29.577,95.909 30.577,354.191 30.577,354.191L194.449,354.191L194.449,384.191L16.077,384.191C7.517,384.191 0.577,377.251 0.577,368.691L0.577,15.122C0.577,6.562 7.517,-0.378 16.077,-0.378L194.449,-0.378Z"/>
+											<g transform="matrix(1.39537,0,0,2.43013,-54.9803,-262.053)">
+												<path d="M99.772,200.171L99.772,165.725L228.493,165.725L228.493,133.741L314.191,182.948L228.493,232.156L228.493,200.171L99.772,200.171Z"/>
+											</g>
+											</g>
+									</svg>											
+								</button>
+						</div>  	
 				  </div>
 				  ${this.getCustomContent()}
                 </div>
-								<nav class="token-issuer-nav-tn">
-                	<ul class="token-issuer-list-container-tn" role="menubar"></ul>
-								</nav>
+				<nav class="token-issuer-nav-tn">
+					<ul class="token-issuer-list-container-tn" role="menubar"></ul>
+				</nav>
               </div>
               <div class="token-view-tn scroll-tn" style="display: none;">
                 <div class="brand-tn"></div>
@@ -178,8 +178,8 @@ export class SelectIssuers extends AbstractView {
             <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
               <div tabindex="0" style="display: flex; align-items: center;">
                 <div class="img-container-tn issuer-icon-tn shimmer-tn" data-image-src="${
-									image ?? ''
-								}" data-token-title="${title}"></div>
+	image ?? ''
+}" data-token-title="${title}"></div>
                 <p class="issuer-connect-title">${title}</p>
               </div>
               <button aria-label="connect with the token issuer ${issuer}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" 
@@ -189,10 +189,10 @@ export class SelectIssuers extends AbstractView {
 					${this.client.issuersLoaded === true ? '' : 'disabled'}
 				>
 				${
-					this.client.issuersLoaded === true
-						? 'Load'
-						: '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
-				}
+	this.client.issuersLoaded === true
+		? 'Load'
+		: '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
+}
 			  </button>
               <button aria-label="tokens available from token issuer ${issuer}" 
 										  aria-haspopup="true"

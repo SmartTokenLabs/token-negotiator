@@ -250,6 +250,30 @@ export class Client {
 		)
 	}
 
+	public evmAvailable() {
+		return (
+			this.config.issuers.filter((issuer: OnChainTokenConfig) => {
+				return issuer?.blockchain?.toLowerCase() === 'evm' || !issuer?.blockchain?.toLowerCase()
+			}).length > 0
+		)
+	}
+
+	public offChainAvailable() {
+		return (
+			this.config.issuers.filter((issuer: OffChainTokenConfig) => {
+				return !issuer?.onChain
+			}).length > 0
+		)
+	}
+
+	public flowAvailable() {
+		return (
+			this.config.issuers.filter((issuer: OnChainTokenConfig) => {
+				return issuer?.blockchain?.toLowerCase() === 'flow'
+			}).length > 0
+		)
+	}
+
 	public async getWalletProvider() {
 		if (!this.web3WalletProvider) {
 			const { Web3WalletProvider } = await import('./../wallet/Web3WalletProvider')
