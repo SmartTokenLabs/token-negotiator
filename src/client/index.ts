@@ -246,13 +246,11 @@ export class Client {
 		return this.config.safeConnectOptions !== undefined
 	}
 
-	public hasIssuerForBlockchain(blockchain: 'evm' | 'solana' | 'flow') {
+	public solanaAvailable() {
 		return (
-			this.config.issuers.filter((issuer: OnChainTokenConfig) => {
-				// EVM should always be active when we have off-chain attestations as it's used for UN challenge signing
-				if (blockchain === 'evm' && !issuer.onChain) return true
-
-				return (issuer.blockchain ? issuer.blockchain.toLowerCase() : 'evm') === blockchain
+			typeof window.solana !== 'undefined' &&
+			this.config.issuers.filter((issuer: SolanaIssuerConfig) => {
+				return issuer?.blockchain?.toLowerCase() === 'solana'
 			}).length > 0
 		)
 	}

@@ -46,68 +46,44 @@ const magicLinkSVG = `
 
 export class SelectWallet extends AbstractView {
 	render() {
+		// TODO only show the wallets that relate to the tokens available.
+
 		const MetaMaskButton =
-			typeof window.ethereum !== 'undefined' && this.client.hasIssuerForBlockchain('evm')
+			typeof window.ethereum !== 'undefined'
 				? `<button class="wallet-button-tn" data-wallet="MetaMask" aria-label="Metamask wallet button">
                 ${metaMaskSVG}
                 <p>MetaMask</p>
             </button>`
 				: ''
 
-		const WalletConnectButton = this.client.hasIssuerForBlockchain('evm')
-			? `<button class="wallet-button-tn" data-wallet="WalletConnect" aria-label="Wallet Connect button">
-				  ${walletConnectSVG}
-				  <p>Wallet Connect</p>
-				</button>`
-			: ''
-
-		const WalletConnectV2Button =
-			this.client.experimentalFeaturesEnabled() && this.client.hasIssuerForBlockchain('evm')
-				? `<button class="wallet-button-tn" data-wallet="WalletConnectV2" aria-label="Wallet Connect V2 button">
-					${walletConnectV2SVG}
-					<p>Wallet Connect V2</p>
-				</button>`
-				: ''
-
-		const TorusButton = this.client.hasIssuerForBlockchain('evm')
-			? `<button class="wallet-button-tn" data-wallet="Torus" aria-label="Torus wallet button">
-				  ${torusSVG}
-				  <p>Torus</p>
-				</button>`
-			: ''
-
-		const PhantomButton = this.client.hasIssuerForBlockchain('solana')
+		const PhantomButton = this.client.solanaAvailable()
 			? `<button class="wallet-button-tn" data-wallet="Phantom">
                 ${phantomSVG}
                 <p>Phantom</p>
             </button>`
 			: ''
 
-		const SafeConnectButton =
-			this.client.safeConnectAvailable() && this.client.hasIssuerForBlockchain('evm')
-				? `<button class="wallet-button-tn" data-wallet="SafeConnect" aria-label="Safe connect wallet button">
+		const SafeConnectButton = this.client.safeConnectAvailable()
+			? `<button class="wallet-button-tn" data-wallet="SafeConnect" aria-label="Safe connect wallet button">
 			  ${safeConnectSVG}
 			  <p>Safe Connect</p>
 			</button>`
-				: ''
+			: ''
 
-		const FlowButton = this.client.hasIssuerForBlockchain('flow')
-			? `
+		const FlowButton = `
 			<button class="wallet-button-tn" data-wallet="Flow" aria-label="Safe connect wallet button">
 				${flowSVG}
 				<p>Flow</p>
 			</button>
 		`
-			: ''
 
-		const MagicLinkButton =
-			this.client.experimentalFeaturesEnabled() && this.client.hasIssuerForBlockchain('evm')
-				? `<button class="wallet-button-tn" data-wallet="MagicLink" aria-label="Magic link connect wallet button">
+		const MagicLinkButton = this.client.experimentalFeaturesEnabled()
+			? `<button class="wallet-button-tn" data-wallet="MagicLink" aria-label="Magic link connect wallet button">
 				${magicLinkSVG}
 				<p>Magic.Link</p>
 			</button>
 		`
-				: ''
+			: ''
 
 		this.viewContainer.innerHTML = `
             <div class="inner-content-tn scroll-tn">
@@ -120,10 +96,19 @@ export class SelectWallet extends AbstractView {
                   <div class="wallet-button-container-tn">
                   	${SafeConnectButton}
                     ${MetaMaskButton}
-                    ${WalletConnectButton}
-                    ${WalletConnectV2Button}
+                    <button class="wallet-button-tn" data-wallet="WalletConnect" aria-label="Wallet Connect button">
+                      ${walletConnectSVG}
+                      <p>Wallet Connect</p>
+                    </button>
+					<button class="wallet-button-tn" data-wallet="WalletConnectV2" aria-label="Wallet Connect V2 button">
+						${walletConnectV2SVG}
+						<p>Wallet Connect V2</p>
+					</button>
+                    <button class="wallet-button-tn" data-wallet="Torus" aria-label="Torus wallet button">
+                      ${torusSVG}
+                      <p>Torus</p>
+                    </button>
                     ${MagicLinkButton}
-                    ${TorusButton}
                     ${PhantomButton}
 					${FlowButton}
                   </div>
