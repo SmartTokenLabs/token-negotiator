@@ -294,7 +294,7 @@ export class AuthHandler {
 
 		iframe.src = this.attestationOrigin ?? ''
 		iframe.style.width = '800px'
-		iframe.style.height = '700px'
+		iframe.style.height = '800px'
 		iframe.style.maxWidth = '100%'
 		iframe.style.background = '#fff'
 
@@ -302,7 +302,7 @@ export class AuthHandler {
 		this.iframeWrap = iframeWrap
 		iframeWrap.setAttribute(
 			'style',
-			'width:100%;min-height: 100vh; position: fixed; align-items: center; justify-content: center;display: none;top: 0; left: 0; background: #fffa',
+			'width:101%;min-height: 100vh; position: fixed; align-items: center; justify-content: center;display: none;top: 0; left: 0; background: #fffa',
 		)
 		iframeWrap.appendChild(iframe)
 
