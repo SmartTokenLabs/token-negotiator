@@ -2,6 +2,7 @@ import { ethers } from 'ethers'
 import { logger } from '../utils'
 import { SafeConnectOptions } from './SafeConnectProvider'
 import { Client } from '../client'
+import { WalletOptionsInterface } from '../client/interface'
 
 interface WalletConnectionState {
 	[index: string]: WalletConnection
@@ -21,13 +22,11 @@ export class Web3WalletProvider {
 
 	connections: WalletConnectionState = {}
 
-	safeConnectOptions?: SafeConnectOptions
-	client: Client
-
-	constructor(client: Client, safeConnectOptions?: SafeConnectOptions) {
-		this.client = client
-		this.safeConnectOptions = safeConnectOptions
-	}
+	constructor(
+		private client: Client,
+		private walletOptions?: WalletOptionsInterface,
+		public safeConnectOptions?: SafeConnectOptions,
+	) {}
 
 	saveConnections() {
 		let savedConnections: WalletConnectionState = {}
@@ -40,7 +39,6 @@ export class Web3WalletProvider {
 				chainId: con.chainId,
 				providerType: con.providerType,
 				blockchain: con.blockchain,
-				ethers: ethers,
 			}
 		}
 
@@ -273,12 +271,9 @@ export class Web3WalletProvider {
 				namespaces: {
 					eip155: {
 						methods: ['eth_sendTransaction', 'eth_signTransaction', 'eth_sign', 'personal_sign', 'eth_signTypedData'],
-						chains: walletConnectProvider.WC_V2_CHAINS,
+						chains: this.walletOptions?.walletConnectV2?.chains ?? walletConnectProvider.WC_V2_DEFAULT_CHAINS,
 						events: ['chainChanged', 'accountsChanged'],
-						rpcMap: walletConnectProvider.CUSTOM_RPCS_FOR_WC_V2,
-						// rpcMap: {
-						// 	1: `https://mainnet.infura.io/v3/9f79b2f9274344af90b8d4e244b580ef`
-						// }
+						rpcMap: this.walletOptions?.walletConnectV2?.rpcMap ?? walletConnectProvider.WC_DEFAULT_RPC_MAP,
 					},
 				},
 				pairingTopic: pairing?.topic,
