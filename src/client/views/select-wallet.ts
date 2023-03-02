@@ -140,7 +140,7 @@ export class SelectWallet extends AbstractView {
 				} else {
 					// TODO: It may be better/faster to fire this on view load.
 					this.client.enrichTokenLookupDataOnChainTokens()
-					this.ui.updateUI('main')
+					this.ui.updateUI('main', { viewName: 'main' })
 				}
 			}
 		} catch (err: any) {

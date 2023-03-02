@@ -108,7 +108,7 @@ export class Ui implements UiInterface {
 			}
 		})
 
-		this.updateUI(await this.getStartScreen())
+		this.updateUI(await this.getStartScreen(), { viewName: 'start' })
 	}
 
 	public getViewFactory(type: ViewType): [ViewComponent, { [key: string]: any }] {
@@ -204,12 +204,14 @@ export class Ui implements UiInterface {
 		if (this.options.uiType === 'inline') return
 		this.popupContainer.classList.add('close')
 		this.popupContainer.classList.remove('open')
+		this.client.eventSender('closed-overlay', null)
 	}
 
 	openOverlay() {
 		if (this.options.uiType === 'inline') return
 		// Prevent out-of-popup click from closing the popup straight away
 		setTimeout(() => {
+			this.client.eventSender('opened-overlay', null)
 			this.popupContainer.classList.add('open')
 			this.popupContainer.classList.remove('close')
 		}, 10)
@@ -249,6 +251,11 @@ export class Ui implements UiInterface {
 			viewOptions,
 			data: data,
 		})
+
+		let viewName = typeof viewFactory === 'string' ? viewFactory : ''
+		if (!viewName) viewName = data.viewName
+
+		this.client.eventSender('view-changed', { viewName, data })
 
 		this.currentView.render()
 	}

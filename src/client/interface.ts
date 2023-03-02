@@ -79,6 +79,11 @@ export interface AuthenticateInterface {
 }
 
 export type TokenNegotiatorEvents =
+	| 'view-changed'
+	| 'tokens-refreshed'
+	| 'opened-overlay'
+	| 'closed-overlay'
+	| 'loaded'
 	| 'token-proof'
 	| 'connected-wallet'
 	| 'disconnected-wallet'
@@ -87,6 +92,18 @@ export type TokenNegotiatorEvents =
 	| 'network-change'
 	| 'error'
 
+export interface EventSenderViewLoaded {
+	data: any
+}
+export interface EventSenderClosedOverlay {
+	data: any
+}
+export interface EventSenderOpenedOverlay {
+	data: any
+}
+export interface EventSenderTokensRefreshed {
+	data: any
+}
 export interface EventSenderTokenProof {
 	issuer: string
 	error: any | null
@@ -96,6 +113,11 @@ export interface EventSenderError {
 	issuer: string
 	error: Error
 }
+export interface EventSenderViewChanged {
+	viewName: string
+	data: any
+}
+
 export interface EventSenderTokensSelected {
 	selectedTokens: Object
 }
