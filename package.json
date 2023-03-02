@@ -41,7 +41,6 @@
   },
   "homepage": "https://github.com/TokenScript/token-negotiator#readme",
   "dependencies": {
-    "@magic-sdk/provider": "^13.5.0",
     "@onflow/fcl": "^1.3.2",
     "@peculiar/asn1-schema": "^2.2.0",
     "@tokenscript/attestation": "0.4.1-mw",
