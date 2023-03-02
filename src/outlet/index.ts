@@ -159,9 +159,12 @@ export class Outlet {
 							params.set(URLNS + 'issuer', issuer)
 							params.set(URLNS + 'attestation', useToken as string)
 
+							// TODO: Remove once is merged
+							params.delete('email')
+							params.delete('#email')
+
 							// add tokens to avoid redirect loop
 							// when use redirect to get tokens
-
 							let outlet = new Outlet(this.tokenConfig, true)
 							let issuerTokens = outlet.prepareTokenOutput({})
 
