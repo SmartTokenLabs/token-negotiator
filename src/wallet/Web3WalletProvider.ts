@@ -366,9 +366,14 @@ export class Web3WalletProvider {
 			const fcl = flowProvider.getFlowProvider()
 
 			fcl.currentUser.subscribe((currentUser) => this.flowSubscribe(fcl, currentUser))
-			fcl.authenticate()
+
+			await fcl.currentUser.authenticate()
+			let user = await fcl.currentUser.snapshot()
+
+			if (!user.addr) throw new Error('No user address after authenticate()')
 		} catch (e) {
 			console.error('error ==>', e)
+			this.client.getUi().showError('Flow wallet connection error.')
 		}
 		return ''
 	}
