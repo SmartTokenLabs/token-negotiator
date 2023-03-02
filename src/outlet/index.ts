@@ -159,7 +159,7 @@ export class Outlet {
 							params.set(URLNS + 'issuer', issuer)
 							params.set(URLNS + 'attestation', useToken as string)
 
-							// TODO: Remove once is merged
+							// TODO: Remove once https://github.com/AlphaWallet/attestation.id/pull/196 is merged
 							params.delete('email')
 							params.delete('#email')
 
