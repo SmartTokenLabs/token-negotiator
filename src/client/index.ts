@@ -1,5 +1,5 @@
 import { OutletAction, OutletResponseAction, Messaging } from './messaging'
-import { Ui, UiInterface, UItheme } from './ui'
+import { Ui, UiInterface, UItheme, ViewType } from './ui'
 import { logger, requiredParams, waitForElementToExist, errorHandler, removeUrlSearchParams } from '../utils'
 import { getNftCollection, getNftTokens } from '../utils/token/nftProvider'
 import { Authenticator } from '@tokenscript/attestation'
@@ -121,6 +121,9 @@ export class Client {
 	}
 
 	private urlParams: URLSearchParams
+	// for the case when disconnect from only attestation
+	// screen returns the starting  view in this case
+	private attestationDisconnected: boolean
 
 	static getKey(file: string) {
 		return Authenticator.decodePublicKey(file)
@@ -139,6 +142,7 @@ export class Client {
 		this.config = this.mergeConfig(defaultConfig, config)
 
 		this.negotiateAlreadyFired = false
+		this.attestationDisconnected = false
 
 		this.tokenStore = new TokenStore(this.config.autoEnableTokens, this.config.tokenPersistenceTTL)
 		if (this.config.issuers?.length > 0) this.tokenStore.updateIssuers(this.config.issuers)
@@ -266,8 +270,13 @@ export class Client {
 	}
 
 	public async disconnectWallet() {
+		this.attestationDisconnected = true
 		let wp = await this.getWalletProvider()
-		wp.deleteConnections()
+		if (wp.getConnectedWalletData().length > 0) {
+			wp.deleteConnections()
+			this.attestationDisconnected = false
+		}
+
 		this.tokenStore.clearCachedTokens()
 		this.eventSender('connected-wallet', null)
 		this.eventSender('disconnected-wallet', null)
@@ -286,7 +295,8 @@ export class Client {
 
 	async enrichTokenLookupDataOnChainTokens() {
 		this.issuersLoaded = false
-		this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADING)
+		if (!this.attestationDisconnected) this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADING)
+		// this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADING)
 
 		let issuers = this.tokenStore.getCurrentIssuers(true)
 
@@ -315,12 +325,16 @@ export class Client {
 					this.tokenStore.updateTokenLookupStore(issuer, lookupData)
 				}
 			} catch (e) {
+				console.log('enrichTokenLookupDataOnChainTokens error =>', e)
 				logger(2, 'Failed to load contract data for ' + issuer + ': ' + e.message)
 			}
 		}
 
 		this.issuersLoaded = true
-		this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADED)
+		if (!this.attestationDisconnected) this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADED)
+		// this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADED)
+		this.attestationDisconnected = false
+		console.log('enrichTokenLookupDataOnChainTokens finish ==>')
 	}
 
 	public async checkUserAgentSupport(type: string) {

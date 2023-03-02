@@ -119,17 +119,11 @@ export class SelectIssuers extends AbstractView {
 	}
 
 	async setupWalletButton() {
-		const provider = await this.client.getWalletProvider()
+		const walletBtn = this.viewContainer.querySelector('.dis-wallet-tn')
 
-		if (provider.getConnectedWalletData().length > 0) {
-			const walletBtn = this.viewContainer.querySelector('.dis-wallet-tn')
-
-			walletBtn.style.display = 'block'
-
-			walletBtn.addEventListener('click', () => {
-				this.client.disconnectWallet()
-			})
-		}
+		walletBtn.addEventListener('click', () => {
+			this.client.disconnectWallet()
+		})
 	}
 
 	issuersLoading() {
