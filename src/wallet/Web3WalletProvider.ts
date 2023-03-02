@@ -2,6 +2,7 @@ import { ethers } from 'ethers'
 import { logger } from '../utils'
 import { SafeConnectOptions } from './SafeConnectProvider'
 import { Client } from '../client'
+import { RPCProviderModule } from '@magic-sdk/provider/dist/types/modules/rpc-provider'
 
 interface WalletConnectionState {
 	[index: string]: WalletConnection
@@ -326,7 +327,7 @@ export class Web3WalletProvider {
 			// mainnet-beta,
 			return this.registerNewWalletAddress(accountAddress, 'mainnet-beta', 'phantom', window.solana, 'solana')
 		} else {
-			throw new Error('MetaMask is not available. Please check the extension is supported and active.')
+			throw new Error('Phantom is not available. Please check the extension is supported and active.')
 		}
 	}
 
@@ -371,6 +372,18 @@ export class Web3WalletProvider {
 			console.error('error ==>', e)
 		}
 		return ''
+	}
+
+	async MagicLink() {
+		const MagicLinkProvider = await import('./MagicLinkProvider')
+
+		const magicLink = MagicLinkProvider.getMagicProviderInstance()
+
+		await magicLink.wallet.connectWithUI()
+
+		const provider = new ethers.providers.Web3Provider(magicLink.rpcProvider, 'any')
+
+		return await this.registerProvider(provider, 'MagicLink')
 	}
 
 	safeConnectAvailable() {

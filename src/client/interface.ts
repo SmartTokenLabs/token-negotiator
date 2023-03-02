@@ -65,6 +65,7 @@ export interface NegotiationInterface {
 		}
 	}
 	noInternetErrorMessage?: string
+	experimentalFeatures?: boolean
 }
 
 export interface AuthenticateInterface {
