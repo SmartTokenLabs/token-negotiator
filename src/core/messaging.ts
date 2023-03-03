@@ -34,6 +34,9 @@ declare global {
 	}
 }
 
+/* URL namespace is used to avoid possible collisions with URL parameter names */
+export const URLNS = 'tn-'
+
 export class Messaging {
 	iframeStorageSupport: null | boolean = null
 	iframe: any = null
@@ -83,7 +86,7 @@ export class Messaging {
 		let id = Messaging.getUniqueEventId()
 		const url = this.constructUrl(id, request)
 
-		let newLocation = `${url}&redirect=true&requestor=${encodeURIComponent(redirectUrl)}`
+		let newLocation = `${url}&${URLNS}redirect=true&${URLNS}requestor=${encodeURIComponent(redirectUrl)}`
 
 		logger(2, `redirect from ${document.location.href} to ${newLocation}`)
 
@@ -273,12 +276,14 @@ export class Messaging {
 		}
 	}
 
+	// TODO: Use URLSearchParams object to build this query rather than manually constructing it
+	//		This will prevent edge-case encoding issues.
 	private constructUrl(id: any, request: RequestInterfaceBase) {
-		let url = `${request.origin}#evtid=${id}&action=${request.action}`
+		let url = `${request.origin}#${URLNS}evtid=${id}&${URLNS}action=${request.action}`
 
 		// in request to Outlet() to get tokens we dont have any token
 		if (typeof request.data.token !== 'undefined') {
-			url += `&token=${encodeURIComponent(JSON.stringify(request.data.token))}`
+			url += `&${URLNS}token=${encodeURIComponent(JSON.stringify(request.data.token))}`
 		}
 
 		for (let key in request.data) {
@@ -286,17 +291,17 @@ export class Messaging {
 
 			// no sense to send issuer config. Outlet() use own config,
 			// it can be dangerous if Outlet beleive to external config from URL HASH
-			if (key === 'issuer') continue
+			if (key === 'issuer' || key === 'token') continue
 
 			if (!value) continue
 
 			if (value instanceof Array || value instanceof Object) {
-				url += `&${key}=${JSON.stringify(value)}`
+				url += `&${URLNS}${key}=${JSON.stringify(value)}`
 			} else {
 				if (key === 'urlParams') {
 					url += `&${value}`
 				} else {
-					url += `&${key}=${value}`
+					url += `&${URLNS}${key}=${value}`
 				}
 			}
 		}

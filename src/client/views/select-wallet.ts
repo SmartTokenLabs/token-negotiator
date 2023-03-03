@@ -131,15 +131,13 @@ export class SelectWallet extends AbstractView {
 
 		try {
 			await this.client.negotiatorConnectToWallet(wallet)
-
 			this.ui.dismissLoader()
-
 			if (this.params?.data?.connectCallback) {
 				this.params?.data?.connectCallback()
 			} else {
 				// TODO: It may be better/faster to fire this on view load.
 				this.client.enrichTokenLookupDataOnChainTokens()
-				this.ui.updateUI('main', { viewName: 'main' })
+				this.ui.updateUI('main', { viewName: 'main' }, { viewTransition: 'slide-in-right' })
 			}
 			
 		} catch (err: any) {

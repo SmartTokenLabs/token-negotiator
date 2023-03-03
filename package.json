@@ -24,7 +24,7 @@
     "test-watch": "jest --watch",
     "compile-scss": "sass ./src/theme/style.scss dist/theme/style.css",
     "compile-scss-umd": "sass ./src/theme/style.scss token-negotiator-dist/theme/style.css",
-    "write-version-constant": "CURRENT_VERSION=$(node -p \"require('./package.json').version\") && echo \"// modified by build process.\nexport const VERSION = '$CURRENT_VERSION'\" > src/version.ts ",
+    "write-version-constant": "node scripts/write_version_constant.js",
     "prepare": "husky install"
   },
   "repository": {
@@ -75,8 +75,8 @@
     "husky": "^8.0.0",
     "jest": "^28.1.0",
     "jest-environment-jsdom": "^28.1.0",
-    "jest-junit": "^14.0.0",
-    "loader-utils": "^2.0.4",
+    "jest-junit": "^15.0.0",
+    "loader-utils": "^3.2.1",
     "os-browserify": "^0.3.0",
     "prettier": "^2.8.3",
     "process": "^0.11.10",

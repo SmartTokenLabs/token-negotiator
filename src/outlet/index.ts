@@ -1,11 +1,21 @@
-import { rawTokenCheck, readMagicUrl, storeMagicURL, decodeTokens, filterTokens } from '../core'
-import { logger, requiredParams, uint8toBuffer } from '../utils'
+import {
+	rawTokenCheck,
+	readTokenFromMagicUrl,
+	storeMagicURL,
+	decodeTokens,
+	decodeToken,
+	filterTokens,
+	readTokens,
+	OffChainTokenData,
+	DecodedToken,
+} from '../core'
+import { logger, requiredParams, uint8toBuffer, removeUrlSearchParams } from '../utils'
 import { OutletAction, OutletResponseAction } from '../client/messaging'
 import { AuthHandler } from './auth-handler'
 // requred for default TicketDecoder.
 import { SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
 import { AsnParser } from '@peculiar/asn1-schema'
-import { ResponseActionBase, ResponseInterfaceBase } from '../core/messaging'
+import { ResponseActionBase, ResponseInterfaceBase, URLNS } from '../core/messaging'
 
 export interface OutletInterface {
 	collectionID: string
@@ -90,9 +100,9 @@ export class Outlet {
 		}
 	}
 
-	getDataFromQuery(itemKey: any): string {
-		const val = this.urlParams ? this.urlParams.get(itemKey) : ''
-		return val ? val : ''
+	getDataFromQuery(itemKey: string, namespaced = true): string {
+		itemKey = (namespaced ? URLNS : '') + itemKey
+		return this.urlParams ? this.urlParams.get(itemKey) : ''
 	}
 
 	getFilter() {
@@ -134,8 +144,10 @@ export class Outlet {
 					try {
 						const tokenString = this.getDataFromQuery('token')
 						let token = JSON.parse(tokenString)
-						const attestationBlob = this.getDataFromQuery('attestation')
-						const attestationSecret = '0x' + this.getDataFromQuery('requestSecret')
+
+						// Note: these params come from attestation.id and are not namespaced
+						const attestationBlob = this.getDataFromQuery('attestation', false)
+						const attestationSecret = '0x' + this.getDataFromQuery('requestSecret', false)
 
 						let authHandler = new AuthHandler(
 							this,
@@ -153,21 +165,24 @@ export class Outlet {
 						// re-direct back to origin
 						if (requesterURL) {
 							const params = new URLSearchParams(requesterURL.hash.substring(1))
-							params.set('action', 'proof-callback')
-							params.set('issuer', issuer)
-							params.set('attestation', useToken as string)
+							params.set(URLNS + 'action', 'proof-callback')
+							params.set(URLNS + 'issuer', issuer)
+							params.set(URLNS + 'attestation', useToken as string)
+
+							// TODO: Remove once https://github.com/AlphaWallet/attestation.id/pull/196 is merged
+							params.delete('email')
+							params.delete('#email')
 
 							// add tokens to avoid redirect loop
 							// when use redirect to get tokens
-
 							let outlet = new Outlet(this.tokenConfig, true)
 							let issuerTokens = outlet.prepareTokenOutput({})
 
 							logger(2, 'issuerTokens: ', issuerTokens)
 
-							params.set('tokens', JSON.stringify(issuerTokens))
+							params.set(URLNS + 'tokens', JSON.stringify(issuerTokens))
 
-							requesterURL.hash = '#' + params.toString()
+							requesterURL.hash = params.toString()
 
 							console.log('urlToRedirect from OutletAction.EMAIL_ATTEST_CALLBACK: ', requesterURL.href)
 
@@ -184,7 +199,12 @@ export class Outlet {
 						this.dispatchAuthCallbackEvent(issuer, null, e.message)
 					}
 
-					document.location.hash = ''
+					document.location.hash = removeUrlSearchParams(this.urlParams, [
+						'attestation',
+						'requestSecret',
+						'address',
+						'wallet',
+					]).toString()
 
 					break
 				}
@@ -201,13 +221,15 @@ export class Outlet {
 					// store local storage item that can be later used to check if third party cookies are allowed.
 					// Note: This test can only be performed when the localstorage / cookie is assigned, then later requested.
 					/* localStorage.setItem("cookie-support-check", "test");
-				this.sendCookieCheck(evtid);*/
+					this.sendCookieCheck(evtid);*/
 
+					// TODO: Remove singleUse - this is only needed in negotiator that calls readMagicLink.
+					//  move single link somewhere that it can be used by both Outlet & LocalOutlet
 					if (!this.singleUse) {
+						await this.whitelistCheck(evtid, 'write')
 						await this.readMagicLink()
+						this.sendTokens(evtid)
 					}
-
-					this.sendTokens(evtid)
 
 					break
 				}
@@ -219,16 +241,17 @@ export class Outlet {
 	}
 
 	public async readMagicLink() {
-		const evtid = this.getDataFromQuery('evtid')
-
 		const { tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey } = this.tokenConfig
 
 		try {
-			const tokens = readMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey, this.urlParams)
+			const newToken = readTokenFromMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, this.urlParams)
+			let tokensOutput = readTokens(itemStorageKey)
 
-			await this.whitelistCheck(evtid, 'write')
+			const newTokens = this.mergeNewToken(newToken, tokensOutput.tokens)
 
-			storeMagicURL(tokens, itemStorageKey)
+			if (newTokens !== false) {
+				storeMagicURL(newTokens, itemStorageKey)
+			}
 
 			const event = new Event('tokensupdated')
 
@@ -238,6 +261,56 @@ export class Outlet {
 		} catch (e) {
 			// no-op
 		}
+	}
+
+	/**
+	 * Merges a new magic link into the existing token data. If a token is found with the same ID it is overwritten.
+	 * @private
+	 * @returns false when no changes to the data are required - the token is already added
+	 */
+	public mergeNewToken(newToken: OffChainTokenData, existingTokens: OffChainTokenData[]): OffChainTokenData[] | false {
+		const decodedNewToken = decodeToken(
+			newToken,
+			this.tokenConfig.tokenParser,
+			this.tokenConfig.unsignedTokenDataName,
+			false,
+		)
+
+		const newTokenId = this.getUniqueTokenId(decodedNewToken)
+
+		for (const [index, tokenData] of existingTokens.entries()) {
+			// Nothing required, this token already exists
+			if (tokenData.token === newToken.token) {
+				return false
+			}
+
+			const decodedTokenData = decodeToken(
+				tokenData,
+				this.tokenConfig.tokenParser,
+				this.tokenConfig.unsignedTokenDataName,
+				false,
+			)
+
+			const tokenId = this.getUniqueTokenId(decodedTokenData)
+
+			// Overwrite existing token
+			if (newTokenId === tokenId) {
+				existingTokens[index] = newToken
+				return existingTokens
+			}
+		}
+
+		// Add as new token
+		existingTokens.push(newToken)
+		return existingTokens
+	}
+
+	/**
+	 * Calculates a unique token ID to identify this ticket. Tickets can be reissued and have a different commitment, but are still the same token
+	 * @private
+	 */
+	private getUniqueTokenId(decodedToken: DecodedToken) {
+		return `${decodedToken.devconId}-${decodedToken.ticketIdNumber ?? decodedToken.ticketIdString}`
 	}
 
 	private dispatchAuthCallbackEvent(issuer: string, proof?: string, error?: string) {
@@ -380,10 +453,7 @@ export class Outlet {
 
 		const unsignedToken = JSON.parse(token)
 
-		const redirect =
-			this.urlParams.get('redirect') === 'true'
-				? document.location.origin + document.location.pathname + document.location.search
-				: false
+		const redirect = this.getDataFromQuery('redirect') === 'true' ? document.location.href : false
 
 		try {
 			// check if token issuer
@@ -431,6 +501,7 @@ export class Outlet {
 		}
 	}
 
+	// TODO: Consolidate redirect callback for tokens, proof & errors into the sendMessageResponse function to remove duplication
 	private sendTokens(evtid: any) {
 		let issuerTokens = this.prepareTokenOutput(this.getFilter())
 
@@ -441,9 +512,9 @@ export class Outlet {
 				let url = this.redirectCallbackUrl
 
 				const params = new URLSearchParams(url.hash.substring(1))
-				params.set('action', OutletAction.GET_ISSUER_TOKENS + '-response')
-				params.set('issuer', this.tokenConfig.collectionID)
-				params.set('tokens', JSON.stringify(issuerTokens))
+				params.set(URLNS + 'action', OutletAction.GET_ISSUER_TOKENS + '-response')
+				params.set(URLNS + 'issuer', this.tokenConfig.collectionID)
+				params.set(URLNS + 'tokens', JSON.stringify(issuerTokens))
 
 				url.hash = '#' + params.toString()
 
@@ -474,9 +545,9 @@ export class Outlet {
 			let url = this.redirectCallbackUrl
 
 			const params = new URLSearchParams(url.hash.substring(1))
-			params.set('action', ResponseActionBase.ERROR)
-			params.set('issuer', issuer)
-			params.set('error', error)
+			params.set(URLNS + 'action', ResponseActionBase.ERROR)
+			params.set(URLNS + 'issuer', issuer)
+			params.set(URLNS + 'error', error)
 
 			console.log('Redirecting error: ', error)
 
@@ -497,9 +568,9 @@ export class Outlet {
 		const requesterURL = this.redirectCallbackUrl.href
 
 		const params = new URLSearchParams()
-		params.set('action', 'proof-callback')
-		params.set('issuer', issuer)
-		params.set('error', error)
+		params.set(URLNS + 'action', 'proof-callback')
+		params.set(URLNS + 'issuer', issuer)
+		params.set(URLNS + 'error', error)
 
 		document.location.href = requesterURL + '#' + params.toString()
 	}

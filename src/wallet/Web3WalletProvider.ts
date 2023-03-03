@@ -353,7 +353,6 @@ export class Web3WalletProvider {
 		if (!currentUser.addr) throw new Error('Failed to connect Flow wallet')
 
 		this.registerNewWalletAddress(currentUser.addr, 1, 'flow', fcl)
-
 		return currentUser.addr
 	}
 
