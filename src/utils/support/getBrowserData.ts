@@ -64,7 +64,7 @@ export const getBrowserData = () => {
 		desktop: navigator.userAgent?.indexOf("Mobi") === -1,
 		touchDevice: isTouchDevice,
 		metaMask: isMetaMask,
-		anyMetamask: !!windowEthereum.isMetaMask,
+		anyMetamask: !!windowEthereum.isMetaMask && !isTrust && !isBrave,
 		alphaWallet: isAlphaWallet,
 		mew: isMyEthereumWallet,
 		trust: isTrust,
