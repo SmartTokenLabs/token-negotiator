@@ -24,7 +24,7 @@
     "test-watch": "jest --watch",
     "compile-scss": "sass ./src/theme/style.scss dist/theme/style.css",
     "compile-scss-umd": "sass ./src/theme/style.scss token-negotiator-dist/theme/style.css",
-    "write-version-constant": "CURRENT_VERSION=$(node -p \"require('./package.json').version\") && echo \"// modified by build process.\nexport const VERSION = '$CURRENT_VERSION'\" > src/version.ts ",
+    "write-version-constant": "node scripts/write_version_constant.js",
     "prepare": "husky install"
   },
   "repository": {
