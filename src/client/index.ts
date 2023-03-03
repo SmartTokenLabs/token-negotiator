@@ -92,6 +92,7 @@ export const defaultConfig: NegotiationInterface = {
 export const enum UIUpdateEventType {
 	ISSUERS_LOADING,
 	ISSUERS_LOADED,
+	WALLET_DISCONNECTED,
 }
 
 export enum ClientError {
@@ -116,6 +117,7 @@ export class Client {
 	private uiUpdateCallbacks: { [type in UIUpdateEventType] } = {
 		[UIUpdateEventType.ISSUERS_LOADING]: undefined,
 		[UIUpdateEventType.ISSUERS_LOADED]: undefined,
+		[UIUpdateEventType.WALLET_DISCONNECTED]: undefined,
 	}
 
 	private urlParams: URLSearchParams
@@ -260,9 +262,7 @@ export class Client {
 		this.tokenStore.clearCachedTokens()
 		this.eventSender('connected-wallet', null)
 		this.eventSender('disconnected-wallet', null)
-		if (this.ui) {
-			this.ui.updateUI('wallet', { viewName: 'wallet' }, { viewTransition: 'slide-in-left' })
-		}
+		this.triggerUiUpdateCallback(UIUpdateEventType.WALLET_DISCONNECTED)
 	}
 
 	async negotiatorConnectToWallet(walletType: string) {
@@ -828,7 +828,8 @@ export class Client {
 
 		return new Promise((resolve, reject) => {
 			const opt = { viewTransition: 'slide-in-right' }
-			this.ui.updateUI('wallet',
+			this.ui.updateUI(
+				'wallet',
 				{
 					viewName: 'wallet',
 					connectCallback: async () => {
