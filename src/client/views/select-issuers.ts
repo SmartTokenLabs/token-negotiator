@@ -1,5 +1,5 @@
 import { AbstractView } from './view-interface'
-import { TokenListItemInterface, TokenList } from './token-list'
+import { TokenList, TokenListItemInterface } from './token-list'
 import { IconView } from './icon-view'
 import { logger } from '../../utils'
 import { UIUpdateEventType } from '../index'
@@ -19,6 +19,10 @@ export class SelectIssuers extends AbstractView {
 			this.ui.dismissLoader()
 			this.client.cancelTokenAutoload()
 			this.render()
+		})
+
+		this.client.registerUiUpdateCallback(UIUpdateEventType.WALLET_DISCONNECTED, () => {
+			this.ui.updateUI('wallet', { viewName: 'wallet' }, { viewTransition: 'slide-in-left' })
 		})
 	}
 
@@ -124,7 +128,6 @@ export class SelectIssuers extends AbstractView {
 
 			walletBtn.addEventListener('click', () => {
 				this.client.disconnectWallet()
-				this.ui.updateUI('wallet', { viewName: 'wallet' }, { viewTransition: 'slide-in-left' })
 			})
 		}
 	}
