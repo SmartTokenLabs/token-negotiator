@@ -77,7 +77,7 @@ export class SelectWallet extends AbstractView {
 			</button>
 		`
 
-		const MagicLinkButton = this.client.experimentalFeaturesEnabled()
+		const MagicLinkButton = this.client.experimentalFeaturesEnabled('magicLinkWallet')
 			? `<button class="wallet-button-tn" data-wallet="MagicLink" aria-label="Magic link connect wallet button">
 				${magicLinkSVG}
 				<p>Magic.Link</p>

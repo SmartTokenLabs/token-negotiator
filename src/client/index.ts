@@ -255,8 +255,8 @@ export class Client {
 		)
 	}
 
-	public experimentalFeaturesEnabled() {
-		return this.config.experimentalFeatures
+	public experimentalFeaturesEnabled(feature: string) {
+		return this.config.experimentalFeatures && this.config.experimentalFeatures.indexOf(feature) > -1
 	}
 
 	public async getWalletProvider() {
