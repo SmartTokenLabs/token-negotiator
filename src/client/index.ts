@@ -123,7 +123,7 @@ export class Client {
 	private urlParams: URLSearchParams
 	// for the case when disconnect from only attestation
 	// screen returns the starting  view in this case
-	private attestationDisconnected: boolean
+	public attestationDisconnected: boolean
 
 	static getKey(file: string) {
 		return Authenticator.decodePublicKey(file)
@@ -334,7 +334,6 @@ export class Client {
 		if (!this.attestationDisconnected) this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADED)
 		// this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADED)
 		this.attestationDisconnected = false
-		console.log('enrichTokenLookupDataOnChainTokens finish ==>')
 	}
 
 	public async checkUserAgentSupport(type: string) {

@@ -22,7 +22,11 @@ export class SelectIssuers extends AbstractView {
 		})
 
 		this.client.registerUiUpdateCallback(UIUpdateEventType.WALLET_DISCONNECTED, () => {
-			this.ui.updateUI('wallet', { viewName: 'wallet' }, { viewTransition: 'slide-in-left' })
+			if (!this.client.attestationDisconnected) {
+				this.ui.updateUI('wallet', { viewName: 'wallet' }, { viewTransition: 'slide-in-left' })
+			} else {
+				this.ui.updateUI('start', { viewName: 'start' }, { viewTransition: 'slide-in-left' })
+			}
 		})
 	}
 
