@@ -131,19 +131,15 @@ export class SelectWallet extends AbstractView {
 
 		try {
 			await this.client.negotiatorConnectToWallet(wallet)
-
-			// TODO: Remove technical debt - see other TODO in src/wallet/Web3WalletProvider.ts:350
-			if (wallet !== 'Flow') {
-				this.ui.dismissLoader()
-
-				if (this.params?.data?.connectCallback) {
-					this.params?.data?.connectCallback()
-				} else {
-					// TODO: It may be better/faster to fire this on view load.
-					this.client.enrichTokenLookupDataOnChainTokens()
-					this.ui.updateUI('main', { viewName: 'main' }, { viewTransition: 'slide-in-right' })
-				}
+			this.ui.dismissLoader()
+			if (this.params?.data?.connectCallback) {
+				this.params?.data?.connectCallback()
+			} else {
+				// TODO: It may be better/faster to fire this on view load.
+				this.client.enrichTokenLookupDataOnChainTokens()
+				this.ui.updateUI('main', { viewName: 'main' }, { viewTransition: 'slide-in-right' })
 			}
+			
 		} catch (err: any) {
 			this.ui.showError(err)
 			return
