@@ -315,7 +315,7 @@ export class Web3WalletProvider {
 		return this.registerProvider(provider, 'Torus')
 	}
 
-	async Phantom() {
+	async Phantom(checkConnectionOnly: boolean) {
 		logger(2, 'connect Phantom')
 
 		if (typeof window.solana !== 'undefined') {
@@ -330,7 +330,7 @@ export class Web3WalletProvider {
 		}
 	}
 
-	async SafeConnect() {
+	async SafeConnect(checkConnectionOnly: boolean) {
 		logger(2, 'connect SafeConnect')
 
 		const provider = await this.getSafeConnectProvider()
@@ -342,40 +342,19 @@ export class Web3WalletProvider {
 		return address
 	}
 
-	async flowSubscribe(fcl, currentUser) {
-		try {
-			if (currentUser.addr) {
-				this.registerNewWalletAddress(currentUser.addr, 1, 'flow', fcl)
+	async Flow(checkConnectionOnly: boolean) {
+		const flowProvider = await import('./FlowProvider')
+		const fcl = flowProvider.getFlowProvider()
 
-				const ui = this.client.getUi()
+		await fcl.currentUser.authenticate()
+		let currentUser = await fcl.currentUser.snapshot()
 
-				if (ui) ui.dismissLoader()
+		// No user address after authenticate() then connect was unsuccesfull
+		if (!currentUser.addr) throw new Error('Failed to connect Flow wallet')
 
-				this.client.enrichTokenLookupDataOnChainTokens()
-				if (ui) ui.updateUI('main', { viewName: 'main' })
-			}
-		} catch (e) {
-			console.error('flow wallet connection error ==>', e)
-			this.client.getUi().showError('Flow wallet connection error.')
-		}
-	}
+		this.registerNewWalletAddress(currentUser.addr, 1, 'flow', fcl)
 
-	async Flow() {
-		try {
-			const flowProvider = await import('./FlowProvider')
-			const fcl = flowProvider.getFlowProvider()
-
-			fcl.currentUser.subscribe((currentUser) => this.flowSubscribe(fcl, currentUser))
-
-			await fcl.currentUser.authenticate()
-			let user = await fcl.currentUser.snapshot()
-
-			if (!user.addr) throw new Error('No user address after authenticate()')
-		} catch (e) {
-			console.error('error ==>', e)
-			this.client.getUi().showError('Flow wallet connection error.')
-		}
-		return ''
+		return currentUser.addr
 	}
 
 	safeConnectAvailable() {

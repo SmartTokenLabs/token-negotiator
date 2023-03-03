@@ -132,17 +132,16 @@ export class SelectWallet extends AbstractView {
 		try {
 			await this.client.negotiatorConnectToWallet(wallet)
 
-			if (wallet !== 'Flow') {
-				this.ui.dismissLoader()
+			this.ui.dismissLoader()
 
-				if (this.params?.data?.connectCallback) {
-					this.params?.data?.connectCallback()
-				} else {
-					// TODO: It may be better/faster to fire this on view load.
-					this.client.enrichTokenLookupDataOnChainTokens()
-					this.ui.updateUI('main', { viewName: 'main' })
-				}
+			if (this.params?.data?.connectCallback) {
+				this.params?.data?.connectCallback()
+			} else {
+				// TODO: It may be better/faster to fire this on view load.
+				this.client.enrichTokenLookupDataOnChainTokens()
+				this.ui.updateUI('main', { viewName: 'main' })
 			}
+			
 		} catch (err: any) {
 			this.ui.showError(err)
 			return
