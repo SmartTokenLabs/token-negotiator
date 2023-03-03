@@ -1,4 +1,7 @@
 /* eslint-disable no-mixed-spaces-and-tabs */
+import { TextDecoder, TextEncoder } from 'text-encoding'
+global.TextEncoder = TextEncoder
+global.TextDecoder = TextDecoder
 import { Client } from '../../client/index'
 import { SafeConnectOptions, SafeConnectProvider } from '../SafeConnectProvider'
 import { Web3WalletProvider } from '../Web3WalletProvider'
