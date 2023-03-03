@@ -16,7 +16,12 @@ import {
 	EventSenderConnectedWallet,
 	EventSenderDisconnectedWallet,
 	EventSenderError,
+	EventSenderViewChanged,
 	OnChainIssuer,
+	EventSenderViewLoaded,
+	EventSenderOpenedOverlay,
+	EventSenderClosedOverlay,
+	EventSenderTokensRefreshed,
 } from './interface'
 import { SignedUNChallenge } from './auth/signedUNChallenge'
 import { TicketZKProof } from './auth/ticketZKProof'
@@ -266,7 +271,7 @@ export class Client {
 		this.eventSender('connected-wallet', null)
 		this.eventSender('disconnected-wallet', null)
 		if (this.ui) {
-			this.ui.updateUI('wallet')
+			this.ui.updateUI('wallet', { viewName: 'wallet' })
 		}
 	}
 
@@ -379,6 +384,8 @@ export class Client {
 
 			await this.passiveNegotiationStrategy()
 		}
+
+		this.eventSender('loaded', null)
 	}
 
 	async activeNegotiationStrategy(openPopup: boolean) {
@@ -834,8 +841,9 @@ export class Client {
 
 		return new Promise((resolve, reject) => {
 			this.ui.updateUI('wallet', {
+				viewName: 'wallet',
 				connectCallback: async () => {
-					this.ui.updateUI('main')
+					this.ui.updateUI('main', { viewName: 'main' })
 					try {
 						let res = await this.authenticate(authRequest)
 						resolve(res)
@@ -853,6 +861,11 @@ export class Client {
 	}
 
 	// eventSender overrides
+	async eventSender(eventName: 'loaded', data: EventSenderViewLoaded)
+	async eventSender(eventName: 'tokens-refreshed', data: EventSenderTokensRefreshed)
+	async eventSender(eventName: 'closed-overlay', data: EventSenderClosedOverlay)
+	async eventSender(eventName: 'opened-overlay', data: EventSenderOpenedOverlay)
+	async eventSender(eventName: 'view-changed', data: EventSenderViewChanged)
 	async eventSender(eventName: 'tokens', data: EventSenderTokens)
 	async eventSender(eventName: 'token-proof', data: EventSenderTokenProof)
 	async eventSender(eventName: 'tokens-selected', data: EventSenderTokensSelected)

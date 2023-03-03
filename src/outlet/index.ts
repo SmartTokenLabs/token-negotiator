@@ -434,6 +434,7 @@ export class Outlet {
 			includeSigned,
 		)
 
+		// remove duplicates check
 		return filterTokens(decodedTokens, filter)
 	}
 

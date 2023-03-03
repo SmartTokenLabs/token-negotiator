@@ -1,6 +1,6 @@
 > Description
 
-This release introduces enhancements to impove the user experience that can be created with Token Negotiator
+This release introduces enhancements to improve the user experience that can be created with Token Negotiator
 for both on and off chain tokens.
 
 ### Upgrade Steps

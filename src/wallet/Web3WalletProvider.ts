@@ -352,7 +352,7 @@ export class Web3WalletProvider {
 				if (ui) ui.dismissLoader()
 
 				this.client.enrichTokenLookupDataOnChainTokens()
-				if (ui) ui.updateUI('main')
+				if (ui) ui.updateUI('main', { viewName: 'main' })
 			}
 		} catch (e) {
 			console.error('flow wallet connection error ==>', e)
