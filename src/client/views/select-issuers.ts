@@ -99,7 +99,7 @@ export class SelectIssuers extends AbstractView {
 
 		let tokensListElem = this.tokensContainer.getElementsByClassName('token-list-container-tn')[0]
 
-		this.tokenListView = new TokenList(this.client, this.ui, tokensListElem, {})
+		this.tokenListView = new TokenList(this.client, this.ui, tokensListElem, { ...this.params })
 	}
 
 	protected afterRender() {
@@ -361,7 +361,7 @@ export class SelectIssuers extends AbstractView {
 			}
 		})
 
-		this.tokenListView?.update({ issuer: issuer, tokens: tokens })
+		this.tokenListView?.update({ data: { issuer: issuer, tokens: tokens } })
 	}
 
 	showTokenView(issuer: string) {

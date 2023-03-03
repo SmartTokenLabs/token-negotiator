@@ -261,7 +261,7 @@ export class Client {
 		this.eventSender('connected-wallet', null)
 		this.eventSender('disconnected-wallet', null)
 		if (this.ui) {
-			this.ui.updateUI('wallet', { viewName: 'wallet' })
+			this.ui.updateUI('wallet', { viewName: 'wallet' }, { viewTransition: 'slide-in-left' })
 		}
 	}
 
@@ -827,18 +827,22 @@ export class Client {
 		}
 
 		return new Promise((resolve, reject) => {
-			this.ui.updateUI('wallet', {
-				viewName: 'wallet',
-				connectCallback: async () => {
-					this.ui.updateUI('main', { viewName: 'main' })
-					try {
-						let res = await this.authenticate(authRequest)
-						resolve(res)
-					} catch (e) {
-						reject(e)
-					}
+			const opt = { viewTransition: 'slide-in-right' }
+			this.ui.updateUI('wallet',
+				{
+					viewName: 'wallet',
+					connectCallback: async () => {
+						this.ui.updateUI('main', { viewName: 'main' }, opt)
+						try {
+							let res = await this.authenticate(authRequest)
+							resolve(res)
+						} catch (e) {
+							reject(e)
+						}
+					},
 				},
-			})
+				opt,
+			)
 		})
 	}
 

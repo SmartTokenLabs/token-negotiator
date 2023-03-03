@@ -1,5 +1,15 @@
-import { rawTokenCheck, readMagicUrl, storeMagicURL, decodeTokens, filterTokens } from '../core'
-import { logger, removeUrlSearchParams, requiredParams, uint8toBuffer } from '../utils'
+import {
+	rawTokenCheck,
+	readTokenFromMagicUrl,
+	storeMagicURL,
+	decodeTokens,
+	decodeToken,
+	filterTokens,
+	readTokens,
+	OffChainTokenData,
+	DecodedToken,
+} from '../core'
+import { logger, requiredParams, uint8toBuffer, removeUrlSearchParams } from '../utils'
 import { OutletAction, OutletResponseAction } from '../client/messaging'
 import { AuthHandler } from './auth-handler'
 // requred for default TicketDecoder.
@@ -211,13 +221,15 @@ export class Outlet {
 					// store local storage item that can be later used to check if third party cookies are allowed.
 					// Note: This test can only be performed when the localstorage / cookie is assigned, then later requested.
 					/* localStorage.setItem("cookie-support-check", "test");
-				this.sendCookieCheck(evtid);*/
+					this.sendCookieCheck(evtid);*/
 
+					// TODO: Remove singleUse - this is only needed in negotiator that calls readMagicLink.
+					//  move single link somewhere that it can be used by both Outlet & LocalOutlet
 					if (!this.singleUse) {
+						await this.whitelistCheck(evtid, 'write')
 						await this.readMagicLink()
+						this.sendTokens(evtid)
 					}
-
-					this.sendTokens(evtid)
 
 					break
 				}
@@ -229,16 +241,17 @@ export class Outlet {
 	}
 
 	public async readMagicLink() {
-		const evtid = this.getDataFromQuery('evtid')
-
 		const { tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey } = this.tokenConfig
 
 		try {
-			const tokens = readMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey, this.urlParams)
+			const newToken = readTokenFromMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, this.urlParams)
+			let tokensOutput = readTokens(itemStorageKey)
 
-			await this.whitelistCheck(evtid, 'write')
+			const newTokens = this.mergeNewToken(newToken, tokensOutput.tokens)
 
-			storeMagicURL(tokens, itemStorageKey)
+			if (newTokens !== false) {
+				storeMagicURL(newTokens, itemStorageKey)
+			}
 
 			const event = new Event('tokensupdated')
 
@@ -248,6 +261,56 @@ export class Outlet {
 		} catch (e) {
 			// no-op
 		}
+	}
+
+	/**
+	 * Merges a new magic link into the existing token data. If a token is found with the same ID it is overwritten.
+	 * @private
+	 * @returns false when no changes to the data are required - the token is already added
+	 */
+	public mergeNewToken(newToken: OffChainTokenData, existingTokens: OffChainTokenData[]): OffChainTokenData[] | false {
+		const decodedNewToken = decodeToken(
+			newToken,
+			this.tokenConfig.tokenParser,
+			this.tokenConfig.unsignedTokenDataName,
+			false,
+		)
+
+		const newTokenId = this.getUniqueTokenId(decodedNewToken)
+
+		for (const [index, tokenData] of existingTokens.entries()) {
+			// Nothing required, this token already exists
+			if (tokenData.token === newToken.token) {
+				return false
+			}
+
+			const decodedTokenData = decodeToken(
+				tokenData,
+				this.tokenConfig.tokenParser,
+				this.tokenConfig.unsignedTokenDataName,
+				false,
+			)
+
+			const tokenId = this.getUniqueTokenId(decodedTokenData)
+
+			// Overwrite existing token
+			if (newTokenId === tokenId) {
+				existingTokens[index] = newToken
+				return existingTokens
+			}
+		}
+
+		// Add as new token
+		existingTokens.push(newToken)
+		return existingTokens
+	}
+
+	/**
+	 * Calculates a unique token ID to identify this ticket. Tickets can be reissued and have a different commitment, but are still the same token
+	 * @private
+	 */
+	private getUniqueTokenId(decodedToken: DecodedToken) {
+		return `${decodedToken.devconId}-${decodedToken.ticketIdNumber ?? decodedToken.ticketIdString}`
 	}
 
 	private dispatchAuthCallbackEvent(issuer: string, proof?: string, error?: string) {

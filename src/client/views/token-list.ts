@@ -62,15 +62,15 @@ export class TokenList extends AbstractView {
 	getTokenListItems() {
 		let html = ''
 
-		let newCount = Math.min(this.loadedCount + this.numberToLoad, this.params.tokens.length)
+		let newCount = Math.min(this.loadedCount + this.numberToLoad, this.params.data.tokens.length)
 
 		for (let i: number = this.loadedCount; i < newCount; i++) {
-			html += this.createTokenMarkup(this.params.tokens[i])
+			html += this.createTokenMarkup(this.params.data.tokens[i])
 		}
 
 		this.loadedCount = newCount
 
-		if (this.loadedCount < this.params.tokens.length) html += this.createLoadMoreMarkup()
+		if (this.loadedCount < this.params.data.tokens.length) html += this.createLoadMoreMarkup()
 
 		return html
 	}

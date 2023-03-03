@@ -347,12 +347,15 @@ export class Web3WalletProvider {
 			if (currentUser.addr) {
 				this.registerNewWalletAddress(currentUser.addr, 1, 'flow', fcl)
 
+				// TODO: The web3 provider SHOULD NOT invoke any UI actions.
+				//  This is handled already in src/client/views/select-wallet.ts:133
+				//  Rework to maintain the single responsibility principle
 				const ui = this.client.getUi()
 
 				if (ui) ui.dismissLoader()
 
 				this.client.enrichTokenLookupDataOnChainTokens()
-				if (ui) ui.updateUI('main', { viewName: 'main' })
+				if (ui) ui.updateUI('main', { viewName: 'main' }, { viewTransition: 'slide-in-right' })
 			}
 		} catch (e) {
 			console.error('flow wallet connection error ==>', e)
