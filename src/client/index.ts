@@ -248,7 +248,7 @@ export class Client {
 	public async getWalletProvider() {
 		if (!this.web3WalletProvider) {
 			const { Web3WalletProvider } = await import('./../wallet/Web3WalletProvider')
-			this.web3WalletProvider = new Web3WalletProvider(this, this.config.safeConnectOptions)
+			this.web3WalletProvider = new Web3WalletProvider(this, this.config.walletOptions, this.config.safeConnectOptions)
 		}
 
 		return this.web3WalletProvider

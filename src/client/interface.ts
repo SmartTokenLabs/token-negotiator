@@ -3,6 +3,7 @@ import { AuthenticationMethod } from './auth/abstractAuthentication'
 import { SafeConnectOptions } from '../wallet/SafeConnectProvider'
 import { BrowserDataInterface } from '../utils/support/isSupported'
 import { WalletConnection } from '../wallet/Web3WalletProvider'
+import { ConnectParams as WCv2ConnectParams } from '@walletconnect/universal-provider/dist/types/types/misc'
 
 export interface OffChainTokenConfig extends IssuerConfigInterface {
 	onChain: false
@@ -65,6 +66,14 @@ export interface NegotiationInterface {
 		}
 	}
 	noInternetErrorMessage?: string
+	walletOptions?: WalletOptionsInterface
+}
+
+export interface WalletOptionsInterface {
+	walletConnectV2?: {
+		chains?: string[]
+		rpcMap: { [chainId: string]: string }
+	}
 }
 
 export interface AuthenticateInterface {
