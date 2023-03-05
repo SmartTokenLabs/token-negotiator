@@ -85,6 +85,13 @@
   font-size: max(1rem, 16px);
 }
 
+.overlay-tn .wallet-button-tn img,
+.overlay-tn .wallet-button-tn svg {
+  max-width: 100%;
+  width: 62px;
+  height: auto;
+}
+
 .overlay-tn .no-tokens-tn {
   padding: 0 1rem;
 }
