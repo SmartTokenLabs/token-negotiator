@@ -66,6 +66,7 @@ export interface NegotiationInterface {
 		}
 	}
 	noInternetErrorMessage?: string
+	experimentalFeatures?: string[]
 	walletOptions?: WalletOptionsInterface
 }
 

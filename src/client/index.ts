@@ -252,6 +252,10 @@ export class Client {
 		)
 	}
 
+	public experimentalFeaturesEnabled(feature: string) {
+		return this.config.experimentalFeatures && this.config.experimentalFeatures.indexOf(feature) > -1
+	}
+
 	public async getWalletProvider() {
 		if (!this.web3WalletProvider) {
 			const { Web3WalletProvider } = await import('./../wallet/Web3WalletProvider')
