@@ -15,7 +15,6 @@ This release introduces new web2 and web3 enhancements and fixes.
 * New Event Hooks (see README)
 * Configurable view navigation animations
 * Wallet Disconnection ehancements
-* Magic.Link experimental feature
 
 ### Bug Fixes
 
