@@ -1,11 +1,10 @@
 > Description
 
-This release introduces enhancements to improve the user experience that can be created with Token Negotiator
-for both on and off chain tokens.
+This release introduces new web2 and web3 enhancements and fixes.
 
 ### Upgrade Steps
 
-* Update NPM package to version 2.3.0
+* Update NPM package to version 2.4.0
 
 ### Breaking Changes
 
@@ -13,18 +12,17 @@ for both on and off chain tokens.
 
 ### New Features
 
-* ERC20 support 
-* Flow Network support
-* Redirect mode now enabled by default in browsers that do not support iframe or tab
-* Remove KeyShape JS popup animation - now using CSS for all animations
-* Wallet Connect V2 added (Experimental Use Only)
+* New Event Hooks (see README)
+* Configurable view navigation animations
+* Wallet Disconnection ehancements
+* Magic.Link experimental feature
 
 ### Bug Fixes
 
 * Re-direct enhancements and fixes
-* Remove the need for node polyfills when importing the project from NPM
-* Enable closing of Token Outlet across all mobile browsers
-* Use redirect mode for Firefox - iframe no longer works due to changes in storage state partitioning
+* Wallet Connect V2 fixes
+* Polyfills
+* Flow Network support documentation added to README
 
 ### Performance Improvements
 
@@ -39,4 +37,4 @@ for both on and off chain tokens.
 
 **Full Change log**: 
 
-https://github.com/TokenScript/token-negotiator/compare/v2.2.0...v2.3.0
+https://github.com/TokenScript/token-negotiator/compare/v2.3.0...v2.4.0
