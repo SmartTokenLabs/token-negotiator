@@ -4,6 +4,7 @@ import { SafeConnectOptions } from '../wallet/SafeConnectProvider'
 import { BrowserDataInterface } from '../utils/support/isSupported'
 import { WalletConnection } from '../wallet/Web3WalletProvider'
 import { ConnectParams as WCv2ConnectParams } from '@walletconnect/universal-provider/dist/types/types/misc'
+import { EthNetworkConfiguration } from '@magic-sdk/types'
 
 export interface OffChainTokenConfig extends IssuerConfigInterface {
 	onChain: false
@@ -73,7 +74,11 @@ export interface NegotiationInterface {
 export interface WalletOptionsInterface {
 	walletConnectV2?: {
 		chains?: string[]
-		rpcMap: { [chainId: string]: string }
+		rpcMap?: { [chainId: string]: string }
+	}
+	magicLink?: {
+		apiKey?: string
+		network?: EthNetworkConfiguration
 	}
 }
 
