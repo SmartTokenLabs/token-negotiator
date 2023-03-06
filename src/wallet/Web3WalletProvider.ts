@@ -3,6 +3,7 @@ import { logger } from '../utils'
 import { SafeConnectOptions } from './SafeConnectProvider'
 import { Client } from '../client'
 import { RPCProviderModule } from '@magic-sdk/provider/dist/types/modules/rpc-provider'
+import { WalletOptionsInterface } from '../client/interface'
 
 interface WalletConnectionState {
 	[index: string]: WalletConnection
@@ -22,13 +23,11 @@ export class Web3WalletProvider {
 
 	connections: WalletConnectionState = {}
 
-	safeConnectOptions?: SafeConnectOptions
-	client: Client
-
-	constructor(client: Client, safeConnectOptions?: SafeConnectOptions) {
-		this.client = client
-		this.safeConnectOptions = safeConnectOptions
-	}
+	constructor(
+		private client: Client,
+		private walletOptions?: WalletOptionsInterface,
+		public safeConnectOptions?: SafeConnectOptions,
+	) {}
 
 	saveConnections() {
 		let savedConnections: WalletConnectionState = {}
@@ -41,7 +40,6 @@ export class Web3WalletProvider {
 				chainId: con.chainId,
 				providerType: con.providerType,
 				blockchain: con.blockchain,
-				ethers: ethers,
 			}
 		}
 
@@ -274,12 +272,9 @@ export class Web3WalletProvider {
 				namespaces: {
 					eip155: {
 						methods: ['eth_sendTransaction', 'eth_signTransaction', 'eth_sign', 'personal_sign', 'eth_signTypedData'],
-						chains: walletConnectProvider.WC_V2_CHAINS,
+						chains: this.walletOptions?.walletConnectV2?.chains ?? walletConnectProvider.WC_V2_DEFAULT_CHAINS,
 						events: ['chainChanged', 'accountsChanged'],
-						rpcMap: walletConnectProvider.CUSTOM_RPCS_FOR_WC_V2,
-						// rpcMap: {
-						// 	1: `https://mainnet.infura.io/v3/9f79b2f9274344af90b8d4e244b580ef`
-						// }
+						rpcMap: this.walletOptions?.walletConnectV2?.rpcMap ?? walletConnectProvider.WC_DEFAULT_RPC_MAP,
 					},
 				},
 				pairingTopic: pairing?.topic,
@@ -316,7 +311,7 @@ export class Web3WalletProvider {
 		return this.registerProvider(provider, 'Torus')
 	}
 
-	async Phantom() {
+	async Phantom(checkConnectionOnly: boolean) {
 		logger(2, 'connect Phantom')
 
 		if (typeof window.solana !== 'undefined') {
@@ -331,7 +326,7 @@ export class Web3WalletProvider {
 		}
 	}
 
-	async SafeConnect() {
+	async SafeConnect(checkConnectionOnly: boolean) {
 		logger(2, 'connect SafeConnect')
 
 		const provider = await this.getSafeConnectProvider()
@@ -343,35 +338,18 @@ export class Web3WalletProvider {
 		return address
 	}
 
-	async flowSubscribe(fcl, currentUser) {
-		try {
-			if (currentUser.addr) {
-				this.registerNewWalletAddress(currentUser.addr, 1, 'flow', fcl)
+	async Flow(checkConnectionOnly: boolean) {
+		const flowProvider = await import('./FlowProvider')
+		const fcl = flowProvider.getFlowProvider()
 
-				const ui = this.client.getUi()
+		await fcl.currentUser.authenticate()
+		let currentUser = await fcl.currentUser.snapshot()
 
-				if (ui) ui.dismissLoader()
+		// No user address after authenticate() then connect was unsuccesfull
+		if (!currentUser.addr) throw new Error('Failed to connect Flow wallet')
 
-				this.client.enrichTokenLookupDataOnChainTokens()
-				if (ui) ui.updateUI('main', { viewName: 'main' })
-			}
-		} catch (e) {
-			console.error('flow wallet connection error ==>', e)
-			this.client.getUi().showError('Flow wallet connection error.')
-		}
-	}
-
-	async Flow() {
-		try {
-			const flowProvider = await import('./FlowProvider')
-			const fcl = flowProvider.getFlowProvider()
-
-			fcl.currentUser.subscribe((currentUser) => this.flowSubscribe(fcl, currentUser))
-			fcl.authenticate()
-		} catch (e) {
-			console.error('error ==>', e)
-		}
-		return ''
+		this.registerNewWalletAddress(currentUser.addr, 1, 'flow', fcl)
+		return currentUser.addr
 	}
 
 	async MagicLink() {
