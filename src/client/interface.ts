@@ -3,6 +3,7 @@ import { AuthenticationMethod } from './auth/abstractAuthentication'
 import { SafeConnectOptions } from '../wallet/SafeConnectProvider'
 import { BrowserDataInterface } from '../utils/support/isSupported'
 import { WalletConnection } from '../wallet/Web3WalletProvider'
+import { ConnectParams as WCv2ConnectParams } from '@walletconnect/universal-provider/dist/types/types/misc'
 
 export interface OffChainTokenConfig extends IssuerConfigInterface {
 	onChain: false
@@ -65,6 +66,14 @@ export interface NegotiationInterface {
 		}
 	}
 	noInternetErrorMessage?: string
+	walletOptions?: WalletOptionsInterface
+}
+
+export interface WalletOptionsInterface {
+	walletConnectV2?: {
+		chains?: string[]
+		rpcMap: { [chainId: string]: string }
+	}
 }
 
 export interface AuthenticateInterface {
@@ -79,6 +88,11 @@ export interface AuthenticateInterface {
 }
 
 export type TokenNegotiatorEvents =
+	| 'view-changed'
+	| 'tokens-refreshed'
+	| 'opened-overlay'
+	| 'closed-overlay'
+	| 'loaded'
 	| 'token-proof'
 	| 'connected-wallet'
 	| 'disconnected-wallet'
@@ -87,6 +101,18 @@ export type TokenNegotiatorEvents =
 	| 'network-change'
 	| 'error'
 
+export interface EventSenderViewLoaded {
+	data: any
+}
+export interface EventSenderClosedOverlay {
+	data: any
+}
+export interface EventSenderOpenedOverlay {
+	data: any
+}
+export interface EventSenderTokensRefreshed {
+	data: any
+}
 export interface EventSenderTokenProof {
 	issuer: string
 	error: any | null
@@ -96,6 +122,11 @@ export interface EventSenderError {
 	issuer: string
 	error: Error
 }
+export interface EventSenderViewChanged {
+	viewName: string
+	data: any
+}
+
 export interface EventSenderTokensSelected {
 	selectedTokens: Object
 }

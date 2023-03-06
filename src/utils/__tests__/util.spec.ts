@@ -2,7 +2,14 @@
 window.DISPLAY_DEBUG_LEVEL = 1
 
 import { hasUncaughtExceptionCaptureCallback } from 'process'
-import { logger, requiredParams, compareObjects, base64ToUint8array, waitForElementToExist } from './../index'
+import {
+	logger,
+	requiredParams,
+	compareObjects,
+	base64ToUint8array,
+	waitForElementToExist,
+	removeUrlSearchParams,
+} from './../index'
 import { errorHandler } from '../index'
 
 // TODO: add unit tests for the following functions:
@@ -88,5 +95,23 @@ describe('util Spec errorHandler', () => {
 	test('expect to handle error', () => {
 		const err = 'Error exception'
 		expect(errorHandler(err, 'error', null, null, false, false)).toEqual({ message: err, data: null, type: 'error' })
+	})
+})
+
+describe('util Spec removeUrlSearchParams', () => {
+	test('Expect no parameters to be left', () => {
+		let params = new URLSearchParams('tn-action=get-tokens&tn-issuer=devcon')
+		params = removeUrlSearchParams(params)
+		expect(params.toString()).toEqual('')
+	})
+	test('Expect non-namespaced parameters to be removed', () => {
+		let params = new URLSearchParams('tn-action=get-tokens&tn-issuer=devcon&email=test@test.com')
+		params = removeUrlSearchParams(params, ['email'])
+		expect(params.toString()).toEqual('')
+	})
+	test('Expect non-specified parameter to be retained', () => {
+		let params = new URLSearchParams('tn-action=get-tokens&tn-issuer=devcon&email=test@test.com&redirectMode=always')
+		params = removeUrlSearchParams(params, ['email'])
+		expect(params.toString()).toEqual('redirectMode=always')
 	})
 })

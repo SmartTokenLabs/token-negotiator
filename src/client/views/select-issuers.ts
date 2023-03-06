@@ -1,5 +1,5 @@
 import { AbstractView } from './view-interface'
-import { TokenListItemInterface, TokenList } from './token-list'
+import { TokenList, TokenListItemInterface } from './token-list'
 import { IconView } from './icon-view'
 import { logger } from '../../utils'
 import { UIUpdateEventType } from '../index'
@@ -19,6 +19,10 @@ export class SelectIssuers extends AbstractView {
 			this.ui.dismissLoader()
 			this.client.cancelTokenAutoload()
 			this.render()
+		})
+
+		this.client.registerUiUpdateCallback(UIUpdateEventType.WALLET_DISCONNECTED, () => {
+			this.ui.updateUI('wallet', { viewName: 'wallet' }, { viewTransition: 'slide-in-left' })
 		})
 	}
 
@@ -83,6 +87,7 @@ export class SelectIssuers extends AbstractView {
 		const refreshBtn = this.viewContainer.querySelector('.refresh-tn')
 
 		refreshBtn.addEventListener('click', () => {
+			this.client.eventSender('tokens-refreshed', null)
 			this.autoLoadTokens(true)
 		})
 
@@ -98,7 +103,7 @@ export class SelectIssuers extends AbstractView {
 
 		let tokensListElem = this.tokensContainer.getElementsByClassName('token-list-container-tn')[0]
 
-		this.tokenListView = new TokenList(this.client, this.ui, tokensListElem, {})
+		this.tokenListView = new TokenList(this.client, this.ui, tokensListElem, { ...this.params })
 	}
 
 	protected afterRender() {
@@ -360,7 +365,7 @@ export class SelectIssuers extends AbstractView {
 			}
 		})
 
-		this.tokenListView?.update({ issuer: issuer, tokens: tokens })
+		this.tokenListView?.update({ data: { issuer: issuer, tokens: tokens } })
 	}
 
 	showTokenView(issuer: string) {

@@ -1,5 +1,5 @@
 import { Client } from '../index'
-import { Ui } from '../ui'
+import { Ui, UIOptionsInterface } from '../ui'
 
 export interface ViewConstructor<T> {
 	new (client: Client, popup: Ui, viewContainer: any, params: any): T
@@ -12,20 +12,26 @@ export type ViewComponent = ViewFactory | ViewConstructor<ViewInterface>
 export interface ViewInterface {
 	client: Client
 	ui: Ui
-	viewContainer: any
-	params: any
+	viewContainer: HTMLDivElement | any
+	params: IViewParameters
 	render(): void
 	init(): void
-	update(params: any): void
+	update(params: IViewParameters): void
+}
+
+export interface IViewParameters {
+	options: UIOptionsInterface | any
+	viewOptions: any
+	data?: any
 }
 
 export abstract class AbstractView implements ViewInterface {
 	client: Client
 	ui: Ui
-	viewContainer: any
-	params: any = {}
+	viewContainer: HTMLDivElement | any
+	params: IViewParameters
 
-	constructor(client: Client, popup: Ui, viewContainer: any, params: any) {
+	constructor(client: Client, popup: Ui, viewContainer: HTMLDivElement | any, params: IViewParameters) {
 		this.client = client
 		this.ui = popup
 		this.viewContainer = viewContainer
@@ -35,13 +41,13 @@ export abstract class AbstractView implements ViewInterface {
 
 	// eslint-disable-next-line @typescript-eslint/no-empty-function
 	public init(): void {
-		/* TODO document why this method 'init' is empty */
+		// Init can be used to implement extra constructor code without overriding the constructor
 	}
 
 	abstract render(): void
 
-	public update(params: any): void {
-		this.params = params
+	public update(params: Partial<IViewParameters>): void {
+		this.params = { ...this.params, ...params }
 		this.render()
 	}
 }
