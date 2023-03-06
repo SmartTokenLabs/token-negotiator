@@ -2,7 +2,6 @@ import { ethers } from 'ethers'
 import { logger } from '../utils'
 import { SafeConnectOptions } from './SafeConnectProvider'
 import { Client } from '../client'
-// import { RPCProviderModule } from '@magic-sdk/provider/dist/types/modules/rpc-provider'
 import { WalletOptionsInterface } from '../client/interface'
 
 interface WalletConnectionState {
@@ -351,18 +350,6 @@ export class Web3WalletProvider {
 		this.registerNewWalletAddress(currentUser.addr, 1, 'flow', fcl)
 		return currentUser.addr
 	}
-
-	/* async MagicLink() {
-		const MagicLinkProvider = await import('./MagicLinkProvider')
-
-		const magicLink = MagicLinkProvider.getMagicProviderInstance()
-
-		await magicLink.wallet.connectWithUI()
-
-		const provider = new ethers.providers.Web3Provider(magicLink.rpcProvider, 'any')
-
-		return await this.registerProvider(provider, 'MagicLink')
-	}*/
 
 	safeConnectAvailable() {
 		return this.safeConnectOptions !== undefined
