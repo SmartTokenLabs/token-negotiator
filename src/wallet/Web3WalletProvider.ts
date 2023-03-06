@@ -352,7 +352,7 @@ export class Web3WalletProvider {
 		return currentUser.addr
 	}
 
-	async MagicLink() {
+	/* async MagicLink() {
 		const MagicLinkProvider = await import('./MagicLinkProvider')
 
 		const magicLink = MagicLinkProvider.getMagicProviderInstance()
@@ -362,7 +362,7 @@ export class Web3WalletProvider {
 		const provider = new ethers.providers.Web3Provider(magicLink.rpcProvider, 'any')
 
 		return await this.registerProvider(provider, 'MagicLink')
-	}
+	}*/
 
 	safeConnectAvailable() {
 		return this.safeConnectOptions !== undefined
