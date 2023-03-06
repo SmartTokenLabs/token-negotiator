@@ -289,7 +289,7 @@ export class Ui implements UiInterface {
 		})
 
 		let viewName = typeof viewFactory === 'string' ? viewFactory : ''
-		if (!viewName) viewName = data.viewName
+		if (!viewName && data?.viewName) viewName = data.viewName
 
 		this.client.eventSender('view-changed', { viewName, data })
 
