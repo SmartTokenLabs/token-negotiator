@@ -1,5 +1,5 @@
 import { OutletAction, OutletResponseAction, Messaging } from './messaging'
-import { Ui, UiInterface, UItheme, ViewType } from './ui'
+import { Ui, UiInterface, UItheme } from './ui'
 import { logger, requiredParams, waitForElementToExist, errorHandler, removeUrlSearchParams } from '../utils'
 import { getNftCollection, getNftTokens } from '../utils/token/nftProvider'
 import { Authenticator } from '@tokenscript/attestation'
@@ -121,9 +121,6 @@ export class Client {
 	}
 
 	private urlParams: URLSearchParams
-	// for the case when disconnect from only attestation
-	// screen returns the starting  view in this case
-	public attestationDisconnected: boolean
 
 	static getKey(file: string) {
 		return Authenticator.decodePublicKey(file)
@@ -142,7 +139,6 @@ export class Client {
 		this.config = this.mergeConfig(defaultConfig, config)
 
 		this.negotiateAlreadyFired = false
-		this.attestationDisconnected = false
 
 		this.tokenStore = new TokenStore(this.config.autoEnableTokens, this.config.tokenPersistenceTTL)
 		if (this.config.issuers?.length > 0) this.tokenStore.updateIssuers(this.config.issuers)
@@ -270,13 +266,8 @@ export class Client {
 	}
 
 	public async disconnectWallet() {
-		this.attestationDisconnected = true
 		let wp = await this.getWalletProvider()
-		if (wp.getConnectedWalletData().length > 0) {
-			wp.deleteConnections()
-			this.attestationDisconnected = false
-		}
-
+		wp.deleteConnections()
 		this.tokenStore.clearCachedTokens()
 		this.eventSender('connected-wallet', null)
 		this.eventSender('disconnected-wallet', null)
@@ -294,9 +285,13 @@ export class Client {
 	}
 
 	async enrichTokenLookupDataOnChainTokens() {
+		if (!this.getTokenStore().hasOnChainTokens()) {
+			this.issuersLoaded = true
+			return
+		}
+
 		this.issuersLoaded = false
-		if (!this.attestationDisconnected) this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADING)
-		// this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADING)
+		this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADING)
 
 		let issuers = this.tokenStore.getCurrentIssuers(true)
 
@@ -331,9 +326,7 @@ export class Client {
 		}
 
 		this.issuersLoaded = true
-		if (!this.attestationDisconnected) this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADED)
-		// this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADED)
-		this.attestationDisconnected = false
+		this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADED)
 	}
 
 	public async checkUserAgentSupport(type: string) {
