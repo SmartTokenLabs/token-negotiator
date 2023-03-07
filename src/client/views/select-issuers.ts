@@ -22,7 +22,11 @@ export class SelectIssuers extends AbstractView {
 		})
 
 		this.client.registerUiUpdateCallback(UIUpdateEventType.WALLET_DISCONNECTED, () => {
-			this.ui.updateUI('wallet', { viewName: 'wallet' }, { viewTransition: 'slide-in-left' })
+			if (this.client.getTokenStore().hasOnChainTokens()) {
+				this.ui.updateUI('wallet', { viewName: 'wallet' }, { viewTransition: 'slide-in-left' })
+			} else {
+				this.ui.updateUI('start', { viewName: 'start' }, { viewTransition: 'slide-in-left' })
+			}
 		})
 	}
 
@@ -119,17 +123,11 @@ export class SelectIssuers extends AbstractView {
 	}
 
 	async setupWalletButton() {
-		const provider = await this.client.getWalletProvider()
-
-		if (provider.getConnectedWalletData().length > 0) {
-			const walletBtn = this.viewContainer.querySelector('.dis-wallet-tn')
-
-			walletBtn.style.display = 'block'
-
-			walletBtn.addEventListener('click', () => {
-				this.client.disconnectWallet()
-			})
-		}
+		const walletBtn = this.viewContainer.querySelector('.dis-wallet-tn')
+		walletBtn.style.display = 'block'
+		walletBtn.addEventListener('click', () => {
+			this.client.disconnectWallet()
+		})
 	}
 
 	issuersLoading() {

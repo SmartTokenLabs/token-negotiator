@@ -285,6 +285,11 @@ export class Client {
 	}
 
 	async enrichTokenLookupDataOnChainTokens() {
+		if (!this.getTokenStore().hasOnChainTokens()) {
+			this.issuersLoaded = true
+			return
+		}
+
 		this.issuersLoaded = false
 		this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADING)
 
@@ -315,6 +320,7 @@ export class Client {
 					this.tokenStore.updateTokenLookupStore(issuer, lookupData)
 				}
 			} catch (e) {
+				console.log('enrichTokenLookupDataOnChainTokens error =>', e)
 				logger(2, 'Failed to load contract data for ' + issuer + ': ' + e.message)
 			}
 		}
