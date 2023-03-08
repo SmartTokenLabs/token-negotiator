@@ -8,7 +8,7 @@ The following types of tokens are supported:
 
 - Cryptographically created Tokens (Off Chain developed with TokenScript)
 
-- Web3 NFT Tokens (On Chain)
+- Non-Fungible tokens
 
 - Fungible tokens (ERC20)
 
