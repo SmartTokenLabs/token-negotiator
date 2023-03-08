@@ -97,15 +97,20 @@ export class Web3WalletProvider {
 		if (!walletType) throw new Error('Please provide a Wallet type to connect with.')
 
 		if (this[walletType as keyof Web3WalletProvider]) {
-			// @ts-ignore
-			// TODO: this address is null for the flow network
-			// Actual connected address is get in flowSubscribe function
-			const address = await this[walletType as keyof Web3WalletProvider](checkConnectionOnly)
-			logger(2, 'address', address)
+			try {
+				// @ts-ignore
+				// TODO: this address is null for the flow network
+				// Actual connected address is get in flowSubscribe function
+				let address = await this[walletType as keyof Web3WalletProvider](checkConnectionOnly)
+				logger(2, 'address', address)
 
-			this.saveConnections()
-			this.emitSavedConnection(address)
-			return address
+				this.saveConnections()
+				this.emitSavedConnection(address)
+				return address
+			} catch (e) {
+				logger(2, 'Provider connect Error: ', e)
+				throw new Error(e.message)
+			}
 		} else {
 			throw new Error('Wallet type not found')
 		}
@@ -264,35 +269,43 @@ export class Web3WalletProvider {
 			this.client.disconnectWallet()
 		})
 
-		if (!checkConnectionOnly) {
-			let pairing
-
-			await universalWalletConnect.connect({
-				namespaces: {
-					eip155: {
-						methods: ['eth_sendTransaction', 'eth_signTransaction', 'eth_sign', 'personal_sign', 'eth_signTypedData'],
-						chains: this.walletOptions?.walletConnectV2?.chains ?? walletConnectProvider.WC_V2_DEFAULT_CHAINS,
-						events: ['chainChanged', 'accountsChanged'],
-						rpcMap: this.walletOptions?.walletConnectV2?.rpcMap ?? walletConnectProvider.WC_DEFAULT_RPC_MAP,
-					},
-				},
-				pairingTopic: pairing?.topic,
-			})
-
-			QRCodeModal.close()
-		}
+		let preSavedWalletOptions = this.walletOptions
 
 		return new Promise((resolve, reject) => {
-			universalWalletConnect
-				.enable()
-				.then(() => {
-					const provider = new ethers.providers.Web3Provider(universalWalletConnect, 'any')
+			if (checkConnectionOnly && !universalWalletConnect.connected) {
+				reject('Not connected')
+			} else {
+				// let pairing
 
-					resolve(this.registerProvider(provider, 'WalletConnectV2'))
-				})
-				.catch((e) => {
-					reject(e)
-				})
+				universalWalletConnect
+					.connect({
+						namespaces: {
+							eip155: {
+								methods: [
+									'eth_sendTransaction',
+									'eth_signTransaction',
+									'eth_sign',
+									'personal_sign',
+									'eth_signTypedData',
+								],
+								chains: preSavedWalletOptions?.walletConnectV2?.chains ?? walletConnectProvider.WC_V2_DEFAULT_CHAINS,
+								events: ['chainChanged', 'accountsChanged'],
+								rpcMap: preSavedWalletOptions?.walletConnectV2?.rpcMap ?? walletConnectProvider.WC_DEFAULT_RPC_MAP,
+							},
+						},
+						// pairingTopic: pairing?.topic,
+					})
+					.then(() => {
+						QRCodeModal.close()
+						const provider = new ethers.providers.Web3Provider(universalWalletConnect, 'any')
+						resolve(this.registerProvider(provider, 'WalletConnectV2'))
+					})
+					.catch((e) => {
+						logger(2, 'WC2 connect error...', e)
+						QRCodeModal.close()
+						reject(e)
+					})
+			}
 		})
 	}
 

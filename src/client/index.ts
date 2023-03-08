@@ -276,12 +276,16 @@ export class Client {
 
 	async negotiatorConnectToWallet(walletType: string) {
 		let walletProvider = await this.getWalletProvider()
+		try {
+			let walletAddress = await walletProvider.connectWith(walletType)
 
-		let walletAddress = await walletProvider.connectWith(walletType)
+			logger(2, 'wallet address found: ' + walletAddress)
 
-		logger(2, 'wallet address found: ' + walletAddress)
-
-		return walletAddress
+			return walletAddress
+		} catch (e) {
+			logger(2, 'walletProvider.connectWith error: ', e)
+		}
+		return ''
 	}
 
 	async enrichTokenLookupDataOnChainTokens() {
