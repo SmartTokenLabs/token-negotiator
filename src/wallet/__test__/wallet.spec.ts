@@ -1,4 +1,7 @@
 /* eslint-disable no-mixed-spaces-and-tabs */
+import { TextDecoder, TextEncoder } from 'text-encoding'
+global.TextEncoder = TextEncoder
+global.TextDecoder = TextDecoder
 import { Client } from '../../client/index'
 import { SafeConnectOptions, SafeConnectProvider } from '../SafeConnectProvider'
 import { Web3WalletProvider } from '../Web3WalletProvider'
@@ -29,17 +32,12 @@ let tokenNegotiatorClient = new Client({
 	],
 })
 
-let safeConnectOptions: SafeConnectOptions = {
-	url: 'https://safeconnect.tokenscript.org',
-	initialProof: 'address_attest',
-}
-
 describe('wallet spec', () => {
 	let web3WalletProvider: Web3WalletProvider
 	let safeConnectProvider: SafeConnectProvider
 
 	test('web3WalletProvider a new instance', () => {
-		web3WalletProvider = new Web3WalletProvider(tokenNegotiatorClient, safeConnectOptions)
+		web3WalletProvider = new Web3WalletProvider(tokenNegotiatorClient, null, null)
 		expect(web3WalletProvider).toBeDefined()
 	})
 

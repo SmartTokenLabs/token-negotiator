@@ -37,6 +37,8 @@ export const getBrowserData = () => {
 			isTrust: false,
 			isStatusWallet: false,
 			isGoWallet: false,
+			// this prop is TRUE when Metamask disabled or not installed
+			isBraveWallet: false,
 		}
 	}
 
@@ -61,8 +63,10 @@ export const getBrowserData = () => {
 		iOS: isIOS,
 		mac: isMac,
 		windows: isWindows,
+		desktop: navigator.userAgent?.indexOf("Mobi") === -1,
 		touchDevice: isTouchDevice,
 		metaMask: isMetaMask,
+		anyMetamask: !!windowEthereum.isMetaMask && !isTrust && !windowEthereum.isBraveWallet,
 		alphaWallet: isAlphaWallet,
 		mew: isMyEthereumWallet,
 		trust: isTrust,

@@ -1,4 +1,5 @@
 import { Buffer } from 'buffer'
+import { URLNS } from '../core/messaging'
 
 declare global {
 	interface Window {
@@ -141,4 +142,28 @@ export const tokenRequest = async (query: string, silenceRequestError: boolean) 
 	} catch (msg: any) {
 		throw new Error(`HTTP error.`)
 	}
+}
+
+/**
+ * Remove callback parameters from the URL by providing a list of keys or a namespace (key prefix)
+ * @param params
+ * @param additionalParams
+ * @param namespace
+ */
+export const removeUrlSearchParams = (
+	params: URLSearchParams,
+	additionalParams: string[] = [],
+	namespace: string | null = URLNS,
+) => {
+	if (namespace)
+		for (let key of Array.from(params.keys())) {
+			// Iterator needs to be converted to array since we are deleting keys
+			if (key.indexOf(namespace) === 0) params.delete(key)
+		}
+
+	for (let paramName of additionalParams) {
+		if (params.has(paramName)) params.delete(paramName)
+	}
+
+	return params
 }
