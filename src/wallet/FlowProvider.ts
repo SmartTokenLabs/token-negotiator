@@ -1,4 +1,4 @@
-import * as fcl from '@onflow/fcl'
+import * as fcl from '@onflow/fcl/dist/fcl.umd.min'
 
 // const unsubscribe = fcl.currentUser.subscribe(currentUser => {
 // 	console.log("The Current User", currentUser)

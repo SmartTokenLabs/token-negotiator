@@ -12,7 +12,7 @@ The following types of tokens are supported:
 
 (for new token issuers who are interested in using TokenScript please visit the following WIKI page: https://github.com/TokenScript/token-negotiator/wiki/Token-Issuer-Page).
 
-### Token Negotiator supports NFT Tokens across the following blockchains and networks:
+### Supported Blockchains and Networks:
 
 <table>
   <thead>
@@ -97,10 +97,15 @@ The following types of tokens are supported:
       <td>devnet</td>
       <td>Y</td>
     </tr>
+    <tr>
+	    <td>flow</td>
+      <td>mainnet</td>
+      <td>Y</td>
+    </tr>
   </tbody>
 </table>
 
-## Wallet Support
+### Wallet Support
 
 <table>
   <thead>
@@ -141,10 +146,6 @@ The following types of tokens are supported:
     </tr>
     <tr>
       <td>flow</td>
-      <td>Blockto</td>
-    </tr>
-    <tr>
-      <td>flow</td>
       <td>Lillico</td>
     </tr>
     <tr>
@@ -158,15 +159,15 @@ The following types of tokens are supported:
   </tbody>
 </table>
 
-Within your application install the token negotiator:
+### Getting Started
 
-NPM
+Using NPM
 
 ```sh
   npm i @tokenscript/token-negotiator
 ```
 
-Browser build
+Or Browser
 
 ```html
 <script
@@ -179,21 +180,15 @@ Browser build
 />
 ```
 
-## Reading Tokens into a website or web application.
+## Read Tokens from within a website.
 
-This library provides two ways to load tokens into your application, active or passive.
+This library provides two ways to load tokens into your application, active (with UI) or passive (No UI / Custom).
 
 ### Active Negotiation of tokens
 
-This approach embeds a html element UI widget into the web page.
-
-As the web developer you can configure which collections are supported by your website to provide custom experiences to token holders.
-
-Token holders can then attest ownership of tokens within collections, to access custom tokenised web experiences you design.
-
 <img src="https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/tn-example.png" alt="token negotiator component" style="width:280px;"/>
 
-To start, first include the following html element into your page, this is where the token negotiator overlay widget will be embedded into the page.
+Include the following html element into your page, this is where the token negotiator overlay widget will be embedded into the page.
 
 ```html
 <div class="overlay-tn"></div>
@@ -206,7 +201,7 @@ import { Client } from "@tokenscript/token-negotiator";
 import "@tokenscript/token-negotiator/dist/theme/style.css";
 ```
 
-Include the following Javascript to configure the Token Negotiator with issuers that your website will recognise.
+This code example configures the Token Negotiator to connect with the expansion punks non-fungible collection. If the end user has tokens inside this collection, the event hook 'tokens-selected' will be triggered.
 
 ```javascript
 import { Client } from "@tokenscript/token-negotiator";
@@ -253,7 +248,7 @@ negotiator.on("token-proof", (proof) => {
 
 ### Passive Negotiation of tokens
 
-This approach is designed for a fully custom ui/ux experience, where a list of all tokens are learnt by the client on negotiation.
+Passive mode can be used when the UI is not needed, or you wish to build your own utilising the hooks available.
 
 ```javascript
 import { Client } from "@tokenscript/token-negotiator";
@@ -261,21 +256,6 @@ import { Client } from "@tokenscript/token-negotiator";
 const negotiator = new Client({
 	type: "passive",
 	issuers: [
-		{
-			collectionID: "devcon",
-			title: "Devcon",
-			onChain: false,
-			tokenOrigin: "http://localhost:3002/",
-			attestationOrigin: "https://stage.attestation.id/",
-			unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
-			image:
-				"https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
-			base64senderPublicKeys: {
-				AttestationDAO: "MFYwEAYHKoZIzj0CAQYFK...",
-			},
-			base64attestorPubKey:
-				"MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ=",
-		},
 		{
 			blockchain: "evm",
 			collectionID: "expansion-punks",
@@ -345,6 +325,26 @@ const onChainIssuer = {
 };
 ```
 
+### Managing Issuers on chain (Flow)
+
+```javascript
+/**
+ * @param {String} blockchain string of which blockchain is needed (optional input: default is 'evm')
+ * @param {Boolean} onChain boolean if this token is on / off chain
+ * @param {String} collectionID your own reference key to identify the collection by.
+ * @param {String} collectionAddress collection identifier
+ * @param {String} chain smart contract address chain
+ */
+
+const onChainIssuer = {
+	collectionID: "TopShot",
+	onChain: true,
+	contract: "A.0b2a3299cc857e29.TopShot",
+	chain: "mainnet",
+	blockchain: "flow",
+};
+```
+
 ### Managing Issuers off chain
 
 ```javascript
@@ -377,6 +377,78 @@ const offChainIssuer = {
 };
 ```
 
+### Utilising event hooks
+
+Hooks can be used to capture events triggered within the library.
+
+<br/>
+
+```javascript
+// example use of an event hook
+negotiator.on("tokens-selected", callback);
+```
+
+<br/>
+
+<table>
+  <thead>
+    <tr>
+      <th>Hook Type</th>
+      <th>Returns</th>
+    </tr>
+  </thead>
+  <tbody>
+		<tr>
+			<td>'tokens-selected'</td>
+			<td>Tokens selected data</td>
+		</tr>
+		<tr>
+			<td>'tokens'</td>
+			<td>Tokens when using passive mode (auto selected)</td>
+		</tr>
+		<tr>
+			<td>'network-change'</td>
+			<td>Chain</td>
+		</tr>
+				<tr>
+			<td>'token-proof'</td>
+			<td>Proof data</td>
+		</tr>
+		<tr>
+			<td>'connected-wallet'</td>
+			<td>Wallet data</td>
+		</tr>
+		<tr>
+			<td>'error'</td>
+			<td>Error data</td>
+		</tr>
+		<tr>
+			<td>View and data</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>'tokens-refreshed'</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>'opened-overlay'</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>'closed-overlay'</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>'loaded'</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>'disconnected-wallet'</td>
+			<td></td>
+		</tr>
+  </tbody>
+</table>
+
 ### Authenticate ownership of off chain Token
 
 Authenticating ownership of the token will provide a proof with a limited expiry.
@@ -396,50 +468,6 @@ negotiator.on("proof", () => {
 });
 ```
 
-### Utilise the wallet provider instance hook
-
-Once connected to Token Negotiator, the wallet instance can be used.
-
-```javascript
-/**
- * @returns {String} blockchain
- * @returns {String} wallet address
- * @return {String} chain id
- * @return {String} providerType 'MetaMask'
- * @return {Object} provider instance
- * @return {Object} ethers library instance
- */
-negotiator.on("connected-wallet", (connectedWallet) => {
-	// handle the wallet instance as required by your application
-	// { ... }
-});
-```
-
-### Wallet disconnection hook
-
-This event is triggered when the user disconnects their wallet from Token Negotiator.
-
-```javascript
-negotiator.on("disconnected-wallet", () => {
-	// handle the wallet disconnection event as required by your application
-	// { ... }
-});
-```
-
-### Wallet network change hook (evm wallets only at this time)
-
-This event is triggered when the user changes their current connected wallets network
-
-```javascript
-/**
- * @returns {String|Number} chain
- */
-negotiator.on("network-change", (chain) => {
-	// handle the wallet network change as required by your application
-	// { ... }
-});
-```
-
 ### Update component theme
 
 Changing the theme.
@@ -451,11 +479,9 @@ Changing the theme.
 negotiator.switchTheme("dark");
 ```
 
-### For projects where you are not using a Node.js work flow. Or would prefer to inject the library into the html (polyfills included).
+### When working without NPM
 
-1. Go to the following URL: https://github.com/TokenScript/token-negotiator
-
-2. Download and then install this folder into your project `/token-negotiator-dist`
+For projects where you are not using a Node.js work flow. Or would prefer to inject the library into the html (polyfills included).
 
 Configure the library using the following example.
 
@@ -487,7 +513,7 @@ Configure the library using the following example.
 					{
 						hideToggle: true,
 						noTokenMsg:
-							"<p>If you have a token please:</p><p>1. Open your magic link inside this browser.<br/>2. Refresh this page.</p>",
+							"<p>If you have a token please:</p><p>1. Open your magic link inside this browser.2. Refresh this page.</p>",
 						onChain: true,
 						collectionID: "bsc-collection-test",
 						contract: "0xF5db804101d8600c26598A1Ba465166c33CdAA4b",
@@ -567,6 +593,7 @@ This table lists all possible configuration options for Token Negotiator client.
 | uiOptions.theme                        | The theme to use for the UI                                                                                                                                                                                                                                    | N        | "light" or "dark"                             | light                                    |
 | uiOptions.position                     | (Not implemented) The position of the popup                                                                                                                                                                                                                    | N        | string                                        | bottom-left                              |
 | uiOptions.autoPopup                    | When calling negotiate, this option makes the popup UI open automatically when user input is required, or when new tokens are loading.                                                                                                                         | N        | boolean                                       | true                                     |
+| uiOptions.viewOverrides                | Enables customisation OR an entire replacement of the built-in views. See the "Customising Views" section below.                                                                                                                                               |          |                                               |                                          |
 | autoLoadTokens                         | Automatically load tokens once the user connects their wallet in active type negotiation. This can be set to true to load tokens for all issuers, or a number to limit the tokens loaded. If this is set to false the user must load each issuer individually. | N        | boolean or number                             | true                                     |
 | autoEnableTokens                       | This option causes all tokens to become selected and available to the website when loaded. If this option is set to false, tokens must be selected manually by the user.                                                                                       | N        | boolean                                       | true                                     |
 | messagingForceTab                      | Whether to use a tab rather than an iframe for communication with off-chain ticket issuers.                                                                                                                                                                    | N        | boolean                                       | false                                    |
@@ -624,6 +651,107 @@ This table lists all possible configuration options for Token Negotiator client.
 | tokenParser            | A custom token parser used for decoding attestations                               | N        | decoding class |
 | base64senderPublicKeys | An array of base64 encoded ticket issuer public keys, indexed by conference ID     | Y        | object         |
 | base64attestorPubKey   | The base64 encoded public key of the identity attestation issuer                   | Y        | string         |
+
+## Customising UI Views
+
+Negotiator UI consists of 3 main screens - start, wallet & main. 
+The uiOptions.viewOverrides preference allows extending or completely replacing these views with your own implementation. 
+It also allows specifying new views that can be referenced & displayed from your other custom views.
+i.e. `this.ui.updateUI('my_custom_view', data, viewOptions);`
+
+Custom views must implement ViewInterface, but we recommend that you extend the AbstractView class for simplicity.
+These interfaces & classes can be found in src/client/views/view-interface.ts.
+
+The configuration allows setting a custom view implementation OR options for an existing view
+```typescript
+viewOverrides?: {
+    [type: string]: {
+        component?: ViewComponent
+        options?: { [key: string]: any }
+    }
+}
+```
+
+A custom view can be a class reference that is constructed within negotiator (and implements ViewConstructor), 
+or it can be a factory method that returns an already constructed object that implements ViewInterface.
+A factory method allows you to inject extra variables or objects that you want to interact with within the view.
+
+```typescript
+import {AbstractView} from "./view-interface";
+import {Start} from "./start";
+
+class MyStartView extends Start {
+	renderMainTemplate() {
+		return `
+			/* Changes to main start screen HTML template here */
+			<p>${this.params.viewOptions.myCustomOption}</p>
+		`
+	}
+}
+
+class MyCustomView extends AbstractView {
+	
+	constructor(client: Client, popup: Ui, viewContainer: HTMLElement, params: any, private someOtherObjectINeed: any) {
+		super(client, popup, viewContainer, params);
+	}
+	
+	public render(){
+		/* Render function (renders HTML into this.viewContainer, starts background processes & attaches nessesary event listeners) */
+    }
+}
+
+const config = {
+	/* ...other config options... */
+	uiOptions: {
+		viewOverrides: {
+			"start": {
+				component: MyStartView // Constructor Method
+			},
+			"my_custom_view": {
+				component: (client: Client, popup: Ui, viewContainer: HTMLElement, params: any) => { // Factory method
+					return new MyCustomView(client, popup, viewContainer, params, this.someOtherObjectINeed); // Inject other objects
+				}
+			}
+		}
+	}
+}
+```
+
+### View options & transitions
+
+Custom options can be passed into the view and accessed inside. 
+There is also a special option called "viewTransition", which applies an animation when your view loads
+
+```typescript
+const config = {
+	/* ...other config options... */
+	uiOptions: {
+		viewOverrides: {
+			"start": {
+				component: MyStartView, // Constructor Method
+                options: {
+					myCustomOption: "My custom text",
+                    viewTransition: "slide-in-bottom"
+                }
+			}
+		}
+	}
+}
+```
+
+Custom options can also be specified as a parameter to the updateUI method
+```typescript
+this.ui.updateUI('my_custom_view', 
+    {/* some custom data specific to this view instance */}, 
+    { viewTransition: "slide-in-left" } // each key overrides the default option set in the config
+);
+```
+
+The current view transitions available are:
+- slide-in-left
+- slide-in-right
+- slide-in-top
+- slide-in-bottom
 
 ## New TokenScript Token Issuers
 

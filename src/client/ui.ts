@@ -16,6 +16,7 @@ export interface UIOptionsInterface {
 	uiType?: UIType
 	containerElement?: string
 	openingHeading?: string
+	openingButtonText?: string
 	issuerHeading?: string
 	repeatAction?: string
 	theme?: UItheme
@@ -33,7 +34,7 @@ export interface UIOptionsInterface {
 export interface UiInterface {
 	viewContainer: HTMLElement
 	initialize(): Promise<void>
-	updateUI(ViewClass: ViewComponent | ViewType, data?: any)
+	updateUI(ViewClass: ViewComponent | ViewType, data?: any, options?: any)
 	closeOverlay(): void
 	openOverlay(): void
 	togglePopup(): void
@@ -56,7 +57,9 @@ export class Ui implements UiInterface {
 				<div class="loader-msg-tn"></div>
 				<button class="dismiss-error-tn btn-tn">Dismiss</button>
 			</div>
-			<div class="view-content-tn"></div>
+			<div class="transition-wrapper-tn">
+				<div class="view-content-tn"></div>
+			</div>
 		</div>
 	`
 
@@ -68,12 +71,13 @@ export class Ui implements UiInterface {
 
 	options?: UIOptionsInterface
 	client: Client
-	popupContainer: any
-	viewContainer: any
-	loadContainer: any
+	popupContainer: HTMLDivElement
+	transitionContainer: HTMLDivElement
+	viewContainer: HTMLDivElement
+	loadContainer: HTMLDivElement
 	currentView: ViewInterface | undefined
 	retryCallback?: Function
-	retryButton: any
+	retryButton: HTMLButtonElement
 
 	private isStartView = true
 
@@ -95,6 +99,7 @@ export class Ui implements UiInterface {
 
 		this.setTheme(this.options?.theme ?? 'light')
 
+		this.transitionContainer = this.popupContainer.querySelector('.transition-wrapper-tn')
 		this.viewContainer = this.popupContainer.querySelector('.view-content-tn')
 		this.loadContainer = this.popupContainer.querySelector('.load-container-tn')
 		this.retryButton = this.loadContainer.querySelector('.dismiss-error-tn')
@@ -108,7 +113,7 @@ export class Ui implements UiInterface {
 			}
 		})
 
-		this.updateUI(await this.getStartScreen())
+		this.updateUI(await this.getStartScreen(), { viewName: 'start' })
 	}
 
 	public getViewFactory(type: ViewType): [ViewComponent, { [key: string]: any }] {
@@ -194,7 +199,7 @@ export class Ui implements UiInterface {
 
 				break
 			case 'inline':
-				this.popupContainer.innerHTML = Ui.UI_CONTAINER_HTML
+				this.popupContainer.innerHTML = this.getUIContainer()
 
 				break
 		}
@@ -204,12 +209,14 @@ export class Ui implements UiInterface {
 		if (this.options.uiType === 'inline') return
 		this.popupContainer.classList.add('close')
 		this.popupContainer.classList.remove('open')
+		this.client.eventSender('closed-overlay', null)
 	}
 
 	openOverlay() {
 		if (this.options.uiType === 'inline') return
 		// Prevent out-of-popup click from closing the popup straight away
 		setTimeout(() => {
+			this.client.eventSender('opened-overlay', null)
 			this.popupContainer.classList.add('open')
 			this.popupContainer.classList.remove('close')
 		}, 10)
@@ -225,8 +232,8 @@ export class Ui implements UiInterface {
 		}
 	}
 
-	updateUI(viewFactory: ViewComponent | ViewType, data?: any) {
-		let viewOptions = {}
+	updateUI(viewFactory: ViewComponent | ViewType, data?: any, options?: any) {
+		let viewOptions: any = {}
 
 		if (typeof viewFactory === 'string') {
 			this.isStartView = viewFactory === 'start'
@@ -238,9 +245,40 @@ export class Ui implements UiInterface {
 			this.isStartView = false
 		}
 
+		// Manually specified view options can override ones set in the viewOverrides config
+		if (options) viewOptions = { ...viewOptions, ...options }
+
 		if (!this.viewContainer) {
-			logger(3, 'Element .overlay-content-tn not found: popup not initialized')
+			logger(3, 'Element .view-content-tn not found: popup not initialized')
 			return
+		}
+
+		// Setup state transition
+		let transitionClass
+		let oldViewRef
+
+		const AVAILABLE_TRANSITIONS = ['slide-in-left', 'slide-in-right', 'slide-in-top', 'slide-in-bottom']
+
+		if (viewOptions?.viewTransition && AVAILABLE_TRANSITIONS.indexOf(viewOptions?.viewTransition) > -1) {
+			transitionClass = viewOptions?.viewTransition + '-tn'
+
+			// Keep reference to old view for cleanup
+			oldViewRef = this.viewContainer
+
+			// Inset new view container - add transition class to ensure it's out of frame
+			const newViewContainer = document.createElement('div')
+
+			this.transitionContainer.classList.add(transitionClass)
+			newViewContainer.classList.add('view-content-tn')
+
+			if (transitionClass === 'slide-in-left-tn' || transitionClass === 'slide-in-top-tn') {
+				this.transitionContainer.prepend(newViewContainer)
+			} else {
+				this.transitionContainer.appendChild(newViewContainer)
+			}
+
+			// Set new viewContainer ref
+			this.viewContainer = newViewContainer
 		}
 
 		// @ts-ignore
@@ -250,7 +288,28 @@ export class Ui implements UiInterface {
 			data: data,
 		})
 
+		let viewName = typeof viewFactory === 'string' ? viewFactory : ''
+		if (!viewName && data?.viewName) viewName = data.viewName
+
+		this.client.eventSender('view-changed', { viewName, data })
+
 		this.currentView.render()
+
+		if (transitionClass) {
+			// TODO: the transitionend event doesn't seem to be reliable
+			//  sometimes it doesn't fire when a window is out of focus - see if there's a solution
+			// this.transitionContainer.addEventListener('transitionend', () => {
+			setTimeout(() => {
+				// Remove old viewContainer
+				oldViewRef.remove()
+
+				// Remove transition classes from active viewContainer
+				this.transitionContainer.classList.remove('slide-in', transitionClass)
+			}, 300)
+
+			// Add transition start class into viewport to start animation
+			this.transitionContainer.classList.add('slide-in')
+		}
 	}
 
 	viewIsNotStart() {
@@ -269,7 +328,9 @@ export class Ui implements UiInterface {
 			if (error === ClientError.USER_ABORT) return this.dismissLoader()
 		}
 
-		this.loadContainer.querySelector('.loader-tn').style.display = 'none'
+		const loader = this.loadContainer.querySelector('.loader-tn') as HTMLDivElement
+		loader.style.display = 'none'
+
 		this.retryButton.style.display = 'block'
 
 		this.loadContainer.querySelector('.loader-msg-tn').innerHTML = error
@@ -277,7 +338,8 @@ export class Ui implements UiInterface {
 		this.loadContainer.style.display = 'flex'
 
 		if (!canDismiss) {
-			this.loadContainer.querySelector('.dismiss-error-tn').style.display = 'none'
+			const dismissBtn = this.loadContainer.querySelector('.dismiss-error-tn') as HTMLDivElement
+			dismissBtn.style.display = 'none'
 		}
 	}
 
@@ -306,9 +368,10 @@ export class Ui implements UiInterface {
 
 	showLoader(...message: string[]) {
 		this.cancelDelayedLoader()
-
-		this.loadContainer.querySelector('.loader-tn').style.display = 'block'
-		this.loadContainer.querySelector('.dismiss-error-tn').style.display = 'none'
+		const loader = this.loadContainer.querySelector('.loader-tn') as HTMLDivElement
+		loader.style.display = 'block'
+		const dismissBtn = this.loadContainer.querySelector('.dismiss-error-tn') as HTMLDivElement
+		dismissBtn.style.display = 'none'
 
 		this.loadContainer.querySelector('.loader-msg-tn').innerHTML = message.join('\n')
 

@@ -1,7 +1,7 @@
-import { initDataDogRum } from '../utils/datadog/rum';
+import { initDataDogRum } from '../utils/datadog/rum'
 import { OutletAction, OutletResponseAction, Messaging } from './messaging'
 import { Ui, UiInterface, UItheme } from './ui'
-import { logger, requiredParams, waitForElementToExist, errorHandler } from '../utils'
+import { logger, requiredParams, waitForElementToExist, errorHandler, removeUrlSearchParams } from '../utils'
 import { getNftCollection, getNftTokens } from '../utils/token/nftProvider'
 import { Authenticator } from '@tokenscript/attestation'
 import { TokenStore } from './tokenStore'
@@ -17,7 +17,12 @@ import {
 	EventSenderConnectedWallet,
 	EventSenderDisconnectedWallet,
 	EventSenderError,
+	EventSenderViewChanged,
 	OnChainIssuer,
+	EventSenderViewLoaded,
+	EventSenderOpenedOverlay,
+	EventSenderClosedOverlay,
+	EventSenderTokensRefreshed,
 } from './interface'
 import { SignedUNChallenge } from './auth/signedUNChallenge'
 import { TicketZKProof } from './auth/ticketZKProof'
@@ -29,6 +34,7 @@ import { Outlet, OutletInterface } from '../outlet'
 import { shouldUseRedirectMode } from '../utils/support/getBrowserData'
 import { VERSION } from '../version'
 import { getFungibleTokenBalances, getFungibleTokensMeta } from '../utils/token/fungibleTokenProvider'
+import { URLNS } from '../core/messaging'
 
 if (typeof window !== 'undefined') window.tn = { VERSION }
 
@@ -87,6 +93,7 @@ export const defaultConfig: NegotiationInterface = {
 export const enum UIUpdateEventType {
 	ISSUERS_LOADING,
 	ISSUERS_LOADED,
+	WALLET_DISCONNECTED,
 }
 
 export enum ClientError {
@@ -111,6 +118,7 @@ export class Client {
 	private uiUpdateCallbacks: { [type in UIUpdateEventType] } = {
 		[UIUpdateEventType.ISSUERS_LOADING]: undefined,
 		[UIUpdateEventType.ISSUERS_LOADED]: undefined,
+		[UIUpdateEventType.WALLET_DISCONNECTED]: undefined,
 	}
 
 	private urlParams: URLSearchParams
@@ -120,12 +128,14 @@ export class Client {
 	}
 
 	constructor(config: NegotiationInterface, enableMonitoring = true) {
-		if (enableMonitoring) initDataDogRum(config);
+		if (enableMonitoring) initDataDogRum(config)
 		if (window.location.hash) {
 			this.urlParams = new URLSearchParams(window.location.hash.substring(1))
 			let action = this.getDataFromQuery('action')
 			logger(2, `Client() fired. Action = "${action}"`)
 			this.removeCallbackParamsFromUrl()
+		} else {
+			this.urlParams = new URLSearchParams()
 		}
 
 		this.config = this.mergeConfig(defaultConfig, config)
@@ -140,7 +150,7 @@ export class Client {
 	}
 
 	getDataFromQuery(itemKey: any): string {
-		return this.urlParams ? this.urlParams.get(itemKey) : ''
+		return this.urlParams ? this.urlParams.get(URLNS + itemKey) : ''
 	}
 
 	public readProofCallback() {
@@ -154,28 +164,15 @@ export class Client {
 		const attest = this.getDataFromQuery('attestation')
 		const error = this.getDataFromQuery('error')
 
-		this.removeCallbackFromUrlSearchParams(this.urlParams)
-
 		this.emitRedirectProofEvent(issuer, attest, error)
 	}
 
 	private removeCallbackParamsFromUrl() {
 		let params = new URLSearchParams(document.location.hash.substring(1))
 
-		params = this.removeCallbackFromUrlSearchParams(params)
+		params = removeUrlSearchParams(params)
 
 		document.location.hash = '#' + params.toString()
-	}
-
-	private removeCallbackFromUrlSearchParams(
-		params: URLSearchParams,
-		paramNames: string[] = ['action', 'issuer', 'tokens', 'attestation', 'error'],
-	) {
-		for (let paramName of paramNames) {
-			if (params.has(paramName)) params.delete(paramName)
-		}
-
-		return params
 	}
 
 	private registerOutletProofEventListener() {
@@ -243,19 +240,28 @@ export class Client {
 		return this.config.safeConnectOptions !== undefined
 	}
 
-	public solanaAvailable() {
+	public hasIssuerForBlockchain(blockchain: 'evm' | 'solana' | 'flow') {
 		return (
-			typeof window.solana !== 'undefined' &&
-			this.config.issuers.filter((issuer: SolanaIssuerConfig) => {
-				return issuer?.blockchain?.toLowerCase() === 'solana'
+			this.config.issuers.filter((issuer: OnChainTokenConfig) => {
+				// EVM should always be active when we have off-chain attestations as it's used for UN challenge signing
+				if (blockchain === 'evm' && !issuer.onChain) return true
+				// window.solana must be defined if solana module imported
+				if (blockchain === 'solana' && typeof window.solana === 'undefined') return false
+
+				// Defaults to evm if blockchain isn't specified and is an onchain token
+				return (issuer.blockchain ? issuer.blockchain.toLowerCase() : 'evm') === blockchain
 			}).length > 0
 		)
+	}
+
+	public experimentalFeaturesEnabled(feature: string) {
+		return this.config.experimentalFeatures && this.config.experimentalFeatures.indexOf(feature) > -1
 	}
 
 	public async getWalletProvider() {
 		if (!this.web3WalletProvider) {
 			const { Web3WalletProvider } = await import('./../wallet/Web3WalletProvider')
-			this.web3WalletProvider = new Web3WalletProvider(this, this.config.safeConnectOptions)
+			this.web3WalletProvider = new Web3WalletProvider(this, this.config.walletOptions, this.config.safeConnectOptions)
 		}
 
 		return this.web3WalletProvider
@@ -267,9 +273,7 @@ export class Client {
 		this.tokenStore.clearCachedTokens()
 		this.eventSender('connected-wallet', null)
 		this.eventSender('disconnected-wallet', null)
-		if (this.ui) {
-			this.ui.updateUI('wallet')
-		}
+		this.triggerUiUpdateCallback(UIUpdateEventType.WALLET_DISCONNECTED)
 	}
 
 	async negotiatorConnectToWallet(walletType: string) {
@@ -283,6 +287,11 @@ export class Client {
 	}
 
 	async enrichTokenLookupDataOnChainTokens() {
+		if (!this.getTokenStore().hasOnChainTokens()) {
+			this.issuersLoaded = true
+			return
+		}
+
 		this.issuersLoaded = false
 		this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADING)
 
@@ -313,6 +322,7 @@ export class Client {
 					this.tokenStore.updateTokenLookupStore(issuer, lookupData)
 				}
 			} catch (e) {
+				console.log('enrichTokenLookupDataOnChainTokens error =>', e)
 				logger(2, 'Failed to load contract data for ' + issuer + ': ' + e.message)
 			}
 		}
@@ -381,6 +391,8 @@ export class Client {
 
 			await this.passiveNegotiationStrategy()
 		}
+
+		this.eventSender('loaded', null)
 	}
 
 	async activeNegotiationStrategy(openPopup: boolean) {
@@ -489,7 +501,6 @@ export class Client {
 						let responseTokensEncoded = this.getDataFromQuery('tokens')
 						try {
 							tokens = JSON.parse(responseTokensEncoded)
-							this.removeCallbackFromUrlSearchParams(this.urlParams)
 						} catch (e) {
 							logger(2, 'Error parse tokens from Response. ', e)
 						}
@@ -554,8 +565,6 @@ export class Client {
 				} catch (e) {
 					logger(2, 'Error parse tokens from Response. ', e)
 				}
-
-				this.removeCallbackFromUrlSearchParams(this.urlParams)
 			}
 		} catch (err) {
 			logger(1, 'Error read tokens from URL')
@@ -835,17 +844,23 @@ export class Client {
 		}
 
 		return new Promise((resolve, reject) => {
-			this.ui.updateUI('wallet', {
-				connectCallback: async () => {
-					this.ui.updateUI('main')
-					try {
-						let res = await this.authenticate(authRequest)
-						resolve(res)
-					} catch (e) {
-						reject(e)
-					}
+			const opt = { viewTransition: 'slide-in-right' }
+			this.ui.updateUI(
+				'wallet',
+				{
+					viewName: 'wallet',
+					connectCallback: async () => {
+						this.ui.updateUI('main', { viewName: 'main' }, opt)
+						try {
+							let res = await this.authenticate(authRequest)
+							resolve(res)
+						} catch (e) {
+							reject(e)
+						}
+					},
 				},
-			})
+				opt,
+			)
 		})
 	}
 
@@ -855,6 +870,11 @@ export class Client {
 	}
 
 	// eventSender overrides
+	async eventSender(eventName: 'loaded', data: EventSenderViewLoaded)
+	async eventSender(eventName: 'tokens-refreshed', data: EventSenderTokensRefreshed)
+	async eventSender(eventName: 'closed-overlay', data: EventSenderClosedOverlay)
+	async eventSender(eventName: 'opened-overlay', data: EventSenderOpenedOverlay)
+	async eventSender(eventName: 'view-changed', data: EventSenderViewChanged)
 	async eventSender(eventName: 'tokens', data: EventSenderTokens)
 	async eventSender(eventName: 'token-proof', data: EventSenderTokenProof)
 	async eventSender(eventName: 'tokens-selected', data: EventSenderTokensSelected)
