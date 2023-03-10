@@ -162,8 +162,8 @@ export class TokenList extends AbstractView {
 			`
             <li class='token-tn'>
               <div class="img-container-tn image-tn shimmer-tn" data-image-src="${
-								image ?? ''
-							}" data-token-title="${title}"></div>
+			image ?? ''
+			}" data-token-title="${title}"></div>
               <div class='data-tn'>
                   <p class='token-title-tn'>${title}</p>
                   <p class='detail-tn' title="${detail}">
