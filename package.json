@@ -75,7 +75,7 @@
     "https-browserify": "^1.0.0",
     "husky": "^8.0.0",
     "jest": "^28.1.0",
-    "jest-environment-jsdom": "^28.1.0",
+    "jest-environment-jsdom": "^29.5.0",
     "jest-junit": "^15.0.0",
     "loader-utils": "^3.2.1",
     "os-browserify": "^0.3.0",
