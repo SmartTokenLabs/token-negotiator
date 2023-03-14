@@ -439,28 +439,28 @@ negotiator.on("tokens-selected", callback);
 			<td>Error data</td>
 		</tr>
 		<tr>
-			<td>View and data</td>
-			<td></td>
+			<td>'view-changed'</td>
+			<td>(No data returned)</td>
 		</tr>
 		<tr>
 			<td>'tokens-refreshed'</td>
-			<td></td>
+			<td>(No data returned)</td>
 		</tr>
 		<tr>
 			<td>'opened-overlay'</td>
-			<td></td>
+			<td>(No data returned)</td>
 		</tr>
 		<tr>
 			<td>'closed-overlay'</td>
-			<td></td>
+			<td>(No data returned)</td>
 		</tr>
 		<tr>
 			<td>'loaded'</td>
-			<td></td>
+			<td>(No data returned)</td>
 		</tr>
 		<tr>
 			<td>'disconnected-wallet'</td>
-			<td></td>
+			<td>(No data returned)</td>
 		</tr>
   </tbody>
 </table>
