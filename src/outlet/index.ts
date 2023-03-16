@@ -9,7 +9,7 @@ import {
 	OffChainTokenData,
 	DecodedToken,
 } from '../core'
-import { logger, requiredParams, uint8toBuffer, removeUrlSearchParams } from '../utils'
+import { logger, requiredParams, removeUrlSearchParams } from '../utils'
 import { OutletAction, OutletResponseAction } from '../client/messaging'
 import { AuthHandler } from './auth-handler'
 // requred for default TicketDecoder.
@@ -53,8 +53,8 @@ export const defaultConfig = {
 
 export class readSignedTicket {
 	ticket: any
-	constructor(source: any) {
-		const signedDevconTicket: SignedDevconTicket = AsnParser.parse(uint8toBuffer(source), SignedDevconTicket)
+	constructor(source: Uint8Array) {
+		const signedDevconTicket: SignedDevconTicket = AsnParser.parse(source, SignedDevconTicket)
 
 		this.ticket = signedDevconTicket.ticket
 
@@ -259,7 +259,7 @@ export class Outlet {
 			// MagicLinkReader part of Outlet usually works in the parent window, same as Client, so it use same document
 			document.body.dispatchEvent(event)
 		} catch (e) {
-			// no-op
+			console.warn(e)
 		}
 	}
 
