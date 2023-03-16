@@ -375,6 +375,7 @@ export class Client {
 
 		await this.checkUserAgentSupport('full')
 		if (issuers) {
+			this.config.issuers = issuers
 			this.tokenStore.updateIssuers(issuers)
 		}
 
