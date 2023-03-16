@@ -1,4 +1,3 @@
-import { Buffer } from 'buffer'
 import { URLNS } from '../core/messaging'
 
 declare global {
@@ -14,16 +13,6 @@ export function logger(level: number, ...args: any[]) {
 
 export const requiredParams = (item: any, msg: string) => {
 	if (!item) throw new Error(msg)
-}
-
-export function uint8toBuffer(uint8: Uint8Array): any {
-	if (typeof Buffer !== 'undefined') {
-		// node Buffer
-		return Buffer.from(uint8)
-	} else {
-		// browser ArrayBuffer
-		return uint8
-	}
 }
 
 // shallow equality comparison
