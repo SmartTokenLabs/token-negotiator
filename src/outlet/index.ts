@@ -259,7 +259,7 @@ export class Outlet {
 			// MagicLinkReader part of Outlet usually works in the parent window, same as Client, so it use same document
 			document.body.dispatchEvent(event)
 		} catch (e) {
-			console.error(e)
+			console.warn(e)
 		}
 	}
 
