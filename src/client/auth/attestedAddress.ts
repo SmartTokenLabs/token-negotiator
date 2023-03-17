@@ -19,7 +19,7 @@ export class AttestedAddress extends AbstractAuthentication implements Authentic
 
 		if (!request.options?.address) throw new Error('Address attestation requires a secondary address.')
 
-		let wallet = web3WalletProvider.getConnectedWalletData()[0]
+		let wallet = web3WalletProvider.getConnectedWalletData('evm')?.[0]
 
 		let currentProof: AuthenticationResult | null = this.getSavedProof(wallet.address)
 

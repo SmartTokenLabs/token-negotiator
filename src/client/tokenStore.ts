@@ -1,9 +1,19 @@
-import { OffChainTokenConfig, OnChainTokenConfig, SolanaIssuerConfig } from './interface'
+import { OffChainTokenConfig, OnChainIssuer, OnChainTokenConfig, SolanaIssuerConfig } from './interface'
 
 import { logger } from '../utils'
 
-interface TokenLookup {
+interface IssuerLookup {
 	[collectionID: string]: TokenConfig & { timestamp: number }
+}
+
+interface TokenLookup {
+	[issuer: string]: { timestamp: number; tokens: TokenData[] | null }
+}
+
+interface TokenData {
+	walletAddress?: string
+	// TODO: add more common fields to this interface
+	[key: string]: any
 }
 
 type TokenConfig = OnChainTokenConfig | OffChainTokenConfig | SolanaIssuerConfig
@@ -13,12 +23,11 @@ export class TokenStore {
 
 	private currentIssuers: { [issuer: string]: boolean } = {} // mapping of issuer to on/off chain
 
-	//  TODO: We could also store this data in local storage to speed up loading on sites that are not a SPA.
 	// Cached token data
-	private tokenData: { [issuer: string]: { timestamp: number; tokens: [] | null } } = {}
+	private tokenData: TokenLookup = {}
 
 	// Cached issuer data for contract level metadata
-	private tokenLookup: TokenLookup = {}
+	private tokenLookup: IssuerLookup = {}
 
 	// TODO: change to disabled tokens
 	private selectedTokens: any = {}
@@ -69,12 +78,22 @@ export class TokenStore {
 		this.prePopulateTokenLookupStore(issuers)
 	}
 
-	public clearCachedTokens(onChain?: boolean) {
+	public clearCachedTokens(onChain?: boolean, walletAddress?: string) {
 		for (let i in this.tokenData) {
 			if (onChain !== undefined && onChain !== this.tokenLookup[i].onChain) continue
-			delete this.tokenData[i]
+
+			if (walletAddress && this.tokenData[i].tokens?.length > 0) {
+				this.tokenData[i].tokens = this.tokenData[i].tokens.filter((token) => token.walletAddress !== walletAddress)
+
+				if (this.tokenData[i].tokens.length === 0) {
+					delete this.tokenData[i]
+					delete this.selectedTokens[i]
+				}
+			} else {
+				delete this.tokenData[i]
+				delete this.selectedTokens[i]
+			}
 		}
-		this.selectedTokens = {}
 
 		this.saveTokenStore()
 	}
@@ -88,7 +107,7 @@ export class TokenStore {
 	}
 
 	public getCurrentIssuers(onChainFilter?: boolean) {
-		let current: TokenLookup = {}
+		let current: IssuerLookup = {}
 		for (let collectionId in this.currentIssuers) {
 			if (onChainFilter === undefined || onChainFilter === this.currentIssuers[collectionId])
 				current[collectionId] = this.tokenLookup[collectionId]
@@ -96,8 +115,24 @@ export class TokenStore {
 		return current
 	}
 
+	public getCurrentBlockchains() {
+		const blockChains = []
+
+		const issuers = this.getCurrentIssuers(true)
+
+		for (let i in issuers) {
+			const issuer = issuers[i] as OnChainTokenConfig
+
+			if (blockChains.indexOf(issuer.blockchain) === -1) {
+				blockChains.push(issuer.blockchain)
+			}
+		}
+
+		return blockChains
+	}
+
 	public getCurrentTokens(onChainFilter?: boolean) {
-		let current: { [issuer: string]: [] } = {}
+		let current: { [issuer: string]: any[] } = {}
 		for (let collectionId in this.currentIssuers) {
 			if (onChainFilter === undefined || onChainFilter === this.currentIssuers[collectionId])
 				current[collectionId] = this.tokenData[collectionId]?.tokens ?? []
@@ -133,7 +168,7 @@ export class TokenStore {
 		return null
 	}
 
-	public setTokens(issuer: string, tokens: []) {
+	public setTokens(issuer: string, tokens: TokenData[]) {
 		this.tokenData[issuer] = { timestamp: Date.now(), tokens }
 
 		this.saveTokenStore()

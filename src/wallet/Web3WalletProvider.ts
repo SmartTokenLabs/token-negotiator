@@ -2,7 +2,7 @@ import { ethers } from 'ethers'
 import { logger } from '../utils'
 import { SafeConnectOptions } from './SafeConnectProvider'
 import { Client } from '../client'
-import { WalletOptionsInterface } from '../client/interface'
+import { SupportedBlockchainsParam, WalletOptionsInterface } from '../client/interface'
 
 interface WalletConnectionState {
 	[index: string]: WalletConnection
@@ -12,7 +12,7 @@ export interface WalletConnection {
 	address: string
 	chainId: number | string
 	providerType: string
-	blockchain: string
+	blockchain: SupportedBlockchainsParam
 	provider?: ethers.providers.Web3Provider
 	ethers?: any
 }
@@ -172,6 +172,7 @@ export class Web3WalletProvider {
 		return address
 	}
 
+	// TODO: Implement signing for Solana & Flow wallets
 	async signMessage(address: string, message: string) {
 		let provider = this.getWalletProvider(address)
 
@@ -188,8 +189,22 @@ export class Web3WalletProvider {
 		return this.connections[address].provider
 	}
 
-	getConnectedWalletData() {
-		return Object.values(this.connections)
+	hasAnyConnection(blockchain: SupportedBlockchainsParam[]) {
+		for (const i in this.connections) {
+			if (blockchain.includes(this.connections[i].blockchain)) {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	getConnectedWalletAddresses(blockchain: SupportedBlockchainsParam) {
+		return this.getConnectedWalletData(blockchain).map((connection) => connection.address)
+	}
+
+	getConnectedWalletData(blockchain: SupportedBlockchainsParam) {
+		return Object.values(this.connections).filter((connection) => connection.blockchain === blockchain)
 	}
 
 	registerNewWalletAddress(
@@ -197,13 +212,13 @@ export class Web3WalletProvider {
 		chainId: number | string,
 		providerType: string,
 		provider: any,
-		blockchain = 'evm',
+		blockchain: SupportedBlockchainsParam,
 	) {
 		this.connections[address.toLowerCase()] = { address, chainId, providerType, provider, blockchain, ethers }
 		return address
 	}
 
-	private async registerProvider(provider: ethers.providers.Web3Provider, providerName: string) {
+	private async registerEvmProvider(provider: ethers.providers.Web3Provider, providerName: string) {
 		const accounts = await provider.listAccounts()
 		const chainId = (await provider.detectNetwork()).chainId
 
@@ -213,7 +228,7 @@ export class Web3WalletProvider {
 
 		let curAccount = accounts[0]
 
-		this.registerNewWalletAddress(curAccount, chainId, providerName, provider)
+		this.registerNewWalletAddress(curAccount, chainId, providerName, provider, 'evm')
 
 		// @ts-ignore
 		provider.provider.on('accountsChanged', (accounts) => {
@@ -228,7 +243,7 @@ export class Web3WalletProvider {
 
 			curAccount = accounts[0]
 
-			this.registerNewWalletAddress(curAccount, chainId, providerName, provider)
+			this.registerNewWalletAddress(curAccount, chainId, providerName, provider, 'evm')
 
 			this.saveConnections()
 
@@ -240,7 +255,7 @@ export class Web3WalletProvider {
 
 		// @ts-ignore
 		provider.provider.on('chainChanged', (_chainId: any) => {
-			this.registerNewWalletAddress(accounts[0], _chainId, providerName, provider)
+			this.registerNewWalletAddress(accounts[0], _chainId, providerName, provider, 'evm')
 
 			this.saveConnections()
 
@@ -266,7 +281,7 @@ export class Web3WalletProvider {
 
 			const provider = new ethers.providers.Web3Provider(window.ethereum, 'any')
 
-			return this.registerProvider(provider, 'MetaMask')
+			return this.registerEvmProvider(provider, 'MetaMask')
 		} else {
 			throw new Error('MetaMask is not available. Please check the extension is supported and active.')
 		}
@@ -291,7 +306,7 @@ export class Web3WalletProvider {
 				.then(() => {
 					const provider = new ethers.providers.Web3Provider(walletConnect, 'any')
 
-					resolve(this.registerProvider(provider, 'WalletConnect'))
+					resolve(this.registerEvmProvider(provider, 'WalletConnect'))
 				})
 				.catch((e) => reject(e))
 		})
@@ -363,7 +378,7 @@ export class Web3WalletProvider {
 						// in case of enable() QRCodeModal undefined
 						QRCodeModal?.close()
 						const provider = new ethers.providers.Web3Provider(universalWalletConnect, 'any')
-						resolve(this.registerProvider(provider, 'WalletConnectV2'))
+						resolve(this.registerEvmProvider(provider, 'WalletConnectV2'))
 					})
 					.catch((e) => {
 						logger(2, 'WC2 connect error...', e)
@@ -386,7 +401,7 @@ export class Web3WalletProvider {
 
 		const provider = new ethers.providers.Web3Provider(torus.provider, 'any')
 
-		return this.registerProvider(provider, 'Torus')
+		return this.registerEvmProvider(provider, 'Torus')
 	}
 
 	async Phantom(checkConnectionOnly: boolean) {
@@ -397,7 +412,8 @@ export class Web3WalletProvider {
 
 			const accountAddress: string = connection.publicKey.toBase58()
 
-			// mainnet-beta,
+			// mainnet-beta
+			// TODO: Create registerSolanaProvider method to create event listeners (see registerEvmProvider)
 			return this.registerNewWalletAddress(accountAddress, 'mainnet-beta', 'phantom', window.solana, 'solana')
 		} else {
 			throw new Error('Phantom is not available. Please check the extension is supported and active.')
@@ -411,7 +427,7 @@ export class Web3WalletProvider {
 
 		const address = await provider.initSafeConnect()
 
-		this.registerNewWalletAddress(address, 1, 'SafeConnect', provider)
+		this.registerNewWalletAddress(address, 1, 'SafeConnect', provider, 'evm')
 
 		return address
 	}
@@ -427,7 +443,9 @@ export class Web3WalletProvider {
 		if (!currentUser.addr) throw new Error('Failed to connect Flow wallet')
 
 		// TODO set chainID
-		this.registerNewWalletAddress(currentUser.addr, 1, 'flow', fcl)
+		// TODO: Create registerFlowProvider method to create event listeners (see registerEvmProvider)
+		this.registerNewWalletAddress(currentUser.addr, 1, 'flow', fcl, 'flow')
+
 		return currentUser.addr
 	}
 

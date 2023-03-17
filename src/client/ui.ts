@@ -160,7 +160,7 @@ export class Ui implements UiInterface {
 		if (this.client.getTokenStore().hasOnChainTokens()) {
 			let wp = await this.client.getWalletProvider()
 			await wp.loadConnections()
-			return wp.getConnectedWalletData().length > 0
+			return wp.hasAnyConnection(this.client.getTokenStore().getCurrentBlockchains())
 		} else {
 			return true
 		}
