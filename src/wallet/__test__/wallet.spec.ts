@@ -1,10 +1,11 @@
 /* eslint-disable no-mixed-spaces-and-tabs */
 import { TextDecoder, TextEncoder } from 'text-encoding'
+import { Client } from '../../client/index'
+import { SafeConnectProvider } from '../SafeConnectProvider'
+import { SupportedWalletProviders, Web3WalletProvider } from '../Web3WalletProvider'
+
 global.TextEncoder = TextEncoder
 global.TextDecoder = TextDecoder
-import { Client } from '../../client/index'
-import { SafeConnectOptions, SafeConnectProvider } from '../SafeConnectProvider'
-import { Web3WalletProvider } from '../Web3WalletProvider'
 
 let tokenNegotiatorClient = new Client({
 	type: 'active',
@@ -68,7 +69,7 @@ describe('wallet spec', () => {
 		web3WalletProvider.registerNewWalletAddress(
 			'0x1263b90F4e1DFe89A8f9E623FF57adb252851fC3'.toLocaleLowerCase(),
 			'1',
-			'MetaMask',
+			SupportedWalletProviders.MetaMask,
 			walletConnect,
 			'evm',
 		)
@@ -81,7 +82,7 @@ describe('wallet spec', () => {
 		web3WalletProvider.registerNewWalletAddress(
 			'0x1263b90F4e1DFe89A8f9E623FF57adb252851fC3'.toLocaleLowerCase(),
 			'1',
-			'MetaMask',
+			SupportedWalletProviders.MetaMask,
 			walletConnect,
 			'evm',
 		)
@@ -93,12 +94,26 @@ describe('wallet spec', () => {
 	test('web3WalletProvider method registerNewWalletAddress and getConnectedWalletData', async () => {
 		const walletConnectProvider = await import('../WalletConnectProvider')
 		const walletConnect = await walletConnectProvider.getWalletConnectProviderInstance()
-		expect(web3WalletProvider.registerNewWalletAddress('0x123', '1', 'MetaMask', walletConnect, 'evm')).toEqual('0x123')
+		expect(
+			web3WalletProvider.registerNewWalletAddress(
+				'0x123',
+				'1',
+				SupportedWalletProviders.MetaMask,
+				walletConnect,
+				'evm',
+			),
+		).toEqual('0x123')
 		const TorusProvider = await import('../TorusProvider')
 		const torus = await TorusProvider.getTorusProviderInstance()
-		expect(web3WalletProvider.registerNewWalletAddress('0x12345', '1', 'phantom', torus.provider, 'solana')).toEqual(
-			'0x12345',
-		)
+		expect(
+			web3WalletProvider.registerNewWalletAddress(
+				'0x12345',
+				'1',
+				SupportedWalletProviders.Torus,
+				torus.provider,
+				'solana',
+			),
+		).toEqual('0x12345')
 		expect(web3WalletProvider.getConnectedWalletData('evm')).toBeDefined()
 	})*/
 

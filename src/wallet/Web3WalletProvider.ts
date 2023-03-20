@@ -11,7 +11,7 @@ interface WalletConnectionState {
 export interface WalletConnection {
 	address: string
 	chainId: number | string
-	providerType: string
+	providerType: SupportedWalletProviders
 	blockchain: SupportedBlockchainsParam
 	provider?: ethers.providers.Web3Provider | any // solana(phantom) have different interface
 	ethers?: any
@@ -233,7 +233,7 @@ export class Web3WalletProvider {
 	registerNewWalletAddress(
 		address: string,
 		chainId: number | string,
-		providerType: string,
+		providerType: SupportedWalletProviders,
 		provider: any,
 		blockchain: SupportedBlockchainsParam,
 	) {
@@ -337,7 +337,7 @@ export class Web3WalletProvider {
 		}
 	}
 
-	private async registerEvmProvider(provider: ethers.providers.Web3Provider, providerName: string) {
+	private async registerEvmProvider(provider: ethers.providers.Web3Provider, providerName: SupportedWalletProviders) {
 		const accounts = await provider.listAccounts()
 		const chainId = (await provider.detectNetwork()).chainId
 
@@ -352,7 +352,7 @@ export class Web3WalletProvider {
 		return curAccount
 	}
 
-	private async registerSolanaProvider(provider: any, providerName: string) {
+	private async registerSolanaProvider(provider: any, providerName: SupportedWalletProviders) {
 		const connection = await provider.connect()
 		const accountAddress: string = connection.publicKey.toBase58()
 
@@ -387,7 +387,7 @@ export class Web3WalletProvider {
 
 			const provider = new ethers.providers.Web3Provider(window.ethereum, 'any')
 
-			return this.registerEvmProvider(provider, 'MetaMask')
+			return this.registerEvmProvider(provider, SupportedWalletProviders.MetaMask)
 		} else {
 			throw new Error('MetaMask is not available. Please check the extension is supported and active.')
 		}
@@ -412,7 +412,7 @@ export class Web3WalletProvider {
 				.then(() => {
 					const provider = new ethers.providers.Web3Provider(walletConnect, 'any')
 
-					resolve(this.registerEvmProvider(provider, 'WalletConnect'))
+					resolve(this.registerEvmProvider(provider, SupportedWalletProviders.WalletConnect))
 				})
 				.catch((e) => reject(e))
 		})
@@ -470,7 +470,7 @@ export class Web3WalletProvider {
 						logger(2, 'WC2 connected.....')
 						QRCodeModal?.close()
 						const provider = new ethers.providers.Web3Provider(universalWalletConnect, 'any')
-						resolve(this.registerEvmProvider(provider, 'WalletConnectV2'))
+						resolve(this.registerEvmProvider(provider, SupportedWalletProviders.WalletConnectV2))
 					})
 					.catch((e) => {
 						logger(2, 'WC2 connect error...', e)
@@ -492,14 +492,14 @@ export class Web3WalletProvider {
 
 		const provider = new ethers.providers.Web3Provider(torus.provider, 'any')
 
-		return this.registerEvmProvider(provider, 'Torus')
+		return this.registerEvmProvider(provider, SupportedWalletProviders.Torus)
 	}
 
 	async Phantom(checkConnectionOnly: boolean) {
 		logger(2, 'connect Phantom')
 
 		if (typeof window.solana !== 'undefined') {
-			return await this.registerSolanaProvider(window.solana, 'phantom')
+			return await this.registerSolanaProvider(window.solana, SupportedWalletProviders.Phantom)
 		} else {
 			throw new Error('Phantom is not available. Please check the extension is supported and active.')
 		}
@@ -512,7 +512,7 @@ export class Web3WalletProvider {
 
 		const address = await provider.initSafeConnect()
 
-		this.registerNewWalletAddress(address, 1, 'SafeConnect', provider, 'evm')
+		this.registerNewWalletAddress(address, 1, SupportedWalletProviders.SafeConnect, provider, 'evm')
 
 		return address
 	}
@@ -529,7 +529,7 @@ export class Web3WalletProvider {
 
 		// TODO set chainID
 		// TODO: Create registerFlowProvider method to create event listeners (see registerEvmProvider)
-		this.registerNewWalletAddress(currentUser.addr, 1, 'flow', fcl, 'flow')
+		this.registerNewWalletAddress(currentUser.addr, 1, SupportedWalletProviders.Flow, fcl, 'flow')
 
 		return currentUser.addr
 	}
