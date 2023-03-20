@@ -1,7 +1,18 @@
 import { AbstractView } from './view-interface'
 import { SupportedBlockchainsParam } from '../interface'
 import { UIUpdateEventType } from '../index'
-import { add } from 'husky'
+import { getWalletInfo } from './utils/wallet-info'
+
+const DisconnectButtonSVG = `
+	<svg width="12px" height="100%" viewBox="0 0 384 384" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+		<g id="Layer1">
+		<path d="M194.449,-0.378L194.449,29.622L29.577,29.622C29.577,95.909 30.577,354.191 30.577,354.191L194.449,354.191L194.449,384.191L16.077,384.191C7.517,384.191 0.577,377.251 0.577,368.691L0.577,15.122C0.577,6.562 7.517,-0.378 16.077,-0.378L194.449,-0.378Z"/>
+			<g transform="matrix(1.39537,0,0,2.43013,-54.9803,-262.053)">
+				<path d="M99.772,200.171L99.772,165.725L228.493,165.725L228.493,133.741L314.191,182.948L228.493,232.156L228.493,200.171L99.772,200.171Z"/>
+			</g>
+			</g>
+	</svg>
+`
 
 export class ManageWallets extends AbstractView {
 	init() {
@@ -35,22 +46,18 @@ export class ManageWallets extends AbstractView {
 								<p class="headline-tn">My Wallets</p>
 							</div>
 							<div class="toolbar-tn">
-								<button class="btn-tn dis-wallet-tn" style="display: none;" aria-label="Disconnect Wallet">
-									<svg width="12px" height="100%" viewBox="0 0 384 384" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
-										<g id="Layer1">
-										<path d="M194.449,-0.378L194.449,29.622L29.577,29.622C29.577,95.909 30.577,354.191 30.577,354.191L194.449,354.191L194.449,384.191L16.077,384.191C7.517,384.191 0.577,377.251 0.577,368.691L0.577,15.122C0.577,6.562 7.517,-0.378 16.077,-0.378L194.449,-0.378Z"/>
-											<g transform="matrix(1.39537,0,0,2.43013,-54.9803,-262.053)">
-												<path d="M99.772,200.171L99.772,165.725L228.493,165.725L228.493,133.741L314.191,182.948L228.493,232.156L228.493,200.171L99.772,200.171Z"/>
-											</g>
-											</g>
-									</svg>											
+								<button class="btn-tn add-wallet-tn" aria-label="Add another wallet" title="Add another wallet">
+									<strong>+</strong>
+								</button>
+								<button class="btn-tn dis-wallet-tn" aria-label="Disconnect all wallets" title="Disconnect all wallets">
+									${DisconnectButtonSVG}									
 								</button>
 							</div>  	
 						</div>
 					</div>
-					<nav class="token-issuer-nav-tn" style="width: 100%;">
+					<div class="wallet-list-tn" style="width: 100%;">
 						${await this.renderCurrentWalletConnections()}
-					</nav>
+					</div>
 				</div>
 			</div>
 		`
@@ -61,7 +68,6 @@ export class ManageWallets extends AbstractView {
 
 	private setupWalletButton() {
 		const walletBtn = this.viewContainer.querySelector('.dis-wallet-tn')
-		walletBtn.style.display = 'block'
 		walletBtn.addEventListener('click', () => {
 			this.client.disconnectWallet()
 		})
@@ -104,23 +110,23 @@ export class ManageWallets extends AbstractView {
 					const address = connection.address
 
 					html += `
-						<li class="issuer-connect-banner-tn" role="menuitem" style="display: flex;">
+						<div class="wallet-connection-tn">
 							<div class="wallet-icon-tn">
-								
+								${getWalletInfo(connection.providerType)?.imgBig}
 							</div>
 							<div class="wallet-info-tn">
 								<small class="wallet-address-tn" title="${address}">
-									<span>${address.substring(0, address.length - 5)}</span>
+									<span class="ellipsis">${address.substring(0, address.length - 5)}</span>
 									${address.substring(address.length - 5, address.length)}
 								</small>
 								<div class="wallet-name-tn">${connection.providerType}</div>
 							</div>
 							<div class="wallet-disconnect-tn">
-								<button class="btn-tn" aria-label="Disconnect Wallet" title="Disconnect Wallet">
-								
+								<button class="btn-tn dis-wallet-tn" aria-label="Disconnect Wallet" title="Disconnect Wallet">
+									${DisconnectButtonSVG}
 								</button>
 							</div>
-						</li>
+						</div>
 					`
 				}
 			}

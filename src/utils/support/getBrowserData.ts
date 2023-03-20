@@ -1,4 +1,8 @@
+let browserData = null
+
 export const getBrowserData = () => {
+	if (browserData) return browserData
+
 	const inBrowser = typeof window !== 'undefined'
 	const UA = inBrowser && window.navigator.userAgent.toLowerCase()
 
@@ -51,7 +55,7 @@ export const getBrowserData = () => {
 
 	const isMetaMask = isTouchDevice && !!windowEthereum.isMetaMask && !isTrust && !isBrave
 
-	return {
+	browserData = {
 		iE: isIE,
 		iE9: isIE9,
 		edge: isEdge,
@@ -63,7 +67,7 @@ export const getBrowserData = () => {
 		iOS: isIOS,
 		mac: isMac,
 		windows: isWindows,
-		desktop: navigator.userAgent?.indexOf("Mobi") === -1,
+		desktop: navigator.userAgent?.indexOf('Mobi') === -1,
 		touchDevice: isTouchDevice,
 		metaMask: isMetaMask,
 		anyMetamask: !!windowEthereum.isMetaMask && !isTrust && !windowEthereum.isBraveWallet,
@@ -81,6 +85,8 @@ export const getBrowserData = () => {
 		mewAndroid: isAndroid && isMyEthereumWallet,
 		imTokenAndroid: isAndroid && isImToken,
 	}
+
+	return browserData
 }
 
 export function isMacOrIOS() {

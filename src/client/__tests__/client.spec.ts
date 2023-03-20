@@ -135,19 +135,19 @@ describe('client spec', () => {
 
 	test('tokenNegotiatorClient method solanaAvailable will return false with no window.solana instance', () => {
 		const tokenNegotiatorClient = getOnChainSolanaConfigClient()
-		expect(tokenNegotiatorClient.hasIssuerForBlockchain("solana")).toBe(false)
+		expect(tokenNegotiatorClient.hasIssuerForBlockchain('solana')).toBe(false)
 	})
 
 	test('tokenNegotiatorClient method solanaAvailable should show Solana', () => {
 		const tokenNegotiatorClient = getOnChainSolanaConfigClient()
 		window.solana = jest.fn({ instance: true })
-		expect(tokenNegotiatorClient.hasIssuerForBlockchain("solana")).toBe(true)
+		expect(tokenNegotiatorClient.hasIssuerForBlockchain('solana')).toBe(true)
 	})
 
 	test('tokenNegotiatorClient method solanaAvailable should not show Solana with no required issuer tokens', () => {
 		const tokenNegotiatorClient = getOnChainConfigClient()
 		window.solana = jest.fn({ instance: true }) //
-		expect(tokenNegotiatorClient.hasIssuerForBlockchain("solana")).toBe(false)
+		expect(tokenNegotiatorClient.hasIssuerForBlockchain('solana')).toBe(false)
 	})
 
 	test('tokenNegotiatorClient method getWalletProvider', async () => {

@@ -9,6 +9,8 @@ export class SelectWallet extends AbstractView {
 		this.client.registerUiUpdateCallback(UIUpdateEventType.WALLET_DISCONNECTED, undefined)
 	}
 
+	// TODO: Accept data param to connect specific wallet -
+	//  this is needed when the user clicks load on a token issuer for a wallet type they have not connected.
 	render() {
 		let walletButtons = ''
 
