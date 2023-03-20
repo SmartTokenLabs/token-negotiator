@@ -270,13 +270,28 @@
 
 .overlay-tn .back-to-menu-tn {
   cursor: pointer;
-  height: 42px;
+  height: 30px;
   border-radius: 80px;
   margin: 14px 0px 14px 11px;
   border: none;
   padding: 5px;
   width: auto;
   background-color: #efefef;
+}
+
+.overlay-tn .wallet-address-tn {
+  white-space: nowrap;
+  display: inline-block;
+  padding: 10px;
+  .ellipsis {
+    display: inline-block;
+    vertical-align: bottom;
+    white-space: nowrap;
+    width: 100%;
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 .overlay-tn .back-to-menu-tn:hover {

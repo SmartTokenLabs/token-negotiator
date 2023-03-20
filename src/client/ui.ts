@@ -6,11 +6,12 @@ import { ViewInterface, ViewComponent, ViewFactory, ViewConstructor } from './vi
 import { TokenStore } from './tokenStore'
 import { SelectIssuers } from './views/select-issuers'
 import { SelectWallet } from './views/select-wallet'
+import { ManageWallets } from './views/manage-wallets'
 
 export type UIType = 'popup' | 'inline' // TODO: implement modal too
 export type PopupPosition = 'bottom-right' | 'bottom-left' | 'top-left' | 'top-right'
 export type UItheme = 'light' | 'dark'
-export type ViewType = 'start' | 'main' | 'wallet' | string
+export type ViewType = 'start' | 'main' | 'wallet' | 'manage-wallets' | string
 
 export interface UIOptionsInterface {
 	uiType?: UIType
@@ -137,6 +138,8 @@ export class Ui implements UiInterface {
 				return SelectIssuers
 			case 'wallet':
 				return SelectWallet
+			case 'manage-wallets':
+				return ManageWallets
 		}
 	}
 

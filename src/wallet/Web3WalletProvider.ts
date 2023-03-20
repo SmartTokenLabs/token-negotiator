@@ -207,6 +207,10 @@ export class Web3WalletProvider {
 		return Object.values(this.connections).filter((connection) => connection.blockchain === blockchain)
 	}
 
+	getConnectionCount() {
+		return Object.keys(this.connections).length
+	}
+
 	registerNewWalletAddress(
 		address: string,
 		chainId: number | string,
