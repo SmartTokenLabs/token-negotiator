@@ -96,24 +96,14 @@ export class Web3WalletProvider {
 	async connectWith(walletType: string, checkConnectionOnly = false) {
 		if (!walletType) throw new Error('Please provide a Wallet type to connect with.')
 
-		if (this[walletType as keyof Web3WalletProvider]) {
-			try {
-				// @ts-ignore
-				// TODO: this address is null for the flow network
-				// Actual connected address is get in flowSubscribe function
-				let address = await this[walletType as keyof Web3WalletProvider](checkConnectionOnly)
-				logger(2, 'address', address)
+		if (!this[walletType as keyof Web3WalletProvider]) throw new Error('Wallet type not found')
 
-				this.saveConnections()
-				this.emitSavedConnection(address)
-				return address
-			} catch (e) {
-				logger(2, 'Provider connect Error: ', e)
-				throw new Error(e.message)
-			}
-		} else {
-			throw new Error('Wallet type not found')
-		}
+		// @ts-ignore
+		let address = await this[walletType as keyof Web3WalletProvider](checkConnectionOnly)
+
+		this.saveConnections()
+		this.emitSavedConnection(address)
+		return address
 	}
 
 	async signMessage(address: string, message: string) {
@@ -360,6 +350,7 @@ export class Web3WalletProvider {
 		// No user address after authenticate() then connect was unsuccesfull
 		if (!currentUser.addr) throw new Error('Failed to connect Flow wallet')
 
+		// TODO set chainID
 		this.registerNewWalletAddress(currentUser.addr, 1, 'flow', fcl)
 		return currentUser.addr
 	}
