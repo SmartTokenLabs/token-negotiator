@@ -48,17 +48,15 @@ export class SelectIssuers extends AbstractView {
                   				<svg class="refresh-icon-tn" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 383.748 383.748" style="enable-background:new 0 0 383.748 383.748;" xml:space="preserve"><g><path d="M62.772,95.042C90.904,54.899,137.496,30,187.343,30c83.743,0,151.874,68.13,151.874,151.874h30 C369.217,81.588,287.629,0,187.343,0c-35.038,0-69.061,9.989-98.391,28.888C70.368,40.862,54.245,56.032,41.221,73.593 L2.081,34.641v113.365h113.91L62.772,95.042z"/><path d="M381.667,235.742h-113.91l53.219,52.965c-28.132,40.142-74.724,65.042-124.571,65.042 c-83.744,0-151.874-68.13-151.874-151.874h-30c0,100.286,81.588,181.874,181.874,181.874c35.038,0,69.062-9.989,98.391-28.888 c18.584-11.975,34.707-27.145,47.731-44.706l39.139,38.952V235.742z"/></g></svg>
 				  			</button>
 							<button class="btn-tn dis-wallet-tn" style="display: none;" aria-label="Disconnect Wallet">
-								<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-								<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 								<svg width="12px" height="100%" viewBox="0 0 384 384" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
 									<g id="Layer1">
-										<path d="M194.449,-0.378L194.449,29.622L29.577,29.622C29.577,95.909 30.577,354.191 30.577,354.191L194.449,354.191L194.449,384.191L16.077,384.191C7.517,384.191 0.577,377.251 0.577,368.691L0.577,15.122C0.577,6.562 7.517,-0.378 16.077,-0.378L194.449,-0.378Z"/>
-											<g transform="matrix(1.39537,0,0,2.43013,-54.9803,-262.053)">
-												<path d="M99.772,200.171L99.772,165.725L228.493,165.725L228.493,133.741L314.191,182.948L228.493,232.156L228.493,200.171L99.772,200.171Z"/>
-											</g>
-											</g>
-									</svg>											
-								</button>
+									<path d="M194.449,-0.378L194.449,29.622L29.577,29.622C29.577,95.909 30.577,354.191 30.577,354.191L194.449,354.191L194.449,384.191L16.077,384.191C7.517,384.191 0.577,377.251 0.577,368.691L0.577,15.122C0.577,6.562 7.517,-0.378 16.077,-0.378L194.449,-0.378Z"/>
+										<g transform="matrix(1.39537,0,0,2.43013,-54.9803,-262.053)">
+											<path d="M99.772,200.171L99.772,165.725L228.493,165.725L228.493,133.741L314.191,182.948L228.493,232.156L228.493,200.171L99.772,200.171Z"/>
+										</g>
+										</g>
+								</svg>											
+							</button>
 						</div>  	
 				  </div>
 				  ${this.getCustomContent()}
@@ -71,7 +69,7 @@ export class SelectIssuers extends AbstractView {
                 <div class="brand-tn"></div>
                 <div style="display: flex; align-items: center;">
                   <button aria-label="back to token issuer menu" class="back-to-menu-tn">
-                    <svg style="position: relative; top: 1px;" width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                    <svg style="position: relative; top: 1px;" width="20" height="20" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
                         <g fill="none" fill-rule="evenodd">
                             <path d="m10.2 15.8 7.173 7.56c.55.587 1.453.587 2.01 0a1.554 1.554 0 0 0 0-2.12l-5.158-5.44 5.157-5.44a1.554 1.554 0 0 0 0-2.12 1.367 1.367 0 0 0-2.009 0L10.2 15.8z" fill="#000" fill-rule="nonzero"/>
                         </g>
@@ -126,7 +124,11 @@ export class SelectIssuers extends AbstractView {
 		const walletBtn = this.viewContainer.querySelector('.dis-wallet-tn')
 		walletBtn.style.display = 'block'
 		walletBtn.addEventListener('click', () => {
-			this.client.disconnectWallet()
+			if (this.client.getTokenStore().hasOnChainTokens()) {
+				this.ui.updateUI('manage-wallets', null, { viewTransition: 'slide-in-right' })
+			} else {
+				this.client.disconnectWallet()
+			}
 		})
 	}
 
