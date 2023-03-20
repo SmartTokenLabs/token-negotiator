@@ -1,4 +1,4 @@
-import UniversalProvider from '@walletconnect/universal-provider/dist/index.umd'
+import UniversalProvider from '@walletconnect/universal-provider'
 
 export const WC_DEFAULT_RPC_MAP = {
 	1: 'https://ethereum.publicnode.com', // mainnet

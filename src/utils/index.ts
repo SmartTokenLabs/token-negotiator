@@ -1,4 +1,3 @@
-import { Buffer } from 'buffer'
 import { URLNS } from '../core/messaging'
 
 declare global {
@@ -14,16 +13,6 @@ export function logger(level: number, ...args: any[]) {
 
 export const requiredParams = (item: any, msg: string) => {
 	if (!item) throw new Error(msg)
-}
-
-export function uint8toBuffer(uint8: Uint8Array): any {
-	if (typeof Buffer !== 'undefined') {
-		// node Buffer
-		return Buffer.from(uint8)
-	} else {
-		// browser ArrayBuffer
-		return uint8
-	}
 }
 
 // shallow equality comparison
@@ -49,7 +38,7 @@ export const compareObjects = (o1: any, o2: any) => {
 export const base64ToUint8array = (base64str: string) => {
 	base64str = base64str.split('-').join('+').split('_').join('/').split('.').join('=')
 
-	return Uint8Array.from(Buffer.from(base64str, 'base64'))
+	return Uint8Array.from(atob(base64str), (c) => c.charCodeAt(0))
 }
 
 export const attachPostMessageListener = (listener: any) => {

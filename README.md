@@ -8,7 +8,9 @@ The following types of tokens are supported:
 
 - Cryptographically created Tokens (Off Chain developed with TokenScript)
 
-- Web3 NFT Tokens (On Chain)
+- Non-Fungible tokens
+
+- Fungible tokens (ERC20)
 
 (for new token issuers who are interested in using TokenScript please visit the following WIKI page: https://github.com/TokenScript/token-negotiator/wiki/Token-Issuer-Page).
 
@@ -221,6 +223,13 @@ const negotiator = new Client({
 			contract: "0x0d0167a823c6619d430b1a96ad85b888bcf97c37",
 			chain: "eth",
 		},
+		{ // Example fungible token 
+			contract: "0x107065a122f92636a1358a70a0efe0f1a080a7e5",
+			onChain: true,
+			fungible: true,
+			collectionID: "USX",
+			chain: "matic",
+		},
 	],
 	uiOptions: {
 		openingHeading: "Open a new world of discounts available with your tokens.",
@@ -262,7 +271,14 @@ const negotiator = new Client({
 			contract: "0x0d0167a823c6619d430b1a96ad85b888bcf97c37",
 			chain: "eth",
 		},
-	],
+		{ // Example fungible token 
+			contract: "0x107065a122f92636a1358a70a0efe0f1a080a7e5",
+			onChain: true,
+			fungible: true,
+			collectionID: "USX",
+			chain: "matic",
+		}
+	]
 });
 
 negotiator.on("tokens", (issuerTokens) => {
@@ -423,28 +439,28 @@ negotiator.on("tokens-selected", callback);
 			<td>Error data</td>
 		</tr>
 		<tr>
-			<td>View and data</td>
-			<td></td>
+			<td>'view-changed'</td>
+			<td>(No data returned)</td>
 		</tr>
 		<tr>
 			<td>'tokens-refreshed'</td>
-			<td></td>
+			<td>(No data returned)</td>
 		</tr>
 		<tr>
 			<td>'opened-overlay'</td>
-			<td></td>
+			<td>(No data returned)</td>
 		</tr>
 		<tr>
 			<td>'closed-overlay'</td>
-			<td></td>
+			<td>(No data returned)</td>
 		</tr>
 		<tr>
 			<td>'loaded'</td>
-			<td></td>
+			<td>(No data returned)</td>
 		</tr>
 		<tr>
 			<td>'disconnected-wallet'</td>
-			<td></td>
+			<td>(No data returned)</td>
 		</tr>
   </tbody>
 </table>
@@ -623,7 +639,7 @@ This table lists all possible configuration options for Token Negotiator client.
 | openSeaSlug       | The collection name for OpenSea listing. Improves performance for token fetching.                                                                                                                          | OnChain      | N        | string  |
 | noTokenMsg        | A token issuer message to assist users when they have no tokens                                                                                                                                            | both         | N        | string  |
 | hideToggle        | Hide the Toggle Buttons for the collection                                                                                                                                                                 | both         | N        | boolean |
-
+| fungible | For fungible tokens (defaults to false)                      | Both    | N        | boolean |
 ### Off Chain
 
 | Property Name              | Description                                                                    | On/Off Chain | Required | Type    |

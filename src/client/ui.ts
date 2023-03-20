@@ -2,7 +2,7 @@ import { Start } from './views/start'
 
 import { logger, requiredParams } from '../utils'
 import { Client, ClientError } from './index'
-import { ViewInterface, ViewComponent } from './views/view-interface'
+import { ViewInterface, ViewComponent, ViewFactory, ViewConstructor } from './views/view-interface'
 import { TokenStore } from './tokenStore'
 import { SelectIssuers } from './views/select-issuers'
 import { SelectWallet } from './views/select-wallet'
@@ -10,7 +10,7 @@ import { SelectWallet } from './views/select-wallet'
 export type UIType = 'popup' | 'inline' // TODO: implement modal too
 export type PopupPosition = 'bottom-right' | 'bottom-left' | 'top-left' | 'top-right'
 export type UItheme = 'light' | 'dark'
-export type ViewType = 'start' | 'main' | 'wallet'
+export type ViewType = 'start' | 'main' | 'wallet' | string
 
 export interface UIOptionsInterface {
 	uiType?: UIType
@@ -234,15 +234,19 @@ export class Ui implements UiInterface {
 
 	updateUI(viewFactory: ViewComponent | ViewType, data?: any, options?: any) {
 		let viewOptions: any = {}
+		let viewName = 'unknown'
 
 		if (typeof viewFactory === 'string') {
 			this.isStartView = viewFactory === 'start'
+			viewName = viewFactory
 
 			const [component, opts] = this.getViewFactory(viewFactory)
 			viewFactory = component
 			viewOptions = opts
 		} else {
 			this.isStartView = false
+			// TODO: This should be added in options - not data parameter - brand connector requirees updates
+			if (data?.viewName) viewName = data.viewName
 		}
 
 		// Manually specified view options can override ones set in the viewOverrides config
@@ -281,17 +285,21 @@ export class Ui implements UiInterface {
 			this.viewContainer = newViewContainer
 		}
 
-		// @ts-ignore
-		this.currentView = new viewFactory(this.client, this, this.viewContainer, {
-			options: this.options,
-			viewOptions,
-			data: data,
-		})
-
-		let viewName = typeof viewFactory === 'string' ? viewFactory : ''
-		if (!viewName && data?.viewName) viewName = data.viewName
-
-		this.client.eventSender('view-changed', { viewName, data })
+		if (viewOptions.componentIsFactory) {
+			viewFactory = viewFactory as ViewFactory
+			this.currentView = viewFactory(this.client, this, this.viewContainer, {
+				options: this.options,
+				viewOptions,
+				data: data,
+			})
+		} else {
+			viewFactory = viewFactory as ViewConstructor<ViewInterface>
+			this.currentView = new viewFactory(this.client, this, this.viewContainer, {
+				options: this.options,
+				viewOptions,
+				data: data,
+			})
+		}
 
 		this.currentView.render()
 
@@ -310,6 +318,8 @@ export class Ui implements UiInterface {
 			// Add transition start class into viewport to start animation
 			this.transitionContainer.classList.add('slide-in')
 		}
+
+		this.client.eventSender('view-changed', { viewName, data })
 	}
 
 	viewIsNotStart() {
