@@ -14,6 +14,7 @@
 	</head>
 	<body onload="init()">
 		<button onclick="switchTheme()">Switch theme</button>
+		<button onclick="reloadIssuers()">Reload</button>
 		<div class="overlay-tn"></div>
 		<script>
 			var theme = "dark";
@@ -240,6 +241,64 @@
 				});
 
 				window.negotiator.negotiate();
+			}
+
+			function reloadIssuers() {
+				window.negotiator.negotiate([
+					{
+						collectionID: "penthouse-panther-club",
+						collectionAddress: "ff846ef2eed57e5367cf8826e63f4d53fe28d28aa67417accb6e4b48cbd19136",
+						updateAuthority: "92oYPmrr1BHznizuZmpKZ3MFRadMFYRTCxo9Pf34mZKX",
+						tokenProgram: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+						onChain: true,
+						symbol: "PPC",
+						chain: "mainnet",
+						blockchain: "solana",
+					},
+					{
+						hideToggle : false,
+						collectionID: "pixel",
+						collectionAddress: "166424b16c4c7f40eb852f9eb2d0d6869a9ed7ac54a8e6afbd516676bfbbeb19",
+						onChain: true,
+						symbol: "PIXEL",
+						chain: "mainnet",
+						blockchain: "solana",
+					},
+					{
+						onChain: true,
+						collectionID: "expansion-punks",
+						contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37',
+						chain: 'eth',
+						blockchain: "evm",
+					},
+					{
+						onChain: true,
+						collectionID: "fantom-collection-test",
+						contract: '0x94e22c14118353651636f9af43cd0a5a08b93da3',
+						chain: 'fantom',
+						blockchain: "evm",
+					},
+					{
+						hideToggle : true,
+						noTokenMsg: "<p>If you have a token please:</p><p>1. Open your magic link inside this browser.<br/>2. Refresh this page.</p>",
+						onChain: true,
+						collectionID: "bsc-collection-test",
+						contract: '0xF5db804101d8600c26598A1Ba465166c33CdAA4b',
+						chain: 'bsc',
+						blockchain: "evm",
+					},
+					{
+						onChain: true,
+						collectionID: "tt",
+						contract: '0x76be3b62873462d2142405439777e971754e8e77',
+						chain: 'eth',
+						blockchain: "evm",
+					},
+					{ onChain: true, collectionID: "Perion", contract: '0x96af92ae2d822a0f191455ceca4d4e7ee227668e', chain: 'mumbai', blockchain: "evm" },
+					{ collectionID: 'COOLCATS-#2426-14', onChain: true, contract: '0x3C7e352481F4b2fdEc1e642a3f0018661c77513D', chain: 'eth', openSeaSlug: 'devcon-vi-suit-up-collection' },
+					{ collectionID: 'Town-Hall', onChain: true, contract: '0x81b30ff521D1fEB67EDE32db726D95714eb00637', chain: 'Optimism' },
+			])
+				
 			}
 			function switchTheme() {
 				theme = theme === "dark" ? "light" : "dark";
