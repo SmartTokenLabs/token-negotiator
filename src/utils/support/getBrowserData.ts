@@ -1,4 +1,4 @@
-let browserData = null
+export let browserData = null
 
 export const getBrowserData = () => {
 	if (browserData) return browserData

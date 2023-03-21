@@ -1,6 +1,8 @@
 // @ts-nocheck
 
 import { isUserAgentSupported } from '../isSupported'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { browserData } from '../getBrowserData'
 
 describe('browser simulations', () => {
 	test('check if browser is supported', () => {
@@ -21,6 +23,7 @@ describe('browser simulations', () => {
 			writable: true,
 			configurable: true,
 		})
+		browserData = null // Clear cached UA data
 
 		expect(
 			isUserAgentSupported({
