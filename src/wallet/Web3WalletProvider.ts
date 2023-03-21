@@ -101,6 +101,9 @@ export class Web3WalletProvider {
 		// @ts-ignore
 		let address = await this[walletType as keyof Web3WalletProvider](checkConnectionOnly)
 
+		// if user rejected connect to account
+		if (!address) throw new Error("Wallet didn't connect")
+
 		this.saveConnections()
 		this.emitSavedConnection(address)
 		return address

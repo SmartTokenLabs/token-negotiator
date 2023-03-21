@@ -274,11 +274,8 @@ export class SelectWallet extends AbstractView {
 		)
 
 		try {
-			let walletAddress = await this.client.negotiatorConnectToWallet(wallet)
+			await this.client.negotiatorConnectToWallet(wallet)
 			this.ui.dismissLoader()
-			
-			// if user rejected connect to account
-			if (!walletAddress) throw new Error("Wallet didn't connect")
 
 			if (this.params?.data?.connectCallback) {
 				this.params?.data?.connectCallback()
