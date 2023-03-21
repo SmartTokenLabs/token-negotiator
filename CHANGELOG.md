@@ -1,6 +1,6 @@
 > Description
 
-The patch releases after the 2.4.0 release address compatibility issues with the es6 version of the build.
+The patch release addresses compatibility issues with the es6 version of the build.
 
 ### Upgrade Steps
 
