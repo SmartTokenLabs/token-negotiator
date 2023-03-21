@@ -27,7 +27,7 @@ import { SignedUNChallenge } from './auth/signedUNChallenge'
 import { TicketZKProof } from './auth/ticketZKProof'
 import { AuthenticationMethod } from './auth/abstractAuthentication'
 import { isUserAgentSupported, validateBlockchain } from '../utils/support/isSupported'
-import Web3WalletProvider from '../wallet/Web3WalletProvider'
+import Web3WalletProvider, { SupportedWalletProviders } from '../wallet/Web3WalletProvider'
 import { LocalOutlet } from '../outlet/localOutlet'
 import { Outlet, OutletInterface } from '../outlet'
 import { shouldUseRedirectMode } from '../utils/support/getBrowserData'
@@ -86,7 +86,7 @@ export const defaultConfig: NegotiationInterface = {
 export const enum UIUpdateEventType {
 	ISSUERS_LOADING,
 	ISSUERS_LOADED,
-	WALLET_DISCONNECTED,
+	WALLET_CHANGE,
 }
 
 export enum ClientError {
@@ -110,7 +110,7 @@ export class Client {
 	private uiUpdateCallbacks: { [type in UIUpdateEventType] } = {
 		[UIUpdateEventType.ISSUERS_LOADING]: undefined,
 		[UIUpdateEventType.ISSUERS_LOADED]: undefined,
-		[UIUpdateEventType.WALLET_DISCONNECTED]: undefined,
+		[UIUpdateEventType.WALLET_CHANGE]: undefined,
 	}
 
 	private urlParams: URLSearchParams
@@ -255,13 +255,26 @@ export class Client {
 		return this.web3WalletProvider
 	}
 
-	public async disconnectWallet() {
+	public async disconnectWallet(walletAddress?: string, providerType?: string) {
 		let wp = await this.getWalletProvider()
-		wp.deleteConnections()
-		this.tokenStore.clearCachedTokens()
+
+		if (walletAddress) {
+			const deleted = wp.deleteConnection(walletAddress, providerType as SupportedWalletProviders)
+
+			if (!deleted) return
+
+			this.tokenStore.clearCachedTokens(true, walletAddress)
+		} else {
+			wp.deleteConnections()
+			this.tokenStore.clearCachedTokens()
+		}
+
+		// TODO: Deprecate use of connected-wallet events for disconnecting wallet
 		this.eventSender('connected-wallet', null)
+
+		// Emit disconnected wallet details
 		this.eventSender('disconnected-wallet', null)
-		this.triggerUiUpdateCallback(UIUpdateEventType.WALLET_DISCONNECTED)
+		this.triggerUiUpdateCallback(UIUpdateEventType.WALLET_CHANGE)
 	}
 
 	async negotiatorConnectToWallet(walletType: string) {

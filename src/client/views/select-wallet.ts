@@ -7,7 +7,7 @@ import { getBrowserData } from '../../utils/support/getBrowserData'
 
 export class SelectWallet extends AbstractView {
 	init() {
-		this.client.registerUiUpdateCallback(UIUpdateEventType.WALLET_DISCONNECTED, undefined)
+		this.client.registerUiUpdateCallback(UIUpdateEventType.WALLET_CHANGE, undefined)
 	}
 
 	// TODO: Accept data param to connect specific wallet -
@@ -84,6 +84,11 @@ export class SelectWallet extends AbstractView {
 		this.viewContainer.querySelectorAll('.wallet-button-tn').forEach((elem: any) => {
 			elem.addEventListener('click', this.connectWallet.bind(this))
 		})
+
+		if (this.params.viewOptions.backButtonView)
+			this.viewContainer.querySelector('.back-to-menu-tn').addEventListener('click', () => {
+				this.ui.updateUI(this.params.viewOptions.backButtonView, null, { viewTransition: 'slide-in-left' })
+			})
 	}
 
 	private getWalletButtonHtml(wallet: WalletInfo) {

@@ -139,6 +139,8 @@ export class Ui implements UiInterface {
 				return SelectWallet
 			case 'manage-wallets':
 				return ManageWallets
+			default:
+				throw new Error("Default view '" + type + "' not found")
 		}
 	}
 

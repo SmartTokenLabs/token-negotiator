@@ -1,7 +1,7 @@
 import { ethers } from 'ethers'
 import { logger, strToHexStr, strToUtfBytes } from '../utils'
 import { SafeConnectOptions } from './SafeConnectProvider'
-import { Client } from '../client'
+import { Client, UIUpdateEventType } from '../client'
 import { SupportedBlockchainsParam, WalletOptionsInterface, SignatureSupportedBlockchainsParamList } from '../client/interface'
 
 interface WalletConnectionState {
@@ -53,6 +53,7 @@ export class Web3WalletProvider {
 
 	emitSavedConnection(address: string): WalletConnection | null {
 		if (Object.keys(this.connections).length && address) {
+			this.client.triggerUiUpdateCallback(UIUpdateEventType.WALLET_CHANGE)
 			this.client.eventSender('connected-wallet', this.connections[address.toLowerCase()])
 			return this.connections[address.toLowerCase()]
 		} else {
@@ -120,6 +121,27 @@ export class Web3WalletProvider {
 
 		localStorage.removeItem(Web3WalletProvider.LOCAL_STORAGE_KEY)
 		sessionStorage.removeItem('CURRENT_USER')
+	}
+
+	deleteConnection(address: string, providerType: SupportedWalletProviders) {
+		address = address.toLowerCase()
+
+		// This address has been connected with a different provider, so we don't want to delete it
+		if (!this.connections[address] || this.connections[address].providerType !== providerType) return false
+
+		providerType = this.connections[address].providerType
+		delete this.connections[address]
+		this.saveConnections()
+
+		switch (providerType) {
+			case 'WalletConnect':
+				localStorage.removeItem('walletconnect')
+				break
+			case 'Flow':
+				sessionStorage.removeItem('CURRENT_USER')
+		}
+
+		return true
 	}
 
 	async loadConnections() {
@@ -291,7 +313,7 @@ export class Web3WalletProvider {
 						 * for now user cant connect to multiple wallets
 						 * but do we need it for future?
 						 */
-						this.client.disconnectWallet()
+						this.client.disconnectWallet(address, providerType)
 						return
 					}
 
@@ -328,7 +350,7 @@ export class Web3WalletProvider {
 					 * for now user cant connect to multiple wallets
 					 * but do we need it for future?
 					 */
-					this.client.disconnectWallet()
+					this.client.disconnectWallet(address, providerType)
 				})
 				break
 			default:
