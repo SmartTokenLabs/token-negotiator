@@ -55,7 +55,6 @@
             "undefined"
         ],
         "id-match": "error",
-        "indent": ["error", "tab", { "SwitchCase": 1 }],
         "no-eval": "error",
         "no-redeclare": "error",
         "no-trailing-spaces": "off",
