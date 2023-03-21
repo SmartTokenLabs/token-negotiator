@@ -16,7 +16,7 @@ The patch release addresses compatibility issues with the es6 version of the bui
 
 ### Bug Fixes
 
-* Polyfills fixes
+* Imported Wallect Connect V2 reference
 * TS config update for ES6 compatibility issue found
 * Corrections to README
 
