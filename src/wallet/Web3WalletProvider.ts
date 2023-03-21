@@ -1,7 +1,7 @@
 import { ethers } from 'ethers'
 import { logger } from '../utils'
 import { SafeConnectOptions } from './SafeConnectProvider'
-import { Client } from '../client'
+import { Client, UIUpdateEventType } from '../client'
 import { SupportedBlockchainsParam, WalletOptionsInterface } from '../client/interface'
 
 interface WalletConnectionState {
@@ -57,6 +57,7 @@ export class Web3WalletProvider {
 
 	emitSavedConnection(address: string) {
 		if (Object.keys(this.connections).length && address) {
+			this.client.triggerUiUpdateCallback(UIUpdateEventType.WALLET_CHANGE)
 			this.client.eventSender('connected-wallet', this.connections[address.toLocaleLowerCase()])
 			return this.connections[address.toLocaleLowerCase()]
 		} else {
@@ -131,6 +132,27 @@ export class Web3WalletProvider {
 		localStorage.removeItem(Web3WalletProvider.LOCAL_STORAGE_KEY)
 		// remove session storage for the case of flow network
 		sessionStorage.removeItem('CURRENT_USER')
+	}
+
+	deleteConnection(address: string, providerType: SupportedWalletProviders) {
+		address = address.toLowerCase()
+
+		// This address has been connected with a different provider, so we don't want to delete it
+		if (!this.connections[address] || this.connections[address].providerType !== providerType) return false
+
+		providerType = this.connections[address].providerType
+		delete this.connections[address]
+		this.saveConnections()
+
+		switch (providerType) {
+			case 'WalletConnect':
+				localStorage.removeItem('walletconnect')
+				break
+			case 'Flow':
+				sessionStorage.removeItem('CURRENT_USER')
+		}
+
+		return true
 	}
 
 	async loadConnections() {
@@ -258,12 +280,12 @@ export class Web3WalletProvider {
 		})
 
 		// @ts-ignore
-		provider.provider.on('chainChanged', (_chainId: any) => {
-			this.registerNewWalletAddress(accounts[0], _chainId, providerName, provider, 'evm')
+		provider.provider.on('chainChanged', (chainId: any) => {
+			this.registerNewWalletAddress(accounts[0], chainId, providerName, provider, 'evm')
 
 			this.saveConnections()
 
-			this.emitNetworkChange(_chainId)
+			this.emitNetworkChange(chainId)
 		})
 
 		// @ts-ignore
@@ -271,7 +293,7 @@ export class Web3WalletProvider {
 		provider.provider.on('disconnect', (reason: any) => {
 			if (reason?.message && reason.message.indexOf('MetaMask: Disconnected from chain') > -1) return
 
-			this.client.disconnectWallet()
+			this.client.disconnectWallet(curAccount, providerName)
 		})
 
 		return accounts[0]

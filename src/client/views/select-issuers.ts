@@ -21,21 +21,26 @@ export class SelectIssuers extends AbstractView {
 			this.render()
 		})
 
-		this.client.registerUiUpdateCallback(UIUpdateEventType.WALLET_DISCONNECTED, () => {
+		this.client.registerUiUpdateCallback(UIUpdateEventType.WALLET_CHANGE, async () => {
 			if (this.client.getTokenStore().hasOnChainTokens()) {
-				this.ui.updateUI('wallet', { viewName: 'wallet' }, { viewTransition: 'slide-in-left' })
+				const wallets = await this.client.getWalletProvider()
+				if (wallets.getConnectionCount() === 0) {
+					this.ui.updateUI('wallet', { viewName: 'wallet' }, { viewTransition: 'slide-in-left' })
+				} else {
+					await this.render()
+				}
 			} else {
 				this.ui.updateUI('start', { viewName: 'start' }, { viewTransition: 'slide-in-left' })
 			}
 		})
 	}
 
-	render() {
-		this.renderContent()
+	async render() {
+		await this.renderContent()
 		this.afterRender()
 	}
 
-	protected renderContent() {
+	protected async renderContent() {
 		this.viewContainer.innerHTML = `
             <div class="inner-content-tn issuer-slider-tn">
               <div class="issuer-view-tn scroll-tn">
@@ -47,16 +52,7 @@ export class SelectIssuers extends AbstractView {
 				  			<button class="btn-tn refresh-tn" aria-label="Refresh Tokens">
                   				<svg class="refresh-icon-tn" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 383.748 383.748" style="enable-background:new 0 0 383.748 383.748;" xml:space="preserve"><g><path d="M62.772,95.042C90.904,54.899,137.496,30,187.343,30c83.743,0,151.874,68.13,151.874,151.874h30 C369.217,81.588,287.629,0,187.343,0c-35.038,0-69.061,9.989-98.391,28.888C70.368,40.862,54.245,56.032,41.221,73.593 L2.081,34.641v113.365h113.91L62.772,95.042z"/><path d="M381.667,235.742h-113.91l53.219,52.965c-28.132,40.142-74.724,65.042-124.571,65.042 c-83.744,0-151.874-68.13-151.874-151.874h-30c0,100.286,81.588,181.874,181.874,181.874c35.038,0,69.062-9.989,98.391-28.888 c18.584-11.975,34.707-27.145,47.731-44.706l39.139,38.952V235.742z"/></g></svg>
 				  			</button>
-							<button class="btn-tn dis-wallet-tn" style="display: none;" aria-label="Disconnect Wallet">
-								<svg width="12px" height="100%" viewBox="0 0 384 384" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
-									<g id="Layer1">
-									<path d="M194.449,-0.378L194.449,29.622L29.577,29.622C29.577,95.909 30.577,354.191 30.577,354.191L194.449,354.191L194.449,384.191L16.077,384.191C7.517,384.191 0.577,377.251 0.577,368.691L0.577,15.122C0.577,6.562 7.517,-0.378 16.077,-0.378L194.449,-0.378Z"/>
-										<g transform="matrix(1.39537,0,0,2.43013,-54.9803,-262.053)">
-											<path d="M99.772,200.171L99.772,165.725L228.493,165.725L228.493,133.741L314.191,182.948L228.493,232.156L228.493,200.171L99.772,200.171Z"/>
-										</g>
-										</g>
-								</svg>											
-							</button>
+							${await this.renderWalletButton()}
 						</div>  	
 				  </div>
 				  ${this.getCustomContent()}
@@ -118,6 +114,43 @@ export class SelectIssuers extends AbstractView {
 
 	protected getCustomContent() {
 		return ''
+	}
+
+	async renderWalletButton() {
+		const hasWallets = this.client.getTokenStore().hasOnChainTokens()
+		const title = hasWallets ? 'Manage Wallets' : 'Disconnect Wallet'
+
+		return `
+			<button class="btn-tn dis-wallet-tn" style="display: none;" aria-label="${title}" title="${title}">
+				${
+					hasWallets
+						? `
+					<svg fill="currentColor" height="100%" width="12px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"  viewBox="0 0 76.304 76.304" xml:space="preserve">
+						<g>
+							<path d="M72.325,33.234v-2.947c0-5.389-3.698-9.919-8.686-11.217l-0.009-4.859c0-4.742-3.859-8.601-8.603-8.601h-0.455L14.31,18.1
+							c-0.917,0.053-1.787,0.265-2.604,0.584h-0.105C5.205,18.684,0,23.889,0,30.287v28.804c0,6.397,5.204,11.603,11.601,11.603h49.123
+							c6.396,0,11.601-5.205,11.601-11.603V55.26c2.323-0.899,3.979-3.151,3.979-5.789v-10.45C76.303,36.385,74.648,34.133,72.325,33.234
+							z M70.303,49.47c0,0.118-0.093,0.211-0.211,0.211H53.851c-0.118,0-0.21-0.093-0.21-0.211V39.021c0-0.115,0.094-0.209,0.21-0.209
+							h16.241c0.116,0,0.211,0.094,0.211,0.209V49.47z M55.398,11.637c1.261,0.18,2.232,1.266,2.232,2.579l0.008,4.469H32.679
+							L55.398,11.637z M60.724,64.693H11.602c-3.093,0-5.601-2.509-5.601-5.603V30.287c0-3.095,2.508-5.603,5.601-5.603h49.122
+							c3.094,0,5.601,2.508,5.601,5.603v2.525H53.851c-3.424,0-6.21,2.785-6.21,6.209V49.47c0,3.425,2.786,6.211,6.21,6.211h12.474v3.41
+							C66.325,62.184,63.818,64.693,60.724,64.693z"/>
+						</g>
+					</svg>
+				`
+						: `
+					<svg width="15px" height="100%" viewBox="0 0 384 384" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+						<g id="Layer1">
+						<path d="M194.449,-0.378L194.449,29.622L29.577,29.622C29.577,95.909 30.577,354.191 30.577,354.191L194.449,354.191L194.449,384.191L16.077,384.191C7.517,384.191 0.577,377.251 0.577,368.691L0.577,15.122C0.577,6.562 7.517,-0.378 16.077,-0.378L194.449,-0.378Z"/>
+							<g transform="matrix(1.39537,0,0,2.43013,-54.9803,-262.053)">
+								<path d="M99.772,200.171L99.772,165.725L228.493,165.725L228.493,133.741L314.191,182.948L228.493,232.156L228.493,200.171L99.772,200.171Z"/>
+							</g>
+						</g>
+					</svg>
+				`
+				}											
+			</button>
+		`
 	}
 
 	async setupWalletButton() {

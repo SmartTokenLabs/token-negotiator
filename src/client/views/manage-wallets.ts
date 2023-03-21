@@ -16,7 +16,7 @@ const DisconnectButtonSVG = `
 
 export class ManageWallets extends AbstractView {
 	init() {
-		this.client.registerUiUpdateCallback(UIUpdateEventType.WALLET_DISCONNECTED, async () => {
+		this.client.registerUiUpdateCallback(UIUpdateEventType.WALLET_CHANGE, async () => {
 			const wallets = await this.client.getWalletProvider()
 
 			if (wallets.getConnectionCount() === 0) {
@@ -47,7 +47,7 @@ export class ManageWallets extends AbstractView {
 							</div>
 							<div class="toolbar-tn">
 								<button class="btn-tn add-wallet-tn" aria-label="Add another wallet" title="Add another wallet">
-									<strong>+</strong>
+									<strong style="font-size: 20px; line-height: 12px;">+</strong>
 								</button>
 								<button class="btn-tn dis-wallet-tn" aria-label="Disconnect all wallets" title="Disconnect all wallets">
 									${DisconnectButtonSVG}									
@@ -62,14 +62,24 @@ export class ManageWallets extends AbstractView {
 			</div>
 		`
 
-		this.setupWalletButton()
+		this.setupWalletButtons()
 		this.setupBackButton()
 	}
 
-	private setupWalletButton() {
-		const walletBtn = this.viewContainer.querySelector('.dis-wallet-tn')
-		walletBtn.addEventListener('click', () => {
-			this.client.disconnectWallet()
+	private setupWalletButtons() {
+		this.viewContainer.querySelectorAll('.dis-wallet-tn').forEach((elem) =>
+			elem.addEventListener('click', (e) => {
+				const elem = e.currentTarget
+				this.client.disconnectWallet(
+					elem.hasAttribute('data-address') ? elem.getAttribute('data-address') : null,
+					elem.hasAttribute('data-providertype') ? elem.getAttribute('data-providertype') : null,
+				)
+			}),
+		)
+
+		const addWalletBtn = this.viewContainer.querySelector('.add-wallet-tn')
+		addWalletBtn.addEventListener('click', () => {
+			this.ui.updateUI('wallet', null, { viewTransition: 'slide-in-right', backButtonView: 'manage-wallets' })
 		})
 	}
 
@@ -122,7 +132,9 @@ export class ManageWallets extends AbstractView {
 								<div class="wallet-name-tn">${connection.providerType}</div>
 							</div>
 							<div class="wallet-disconnect-tn">
-								<button class="btn-tn dis-wallet-tn" aria-label="Disconnect Wallet" title="Disconnect Wallet">
+								<button class="btn-tn dis-wallet-tn" aria-label="Disconnect Wallet" title="Disconnect Wallet" data-address="${address}" data-providertype="${
+						connection.providerType
+					}">
 									${DisconnectButtonSVG}
 								</button>
 							</div>
