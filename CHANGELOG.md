@@ -1,10 +1,10 @@
 > Description
 
-This release introduces new web2 and web3 enhancements and fixes.
+The patch releases after the 2.4.0 release address compatibility issues with the es6 version of the build.
 
 ### Upgrade Steps
 
-* Update NPM package to version 2.4.0
+* Update NPM package to version 2.4.3
 
 ### Breaking Changes
 
@@ -12,16 +12,13 @@ This release introduces new web2 and web3 enhancements and fixes.
 
 ### New Features
 
-* New Event Hooks (see README)
-* Configurable view navigation animations
-* Wallet Disconnection ehancements
+[none]
 
 ### Bug Fixes
 
-* Re-direct enhancements and fixes
-* Wallet Connect V2 fixes
-* Polyfills
-* Flow Network support documentation added to README
+* Polyfills fixes
+* TS config update for ES6 compatibility issue found
+* Corrections to README
 
 ### Performance Improvements
 
@@ -29,11 +26,8 @@ This release introduces new web2 and web3 enhancements and fixes.
  
 ### Other Changes
 
-* Husky and Prettier used for code quality / formatting
-* Update to image in docs
-* Add automatic version variable to build
-* CI snapshot builds for staging & main via GH package registry
+[none]
 
-**Full Change log**: 
+**Full Change log**:
 
-https://github.com/TokenScript/token-negotiator/compare/v2.3.0...v2.4.0
+https://github.com/TokenScript/token-negotiator/compare/v2.4.0...v2.4.3
