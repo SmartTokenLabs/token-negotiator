@@ -99,6 +99,7 @@ export type TokenNegotiatorEvents =
 	| 'disconnected-wallet'
 	| 'tokens-selected'
 	| 'tokens'
+	| 'tokens-loaded'
 	| 'network-change'
 	| 'error'
 
