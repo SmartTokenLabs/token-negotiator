@@ -17,6 +17,16 @@ export interface WalletConnection {
 	ethers?: any
 }
 
+export enum SupportedWalletProviders {
+	MetaMask = 'MetaMask',
+	WalletConnect = 'WalletConnect',
+	WalletConnectV2 = 'WalletConnectV2',
+	Torus = 'Torus',
+	Phantom = 'Phantom',
+	Flow = 'Flow',
+	SafeConnect = 'SafeConnect',
+}
+
 export class Web3WalletProvider {
 	private static LOCAL_STORAGE_KEY = 'tn-wallet-connections'
 
