@@ -62,10 +62,63 @@ export class Web3WalletProvider {
 		}
 	}
 
-	deleteConnections() {
+	async deleteConnections() {
 		this.connections = {}
+
+		let data = localStorage.getItem(Web3WalletProvider.LOCAL_STORAGE_KEY)
+		if (data) {
+			let state = JSON.parse(data)
+			if (state) {
+				for (let item in state) {
+					let provider = state[item].providerType
+					switch (provider) {
+						case 'WalletConnect':
+							{
+								let walletConnectProvider = await import('./WalletConnectProvider')
+								let walletConnect = await walletConnectProvider.getWalletConnectProviderInstance(true)
+								if (walletConnect?.wc?._connected) {
+									walletConnect
+										.disconnect()
+										.then(() => {
+											// console.log('WalletConnect session disconnected');
+										})
+										.catch((error) => {
+											console.error(error)
+											// dirty way to remove session from local storage
+											localStorage.removeItem('walletconnect')
+										})
+								}
+							}
+							break
+
+						case 'WalletConnectV2':
+							{
+								let walletConnect2Provider = await import('./WalletConnectV2Provider')
+
+								let universalWalletConnect = await walletConnect2Provider.getWalletConnectV2ProviderInstance()
+
+								if (universalWalletConnect.session) {
+									universalWalletConnect
+										.disconnect()
+										.then(() => {
+											// console.log('WalletConnect2 session disconnected');
+										})
+										.catch((error) => {
+											console.error(error)
+											// dirty way to remove session from local storage
+											localStorage.removeItem('wc@2:client:0.3//session')
+										})
+								}
+							}
+							break
+
+						default:
+					}
+				}
+			}
+		}
+
 		localStorage.removeItem(Web3WalletProvider.LOCAL_STORAGE_KEY)
-		localStorage.removeItem('walletconnect')
 		// remove session storage for the case of flow network
 		sessionStorage.removeItem('CURRENT_USER')
 	}
@@ -265,13 +318,17 @@ export class Web3WalletProvider {
 		let preSavedWalletOptions = this.walletOptions
 
 		return new Promise((resolve, reject) => {
-			if (checkConnectionOnly && !universalWalletConnect.connected) {
+			if (checkConnectionOnly && !universalWalletConnect.session) {
 				reject('Not connected')
 			} else {
 				// let pairing
 
-				universalWalletConnect
-					.connect({
+				let connect
+
+				if (universalWalletConnect.session) {
+					connect = universalWalletConnect.enable()
+				} else {
+					connect = universalWalletConnect.connect({
 						namespaces: {
 							eip155: {
 								methods: [
@@ -288,14 +345,20 @@ export class Web3WalletProvider {
 						},
 						// pairingTopic: pairing?.topic,
 					})
+				}
+
+				connect
 					.then(() => {
-						QRCodeModal.close()
+						logger(2, 'WC2 connected.....')
+						// in case of enable() QRCodeModal undefined
+						QRCodeModal?.close()
 						const provider = new ethers.providers.Web3Provider(universalWalletConnect, 'any')
 						resolve(this.registerProvider(provider, 'WalletConnectV2'))
 					})
 					.catch((e) => {
 						logger(2, 'WC2 connect error...', e)
-						QRCodeModal.close()
+						// in case of enable() QRCodeModal undefined
+						QRCodeModal?.close()
 						reject(e)
 					})
 			}
