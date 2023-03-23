@@ -1,4 +1,3 @@
-import { initDataDogRum } from '../utils/datadog/rum'
 import { OutletAction, OutletResponseAction, Messaging } from './messaging'
 import { Ui, UiInterface, UItheme } from './ui'
 import { logger, requiredParams, waitForElementToExist, errorHandler, removeUrlSearchParams } from '../utils'
@@ -127,8 +126,7 @@ export class Client {
 		return Authenticator.decodePublicKey(file)
 	}
 
-	constructor(config: NegotiationInterface, enableMonitoring = true) {
-		if (enableMonitoring) initDataDogRum(config)
+	constructor(config: NegotiationInterface) {
 		if (window.location.hash) {
 			this.urlParams = new URLSearchParams(window.location.hash.substring(1))
 			let action = this.getDataFromQuery('action')
