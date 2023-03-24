@@ -132,6 +132,11 @@ export interface EventSenderViewChanged {
 export interface EventSenderTokensSelected {
 	selectedTokens: Object
 }
+
+export interface EventSenderTokensLoaded {
+	loadedCollections: number
+}
+
 export type EventSenderConnectedWallet = WalletConnection | null
 export interface EventSenderDisconnectedWallet {
 	data: null
