@@ -1,20 +1,11 @@
-import {
-	rawTokenCheck,
-	readTokenFromMagicUrl,
-	storeMagicURL,
-	decodeTokens,
-	decodeToken,
-	filterTokens,
-	readTokens,
-	OffChainTokenData,
-	DecodedToken,
-} from '../core'
+import { rawTokenCheck, decodeTokens, filterTokens } from '../core'
 import { logger, requiredParams, removeUrlSearchParams } from '../utils'
 import { OutletAction, OutletResponseAction } from '../client/messaging'
 import { AuthHandler } from './auth-handler'
 import { SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
 import { AsnParser } from '@peculiar/asn1-schema'
 import { ResponseActionBase, ResponseInterfaceBase, URLNS } from '../core/messaging'
+import { AbstractOutlet } from './abstractOutlet'
 
 export interface OutletInterface {
 	collectionID: string
@@ -60,21 +51,11 @@ export class readSignedTicket {
 	}
 }
 
-export class Outlet {
-	tokenConfig: OutletInterface
-	urlParams?: URLSearchParams
-
-	singleUse = false
-
+export class Outlet extends AbstractOutlet {
 	redirectCallbackUrl?: URL
 
-	constructor(config: OutletInterface, singleUse = false, urlParams: any = null) {
-		this.tokenConfig = Object.assign(defaultConfig, config)
-		this.singleUse = singleUse
-
-		if (!this.tokenConfig.tokenParser) {
-			this.tokenConfig.tokenParser = readSignedTicket
-		}
+	constructor(config: OutletInterface) {
+		super(config)
 
 		this.tokenConfig.signedTokenWhitelist = this.tokenConfig.signedTokenWhitelist.map((origin) => {
 			try {
@@ -84,20 +65,11 @@ export class Outlet {
 			}
 		})
 
-		if (urlParams) {
-			this.urlParams = urlParams
-		} else {
-			let params = window.location.hash.length > 1 ? '?' + window.location.hash.substring(1) : window.location.search
-			this.urlParams = new URLSearchParams(params)
-		}
-
-		if (!this.singleUse) {
-			this.pageOnLoadEventHandler()
-				.then()
-				.catch((e) => {
-					logger(2, 'Outlet pageOnLoadEventHandler error: ' + e.message)
-				})
-		}
+		this.pageOnLoadEventHandler()
+			.then()
+			.catch((e) => {
+				logger(2, 'Outlet pageOnLoadEventHandler error: ' + e.message)
+			})
 	}
 
 	getDataFromQuery(itemKey: string, namespaced = true): string {
@@ -137,23 +109,7 @@ export class Outlet {
 					const issuer = this.getDataFromQuery('issuer')
 
 					try {
-						const tokenString = this.getDataFromQuery('token')
-						let token = JSON.parse(tokenString)
-
-						const attestationBlob = this.getDataFromQuery('attestation', false)
-						const attestationSecret = '0x' + this.getDataFromQuery('requestSecret', false)
-
-						let authHandler = new AuthHandler(
-							this,
-							evtid,
-							this.tokenConfig,
-							await rawTokenCheck(token, this.tokenConfig),
-							null,
-							null,
-							false,
-						)
-
-						const useToken = await authHandler.getUseToken(attestationBlob, attestationSecret)
+						const useToken = await this.processAttestationIdCallback()
 
 						if (requesterURL) {
 							const params = new URLSearchParams(requesterURL.hash.substring(1))
@@ -165,8 +121,7 @@ export class Outlet {
 							params.delete('email')
 							params.delete('#email')
 
-							let outlet = new Outlet(this.tokenConfig, true)
-							let issuerTokens = outlet.prepareTokenOutput({})
+							let issuerTokens = this.prepareTokenOutput({})
 
 							logger(2, 'issuerTokens: ', issuerTokens)
 
@@ -201,11 +156,9 @@ export class Outlet {
 				default: {
 					// TODO: Remove singleUse - this is only needed in negotiator that calls readMagicLink.
 					//  move single link somewhere that it can be used by both Outlet & LocalOutlet
-					if (!this.singleUse) {
-						await this.whitelistCheck(evtid, 'write')
-						await this.readMagicLink()
-						this.sendTokens(evtid)
-					}
+					await this.whitelistCheck(evtid, 'write')
+					await this.readMagicLink()
+					this.sendTokens(evtid)
 
 					break
 				}
@@ -214,77 +167,6 @@ export class Outlet {
 			console.error(e)
 			this.sendErrorResponse(evtid, e?.message ?? e, this.getDataFromQuery('issuer'))
 		}
-	}
-
-	public async readMagicLink() {
-		const { tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey } = this.tokenConfig
-
-		try {
-			const newToken = readTokenFromMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, this.urlParams)
-			let tokensOutput = readTokens(itemStorageKey)
-
-			const newTokens = this.mergeNewToken(newToken, tokensOutput.tokens)
-
-			if (newTokens !== false) {
-				storeMagicURL(newTokens, itemStorageKey)
-			}
-
-			const event = new Event('tokensupdated')
-
-			document.body.dispatchEvent(event)
-		} catch (e) {
-			console.warn(e)
-		}
-	}
-
-	/**
-	 * Merges a new magic link into the existing token data. If a token is found with the same ID it is overwritten.
-	 * @private
-	 * @returns false when no changes to the data are required - the token is already added
-	 */
-	public mergeNewToken(newToken: OffChainTokenData, existingTokens: OffChainTokenData[]): OffChainTokenData[] | false {
-		const decodedNewToken = decodeToken(newToken, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName, false)
-
-		const newTokenId = this.getUniqueTokenId(decodedNewToken)
-
-		for (const [index, tokenData] of existingTokens.entries()) {
-			// Nothing required, this token already exists
-			if (tokenData.token === newToken.token) {
-				return false
-			}
-
-			const decodedTokenData = decodeToken(tokenData, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName, false)
-
-			const tokenId = this.getUniqueTokenId(decodedTokenData)
-
-			if (newTokenId === tokenId) {
-				existingTokens[index] = newToken
-				return existingTokens
-			}
-		}
-
-		existingTokens.push(newToken)
-		return existingTokens
-	}
-
-	/**
-	 * Calculates a unique token ID to identify this ticket. Tickets can be reissued and have a different commitment, but are still the same token
-	 * @private
-	 */
-	private getUniqueTokenId(decodedToken: DecodedToken) {
-		return `${decodedToken.devconId}-${decodedToken.ticketIdNumber ?? decodedToken.ticketIdString}`
-	}
-
-	private dispatchAuthCallbackEvent(issuer: string, proof?: string, error?: string) {
-		const event = new CustomEvent('auth-callback', {
-			detail: {
-				proof: proof,
-				issuer: issuer,
-				error: error,
-			},
-		})
-
-		window.dispatchEvent(event)
 	}
 
 	private async whitelistCheck(evtid, whiteListType: 'read' | 'write') {

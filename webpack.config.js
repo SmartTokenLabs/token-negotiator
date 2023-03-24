@@ -5,7 +5,11 @@ const TerserPlugin = require('terser-webpack-plugin')
 module.exports = {
     mode: "production",
     target: 'web',
-    entry: './src/index.ts',
+	//entry: './src/index.ts',
+    entry: {
+		Client: './src/client/index.ts',
+		Outlet: './src/outlet/index.ts'
+	},
     plugins: [
         new webpack.ProvidePlugin({
             Buffer: ['buffer', 'Buffer'],
@@ -73,8 +77,8 @@ module.exports = {
     },
     output: {
         library: 'negotiator',
-        filename: 'negotiator.js',
-		chunkFilename: 'negotiator-[chunkhash].js',
+        filename: 'negotiator-[name].js',
+		chunkFilename: 'negotiator-[name]-[chunkhash].js',
         libraryTarget: 'umd',
         path: path.resolve(__dirname, 'token-negotiator-dist'),
     },

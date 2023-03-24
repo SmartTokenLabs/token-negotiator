@@ -307,52 +307,6 @@ export class AuthHandler {
 		document.body.appendChild(iframeWrap)
 	}
 
-	public async getUseToken(attestationBlob: any, attestationSecret: any) {
-		try {
-			if (!this.signedTokenSecret) {
-				throw new Error('signedTokenSecret required')
-			}
-			if (!attestationSecret) {
-				throw new Error('attestationSecret required')
-			}
-			if (!this.signedTokenBlob) {
-				throw new Error('signedTokenBlob required')
-			}
-			if (!attestationBlob) {
-				throw new Error('attestationBlob required')
-			}
-			if (!this.base64attestorPubKey) {
-				throw new Error('base64attestorPubKey required')
-			}
-			if (!this.base64senderPublicKeys) {
-				throw new Error('base64senderPublicKeys required')
-			}
-
-			let useToken = await Authenticator.getUseTicket(
-				this.signedTokenSecret,
-				attestationSecret,
-				this.signedTokenBlob,
-				attestationBlob,
-				this.base64attestorPubKey,
-				this.base64senderPublicKeys,
-			)
-
-			if (useToken) {
-				logger(2, 'this.authResultCallback( useToken ): ')
-				if (this.buttonOverlay) this.buttonOverlay.remove()
-				return useToken
-			} else {
-				logger(2, 'this.authResultCallback( empty ): ')
-				throw new Error('Empty useToken')
-			}
-		} catch (e) {
-			logger(2, `UseDevconTicket failed.`, e.message)
-			logger(3, e)
-			if (this.buttonOverlay) this.buttonOverlay.remove()
-			throw new Error('Failed to create UseTicket. ' + e.message)
-		}
-	}
-
 	async postMessageAttestationListener(event: MessageEvent, resolve: Function, reject: Function) {
 		logger(2, 'postMessageAttestationListener event (auth-handler)', event.data)
 

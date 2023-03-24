@@ -1,10 +1,8 @@
 import { AbstractAuthentication, AuthenticationMethod, AuthenticationResult } from './abstractAuthentication'
 import { AuthenticateInterface, OffChainTokenConfig, OnChainTokenConfig } from '../interface'
 import { OutletAction, Messaging } from '../messaging'
-import { Authenticator } from '@tokenscript/attestation'
 import { SignedUNChallenge } from './signedUNChallenge'
 import { UNInterface } from './util/UN'
-import { LocalOutlet } from '../../outlet/localOutlet'
 import { OutletInterface } from '../../outlet'
 import { logger } from '../../utils'
 import { shouldUseRedirectMode } from '../../utils/support/getBrowserData'
@@ -47,7 +45,7 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 		let data
 
 		if (new URL(issuerConfig.tokenOrigin).origin === document.location.origin) {
-			const localOutlet = new LocalOutlet(issuerConfig as OffChainTokenConfig & OutletInterface)
+			const localOutlet = new (await import('../../outlet/localOutlet')).LocalOutlet(issuerConfig as OffChainTokenConfig & OutletInterface)
 
 			data = {}
 			data.proof = await localOutlet.authenticate(tokens[0], address, wallet, redirectMode)
@@ -92,6 +90,7 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 		}
 
 		if (useEthKey) {
+			const Authenticator = (await import('@tokenscript/attestation')).Authenticator
 			Authenticator.validateUseTicket(
 				data.proof,
 				issuerConfig.base64attestorPubKey,

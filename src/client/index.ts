@@ -2,7 +2,6 @@ import { OutletAction, OutletResponseAction, Messaging } from './messaging'
 import { Ui, UiInterface, UItheme } from './ui'
 import { logger, requiredParams, waitForElementToExist, errorHandler, removeUrlSearchParams } from '../utils'
 import { getNftCollection, getNftTokens } from '../utils/token/nftProvider'
-import { Authenticator } from '@tokenscript/attestation'
 import { TokenStore } from './tokenStore'
 import {
 	OffChainTokenConfig,
@@ -23,13 +22,10 @@ import {
 	EventSenderTokensRefreshed,
 	EventSenderTokensLoaded,
 } from './interface'
-import { SignedUNChallenge } from './auth/signedUNChallenge'
-import { TicketZKProof } from './auth/ticketZKProof'
 import { AuthenticationMethod } from './auth/abstractAuthentication'
 import { isUserAgentSupported, validateBlockchain } from '../utils/support/isSupported'
-import Web3WalletProvider from '../wallet/Web3WalletProvider'
-import { LocalOutlet } from '../outlet/localOutlet'
-import { Outlet, OutletInterface } from '../outlet'
+import type Web3WalletProvider from '../wallet/Web3WalletProvider'
+import { OutletInterface } from '../outlet'
 import { shouldUseRedirectMode } from '../utils/support/getBrowserData'
 import { VERSION } from '../version'
 import { getFungibleTokenBalances, getFungibleTokensMeta } from '../utils/token/fungibleTokenProvider'
@@ -115,9 +111,9 @@ export class Client {
 
 	private urlParams: URLSearchParams
 
-	static getKey(file: string) {
+	/* static getKey(file: string) {
 		return Authenticator.decodePublicKey(file)
-	}
+	}*/
 
 	constructor(config: NegotiationInterface) {
 		if (window.location.hash) {
@@ -339,10 +335,6 @@ export class Client {
 		return this.config.type === 'active'
 	}
 
-	private createCurrentUrlWithoutHash(): string {
-		return window.location.origin + window.location.pathname + window.location.search ?? '?' + window.location.search
-	}
-
 	public getNoTokenMsg(collectionID: string) {
 		const store = this.getTokenStore().getCurrentIssuers()
 		const collectionNoTokenMsg = store[collectionID]?.noTokenMsg
@@ -354,7 +346,7 @@ export class Client {
 
 		if (currentIssuer) {
 			logger(2, 'Sync Outlet fired in Client to read MagicLink before negotiate().')
-			let outlet = new Outlet(currentIssuer, true)
+			let outlet = new (await import('../outlet/localOutlet')).LocalOutlet(currentIssuer)
 			await outlet.readMagicLink()
 			outlet = null
 		}
@@ -462,7 +454,7 @@ export class Client {
 
 			try {
 				if (new URL(issuerConfig.tokenOrigin).origin === document.location.origin) {
-					tokens = this.loadLocalOutletTokens(issuerConfig)
+					tokens = await this.loadLocalOutletTokens(issuerConfig)
 				} else {
 					let responseIssuer = this.getDataFromQuery('issuer')
 
@@ -631,7 +623,7 @@ export class Client {
 			tokens = await this.loadOnChainTokens(config)
 		} else {
 			if (new URL(config.tokenOrigin).origin === document.location.origin) {
-				tokens = this.loadLocalOutletTokens(config)
+				tokens = await this.loadLocalOutletTokens(config)
 			} else {
 				tokens = await this.loadRemoteOutletTokens(config)
 
@@ -707,9 +699,8 @@ export class Client {
 		return res.data?.tokens ?? []
 	}
 
-	private loadLocalOutletTokens(issuer: OffChainTokenConfig) {
-		const localOutlet = new LocalOutlet(issuer as OutletInterface & OffChainTokenConfig)
-
+	private async loadLocalOutletTokens(issuer: OffChainTokenConfig) {
+		const localOutlet = new (await import('../outlet/localOutlet')).LocalOutlet(issuer as OutletInterface & OffChainTokenConfig)
 		return localOutlet.getTokens()
 	}
 
@@ -753,7 +744,9 @@ export class Client {
 		if (authRequest.type) {
 			AuthType = authRequest.type
 		} else {
-			AuthType = config.onChain ? SignedUNChallenge : TicketZKProof
+			AuthType = config.onChain
+				? (await import('./auth/signedUNChallenge')).SignedUNChallenge
+				: (await import('./auth/ticketZKProof')).TicketZKProof
 		}
 
 		let authenticator: AuthenticationMethod = new AuthType(this)
@@ -964,13 +957,7 @@ export class Client {
 
 				if (currentIssuer) {
 					logger(2, 'Outlet fired to parse URL hash params.')
-
-					let outlet = new Outlet(currentIssuer, true, this.urlParams)
-					outlet
-						.pageOnLoadEventHandler()
-						.then(() => {
-							outlet = null
-						})
+					this.processLocalOutletAttestationCallback(currentIssuer)
 						.catch((err) => {
 							logger(2, err)
 						})
@@ -985,6 +972,11 @@ export class Client {
 				return this.clientCallBackEvents[type].call(type, data)
 			}
 		}
+	}
+
+	private async processLocalOutletAttestationCallback(currentIssuer) {
+		let outlet = new (await import('../outlet/localOutlet')).LocalOutlet(currentIssuer, this.urlParams)
+		outlet.processAttestationCallback()
 	}
 
 	switchTheme(newTheme: UItheme) {

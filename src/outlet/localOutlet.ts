@@ -1,19 +1,9 @@
-import { defaultConfig, OutletInterface, readSignedTicket } from './index'
 import { decodeTokens, filterTokens, rawTokenCheck } from '../core'
 import { AuthHandler } from './auth-handler'
-import { OffChainTokenConfig } from '../client/interface'
+import { AbstractOutlet } from './abstractOutlet'
+import { removeUrlSearchParams } from '../utils'
 
-export class LocalOutlet {
-	private tokenConfig
-
-	constructor(config: OutletInterface & OffChainTokenConfig) {
-		this.tokenConfig = Object.assign(defaultConfig, config)
-
-		if (!this.tokenConfig.tokenParser) {
-			this.tokenConfig.tokenParser = readSignedTicket
-		}
-	}
-
+export class LocalOutlet extends AbstractOutlet {
 	getTokens() {
 		const storageTokens = localStorage.getItem(this.tokenConfig.itemStorageKey)
 
@@ -30,5 +20,20 @@ export class LocalOutlet {
 		let authHandler = new AuthHandler(null, null, this.tokenConfig, tokenObj, address, wallet, redirectMode, unsignedToken)
 
 		return await authHandler.authenticate()
+	}
+
+	async processAttestationCallback() {
+		const issuer = this.getDataFromQuery('issuer')
+
+		try {
+			const useToken = await this.processAttestationIdCallback()
+
+			// Same origin request, emit event
+			this.dispatchAuthCallbackEvent(issuer, useToken, null)
+		} catch (e: any) {
+			this.dispatchAuthCallbackEvent(issuer, null, e.message)
+		}
+
+		document.location.hash = removeUrlSearchParams(this.urlParams, ['attestation', 'requestSecret', 'address', 'wallet']).toString()
 	}
 }
