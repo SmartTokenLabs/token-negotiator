@@ -14,11 +14,12 @@ export class SignedUNChallenge extends AbstractAuthentication implements Authent
 	): Promise<AuthenticationResult> {
 		let web3WalletProvider = await this.client.getWalletProvider()
 
-		if (web3WalletProvider.getConnectedWalletData().length === 0) {
+		// TODO: Update once Flow & Solana signing support is added
+		if (web3WalletProvider.getConnectedWalletData('evm').length === 0) {
 			throw new Error('WALLET_REQUIRED')
 		}
 
-		let address = web3WalletProvider.getConnectedWalletData()[0].address
+		let address = web3WalletProvider.getConnectedWalletAddresses('evm')[0]
 
 		let currentProof: AuthenticationResult | null = this.getSavedProof(address)
 

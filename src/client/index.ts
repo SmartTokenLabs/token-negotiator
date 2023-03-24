@@ -204,6 +204,7 @@ export class Client {
 		}
 
 		// Check if blockchain is supported one
+		// TODO: Put in separate method - issuers can also be specified via negotiate()
 		if (defaultConfig.issuers && defaultConfig.issuers.length) {
 			for (const issuer of defaultConfig.issuers) {
 				if (issuer.onChain === true) {
@@ -238,6 +239,7 @@ export class Client {
 		return this.config.safeConnectOptions !== undefined
 	}
 
+	// TODO: Move to token store OR select-wallet view - this method is very similar to getCurrentBlockchains()
 	public hasIssuerForBlockchain(blockchain: 'evm' | 'solana' | 'flow') {
 		return (
 			this.config.issuers.filter((issuer: OnChainTokenConfig) => {
@@ -595,7 +597,6 @@ export class Client {
 
 	async setPassiveNegotiationOnChainTokens() {
 		let issuers = this.tokenStore.getCurrentIssuers(true)
-		let walletProvider = await this.getWalletProvider()
 
 		for (let issuerKey in issuers) {
 			let tokens = this.tokenStore.getIssuerTokens(issuerKey)
@@ -605,7 +606,7 @@ export class Client {
 			let issuer = issuers[issuerKey] as OnChainIssuer
 
 			try {
-				const tokens = await getNftTokens(issuer, walletProvider.getConnectedWalletData()[0].address)
+				const tokens = await this.loadOnChainTokens(issuer)
 
 				this.tokenStore.setTokens(issuerKey, tokens)
 			} catch (err) {
@@ -661,18 +662,7 @@ export class Client {
 		let tokens
 
 		if (config.onChain === true) {
-			let walletProvider = await this.getWalletProvider()
-
-			const walletAddress = walletProvider.getConnectedWalletData()[0]?.address
-
-			requiredParams(issuer, 'issuer is required.')
-			requiredParams(walletAddress, 'wallet address is missing.')
-
-			if (config.fungible) {
-				tokens = await getFungibleTokenBalances(config, walletAddress)
-			} else {
-				tokens = await getNftTokens(config, walletAddress)
-			}
+			tokens = await this.loadOnChainTokens(config)
 		} else {
 			if (new URL(config.tokenOrigin).origin === document.location.origin) {
 				tokens = this.loadLocalOutletTokens(config)
@@ -690,6 +680,31 @@ export class Client {
 				selectedTokens: this.tokenStore.getSelectedTokens(),
 			})
 		}
+
+		return tokens
+	}
+
+	private async loadOnChainTokens(issuer: OnChainIssuer): Promise<any[]> {
+		let walletProvider = await this.getWalletProvider()
+
+		// TODO: Collect tokens from all addresses for this blockchain
+		const walletAddress = walletProvider.getConnectedWalletAddresses(issuer.blockchain)?.[0]
+
+		requiredParams(walletAddress, 'wallet address is missing.')
+
+		// TODO: Allow API to return tokens for multiple addresses
+		let tokens
+
+		if (issuer.fungible) {
+			tokens = await getFungibleTokenBalances(issuer, walletAddress)
+		} else {
+			tokens = await getNftTokens(issuer, walletAddress)
+		}
+
+		tokens.map((token) => {
+			token.walletAddress = walletAddress
+			return token
+		})
 
 		return tokens
 	}
