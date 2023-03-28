@@ -128,6 +128,11 @@ describe('client spec', () => {
 		expect(store.getSelectedTokens()).toEqual({})
 	})
 
+	test('tokenNegotiatorClient method readProofCallback', () => {
+		const tokenNegotiatorClient = getOffChainConfigClient()
+		expect(tokenNegotiatorClient.readProofCallback()).toBeDefined()
+	})
+
 	test('tokenNegotiatorClient method safeConnectAvailable', () => {
 		const tokenNegotiatorClient = getOffChainConfigClient()
 		expect(tokenNegotiatorClient.safeConnectAvailable()).toBe(false)
