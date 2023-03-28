@@ -100,6 +100,7 @@ export type TokenNegotiatorEvents =
 	| 'disconnected-wallet'
 	| 'tokens-selected'
 	| 'tokens'
+	| 'tokens-loaded'
 	| 'network-change'
 	| 'error'
 
@@ -132,6 +133,11 @@ export interface EventSenderViewChanged {
 export interface EventSenderTokensSelected {
 	selectedTokens: Object
 }
+
+export interface EventSenderTokensLoaded {
+	loadedCollections: number
+}
+
 export type EventSenderConnectedWallet = WalletConnection | null
 export interface EventSenderDisconnectedWallet {
 	data: null

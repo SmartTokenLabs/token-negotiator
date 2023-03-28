@@ -240,6 +240,10 @@
 					console.log(proof);
 				});
 
+				window.negotiator.on('tokens-loaded', (data) => {
+					console.log(`${data.loadedCollections} tokens were loaded`)
+				})
+
 				window.negotiator.negotiate();
 			}
 

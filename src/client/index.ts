@@ -22,6 +22,7 @@ import {
 	EventSenderOpenedOverlay,
 	EventSenderClosedOverlay,
 	EventSenderTokensRefreshed,
+	EventSenderTokensLoaded,
 } from './interface'
 import { SignedUNChallenge } from './auth/signedUNChallenge'
 import { TicketZKProof } from './auth/ticketZKProof'
@@ -464,6 +465,8 @@ export class Client {
 
 			if (this.cancelAutoload || (this.config.autoLoadTokens !== true && count > this.config.autoLoadTokens)) break
 		}
+
+		this.eventSender('tokens-loaded', { loadedCollections: Object.keys(this.tokenStore.getCurrentIssuers()).length })
 	}
 
 	cancelTokenAutoload() {
@@ -642,6 +645,7 @@ export class Client {
 		// 	return arg;
 		// }
 		this.eventSender('tokens', tokens)
+		this.eventSender('tokens-loaded', { loadedCollections: Object.keys(tokens).length })
 
 		// Feature not supported when an end users third party cookies are disabled
 		// because the use of a tab requires a user gesture.
@@ -887,6 +891,7 @@ export class Client {
 	async eventSender(eventName: 'tokens', data: EventSenderTokens)
 	async eventSender(eventName: 'token-proof', data: EventSenderTokenProof)
 	async eventSender(eventName: 'tokens-selected', data: EventSenderTokensSelected)
+	async eventSender(eventName: 'tokens-loaded', data: EventSenderTokensLoaded)
 	async eventSender(eventName: 'connected-wallet', data: EventSenderConnectedWallet)
 	async eventSender(eventName: 'disconnected-wallet', data: EventSenderDisconnectedWallet)
 	async eventSender(eventName: 'network-change', data: string)
