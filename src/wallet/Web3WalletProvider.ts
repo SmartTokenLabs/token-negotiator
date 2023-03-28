@@ -32,11 +32,7 @@ export class Web3WalletProvider {
 
 	connections: WalletConnectionState = {}
 
-	constructor(
-		private client: Client,
-		private walletOptions?: WalletOptionsInterface,
-		public safeConnectOptions?: SafeConnectOptions,
-	) {}
+	constructor(private client: Client, private walletOptions?: WalletOptionsInterface, public safeConnectOptions?: SafeConnectOptions) {}
 
 	saveConnections() {
 		let savedConnections: WalletConnectionState = {}
@@ -322,8 +318,6 @@ export class Web3WalletProvider {
 		let QRCodeModal
 
 		universalWalletConnect.on('display_uri', async (uri: string) => {
-			console.log('EVENT', 'QR Code Modal open')
-
 			QRCodeModal = (await import('@walletconnect/qrcode-modal')).default
 
 			QRCodeModal.open(uri, () => {
@@ -333,7 +327,6 @@ export class Web3WalletProvider {
 
 		// Subscribe to session delete
 		universalWalletConnect.on('session_delete', ({ id, topic }: { id: number; topic: string }) => {
-			console.log('WC V2 EVENT', 'session_deleted')
 			// TODO: There is currently a bug in the universal provider that prevents this handler from being called.
 			//  After this is fixed, this should handle the event correctly
 			//  https://github.com/WalletConnect/walletconnect-monorepo/issues/1772
@@ -356,13 +349,7 @@ export class Web3WalletProvider {
 					connect = universalWalletConnect.connect({
 						namespaces: {
 							eip155: {
-								methods: [
-									'eth_sendTransaction',
-									'eth_signTransaction',
-									'eth_sign',
-									'personal_sign',
-									'eth_signTypedData',
-								],
+								methods: ['eth_sendTransaction', 'eth_signTransaction', 'eth_sign', 'personal_sign', 'eth_signTypedData'],
 								chains: preSavedWalletOptions?.walletConnectV2?.chains ?? walletConnectProvider.WC_V2_DEFAULT_CHAINS,
 								events: ['chainChanged', 'accountsChanged'],
 								rpcMap: preSavedWalletOptions?.walletConnectV2?.rpcMap ?? walletConnectProvider.WC_DEFAULT_RPC_MAP,
