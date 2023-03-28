@@ -469,7 +469,11 @@ export class Client {
 			if (this.cancelAutoload || (this.config.autoLoadTokens !== true && count > this.config.autoLoadTokens)) break
 		}
 
-		this.eventSender('tokens-loaded', { loadedCollections: Object.keys(this.tokenStore.getCurrentIssuers()).length })
+		this.eventSender('tokens-loaded', {
+			loadedCollections: this.tokenStore.getCurrentIssuers()
+				? Object.keys(this.tokenStore.getCurrentIssuers()).length
+				: 0,
+		})
 	}
 
 	cancelTokenAutoload() {
