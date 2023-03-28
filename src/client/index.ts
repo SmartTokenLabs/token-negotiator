@@ -649,7 +649,6 @@ export class Client {
 		// 	return arg;
 		// }
 		this.eventSender('tokens', tokens)
-		// this.eventSender('tokens-loaded', { loadedCollections: Object.keys(this.tokenStore.getCurrentTokens()).length })
 
 		// Feature not supported when an end users third party cookies are disabled
 		// because the use of a tab requires a user gesture.
