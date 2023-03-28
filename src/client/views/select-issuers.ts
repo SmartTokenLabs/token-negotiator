@@ -3,7 +3,7 @@ import { TokenList, TokenListItemInterface } from './token-list'
 import { IconView } from './icon-view'
 import { logger } from '../../utils'
 import { UIUpdateEventType } from '../index'
-import { Issuer } from '../interface'
+import { Issuer, OnChainIssuer } from '../interface'
 
 export class SelectIssuers extends AbstractView {
 	issuerListContainer: any
@@ -281,12 +281,18 @@ export class SelectIssuers extends AbstractView {
 			if (!tokens) return // Site is redirecting
 		} catch (err) {
 			logger(2, err)
+
+			if (err.message === 'WALLET_REQUIRED') {
+				this.ui.dismissLoader()
+				const issuerConfig = this.client.getTokenStore().getCurrentIssuers(true)[issuer] as OnChainIssuer
+				this.ui.updateUI('wallet', null, { blockchain: issuerConfig.blockchain ?? 'evm' })
+				return
+			}
+
 			this.ui.showError(err)
 			this.client.eventSender('error', { issuer, error: err })
 			return
 		}
-
-		this.ui.dismissLoader()
 
 		if (!tokens?.length) {
 			this.ui.showError(`No tokens found! ${this.client.getNoTokenMsg(issuer)}`)

@@ -231,7 +231,7 @@ export class Ui implements UiInterface {
 		}
 	}
 
-	updateUI(viewFactory: ViewComponent | ViewType, data?: any, options?: any) {
+	updateUI(viewFactory: ViewComponent | ViewType, data?: any, viewOpts?: any) {
 		let viewOptions: any = {}
 		let viewName = 'unknown'
 
@@ -248,7 +248,8 @@ export class Ui implements UiInterface {
 			if (data?.viewName) viewName = data.viewName
 		}
 
-		if (options) viewOptions = { ...viewOptions, ...options }
+		// Manually specified view options can override ones set in the viewOverrides config
+		if (viewOpts) viewOptions = { ...viewOptions, ...viewOpts }
 
 		if (!this.viewContainer) {
 			logger(3, 'Element .view-content-tn not found: popup not initialized')

@@ -275,6 +275,10 @@ export class Client {
 		// Emit disconnected wallet details
 		this.eventSender('disconnected-wallet', null)
 		this.triggerUiUpdateCallback(UIUpdateEventType.WALLET_CHANGE)
+
+		this.eventSender('tokens-selected', {
+			selectedTokens: this.tokenStore.getSelectedTokens(),
+		})
 	}
 
 	async negotiatorConnectToWallet(walletType: string) {
@@ -346,10 +350,6 @@ export class Client {
 
 	private activeNegotiateRequired(): boolean {
 		return this.config.type === 'active'
-	}
-
-	private createCurrentUrlWithoutHash(): string {
-		return window.location.origin + window.location.pathname + window.location.search ?? '?' + window.location.search
 	}
 
 	public getNoTokenMsg(collectionID: string) {
@@ -664,7 +664,9 @@ export class Client {
 		// TODO: Collect tokens from all addresses for this blockchain
 		const walletAddress = walletProvider.getConnectedWalletAddresses(issuer.blockchain)?.[0]
 
-		requiredParams(walletAddress, 'wallet address is missing.')
+		if (!walletAddress) {
+			throw new Error('WALLET_REQUIRED')
+		}
 
 		// TODO: Allow API to return tokens for multiple addresses
 		let tokens
