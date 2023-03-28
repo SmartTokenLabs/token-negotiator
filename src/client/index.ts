@@ -287,6 +287,10 @@ export class Client {
 		// Emit disconnected wallet details
 		this.eventSender('disconnected-wallet', null)
 		this.triggerUiUpdateCallback(UIUpdateEventType.WALLET_CHANGE)
+
+		this.eventSender('tokens-selected', {
+			selectedTokens: this.tokenStore.getSelectedTokens(),
+		})
 	}
 
 	async negotiatorConnectToWallet(walletType: string) {
@@ -361,10 +365,6 @@ export class Client {
 		return this.config.type === 'active'
 	}
 
-	private createCurrentUrlWithoutHash(): string {
-		return window.location.origin + window.location.pathname + window.location.search ?? '?' + window.location.search
-	}
-
 	public getNoTokenMsg(collectionID: string) {
 		const store = this.getTokenStore().getCurrentIssuers()
 		const collectionNoTokenMsg = store[collectionID]?.noTokenMsg
@@ -433,11 +433,7 @@ export class Client {
 
 	private cancelAutoload = true
 
-	async tokenAutoLoad(
-		onLoading: (issuer: string) => void,
-		onComplete: (issuer: string, tokens: any[]) => void,
-		refresh: boolean,
-	) {
+	async tokenAutoLoad(onLoading: (issuer: string) => void, onComplete: (issuer: string, tokens: any[]) => void, refresh: boolean) {
 		if (this.config.autoLoadTokens === false) return
 
 		this.cancelAutoload = false
@@ -460,14 +456,7 @@ export class Client {
 			} catch (e) {
 				e.message = 'Failed to load ' + issuerKey + ': ' + e.message
 				logger(2, e.message)
-				errorHandler(
-					'autoload tokens error',
-					'error',
-					() => this.eventSender('error', { issuer: issuerKey, error: e }),
-					null,
-					true,
-					false,
-				)
+				errorHandler('autoload tokens error', 'error', () => this.eventSender('error', { issuer: issuerKey, error: e }), null, true, false)
 				onComplete(issuerKey, null)
 			}
 
@@ -658,10 +647,7 @@ export class Client {
 
 		// Feature not supported when an end users third party cookies are disabled
 		// because the use of a tab requires a user gesture.
-		if (
-			this.messaging.core.iframeStorageSupport === false &&
-			Object.keys(this.tokenStore.getCurrentTokens(false)).length === 0
-		)
+		if (this.messaging.core.iframeStorageSupport === false && Object.keys(this.tokenStore.getCurrentTokens(false)).length === 0)
 			logger(
 				2,
 				'iFrame storage support not detected: Enable popups via your browser to access off-chain tokens with this negotiation type.',
@@ -703,7 +689,9 @@ export class Client {
 		// TODO: Collect tokens from all addresses for this blockchain
 		const walletAddress = walletProvider.getConnectedWalletAddresses(issuer.blockchain)?.[0]
 
-		requiredParams(walletAddress, 'wallet address is missing.')
+		if (!walletAddress) {
+			throw new Error('WALLET_REQUIRED')
+		}
 
 		// TODO: Allow API to return tokens for multiple addresses
 		let tokens

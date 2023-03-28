@@ -3,7 +3,7 @@ import { TokenList, TokenListItemInterface } from './token-list'
 import { IconView } from './icon-view'
 import { logger } from '../../utils'
 import { UIUpdateEventType } from '../index'
-import { Issuer } from '../interface'
+import { Issuer, OnChainIssuer } from '../interface'
 
 export class SelectIssuers extends AbstractView {
 	issuerListContainer: any
@@ -209,15 +209,12 @@ export class SelectIssuers extends AbstractView {
 	issuerConnectMarkup(title: string, image: string | undefined, issuer: string, tokens: any[], data: Issuer) {
 		let buttonText = ''
 
-		if (tokens?.length)
-			buttonText = data?.fungible ? 'Balance found' : `${tokens.length} token${tokens.length > 1 ? 's' : ''} available`
+		if (tokens?.length) buttonText = data?.fungible ? 'Balance found' : `${tokens.length} token${tokens.length > 1 ? 's' : ''} available`
 
 		return `
             <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
               <div tabindex="0" style="display: flex; align-items: center;">
-                <div class="img-container-tn issuer-icon-tn shimmer-tn" data-image-src="${
-									image ?? ''
-								}" data-token-title="${title}"></div>
+                <div class="img-container-tn issuer-icon-tn shimmer-tn" data-image-src="${image ?? ''}" data-token-title="${title}"></div>
                 <p class="issuer-connect-title">${title}</p>
               </div>
               <button aria-label="connect with the token issuer ${issuer}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" 
@@ -284,12 +281,18 @@ export class SelectIssuers extends AbstractView {
 			if (!tokens) return // Site is redirecting
 		} catch (err) {
 			logger(2, err)
+
+			if (err.message === 'WALLET_REQUIRED') {
+				this.ui.dismissLoader()
+				const issuerConfig = this.client.getTokenStore().getCurrentIssuers(true)[issuer] as OnChainIssuer
+				this.ui.updateUI('wallet', null, { blockchain: issuerConfig.blockchain ?? 'evm' })
+				return
+			}
+
 			this.ui.showError(err)
 			this.client.eventSender('error', { issuer, error: err })
 			return
 		}
-
-		this.ui.dismissLoader()
 
 		if (!tokens?.length) {
 			this.ui.showError(`No tokens found! ${this.client.getNoTokenMsg(issuer)}`)
@@ -307,8 +310,7 @@ export class SelectIssuers extends AbstractView {
 		const connectBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`)
 
 		if (connectBtn) {
-			connectBtn.innerHTML =
-				'<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
+			connectBtn.innerHTML = '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
 			connectBtn.style.display = 'block'
 		}
 	}
@@ -328,9 +330,7 @@ export class SelectIssuers extends AbstractView {
 		let issuers = this.client.getTokenStore().getCurrentIssuers()
 
 		tokenBtn.innerHTML =
-			tokens.length && issuers[issuer].fungible
-				? 'Balance found'
-				: `${tokens.length} token${tokens.length > 1 ? 's' : ''} available`
+			tokens.length && issuers[issuer].fungible ? 'Balance found' : `${tokens.length} token${tokens.length > 1 ? 's' : ''} available`
 		tokenBtn.setAttribute('aria-label', `Navigate to select from ${tokens.length} of your ${issuer} tokens`)
 		tokenBtn.setAttribute('tabIndex', 1)
 

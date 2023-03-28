@@ -9,12 +9,22 @@ export class SelectWallet extends AbstractView {
 		this.client.registerUiUpdateCallback(UIUpdateEventType.WALLET_CHANGE, undefined)
 	}
 
+	private shouldShowBlockchain(blockchain: 'evm' | 'solana' | 'flow') {
+		console.log('Requested blockchain: ', this.params)
+
+		if (this.params.viewOptions.blockchain) {
+			return this.params.viewOptions.blockchain === blockchain
+		}
+
+		return this.client.hasIssuerForBlockchain(blockchain)
+	}
+
 	// TODO: Accept data param to connect specific wallet -
 	//  this is needed when the user clicks load on a token issuer for a wallet type they have not connected.
 	render() {
 		let walletButtons = ''
 
-		if (this.client.hasIssuerForBlockchain('evm')) {
+		if (this.shouldShowBlockchain('evm')) {
 			if (this.client.safeConnectAvailable()) {
 				const safeConnect = getWalletInfo(SupportedWalletProviders.SafeConnect)
 				walletButtons += this.getWalletButtonHtml(safeConnect)
@@ -34,12 +44,12 @@ export class SelectWallet extends AbstractView {
 			}
 		}
 
-		if (this.client.hasIssuerForBlockchain('solana')) {
+		if (this.shouldShowBlockchain('solana')) {
 			const phantom = getWalletInfo(SupportedWalletProviders.Phantom)
 			walletButtons += this.getWalletButtonHtml(phantom)
 		}
 
-		if (this.client.hasIssuerForBlockchain('flow')) {
+		if (this.shouldShowBlockchain('flow')) {
 			const flow = getWalletInfo(SupportedWalletProviders.Flow)
 			walletButtons += this.getWalletButtonHtml(flow)
 		}
@@ -101,10 +111,7 @@ export class SelectWallet extends AbstractView {
 		logger(2, 'Connect wallet: ' + wallet)
 
 		this.ui.showLoaderDelayed(
-			[
-				'<h4>Connecting to ' + walletlabel + '...</h4>',
-				'<small>You may need to unlock your wallet to continue.</small>',
-			],
+			['<h4>Connecting to ' + walletlabel + '...</h4>', '<small>You may need to unlock your wallet to continue.</small>'],
 			500,
 		)
 
@@ -120,7 +127,7 @@ export class SelectWallet extends AbstractView {
 				this.ui.updateUI('main', { viewName: 'main' }, { viewTransition: 'slide-in-right' })
 			}
 		} catch (err: any) {
-			logger(2, "negotiatorConnectToWallet error", e)
+			logger(2, 'negotiatorConnectToWallet error', e)
 			this.ui.showError(err)
 			return
 		}
