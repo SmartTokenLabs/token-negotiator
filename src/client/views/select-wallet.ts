@@ -10,8 +10,6 @@ export class SelectWallet extends AbstractView {
 	}
 
 	private shouldShowBlockchain(blockchain: 'evm' | 'solana' | 'flow') {
-		console.log('Requested blockchain: ', this.params)
-
 		if (this.params.viewOptions.blockchain) {
 			return this.params.viewOptions.blockchain === blockchain
 		}
