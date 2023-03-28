@@ -75,16 +75,6 @@ describe('client spec', () => {
 		})
 	})
 
-	test('tokenNegotiatorClient temp', async () => {
-		let client = getOffChainConfigClient()
-
-		client.on('tokens-selected', (data) => {
-			console.log('test data ====>', data)
-		})
-
-		await client.negotiate()
-	})
-
 	test('tokenNegotiatorClient a new instance of client', () => {
 		const tokenNegotiatorClient = getOffChainConfigClient()
 
