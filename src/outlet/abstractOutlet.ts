@@ -53,7 +53,7 @@ export abstract class AbstractOutlet {
 	 * @private
 	 * @returns false when no changes to the data are required - the token is already added
 	 */
-	protected mergeNewToken(newToken: OffChainTokenData, existingTokens: OffChainTokenData[]): OffChainTokenData[] | false {
+	public mergeNewToken(newToken: OffChainTokenData, existingTokens: OffChainTokenData[]): OffChainTokenData[] | false {
 		const decodedNewToken = decodeToken(newToken, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName, false)
 
 		const newTokenId = this.getUniqueTokenId(decodedNewToken)
