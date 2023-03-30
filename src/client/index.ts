@@ -318,7 +318,6 @@ export class Client {
 					this.tokenStore.updateTokenLookupStore(issuer, lookupData)
 				}
 			} catch (e) {
-				console.log('enrichTokenLookupDataOnChainTokens error =>', e)
 				logger(2, 'Failed to load contract data for ' + issuer + ': ' + e.message)
 			}
 		}
@@ -421,11 +420,7 @@ export class Client {
 
 	private cancelAutoload = true
 
-	async tokenAutoLoad(
-		onLoading: (issuer: string) => void,
-		onComplete: (issuer: string, tokens: any[]) => void,
-		refresh: boolean,
-	) {
+	async tokenAutoLoad(onLoading: (issuer: string) => void, onComplete: (issuer: string, tokens: any[]) => void, refresh: boolean) {
 		if (this.config.autoLoadTokens === false) return
 
 		this.cancelAutoload = false
@@ -448,14 +443,7 @@ export class Client {
 			} catch (e) {
 				e.message = 'Failed to load ' + issuerKey + ': ' + e.message
 				logger(2, e.message)
-				errorHandler(
-					'autoload tokens error',
-					'error',
-					() => this.eventSender('error', { issuer: issuerKey, error: e }),
-					null,
-					true,
-					false,
-				)
+				errorHandler('autoload tokens error', 'error', () => this.eventSender('error', { issuer: issuerKey, error: e }), null, true, false)
 				onComplete(issuerKey, null)
 			}
 
@@ -594,8 +582,6 @@ export class Client {
 			issuer: this.getDataFromQuery('issuer'),
 			error: new Error(error),
 		})
-
-		console.log('Error loading tokens from outlet: ', error)
 	}
 
 	async setPassiveNegotiationOnChainTokens() {
@@ -649,10 +635,7 @@ export class Client {
 
 		// Feature not supported when an end users third party cookies are disabled
 		// because the use of a tab requires a user gesture.
-		if (
-			this.messaging.core.iframeStorageSupport === false &&
-			Object.keys(this.tokenStore.getCurrentTokens(false)).length === 0
-		)
+		if (this.messaging.core.iframeStorageSupport === false && Object.keys(this.tokenStore.getCurrentTokens(false)).length === 0)
 			logger(
 				2,
 				'iFrame storage support not detected: Enable popups via your browser to access off-chain tokens with this negotiation type.',
@@ -918,7 +901,6 @@ export class Client {
 				}
 			} catch (err) {
 				logger(2, err)
-				console.log('issuer config error ' + err.message)
 			}
 		})
 
@@ -941,7 +923,6 @@ export class Client {
 				}
 			} catch (err) {
 				logger(2, err)
-				console.log('issuer config error')
 			}
 
 			// if any issuerConfig missing tokenOrigin or something wrong then skip sameOrigin flow

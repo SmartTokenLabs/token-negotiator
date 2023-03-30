@@ -151,7 +151,6 @@ export class AuthHandler {
 
 				this.interval = setInterval(() => {
 					if (this.attestationTabHandler.closed) {
-						console.log('child tab closed... ')
 						clearInterval(this.interval)
 						this.rejectHandler(new Error('User closed TAB'))
 					}
