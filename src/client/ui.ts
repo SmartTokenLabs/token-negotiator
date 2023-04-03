@@ -122,8 +122,7 @@ export class Ui implements UiInterface {
 		if (this.options.viewOverrides?.[type]) {
 			if (this.options.viewOverrides?.[type].options) viewOptions = this.options.viewOverrides?.[type].options
 
-			if (this.options.viewOverrides?.[type].component)
-				return [this.options.viewOverrides?.[type].component, viewOptions]
+			if (this.options.viewOverrides?.[type].component) return [this.options.viewOverrides?.[type].component, viewOptions]
 		}
 
 		return [this.getDefaultView(type), viewOptions]
@@ -179,15 +178,11 @@ export class Ui implements UiInterface {
 
 		switch (this.options.uiType) {
 			case 'popup':
-				this.options.position
-					? this.popupContainer.classList.add(this.options.position)
-					: this.popupContainer.classList.add('bottom-right')
+				this.options.position ? this.popupContainer.classList.add(this.options.position) : this.popupContainer.classList.add('bottom-right')
 
 				this.popupContainer.innerHTML = this.getUIContainer() + this.getFabButton()
 
-				this.popupContainer
-					.querySelector('.overlay-fab-button-tn')
-					.addEventListener('click', this.togglePopup.bind(this))
+				this.popupContainer.querySelector('.overlay-fab-button-tn').addEventListener('click', this.togglePopup.bind(this))
 
 				this.popupContainer.addEventListener('click', (event: Event) => {
 					event.stopPropagation()
