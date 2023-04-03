@@ -375,7 +375,7 @@ export class Outlet extends AbstractOutlet {
 		document.location.href = requesterURL + '#' + params.toString()
 	}
 
-	private isSameOrigin() {
+	public isSameOrigin() {
 		try {
 			let tokenUrl = new URL(this.tokenConfig.tokenOrigin)
 			if (tokenUrl.origin === document.location.origin) {
