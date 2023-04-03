@@ -1,8 +1,8 @@
 import { ethers } from 'ethers'
-import { logger } from '../utils'
+import { logger, strToHexStr, strToUtfBytes } from '../utils'
 import { SafeConnectOptions } from './SafeConnectProvider'
 import { Client } from '../client'
-import { SupportedBlockchainsParam, WalletOptionsInterface } from '../client/interface'
+import { SupportedBlockchainsParam, WalletOptionsInterface, SignatureSupportedBlockchainsParamList } from '../client/interface'
 
 interface WalletConnectionState {
 	[index: string]: WalletConnection
@@ -13,7 +13,7 @@ export interface WalletConnection {
 	chainId: number | string
 	providerType: string
 	blockchain: SupportedBlockchainsParam
-	provider?: ethers.providers.Web3Provider
+	provider?: ethers.providers.Web3Provider | any // solana(phantom) have different interface
 	ethers?: any
 }
 
@@ -38,7 +38,7 @@ export class Web3WalletProvider {
 		let savedConnections: WalletConnectionState = {}
 
 		for (let address in this.connections) {
-			let con = this.connections[address]
+			let con = this.connections[address.toLowerCase()]
 
 			savedConnections[address] = {
 				address: con.address,
@@ -51,10 +51,10 @@ export class Web3WalletProvider {
 		localStorage.setItem(Web3WalletProvider.LOCAL_STORAGE_KEY, JSON.stringify(savedConnections))
 	}
 
-	emitSavedConnection(address: string) {
+	emitSavedConnection(address: string): WalletConnection | null {
 		if (Object.keys(this.connections).length && address) {
-			this.client.eventSender('connected-wallet', this.connections[address.toLocaleLowerCase()])
-			return this.connections[address.toLocaleLowerCase()]
+			this.client.eventSender('connected-wallet', this.connections[address.toLowerCase()])
+			return this.connections[address.toLowerCase()]
 		} else {
 			return null
 		}
@@ -171,18 +171,41 @@ export class Web3WalletProvider {
 	// TODO: Implement signing for Solana & Flow wallets
 	async signMessage(address: string, message: string) {
 		let provider = this.getWalletProvider(address)
+		let connection = this.getConnectionByAddress(address)
 
-		let signer = provider.getSigner(address)
+		if (connection.blockchain === 'evm') {
+			let signer = provider.getSigner(address)
+			return await signer.signMessage(message)
+		} else if (connection.blockchain === 'solana') {
+			const signedMessage = await provider.signMessage(strToUtfBytes(message), 'utf8')
+			return signedMessage.signature.toString('hex')
+		} else if (connection.blockchain === 'flow') {
+			let signatureObj = await provider.currentUser.signUserMessage(strToHexStr(message))
 
-		return await signer.signMessage(message)
+			if (signatureObj.length > 0) {
+				console.log(signatureObj[0].signature)
+				return signatureObj[0].signature
+			} else {
+				throw new Error('No signature')
+			}
+		} else {
+			throw new Error(`Blockchain "${connection.blockchain}" not supported`)
+		}
+	}
+
+	getConnectionByAddress(address: string) {
+		return this.connections[address.toLowerCase()]
 	}
 
 	getWalletProvider(address: string) {
 		address = address.toLowerCase()
 
-		if (!this.connections[address]?.provider) throw new Error('Wallet provider not found for address')
+		let connection = this.getConnectionByAddress(address)
 
-		return this.connections[address].provider
+		if (!connection) throw new Error('Connection not found for address')
+		if (!connection.provider) throw new Error('Wallet provider not found for address')
+
+		return connection.provider
 	}
 
 	hasAnyConnection(blockchain: SupportedBlockchainsParam[]) {
@@ -203,6 +226,15 @@ export class Web3WalletProvider {
 		return Object.values(this.connections).filter((connection) => connection.blockchain === blockchain)
 	}
 
+	getSingleSignatureCompatibleConnection(): WalletConnection | false {
+		let connection: WalletConnection | false = false
+		SignatureSupportedBlockchainsParamList.forEach((bc) => {
+			let connections = Object.values(this.connections).filter((connection) => connection.blockchain === bc)
+			if (connections.length) connection = connections[0]
+		})
+		return connection
+	}
+
 	registerNewWalletAddress(
 		address: string,
 		chainId: number | string,
@@ -210,8 +242,109 @@ export class Web3WalletProvider {
 		provider: any,
 		blockchain: SupportedBlockchainsParam,
 	) {
+		// some blockchains, like solana, use addresses in base58
+		// its case-sensitive, but chance to have collision
+		// for single user almost zero
 		this.connections[address.toLowerCase()] = { address, chainId, providerType, provider, blockchain, ethers }
-		return address
+		switch (blockchain) {
+			case 'solana':
+				provider.on('connect', (publicKey) => {
+					let newAddress = publicKey.toBase58()
+					logger(2, 'connected wallet: ', newAddress)
+					this.registerNewWalletAddress(newAddress, 'mainnet-beta', 'phantom', window.solana, 'solana')
+				})
+
+				// Forget user's public key once they disconnect
+				provider.on('disconnect', () => {
+					logger(2, 'disconnected wallet.')
+					delete this.connections[address.toLowerCase()]
+					/**
+					 * TODO do we need to disconnect all wallets?
+					 * for now user cant connect to multiple wallets
+					 * but do we need it for future?
+					 */
+					this.client.disconnectWallet()
+				})
+
+				provider.on('accountChanged', (publicKey) => {
+					delete this.connections[address.toLowerCase()]
+					if (publicKey) {
+						// Set new public key and continue as usual
+						logger(2, `Switched to account ${publicKey.toBase58()}`)
+						this.registerNewWalletAddress(publicKey.toBase58(), 'mainnet-beta', 'phantom', window.solana, 'solana')
+					} else {
+						logger(2, 'Disconnected from wallet')
+						delete this.connections[address.toLowerCase()]
+						/**
+						 * TODO do we need to disconnect all wallets?
+						 * for now user cant connect to multiple wallets
+						 * but do we need it for future?
+						 */
+						this.client.disconnectWallet()
+					}
+				})
+				break
+			case 'flow':
+				provider.currentUser().subscribe((user) => {
+					// TODO create multiple wallets and test wallet change
+					logger(2, '=========Flow user subscription: ', user)
+				})
+				break
+			case 'evm':
+				// @ts-ignore
+				provider.provider.on('accountsChanged', (accounts) => {
+					logger(2, 'accountsChanged: ', accounts)
+					if (!accounts || accounts.length === 0) {
+						/**
+						 * TODO do we need to disconnect all wallets?
+						 * for now user cant connect to multiple wallets
+						 * but do we need it for future?
+						 */
+						this.client.disconnectWallet()
+						return
+					}
+
+					if (address === accounts[0]) return
+
+					delete this.connections[address.toLowerCase()]
+
+					address = accounts[0]
+
+					this.registerNewWalletAddress(address, chainId, providerType, provider, 'evm')
+
+					this.saveConnections()
+
+					this.emitSavedConnection(address)
+
+					this.client.getTokenStore().clearCachedTokens()
+					this.client.enrichTokenLookupDataOnChainTokens()
+				})
+
+				// @ts-ignore
+				provider.provider.on('chainChanged', (_chainId: any) => {
+					this.registerNewWalletAddress(address, _chainId, providerType, provider, 'evm')
+
+					this.saveConnections()
+
+					this.emitNetworkChange(_chainId)
+				})
+
+				// @ts-ignore
+				// walletconnect
+				provider.provider.on('disconnect', (reason: any) => {
+					if (reason?.message && reason.message.indexOf('MetaMask: Disconnected from chain') > -1) return
+					/**
+					 * TODO do we need to disconnect all wallets?
+					 * for now user cant connect to multiple wallets
+					 * but do we need it for future?
+					 */
+					this.client.disconnectWallet()
+				})
+				break
+			default:
+				logger(2, 'Unknown blockchain, dont attach listeners')
+				return
+		}
 	}
 
 	private async registerEvmProvider(provider: ethers.providers.Web3Provider, providerName: string) {
@@ -226,47 +359,7 @@ export class Web3WalletProvider {
 
 		this.registerNewWalletAddress(curAccount, chainId, providerName, provider, 'evm')
 
-		// @ts-ignore
-		provider.provider.on('accountsChanged', (accounts) => {
-			if (!accounts || accounts.length === 0) {
-				this.client.disconnectWallet()
-				return
-			}
-
-			if (curAccount === accounts[0]) return
-
-			delete this.connections[curAccount.toLowerCase()]
-
-			curAccount = accounts[0]
-
-			this.registerNewWalletAddress(curAccount, chainId, providerName, provider, 'evm')
-
-			this.saveConnections()
-
-			this.emitSavedConnection(curAccount)
-
-			this.client.getTokenStore().clearCachedTokens()
-			this.client.enrichTokenLookupDataOnChainTokens()
-		})
-
-		// @ts-ignore
-		provider.provider.on('chainChanged', (_chainId: any) => {
-			this.registerNewWalletAddress(accounts[0], _chainId, providerName, provider, 'evm')
-
-			this.saveConnections()
-
-			this.emitNetworkChange(_chainId)
-		})
-
-		// @ts-ignore
-		// walletconnect
-		provider.provider.on('disconnect', (reason: any) => {
-			if (reason?.message && reason.message.indexOf('MetaMask: Disconnected from chain') > -1) return
-
-			this.client.disconnectWallet()
-		})
-
-		return accounts[0]
+		return curAccount
 	}
 
 	async MetaMask(checkConnectionOnly: boolean) {
@@ -401,7 +494,8 @@ export class Web3WalletProvider {
 
 			// mainnet-beta
 			// TODO: Create registerSolanaProvider method to create event listeners (see registerEvmProvider)
-			return this.registerNewWalletAddress(accountAddress, 'mainnet-beta', 'phantom', window.solana, 'solana')
+			this.registerNewWalletAddress(accountAddress, 'mainnet-beta', 'phantom', window.solana, 'solana')
+			return accountAddress
 		} else {
 			throw new Error('Phantom is not available. Please check the extension is supported and active.')
 		}

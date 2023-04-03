@@ -42,6 +42,7 @@
   "homepage": "https://github.com/TokenScript/token-negotiator#readme",
   "dependencies": {
     "@onflow/fcl": "^1.3.2",
+    "@onflow/types": "^1.0.5",
     "@peculiar/asn1-schema": "^2.2.0",
     "@tokenscript/attestation": "0.4.2",
     "@toruslabs/torus-embed": "^1.25.0",
@@ -51,6 +52,7 @@
     "ethers": "^5.4.0",
     "pvutils": "^1.0.17",
     "text-encoding": "^0.7.0",
+    "tweetnacl": "^1.0.3",
     "web3-eth-accounts": "^1.7.4"
   },
   "devDependencies": {

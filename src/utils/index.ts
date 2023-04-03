@@ -85,14 +85,7 @@ export const waitForElementToExist = (selector: string): Promise<Element> => {
 
 export type ErrorType = 'warning' | 'info' | 'error'
 
-export const errorHandler = (
-	error: any,
-	type: ErrorType,
-	action?: Function | null,
-	data?: unknown,
-	log = true,
-	throwError = false,
-) => {
+export const errorHandler = (error: any, type: ErrorType, action?: Function | null, data?: unknown, log = true, throwError = false) => {
 	let errorMsg
 
 	if (typeof error === 'object') {
@@ -139,11 +132,7 @@ export const tokenRequest = async (query: string, silenceRequestError: boolean) 
  * @param additionalParams
  * @param namespace
  */
-export const removeUrlSearchParams = (
-	params: URLSearchParams,
-	additionalParams: string[] = [],
-	namespace: string | null = URLNS,
-) => {
+export const removeUrlSearchParams = (params: URLSearchParams, additionalParams: string[] = [], namespace: string | null = URLNS) => {
 	if (namespace)
 		for (let key of Array.from(params.keys())) {
 			// Iterator needs to be converted to array since we are deleting keys
@@ -155,4 +144,55 @@ export const removeUrlSearchParams = (
 	}
 
 	return params
+}
+
+export const base58ToUint8Array = (base58String) => {
+	const alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
+	const base = alphabet.length
+	const bytes = [0]
+	for (let i = 0; i < base58String.length; i++) {
+		const char = base58String[i]
+		const charIndex = alphabet.indexOf(char)
+		if (charIndex === -1) throw new Error(`Invalid Base58 character '${char}'`)
+		for (let j = 0; j < bytes.length; j++) bytes[j] *= base
+		bytes[0] += charIndex
+		let carry = 0
+		for (let j = 0; j < bytes.length; j++) {
+			bytes[j] += carry
+			carry = bytes[j] >> 8
+			bytes[j] &= 0xff
+		}
+		while (carry) {
+			bytes.push(carry & 0xff)
+			carry >>= 8
+		}
+	}
+	return new Uint8Array(bytes.reverse())
+}
+
+export const strToHexStr = (str: string): string => {
+	if (typeof Buffer !== 'undefined') {
+		return Buffer.from(str).toString('hex')
+	} else {
+		return Array.from(strToUtfBytes(str))
+			.map((b) => b.toString(16).padStart(2, '0'))
+			.join('')
+	}
+}
+
+export const strToUtfBytes = (str: string): Uint8Array => {
+	const encoder = new TextEncoder()
+	return encoder.encode(str)
+}
+
+export const hexStringToUint8Array = (hexString: string): Uint8Array => {
+	if (hexString.length % 2 === 1) {
+		throw new Error('Wrong Hex String')
+	}
+	const uint8Array = new Uint8Array(hexString.length / 2)
+
+	for (let i = 0; i < hexString.length; i += 2) {
+		uint8Array[i / 2] = parseInt(hexString.slice(i, i + 2), 16)
+	}
+	return uint8Array
 }

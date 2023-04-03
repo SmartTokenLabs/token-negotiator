@@ -1,4 +1,7 @@
 import { ethers } from 'ethers'
+import { sign } from 'tweetnacl'
+import { base58ToUint8Array, hexStringToUint8Array, strToHexStr, strToUtfBytes } from '../../../utils'
+import * as flowTypes from '@onflow/types'
 
 export interface UNInterface {
 	expiration: number
@@ -8,6 +11,7 @@ export interface UNInterface {
 	messageToSign: string
 	address?: string
 	signature?: string
+	blockchain?: string
 }
 
 export class UN {
@@ -21,12 +25,73 @@ export class UN {
 		}
 	}
 
-	public static recoverAddress(un: UNInterface) {
+	public static async recoverAddress(un: UNInterface) {
 		if (!un.signature) throw new Error('Null signature')
 
-		const msgHash = ethers.utils.hashMessage(un.messageToSign)
-		const msgHashBytes = ethers.utils.arrayify(msgHash)
-		return ethers.utils.recoverAddress(msgHashBytes, un.signature).toLowerCase()
+		if (un.blockchain === 'solana') {
+			return await sign.detached.verify(
+				strToUtfBytes(un.messageToSign),
+				hexStringToUint8Array(un.signature),
+				base58ToUint8Array(un.address),
+			)
+		} else if (un.blockchain === 'flow') {
+			const flowProvider = await import('../../../wallet/FlowProvider')
+			const fcl = flowProvider.getFlowProvider()
+
+			try {
+				const response = await fcl
+					.send([
+						fcl.script`
+        pub fun main(address: Address, sig: String, msg: String): Bool {
+            let account = getAccount(address)
+            let sig = sig.decodeHex()
+            let msg = msg.decodeHex()
+            let isValid = false
+            var keyNumber = account.keys.count
+            var res: Bool = false
+            while keyNumber > 0 {
+                let accountKey = account.keys.get(keyIndex: Int(keyNumber - 1)) ?? panic("This keyIndex does not exist in this account")
+                let key = accountKey.publicKey
+                if key.verify(
+                    signature: sig, 
+                    signedData: msg, 
+                    domainSeparationTag: "FLOW-V0.0-user", 
+                    hashAlgorithm: HashAlgorithm.SHA3_256
+                ) {
+                    res = true
+                    break
+                }
+                keyNumber = keyNumber - 1
+            }
+            return res
+        }
+        `,
+						fcl.args([
+							fcl.arg(un.address, flowTypes.Address),
+							fcl.arg(un.signature, flowTypes.String),
+							fcl.arg(strToHexStr(un.messageToSign), flowTypes.String),
+						]),
+					])
+					.then(fcl.decode)
+				if (response) {
+					return true
+				}
+			} catch (e) {
+				console.log('Flow address recover error')
+			}
+			return false
+		} else if (un.blockchain === 'evm') {
+			const msgHash = ethers.utils.hashMessage(un.messageToSign)
+			const msgHashBytes = ethers.utils.arrayify(msgHash)
+			let recoveredAddr = ethers.utils.recoverAddress(msgHashBytes, un.signature).toLowerCase()
+			if (recoveredAddr === un.address.toLowerCase()) {
+				return true
+			}
+		} else {
+			throw new Error(`Blockchain "${un.blockchain}" not supported`)
+		}
+		// we should not be here
+		return false
 	}
 
 	public static async validateChallenge(endPoint: string, data: UNInterface) {

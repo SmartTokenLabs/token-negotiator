@@ -4,7 +4,9 @@ import { SafeConnectOptions } from '../wallet/SafeConnectProvider'
 import { BrowserDataInterface } from '../utils/support/isSupported'
 import { WalletConnection } from '../wallet/Web3WalletProvider'
 
+// add new blockchain to both rows
 export type SupportedBlockchainsParam = 'evm' | 'flow' | 'solana'
+export const SignatureSupportedBlockchainsParamList = ['evm', 'flow', 'solana']
 
 export interface OffChainTokenConfig extends IssuerConfigInterface {
 	onChain: false
