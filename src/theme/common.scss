@@ -265,7 +265,13 @@
 .overlay-tn .overlay-content-tn .token-tn {
   display: flex;
   align-items: center;
+  flex-direction: column;
   padding: 12px 0;
+}
+
+.overlay-tn .overlay-content-tn .token-details-tn {
+  display: flex;
+  align-items: center;
 }
 
 .overlay-tn .back-to-menu-tn {

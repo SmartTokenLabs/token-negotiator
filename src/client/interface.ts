@@ -21,6 +21,13 @@ export interface OnChainTokenConfig extends IssuerConfigInterface {
 	chain: string
 	openSeaSlug?: string
 	blockchain?: SupportedBlockchainsParam
+	tokenScript?: {
+		// Contract & chain will later be used for off-chain tokens or to override
+		// these values specifically for Tokenscript functionality
+		contract?: string
+		chain?: number
+		actions: { name: string; label: string }[]
+	}
 }
 
 export interface SolanaIssuerConfig extends OnChainTokenConfig {
@@ -69,6 +76,10 @@ export interface NegotiationInterface {
 	noInternetErrorMessage?: string
 	experimentalFeatures?: string[]
 	walletOptions?: WalletOptionsInterface
+	tokenScript?: {
+		integrationType?: 'iframe' | 'redirect'
+		viewerUrl?: string
+	}
 }
 
 export interface WalletOptionsInterface {

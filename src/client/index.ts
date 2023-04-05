@@ -88,6 +88,10 @@ export const defaultConfig: NegotiationInterface = {
 			errorMessage: NOT_SUPPORTED_ERROR,
 		},
 	},
+	tokenScript: {
+		viewerUrl: 'https://viewer.tokenscript.org/',
+		integrationType: 'redirect',
+	},
 }
 
 export const enum UIUpdateEventType {

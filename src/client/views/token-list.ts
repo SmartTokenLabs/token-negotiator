@@ -2,6 +2,8 @@ import { AbstractView } from './view-interface'
 import { IconView } from './icon-view'
 import { logger } from '../../utils'
 import { ethers } from 'ethers'
+import { OnChainTokenConfig } from '../interface'
+import { ActionHandler } from '../tokenScript/actionHandler'
 
 export interface TokenListItemInterface {
 	tokenIssuerKey: string
@@ -29,6 +31,16 @@ export class TokenList extends AbstractView {
 				this.tokenToggleSelection()
 			} else if (e.target.classList.contains('load-more-btn-tn')) {
 				this.loadMoreTokens()
+			} else if (e.target.classList.contains('tn-ts-action-btn')) {
+				const actionHandler = new ActionHandler(this.client)
+
+				const issuer = e.target.getAttribute('data-issuer')
+				const action = e.target.getAttribute('data-action')
+				const tokenId = e.target.getAttribute('data-tokenid')
+
+				const issuerConfig = this.client.getTokenStore().getCurrentIssuers(true)[issuer] as OnChainTokenConfig
+
+				actionHandler.executeTokenScriptAction(issuerConfig, action, tokenId)
 			}
 		})
 	}
@@ -139,16 +151,13 @@ export class TokenList extends AbstractView {
 	}
 
 	createTokenMarkup(config: TokenListItemInterface) {
-		const { tokenIssuerKey, title, data, index, image, toggleState, hideToggle, balance, fungible, decimals, symbol } =
-			config
+		const { tokenIssuerKey, title, data, index, image, toggleState, hideToggle, balance, fungible, decimals, symbol } = config
 
 		let detail, abrieviated
 
 		if (!fungible) {
 			detail = index
-			abrieviated =
-				'#' +
-				(index.length > 15 ? index.substring(0, 5) + '...' + index.substring(index.length - 5, index.length) : index)
+			abrieviated = '#' + (index.length > 15 ? index.substring(0, 5) + '...' + index.substring(index.length - 5, index.length) : index)
 		} else {
 			const balanceTxt = ethers.utils.formatUnits(balance, decimals)
 
@@ -158,25 +167,38 @@ export class TokenList extends AbstractView {
 
 		const isChecked = toggleState ? 'checked' : ''
 
+		const issuerConfig = this.client.getTokenStore().getCurrentIssuers(true)[tokenIssuerKey] as OnChainTokenConfig
+
 		return (
 			`
             <li class='token-tn'>
-              <div class="img-container-tn image-tn shimmer-tn" data-image-src="${
-			image ?? ''
-			}" data-token-title="${title}"></div>
-              <div class='data-tn'>
-                  <p class='token-title-tn'>${title}</p>
-                  <p class='detail-tn' title="${detail}">
-                  	${abrieviated}
-				  </p>
-                </div>` +
+              <div class="token-details-tn">
+				  <div class="img-container-tn image-tn shimmer-tn" data-image-src="${image ?? ''}" data-token-title="${title}"></div>
+				  <div class='data-tn'>
+					  <p class='token-title-tn'>${title}</p>
+					  <p class='detail-tn' title="${detail}">
+						${abrieviated}
+					  </p>
+					</div>` +
 			(hideToggle
 				? ''
 				: `<div class='toggle-tn'>
-                <input ${isChecked} data-key='${tokenIssuerKey}' data-token='${JSON.stringify(data)}'
-				data-index='${index}' type='checkbox' name='toggle${index}' class='mobileToggle-tn toggle-tn' id='toggle${index}'>
-                <label for='toggle${index}'></label>
-              </div>`) +
+					<input ${isChecked} data-key='${tokenIssuerKey}' data-token='${JSON.stringify(data)}'
+					data-index='${index}' type='checkbox' name='toggle${index}' class='mobileToggle-tn toggle-tn' id='toggle${index}'>
+					<label for='toggle${index}'></label>
+				  </div>`) +
+			`</div>` +
+			(issuerConfig.tokenScript?.actions?.length > 0
+				? `
+						<div class="tn-tokenscript-actions">
+						${issuerConfig.tokenScript.actions
+							.map((action) => {
+								return `<button class="tn-ts-action-btn" data-issuer="${tokenIssuerKey}" data-action="${action.name}" data-tokenid="${index}">${action.label}</button>`
+							})
+							.join('\n')}
+						</div>
+					`
+				: '') +
 			`</li>
         `
 		)
