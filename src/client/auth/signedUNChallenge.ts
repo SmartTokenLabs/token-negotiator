@@ -32,7 +32,7 @@ export class SignedUNChallenge extends AbstractAuthentication implements Authent
 		if (currentProof) {
 			let unChallenge = currentProof?.data as UNInterface
 
-			if (unChallenge.expiration < Date.now() || !UN.recoverAddress(unChallenge)) {
+			if (unChallenge.expiration < Date.now() || !UN.verifySignature(unChallenge)) {
 				this.deleteProof(address)
 				currentProof = null
 			}
@@ -65,7 +65,7 @@ export class SignedUNChallenge extends AbstractAuthentication implements Authent
 			// Check that recovered address matches the signature of the requested address
 			challenge.signature = signature
 			challenge.blockchain = connection.blockchain
-			if (!(await UN.recoverAddress(challenge))) {
+			if (!(await UN.verifySignature(challenge))) {
 				throw new Error('Address signature is invalid')
 			}
 

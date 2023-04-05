@@ -25,7 +25,7 @@ export class UN {
 		}
 	}
 
-	public static async recoverAddress(un: UNInterface) {
+	public static async verifySignature(un: UNInterface) {
 		if (!un.signature) throw new Error('Null signature')
 
 		if (un.blockchain === 'solana') {
@@ -80,7 +80,7 @@ export class UN {
 				console.log('Flow address recover error')
 			}
 			return false
-		} else if (un.blockchain === 'evm') {
+		} else if (!un.blockchain || un.blockchain === 'evm') {
 			const msgHash = ethers.utils.hashMessage(un.messageToSign)
 			const msgHashBytes = ethers.utils.arrayify(msgHash)
 			let recoveredAddr = ethers.utils.recoverAddress(msgHashBytes, un.signature).toLowerCase()

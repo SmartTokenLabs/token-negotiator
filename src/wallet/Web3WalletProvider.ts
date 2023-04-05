@@ -173,7 +173,7 @@ export class Web3WalletProvider {
 		let provider = this.getWalletProvider(address)
 		let connection = this.getConnectionByAddress(address)
 
-		if (connection.blockchain === 'evm') {
+		if (!connection.blockchain || connection.blockchain === 'evm') {
 			let signer = provider.getSigner(address)
 			return await signer.signMessage(message)
 		} else if (connection.blockchain === 'solana') {
