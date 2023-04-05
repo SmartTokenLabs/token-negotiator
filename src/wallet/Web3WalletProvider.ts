@@ -292,7 +292,7 @@ export class Web3WalletProvider {
 				break
 			case 'evm':
 				// @ts-ignore
-				provider.provider.on('accountsChanged', (accounts) => {
+				provider.on('accountsChanged', (accounts) => {
 					logger(2, 'accountsChanged: ', accounts)
 					if (!accounts || accounts.length === 0) {
 						/**
@@ -321,7 +321,7 @@ export class Web3WalletProvider {
 				})
 
 				// @ts-ignore
-				provider.provider.on('chainChanged', (_chainId: any) => {
+				provider.on('chainChanged', (_chainId: any) => {
 					this.registerNewWalletAddress(address, _chainId, providerType, provider, 'evm')
 
 					this.saveConnections()
@@ -331,7 +331,7 @@ export class Web3WalletProvider {
 
 				// @ts-ignore
 				// walletconnect
-				provider.provider.on('disconnect', (reason: any) => {
+				provider.on('disconnect', (reason: any) => {
 					if (reason?.message && reason.message.indexOf('MetaMask: Disconnected from chain') > -1) return
 					/**
 					 * TODO do we need to disconnect all wallets?
