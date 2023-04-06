@@ -324,7 +324,7 @@ const onChainIssuer = {
 ```
 
 ### Managing Issuers on chain (Solana)
-
+:warning: You must supply a certified collectionAddress OR a combination of symbol and either ownerProgram or updateAuthority.
 ```javascript
 /**
  * @param {String} blockchain string of which blockchain is needed (optional input: default is 'evm')
