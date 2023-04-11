@@ -43,6 +43,12 @@ jobs:
             npm i -E "@tokenscript/attestation@${ATTESTATION_VER}"
             cat package.json
           fi
+          # make SNAPSHOT-staging package to use @tokenscript/attestation:SNAPSHOT-staging
+          if [ "${GITHUB_EVENT_NAME}" = "push" -a "${GITHUB_REF_NAME}" = "staging" ]; then
+            echo "//npm.pkg.github.com/:_authToken=${GPR_KEY}" >> .npmrc
+            echo "@tokenscript:registry=https://npm.pkg.github.com" >> .npmrc
+            npm i "@tokenscript/attestation@SNAPSHOT-staging"
+          fi
         env:
           ATTESTATION_VER: ${{ inputs.attestation_ver }}
           USE_GITHUB_PACKAGES: ${{ inputs.use_github_packages }}
@@ -79,8 +85,8 @@ jobs:
         if: github.event_name == 'push' && contains('refs/heads/staging refs/heads/main', github.ref)
         uses: actions/setup-node@v3
         with:
-          node-version: '16.x'
-          registry-url: 'https://npm.pkg.github.com'
+          node-version: "16.x"
+          registry-url: "https://npm.pkg.github.com"
 
       - name: "Publish NPM snapshot"
         if: github.event_name == 'push' && contains('refs/heads/staging refs/heads/main', github.ref)
