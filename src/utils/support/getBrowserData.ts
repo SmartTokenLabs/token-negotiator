@@ -5,7 +5,11 @@ export const getBrowserData = () => {
 	// detect browser
 	const isIE = UA && /msie|trident/.test(UA)
 	const isIE9 = UA && UA.indexOf('msie 9.0') > 0
-	const isEdge = UA && UA.indexOf('edg/') > 0
+	const isEdgeDesktop = UA && UA.indexOf('edg/') > 0
+	const isEdgeAndroid = UA && UA.indexOf('edga/') > 0
+	const isEdgeIOS = UA && UA.indexOf('edgios/') > 0
+	const isEdgeOtherMobile = UA && UA.indexOf('edge/') > 0
+	const isEdge = isEdgeDesktop || isEdgeAndroid || isEdgeIOS || isEdgeOtherMobile
 	const isChrome = UA && /chrome\/\d+/.test(UA) && !isEdge
 	const isPhantomJS = UA && /phantomjs/.test(UA)
 	const isFireFox = UA && /firefox|fxios\/\d+/.test(UA)
@@ -55,6 +59,8 @@ export const getBrowserData = () => {
 		iE: isIE,
 		iE9: isIE9,
 		edge: isEdge,
+		edgeAndroid: isEdgeAndroid,
+		edgeIOS: isEdgeIOS,
 		chrome: isChrome,
 		phantomJS: isPhantomJS,
 		fireFox: isFireFox,
