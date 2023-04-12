@@ -20,12 +20,7 @@ export class LocalOutlet {
 
 		if (!storageTokens) return []
 
-		const decodedTokens = decodeTokens(
-			storageTokens,
-			this.tokenConfig.tokenParser,
-			this.tokenConfig.unsignedTokenDataName,
-			true,
-		)
+		const decodedTokens = decodeTokens(storageTokens, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName, true)
 
 		return filterTokens(decodedTokens, this.tokenConfig.filter)
 	}
@@ -34,16 +29,7 @@ export class LocalOutlet {
 		// check if token issuer
 		let tokenObj = await rawTokenCheck(unsignedToken, this.tokenConfig)
 
-		let authHandler = new AuthHandler(
-			null,
-			null,
-			this.tokenConfig,
-			tokenObj,
-			address,
-			wallet,
-			redirectMode,
-			unsignedToken,
-		)
+		let authHandler = new AuthHandler(null, null, this.tokenConfig, tokenObj, address, wallet, redirectMode, unsignedToken)
 
 		return await authHandler.authenticate()
 	}

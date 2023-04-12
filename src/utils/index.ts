@@ -85,14 +85,7 @@ export const waitForElementToExist = (selector: string): Promise<Element> => {
 
 export type ErrorType = 'warning' | 'info' | 'error'
 
-export const errorHandler = (
-	error: any,
-	type: ErrorType,
-	action?: Function | null,
-	data?: unknown,
-	log = true,
-	throwError = false,
-) => {
+export const errorHandler = (error: any, type: ErrorType, action?: Function | null, data?: unknown, log = true, throwError = false) => {
 	let errorMsg
 
 	if (typeof error === 'object') {
@@ -139,11 +132,7 @@ export const tokenRequest = async (query: string, silenceRequestError: boolean) 
  * @param additionalParams
  * @param namespace
  */
-export const removeUrlSearchParams = (
-	params: URLSearchParams,
-	additionalParams: string[] = [],
-	namespace: string | null = URLNS,
-) => {
+export const removeUrlSearchParams = (params: URLSearchParams, additionalParams: string[] = [], namespace: string | null = URLNS) => {
 	if (namespace)
 		for (let key of Array.from(params.keys())) {
 			// Iterator needs to be converted to array since we are deleting keys

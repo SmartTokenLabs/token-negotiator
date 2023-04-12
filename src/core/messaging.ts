@@ -142,14 +142,7 @@ export class Messaging {
 		})
 	}
 
-	private setResponseListener(
-		id: any,
-		origin: string,
-		timeout: number | undefined,
-		resolve: any,
-		reject: any,
-		cleanUpCallback: any,
-	) {
+	private setResponseListener(id: any, origin: string, timeout: number | undefined, resolve: any, reject: any, cleanUpCallback: any) {
 		let received = false
 		let timer: any = null
 

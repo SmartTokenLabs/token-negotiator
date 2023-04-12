@@ -4,7 +4,7 @@ The patch release addresses compatibility issues with the es6 version of the bui
 
 ### Upgrade Steps
 
-* Update NPM package to version 2.4.4-rc
+* Update NPM package to version 2.5.0
 
 ### Breaking Changes
 
@@ -12,11 +12,16 @@ The patch release addresses compatibility issues with the es6 version of the bui
 
 ### New Features
 
-[none]
+* Tokens loaded event hook added
+* Wallet Connect V2 IM token wallet support
 
 ### Bug Fixes
 
-* TS config update for ES6 compatibility issue found
+* Sonar Cloud code review improvments made
+* Namespace prefix for off chain communication
+* ES LINT update
+* Ability to extend library classes
+* Support for ES5 browsers
 
 ### Performance Improvements
 
