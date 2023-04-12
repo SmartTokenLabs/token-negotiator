@@ -34,4 +34,4 @@ Feature release with fixes, added support through Wallet Connect V2, and use of 
 
 **Full Change log**:
 
-https://github.com/TokenScript/token-negotiator/compare/v2.4.3...v2.4.4
+https://github.com/TokenScript/token-negotiator/compare/v2.4.3...v2.5.0
