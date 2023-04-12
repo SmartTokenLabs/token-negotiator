@@ -14,14 +14,15 @@ The patch release addresses compatibility issues with the es6 version of the bui
 
 * Tokens loaded event hook added
 * Wallet Connect V2 IM token wallet support
+* Added sign/verify for flow and solana
 
 ### Bug Fixes
 
-* Sonar Cloud code review improvments made
+* Sonar Cloud code quality updates
 * Namespace prefix for off chain communication
 * ES LINT update
 * Ability to extend library classes
-* Support for ES5 browsers
+* Support for es5 browsers
 
 ### Performance Improvements
 
