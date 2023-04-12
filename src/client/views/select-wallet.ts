@@ -3,6 +3,8 @@ import { logger } from '../../utils'
 import { UIUpdateEventType } from '../index'
 import { getWalletInfo, WalletInfo } from './utils/wallet-info'
 import { SupportedWalletProviders } from '../../wallet/Web3WalletProvider'
+import { getBrowserData } from '../../utils/support/getBrowserData'
+
 
 export class SelectWallet extends AbstractView {
 	init() {
@@ -25,9 +27,15 @@ export class SelectWallet extends AbstractView {
 
 			const walletConnect = getWalletInfo(SupportedWalletProviders.WalletConnect)
 			const walletConnectV2 = getWalletInfo(SupportedWalletProviders.WalletConnectV2)
-			const torus = getWalletInfo(SupportedWalletProviders.Torus)
+			const supportedWallets = [walletConnect, walletConnectV2]
 
-			for (const walletInfo of [walletConnect, walletConnectV2, torus]) {
+			const browserData = getBrowserData()
+
+			if (!browserData.edgeIOS){
+				supportedWallets.push(getWalletInfo(SupportedWalletProviders.Torus))
+			}
+
+			for (const walletInfo of supportedWallets) {
 				walletButtons += this.getWalletButtonHtml(walletInfo)
 			}
 		}

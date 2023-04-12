@@ -16,6 +16,8 @@ describe('browser simulations', () => {
 			iE: false,
 			iE9: false,
 			edge: false,
+			edgeAndroid: false,
+			edgeIOS: false,
 			chrome: true,
 			desktop: true,
 			phantomJS: false,
