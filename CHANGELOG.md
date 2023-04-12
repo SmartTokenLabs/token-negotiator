@@ -23,6 +23,7 @@ Feature release with fixes, added support through Wallet Connect V2, and use of 
 * ES LINT update
 * Ability to extend library classes
 * Support for es5 browsers
+* Disabled support of iOS Edge with Torus
 
 ### Performance Improvements
 
