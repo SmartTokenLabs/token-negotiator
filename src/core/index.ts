@@ -74,12 +74,7 @@ export const readTokens = (itemStorageKey: string) => {
 	return output
 }
 
-export const decodeTokens = (
-	rawTokens: string,
-	tokenParser: any,
-	unsignedTokenDataName: string,
-	includeSignedToken = false,
-) => {
+export const decodeTokens = (rawTokens: string, tokenParser: any, unsignedTokenDataName: string, includeSignedToken = false) => {
 	const x = JSON.parse(rawTokens)
 
 	if (x.length) {
@@ -93,12 +88,7 @@ export const decodeTokens = (
 	}
 }
 
-export const decodeToken = (
-	tokenData: OffChainTokenData,
-	tokenParser: any,
-	unsignedTokenDataName: string,
-	includeSignedToken = false,
-) => {
+export const decodeToken = (tokenData: OffChainTokenData, tokenParser: any, unsignedTokenDataName: string, includeSignedToken = false) => {
 	if (tokenData.token) {
 		let decodedToken = new tokenParser(base64ToUint8array(tokenData.token).buffer)
 
