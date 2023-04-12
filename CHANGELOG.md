@@ -1,6 +1,6 @@
 > Description
 
-The patch release addresses compatibility issues with the es6 version of the build.
+Feature release with fixes, added support through Wallet Connect V2, and use of signatures via Solana and Flow.
 
 ### Upgrade Steps
 
