@@ -43,7 +43,7 @@ export interface OutletInterface {
 export const defaultConfig = {
 	tokenUrlName: 'ticket',
 	tokenSecretName: 'secret',
-	tokenIdName: 'id',
+	tokenIdName: 'mail',
 	unsignedTokenDataName: 'ticket',
 	itemStorageKey: 'dcTokens',
 	signedTokenWhitelist: [],

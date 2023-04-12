@@ -304,6 +304,7 @@ export class AuthHandler {
 		iframe.src = this.attestationOrigin ?? ''
 		iframe.style.width = '800px'
 		iframe.style.height = '800px'
+		iframe.style.maxHeight = '100vh'
 		iframe.style.maxWidth = '100%'
 		iframe.style.background = '#fff'
 
