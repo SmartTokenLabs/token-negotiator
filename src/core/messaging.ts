@@ -1,6 +1,7 @@
 import { attachPostMessageListener, logger, removePostMessageListener } from '../utils'
 import { ClientError } from '../client'
 import { browserBlocksIframeStorage } from '../utils/support/getBrowserData'
+import { VERSION } from '../version'
 
 // TODO move Message related interfaces/enum in to shared location /core
 
@@ -36,6 +37,8 @@ declare global {
 
 /* URL namespace is used to avoid possible collisions with URL parameter names */
 export const URLNS = 'tn-'
+
+const PREFIXES = parseInt(VERSION) <= 2 ? ['', URLNS] : [URLNS]
 
 export class Messaging {
 	iframeStorageSupport: null | boolean = null
@@ -84,9 +87,13 @@ export class Messaging {
 
 	private sendRedirect(request: RequestInterfaceBase, redirectUrl: string) {
 		let id = Messaging.getUniqueEventId()
-		const url = this.constructUrl(id, request)
+		let newLocation = this.constructUrl(id, request)
 
-		let newLocation = `${url}&${URLNS}redirect=true&${URLNS}requestor=${encodeURIComponent(redirectUrl)}`
+		// TODO change in MAJOR release
+		// stay non-prefixed items, because its breaking change, we can remove non-prefixed params until MAJOR version released
+		for (const prefix of PREFIXES) {
+			newLocation += `&${prefix}redirect=true&${prefix}requestor=${encodeURIComponent(redirectUrl)}`
+		}
 
 		logger(2, `redirect from ${document.location.href} to ${newLocation}`)
 
@@ -142,14 +149,7 @@ export class Messaging {
 		})
 	}
 
-	private setResponseListener(
-		id: any,
-		origin: string,
-		timeout: number | undefined,
-		resolve: any,
-		reject: any,
-		cleanUpCallback: any,
-	) {
+	private setResponseListener(id: any, origin: string, timeout: number | undefined, resolve: any, reject: any, cleanUpCallback: any) {
 		let received = false
 		let timer: any = null
 
@@ -279,11 +279,19 @@ export class Messaging {
 	// TODO: Use URLSearchParams object to build this query rather than manually constructing it
 	//		This will prevent edge-case encoding issues.
 	private constructUrl(id: any, request: RequestInterfaceBase) {
-		let url = `${request.origin}#${URLNS}evtid=${id}&${URLNS}action=${request.action}`
+		let url = `${request.origin}#`
+
+		// TODO change in MAJOR release
+		for (const prefix of PREFIXES) {
+			url += `&${prefix}evtid=${id}&${prefix}action=${request.action}`
+		}
 
 		// in request to Outlet() to get tokens we dont have any token
 		if (typeof request.data.token !== 'undefined') {
-			url += `&${URLNS}token=${encodeURIComponent(JSON.stringify(request.data.token))}`
+			// TODO change in MAJOR release
+			for (const prefix of PREFIXES) {
+				url += `&${prefix}token=${encodeURIComponent(JSON.stringify(request.data.token))}`
+			}
 		}
 
 		for (let key in request.data) {
@@ -296,12 +304,18 @@ export class Messaging {
 			if (!value) continue
 
 			if (value instanceof Array || value instanceof Object) {
-				url += `&${URLNS}${key}=${JSON.stringify(value)}`
+				// TODO change in MAJOR release
+				for (const prefix of PREFIXES) {
+					url += `&${prefix}${key}=${JSON.stringify(value)}`
+				}
 			} else {
 				if (key === 'urlParams') {
 					url += `&${value}`
 				} else {
-					url += `&${URLNS}${key}=${value}`
+					// TODO change in MAJOR release
+					for (const prefix of PREFIXES) {
+						url += `&${prefix}${key}=${value}`
+					}
 				}
 			}
 		}
