@@ -23,10 +23,8 @@ export class TokenStore {
 
 	private currentIssuers: { [issuer: string]: boolean } = {} // mapping of issuer to on/off chain
 
-	// Cached token data
 	private tokenData: TokenLookup = {}
 
-	// Cached issuer data for contract level metadata
 	private tokenLookup: IssuerLookup = {}
 
 	// TODO: change to disabled tokens
@@ -57,7 +55,7 @@ export class TokenStore {
 			}
 		}
 
-		this.saveTokenStore() // Save data without expired entries
+		this.saveTokenStore()
 	}
 
 	private saveTokenStore() {
@@ -205,7 +203,6 @@ export class TokenStore {
 					this.selectedTokens[issuer.collectionID] = { tokens: this.tokenData[issuer.collectionID].tokens }
 			}
 
-			// Don't overwrite config of existing/cached issuers
 			if (!this.tokenLookup[issuer.collectionID]) this.updateTokenLookupStore(issuer.collectionID, issuer, false)
 
 			collectionIds[issuer.collectionID] = issuer.onChain
@@ -213,10 +210,6 @@ export class TokenStore {
 		this.currentIssuers = collectionIds
 	}
 
-	// To enrich the token lookup store with data.
-	// for on chain tokens that are not using token script this is
-	// required, for off chain this is most likely not required because the configurations
-	// are already pre-defined e.g. title, issuer image image etc.
 	public updateTokenLookupStore(tokenKey: string, data: OnChainTokenConfig | OffChainTokenConfig, save = true) {
 		this.tokenLookup[tokenKey] = { ...this.tokenLookup[tokenKey], ...data, timestamp: Date.now() }
 

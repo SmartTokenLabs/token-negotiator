@@ -174,15 +174,12 @@ export class SelectIssuers extends AbstractView {
 	issuerConnectMarkup(title: string, image: string | undefined, issuer: string, tokens: any[], data: Issuer) {
 		let buttonText = ''
 
-		if (tokens?.length)
-			buttonText = data?.fungible ? 'Balance found' : `${tokens.length} token${tokens.length > 1 ? 's' : ''} available`
+		if (tokens?.length) buttonText = data?.fungible ? 'Balance found' : `${tokens.length} token${tokens.length > 1 ? 's' : ''} available`
 
 		return `
             <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
               <div tabindex="0" style="display: flex; align-items: center;">
-                <div class="img-container-tn issuer-icon-tn shimmer-tn" data-image-src="${
-	image ?? ''
-}" data-token-title="${title}"></div>
+                <div class="img-container-tn issuer-icon-tn shimmer-tn" data-image-src="${image ?? ''}" data-token-title="${title}"></div>
                 <p class="issuer-connect-title">${title}</p>
               </div>
               <button aria-label="connect with the token issuer ${issuer}" aria-haspopup="true" aria-expanded="false" aria-controls="token-list-container-tn" 
@@ -192,10 +189,10 @@ export class SelectIssuers extends AbstractView {
 					${this.client.issuersLoaded === true ? '' : 'disabled'}
 				>
 				${
-	this.client.issuersLoaded === true
-		? 'Load'
-		: '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
-}
+					this.client.issuersLoaded === true
+						? 'Load'
+						: '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
+				}
 			  </button>
               <button aria-label="tokens available from token issuer ${issuer}" 
 										  aria-haspopup="true"
@@ -272,8 +269,7 @@ export class SelectIssuers extends AbstractView {
 		const connectBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`)
 
 		if (connectBtn) {
-			connectBtn.innerHTML =
-				'<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
+			connectBtn.innerHTML = '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
 			connectBtn.style.display = 'block'
 		}
 	}
@@ -293,16 +289,14 @@ export class SelectIssuers extends AbstractView {
 		let issuers = this.client.getTokenStore().getCurrentIssuers()
 
 		tokenBtn.innerHTML =
-			tokens.length && issuers[issuer].fungible
-				? 'Balance found'
-				: `${tokens.length} token${tokens.length > 1 ? 's' : ''} available`
+			tokens.length && issuers[issuer].fungible ? 'Balance found' : `${tokens.length} token${tokens.length > 1 ? 's' : ''} available`
 		tokenBtn.setAttribute('aria-label', `Navigate to select from ${tokens.length} of your ${issuer} tokens`)
 		tokenBtn.setAttribute('tabIndex', 1)
 
 		if (showTokens)
 			setTimeout(() => {
 				this.navigateToTokensView(issuer)
-			}, 250) // Timeout just makes it a bit of a smoother transition
+			}, 250)
 	}
 
 	navigateToTokensView(issuer: string) {
@@ -370,17 +364,5 @@ export class SelectIssuers extends AbstractView {
 		this.viewContainer.querySelector('.issuer-slider-tn').classList.toggle('open')
 
 		// TODO review and uplift this code, its not working as expected.
-
-		// const connectBtn = this.viewContainer.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`);
-		// const tokenBtn = this.viewContainer.querySelector(`[data-issuer*="${issuer}"] .tokens-btn-tn`);
-
-		// connectBtn.setAttribute('aria-expanded', true);
-		// tokenBtn.setAttribute('aria-expanded', false);
-
-		// const issuerViewEl = this.viewContainer.querySelector(`.issuer-view-tn`);
-		// const tokenViewEl = this.viewContainer.querySelector(`.token-view-tn`);
-
-		// issuerViewEl.setAttribute('aria-hidden', false);
-		// tokenViewEl.setAttribute('aria-hidden', true);
 	}
 }

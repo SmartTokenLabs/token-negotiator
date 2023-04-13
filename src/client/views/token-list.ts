@@ -80,8 +80,6 @@ export class TokenList extends AbstractView {
 
 		if (this.interceptObs) this.interceptObs.unobserve(loadMoreElem)
 
-		// This is required because updating innerHTML resets the DOM state for previously added elements
-		// i.e. tokens that have been selected appear as unselected
 		loadMoreElem.insertAdjacentHTML('afterend', this.getTokenListItems())
 		loadMoreElem.remove()
 
@@ -95,7 +93,6 @@ export class TokenList extends AbstractView {
 
 	private renderIcons() {
 		for (let elem of this.viewContainer.getElementsByClassName('img-container-tn')) {
-			// ignore already rendered icons
 			if (elem.querySelector('img')) continue
 
 			let params = {
@@ -139,16 +136,13 @@ export class TokenList extends AbstractView {
 	}
 
 	createTokenMarkup(config: TokenListItemInterface) {
-		const { tokenIssuerKey, title, data, index, image, toggleState, hideToggle, balance, fungible, decimals, symbol } =
-			config
+		const { tokenIssuerKey, title, data, index, image, toggleState, hideToggle, balance, fungible, decimals, symbol } = config
 
 		let detail, abrieviated
 
 		if (!fungible) {
 			detail = index
-			abrieviated =
-				'#' +
-				(index.length > 15 ? index.substring(0, 5) + '...' + index.substring(index.length - 5, index.length) : index)
+			abrieviated = '#' + (index.length > 15 ? index.substring(0, 5) + '...' + index.substring(index.length - 5, index.length) : index)
 		} else {
 			const balanceTxt = ethers.utils.formatUnits(balance, decimals)
 
@@ -161,9 +155,7 @@ export class TokenList extends AbstractView {
 		return (
 			`
             <li class='token-tn'>
-              <div class="img-container-tn image-tn shimmer-tn" data-image-src="${
-			image ?? ''
-			}" data-token-title="${title}"></div>
+              <div class="img-container-tn image-tn shimmer-tn" data-image-src="${image ?? ''}" data-token-title="${title}"></div>
               <div class='data-tn'>
                   <p class='token-title-tn'>${title}</p>
                   <p class='detail-tn' title="${detail}">

@@ -12,7 +12,6 @@ export class IconView {
 		let image
 
 		if (src && src !== 'undefined') {
-			// Create image elements and add onload/onerror events
 			image = document.createElement('img')
 			image.loading = 'lazy'
 			image.addEventListener('load', (e: Event) => {
