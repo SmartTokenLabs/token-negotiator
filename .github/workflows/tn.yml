@@ -13,6 +13,7 @@ on:
 jobs:
   tn-p1:
     uses: ./.github/workflows/tn-p1.yml
+    secrets: inherit
 
   sonarcloud:
     needs:

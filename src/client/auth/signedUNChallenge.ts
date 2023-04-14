@@ -2,6 +2,7 @@ import { AbstractAuthentication, AuthenticationMethod, AuthenticationResult } fr
 import { AuthenticateInterface, OffChainTokenConfig, OnChainTokenConfig } from '../interface'
 import { SafeConnectProvider } from '../../wallet/SafeConnectProvider'
 import { UN, UNInterface } from './util/UN'
+import { logger } from '../../utils'
 
 export class SignedUNChallenge extends AbstractAuthentication implements AuthenticationMethod {
 	TYPE = 'signedUN'
@@ -14,25 +15,31 @@ export class SignedUNChallenge extends AbstractAuthentication implements Authent
 	): Promise<AuthenticationResult> {
 		let web3WalletProvider = await this.client.getWalletProvider()
 
-		if (web3WalletProvider.getConnectedWalletData().length === 0) {
+		// TODO: Update once Flow & Solana signing support is added
+		let connection = web3WalletProvider.getSingleSignatureCompatibleConnection();
+		if (!connection) {
 			throw new Error('WALLET_REQUIRED')
 		}
 
-		let address = web3WalletProvider.getConnectedWalletData()[0].address
+		let address = connection.address
+
+		if (!address) {
+			throw new Error('WALLET_ADDRESS_REQUIRED')
+		}
 
 		let currentProof: AuthenticationResult | null = this.getSavedProof(address)
 
 		if (currentProof) {
 			let unChallenge = currentProof?.data as UNInterface
 
-			if (unChallenge.expiration < Date.now() || UN.recoverAddress(unChallenge) !== address.toLowerCase()) {
+			if (unChallenge.expiration < Date.now() || !UN.verifySignature(unChallenge)) {
 				this.deleteProof(address)
 				currentProof = null
 			}
 		}
 
 		if (!currentProof) {
-			let walletConnection = web3WalletProvider.getWalletProvider(address)
+			let walletConnection = connection.provider
 
 			currentProof = {
 				type: this.TYPE,
@@ -45,8 +52,10 @@ export class SignedUNChallenge extends AbstractAuthentication implements Authent
 			let endpoint = request.options?.unEndPoint ?? SignedUNChallenge.DEFAULT_ENDPOINT
 
 			const challenge = await UN.getNewUN(endpoint)
+			challenge.address = address
 			let signature
 
+			logger(2, 'challenge', challenge)
 			if (walletConnection instanceof SafeConnectProvider) {
 				signature = await walletConnection.signUNChallenge(challenge)
 			} else {
@@ -55,13 +64,10 @@ export class SignedUNChallenge extends AbstractAuthentication implements Authent
 
 			// Check that recovered address matches the signature of the requested address
 			challenge.signature = signature
-			let recoveredAddr = UN.recoverAddress(challenge)
-
-			if (recoveredAddr !== address.toLowerCase()) {
+			challenge.blockchain = connection.blockchain
+			if (!(await UN.verifySignature(challenge))) {
 				throw new Error('Address signature is invalid')
 			}
-
-			challenge.address = recoveredAddr
 
 			currentProof.data = challenge
 

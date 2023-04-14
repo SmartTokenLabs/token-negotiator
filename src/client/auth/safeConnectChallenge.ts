@@ -19,7 +19,7 @@ export class SafeConnectChallenge extends AbstractAuthentication implements Auth
 
 		if (!issuerConfig.onChain) throw new Error(this.TYPE + ' is not available for off-chain tokens.')
 
-		let address = web3WalletProvider.getConnectedWalletData()[0].address
+		let address = web3WalletProvider.getConnectedWalletAddresses('evm')?.[0]
 
 		let currentProof: AuthenticationResult | null = this.getSavedProof(address)
 
@@ -31,7 +31,7 @@ export class SafeConnectChallenge extends AbstractAuthentication implements Auth
 		let safeConnect = await web3WalletProvider.getSafeConnectProvider()
 
 		if (!currentProof) {
-			let walletConnection = web3WalletProvider.getConnectedWalletData()[0].provider
+			let walletConnection = web3WalletProvider.getConnectedWalletData('evm')?.[0].provider
 
 			if (walletConnection instanceof SafeConnectProvider) {
 				// This will request and save a new challenge from safe connect

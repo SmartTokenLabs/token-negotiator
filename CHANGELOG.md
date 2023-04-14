@@ -1,10 +1,10 @@
 > Description
 
-The patch release addresses compatibility issues with the es6 version of the build.
+Feature release with fixes, added support through Wallet Connect V2, and use of signatures via Solana and Flow.
 
 ### Upgrade Steps
 
-* Update NPM package to version 2.4.3
+* Update NPM package to version 2.5.0
 
 ### Breaking Changes
 
@@ -12,14 +12,18 @@ The patch release addresses compatibility issues with the es6 version of the bui
 
 ### New Features
 
-[none]
+* Tokens loaded event hook added
+* Wallet Connect V2 IM token wallet support
+* Added sign/verify for flow and solana
 
 ### Bug Fixes
 
-* Imported Wallect Connect V2 reference
-* TS config update for ES6 compatibility issue found
-* Corrections to README
-* base64 to Uint8array
+* Sonar Cloud code quality updates
+* Namespace prefix for off chain communication
+* ES LINT update
+* Ability to extend library classes
+* Support for es5 browsers
+* Disabled support of iOS Edge with Torus
 
 ### Performance Improvements
 
@@ -31,4 +35,4 @@ The patch release addresses compatibility issues with the es6 version of the bui
 
 **Full Change log**:
 
-https://github.com/TokenScript/token-negotiator/compare/v2.4.0...v2.4.3
+https://github.com/TokenScript/token-negotiator/compare/v2.4.3...v2.5.0

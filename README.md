@@ -250,6 +250,10 @@ negotiator.on("tokens-selected", (tokens) => {
 	// use tokens
 });
 
+negotiator.on("tokens-loaded", (data) => {
+	// use the collections information which were loaded
+})
+
 negotiator.on("token-proof", (proof) => {
 	// use proof
 });
@@ -285,6 +289,10 @@ negotiator.on("tokens", (issuerTokens) => {
 	// use tokens
 });
 
+negotiator.on("tokens-loaded", (data) => {
+	// use the collections information which were loaded
+})
+
 negotiator.on("token-proof", (tokenProof) => {
 	// use proof
 });
@@ -316,7 +324,7 @@ const onChainIssuer = {
 ```
 
 ### Managing Issuers on chain (Solana)
-
+:warning: You must supply a certified collectionAddress OR a combination of symbol and either ownerProgram or updateAuthority.
 ```javascript
 /**
  * @param {String} blockchain string of which blockchain is needed (optional input: default is 'evm')
@@ -421,6 +429,10 @@ negotiator.on("tokens-selected", callback);
 		<tr>
 			<td>'tokens'</td>
 			<td>Tokens when using passive mode (auto selected)</td>
+		</tr>
+		<tr>
+			<td>'tokens-loaded'</td>
+			<td>Collections information(the count) which were loaded</td>
 		</tr>
 		<tr>
 			<td>'network-change'</td>

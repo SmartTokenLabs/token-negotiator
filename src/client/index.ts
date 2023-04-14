@@ -22,6 +22,7 @@ import {
 	EventSenderOpenedOverlay,
 	EventSenderClosedOverlay,
 	EventSenderTokensRefreshed,
+	EventSenderTokensLoaded,
 } from './interface'
 import { SignedUNChallenge } from './auth/signedUNChallenge'
 import { TicketZKProof } from './auth/ticketZKProof'
@@ -204,6 +205,7 @@ export class Client {
 		}
 
 		// Check if blockchain is supported one
+		// TODO: Put in separate method - issuers can also be specified via negotiate()
 		if (defaultConfig.issuers && defaultConfig.issuers.length) {
 			for (const issuer of defaultConfig.issuers) {
 				if (issuer.onChain === true) {
@@ -238,6 +240,7 @@ export class Client {
 		return this.config.safeConnectOptions !== undefined
 	}
 
+	// TODO: Move to token store OR select-wallet view - this method is very similar to getCurrentBlockchains()
 	public hasIssuerForBlockchain(blockchain: 'evm' | 'solana' | 'flow') {
 		return (
 			this.config.issuers.filter((issuer: OnChainTokenConfig) => {
@@ -276,12 +279,7 @@ export class Client {
 
 	async negotiatorConnectToWallet(walletType: string) {
 		let walletProvider = await this.getWalletProvider()
-
-		let walletAddress = await walletProvider.connectWith(walletType)
-
-		logger(2, 'wallet address found: ' + walletAddress)
-
-		return walletAddress
+		return await walletProvider.connectWith(walletType)
 	}
 
 	async enrichTokenLookupDataOnChainTokens() {
@@ -320,7 +318,6 @@ export class Client {
 					this.tokenStore.updateTokenLookupStore(issuer, lookupData)
 				}
 			} catch (e) {
-				console.log('enrichTokenLookupDataOnChainTokens error =>', e)
 				logger(2, 'Failed to load contract data for ' + issuer + ': ' + e.message)
 			}
 		}
@@ -423,11 +420,7 @@ export class Client {
 
 	private cancelAutoload = true
 
-	async tokenAutoLoad(
-		onLoading: (issuer: string) => void,
-		onComplete: (issuer: string, tokens: any[]) => void,
-		refresh: boolean,
-	) {
+	async tokenAutoLoad(onLoading: (issuer: string) => void, onComplete: (issuer: string, tokens: any[]) => void, refresh: boolean) {
 		if (this.config.autoLoadTokens === false) return
 
 		this.cancelAutoload = false
@@ -450,14 +443,7 @@ export class Client {
 			} catch (e) {
 				e.message = 'Failed to load ' + issuerKey + ': ' + e.message
 				logger(2, e.message)
-				errorHandler(
-					'autoload tokens error',
-					'error',
-					() => this.eventSender('error', { issuer: issuerKey, error: e }),
-					null,
-					true,
-					false,
-				)
+				errorHandler('autoload tokens error', 'error', () => this.eventSender('error', { issuer: issuerKey, error: e }), null, true, false)
 				onComplete(issuerKey, null)
 			}
 
@@ -467,6 +453,8 @@ export class Client {
 
 			if (this.cancelAutoload || (this.config.autoLoadTokens !== true && count > this.config.autoLoadTokens)) break
 		}
+
+		this.eventSender('tokens-loaded', { loadedCollections: Object.keys(this.tokenStore.getCurrentIssuers()).length })
 	}
 
 	cancelTokenAutoload() {
@@ -594,13 +582,10 @@ export class Client {
 			issuer: this.getDataFromQuery('issuer'),
 			error: new Error(error),
 		})
-
-		console.log('Error loading tokens from outlet: ', error)
 	}
 
 	async setPassiveNegotiationOnChainTokens() {
 		let issuers = this.tokenStore.getCurrentIssuers(true)
-		let walletProvider = await this.getWalletProvider()
 
 		for (let issuerKey in issuers) {
 			let tokens = this.tokenStore.getIssuerTokens(issuerKey)
@@ -610,7 +595,7 @@ export class Client {
 			let issuer = issuers[issuerKey] as OnChainIssuer
 
 			try {
-				const tokens = await getNftTokens(issuer, walletProvider.getConnectedWalletData()[0].address)
+				const tokens = await this.loadOnChainTokens(issuer)
 
 				this.tokenStore.setTokens(issuerKey, tokens)
 			} catch (err) {
@@ -646,13 +631,11 @@ export class Client {
 		// 	return arg;
 		// }
 		this.eventSender('tokens', tokens)
+		this.eventSender('tokens-loaded', { loadedCollections: Object.keys(tokens).length })
 
 		// Feature not supported when an end users third party cookies are disabled
 		// because the use of a tab requires a user gesture.
-		if (
-			this.messaging.core.iframeStorageSupport === false &&
-			Object.keys(this.tokenStore.getCurrentTokens(false)).length === 0
-		)
+		if (this.messaging.core.iframeStorageSupport === false && Object.keys(this.tokenStore.getCurrentTokens(false)).length === 0)
 			logger(
 				2,
 				'iFrame storage support not detected: Enable popups via your browser to access off-chain tokens with this negotiation type.',
@@ -666,18 +649,7 @@ export class Client {
 		let tokens
 
 		if (config.onChain === true) {
-			let walletProvider = await this.getWalletProvider()
-
-			const walletAddress = walletProvider.getConnectedWalletData()[0]?.address
-
-			requiredParams(issuer, 'issuer is required.')
-			requiredParams(walletAddress, 'wallet address is missing.')
-
-			if (config.fungible) {
-				tokens = await getFungibleTokenBalances(config, walletAddress)
-			} else {
-				tokens = await getNftTokens(config, walletAddress)
-			}
+			tokens = await this.loadOnChainTokens(config)
 		} else {
 			if (new URL(config.tokenOrigin).origin === document.location.origin) {
 				tokens = this.loadLocalOutletTokens(config)
@@ -695,6 +667,31 @@ export class Client {
 				selectedTokens: this.tokenStore.getSelectedTokens(),
 			})
 		}
+
+		return tokens
+	}
+
+	private async loadOnChainTokens(issuer: OnChainIssuer): Promise<any[]> {
+		let walletProvider = await this.getWalletProvider()
+
+		// TODO: Collect tokens from all addresses for this blockchain
+		const walletAddress = walletProvider.getConnectedWalletAddresses(issuer.blockchain)?.[0]
+
+		requiredParams(walletAddress, 'wallet address is missing.')
+
+		// TODO: Allow API to return tokens for multiple addresses
+		let tokens
+
+		if (issuer.fungible) {
+			tokens = await getFungibleTokenBalances(issuer, walletAddress)
+		} else {
+			tokens = await getNftTokens(issuer, walletAddress)
+		}
+
+		tokens.map((token) => {
+			token.walletAddress = walletAddress
+			return token
+		})
 
 		return tokens
 	}
@@ -877,6 +874,7 @@ export class Client {
 	async eventSender(eventName: 'tokens', data: EventSenderTokens)
 	async eventSender(eventName: 'token-proof', data: EventSenderTokenProof)
 	async eventSender(eventName: 'tokens-selected', data: EventSenderTokensSelected)
+	async eventSender(eventName: 'tokens-loaded', data: EventSenderTokensLoaded)
 	async eventSender(eventName: 'connected-wallet', data: EventSenderConnectedWallet)
 	async eventSender(eventName: 'disconnected-wallet', data: EventSenderDisconnectedWallet)
 	async eventSender(eventName: 'network-change', data: string)
@@ -903,7 +901,6 @@ export class Client {
 				}
 			} catch (err) {
 				logger(2, err)
-				console.log('issuer config error ' + err.message)
 			}
 		})
 
@@ -926,7 +923,6 @@ export class Client {
 				}
 			} catch (err) {
 				logger(2, err)
-				console.log('issuer config error')
 			}
 
 			// if any issuerConfig missing tokenOrigin or something wrong then skip sameOrigin flow

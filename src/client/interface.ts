@@ -3,7 +3,10 @@ import { AuthenticationMethod } from './auth/abstractAuthentication'
 import { SafeConnectOptions } from '../wallet/SafeConnectProvider'
 import { BrowserDataInterface } from '../utils/support/isSupported'
 import { WalletConnection } from '../wallet/Web3WalletProvider'
-import { ConnectParams as WCv2ConnectParams } from '@walletconnect/universal-provider/dist/types/types/misc'
+
+// add new blockchain to both rows
+export type SupportedBlockchainsParam = 'evm' | 'flow' | 'solana'
+export const SignatureSupportedBlockchainsParamList = ['evm', 'flow', 'solana']
 
 export interface OffChainTokenConfig extends IssuerConfigInterface {
 	onChain: false
@@ -19,7 +22,7 @@ export interface OnChainTokenConfig extends IssuerConfigInterface {
 	contract: string
 	chain: string
 	openSeaSlug?: string
-	blockchain?: string
+	blockchain?: SupportedBlockchainsParam
 }
 
 export interface SolanaIssuerConfig extends OnChainTokenConfig {
@@ -78,7 +81,7 @@ export interface WalletOptionsInterface {
 }
 
 export interface AuthenticateInterface {
-	issuer: any
+	issuer: string
 	tokenId?: number | string
 	unsignedToken: any
 	address?: string
@@ -99,6 +102,7 @@ export type TokenNegotiatorEvents =
 	| 'disconnected-wallet'
 	| 'tokens-selected'
 	| 'tokens'
+	| 'tokens-loaded'
 	| 'network-change'
 	| 'error'
 
@@ -131,6 +135,11 @@ export interface EventSenderViewChanged {
 export interface EventSenderTokensSelected {
 	selectedTokens: Object
 }
+
+export interface EventSenderTokensLoaded {
+	loadedCollections: number
+}
+
 export type EventSenderConnectedWallet = WalletConnection | null
 export interface EventSenderDisconnectedWallet {
 	data: null

@@ -43,7 +43,7 @@ export interface OutletInterface {
 export const defaultConfig = {
 	tokenUrlName: 'ticket',
 	tokenSecretName: 'secret',
-	tokenIdName: 'id',
+	tokenIdName: 'mail',
 	unsignedTokenDataName: 'ticket',
 	itemStorageKey: 'dcTokens',
 	signedTokenWhitelist: [],
@@ -184,8 +184,6 @@ export class Outlet {
 
 							requesterURL.hash = params.toString()
 
-							console.log('urlToRedirect from OutletAction.EMAIL_ATTEST_CALLBACK: ', requesterURL.href)
-
 							document.location.href = requesterURL.href
 
 							return
@@ -199,12 +197,7 @@ export class Outlet {
 						this.dispatchAuthCallbackEvent(issuer, null, e.message)
 					}
 
-					document.location.hash = removeUrlSearchParams(this.urlParams, [
-						'attestation',
-						'requestSecret',
-						'address',
-						'wallet',
-					]).toString()
+					document.location.hash = removeUrlSearchParams(this.urlParams, ['attestation', 'requestSecret', 'address', 'wallet']).toString()
 
 					break
 				}
@@ -269,12 +262,7 @@ export class Outlet {
 	 * @returns false when no changes to the data are required - the token is already added
 	 */
 	public mergeNewToken(newToken: OffChainTokenData, existingTokens: OffChainTokenData[]): OffChainTokenData[] | false {
-		const decodedNewToken = decodeToken(
-			newToken,
-			this.tokenConfig.tokenParser,
-			this.tokenConfig.unsignedTokenDataName,
-			false,
-		)
+		const decodedNewToken = decodeToken(newToken, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName, false)
 
 		const newTokenId = this.getUniqueTokenId(decodedNewToken)
 
@@ -284,12 +272,7 @@ export class Outlet {
 				return false
 			}
 
-			const decodedTokenData = decodeToken(
-				tokenData,
-				this.tokenConfig.tokenParser,
-				this.tokenConfig.unsignedTokenDataName,
-				false,
-			)
+			const decodedTokenData = decodeToken(tokenData, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName, false)
 
 			const tokenId = this.getUniqueTokenId(decodedTokenData)
 
@@ -430,19 +413,11 @@ export class Outlet {
 
 		let includeSigned = false
 
-		if (
-			this.tokenConfig.signedTokenWhitelist?.length &&
-			this.tokenConfig.signedTokenWhitelist.indexOf(this.getRequestOrigin()) > -1
-		) {
+		if (this.tokenConfig.signedTokenWhitelist?.length && this.tokenConfig.signedTokenWhitelist.indexOf(this.getRequestOrigin()) > -1) {
 			includeSigned = true
 		}
 
-		const decodedTokens = decodeTokens(
-			storageTokens,
-			this.tokenConfig.tokenParser,
-			this.tokenConfig.unsignedTokenDataName,
-			includeSigned,
-		)
+		const decodedTokens = decodeTokens(storageTokens, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName, includeSigned)
 
 		// remove duplicates check
 		return filterTokens(decodedTokens, filter)
@@ -459,16 +434,7 @@ export class Outlet {
 			// check if token issuer
 			let tokenObj = await rawTokenCheck(unsignedToken, this.tokenConfig)
 
-			let authHandler = new AuthHandler(
-				this,
-				evtid,
-				this.tokenConfig,
-				tokenObj,
-				address,
-				wallet,
-				redirect,
-				unsignedToken,
-			)
+			let authHandler = new AuthHandler(this, evtid, this.tokenConfig, tokenObj, address, wallet, redirect, unsignedToken)
 
 			let tokenProof = await authHandler.authenticate()
 
@@ -526,7 +492,7 @@ export class Outlet {
 
 				return
 			} catch (e) {
-				console.log('Requestor redirect Error. ', e)
+				logger(2, 'Requestor redirect Error. ', e)
 			}
 		}
 
@@ -548,8 +514,6 @@ export class Outlet {
 			params.set(URLNS + 'action', ResponseActionBase.ERROR)
 			params.set(URLNS + 'issuer', issuer)
 			params.set(URLNS + 'error', error)
-
-			console.log('Redirecting error: ', error)
 
 			url.hash = '#' + params.toString()
 

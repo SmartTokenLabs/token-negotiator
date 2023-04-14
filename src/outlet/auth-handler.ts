@@ -151,7 +151,6 @@ export class AuthHandler {
 
 				this.interval = setInterval(() => {
 					if (this.attestationTabHandler.closed) {
-						console.log('child tab closed... ')
 						clearInterval(this.interval)
 						this.rejectHandler(new Error('User closed TAB'))
 					}
@@ -305,6 +304,7 @@ export class AuthHandler {
 		iframe.src = this.attestationOrigin ?? ''
 		iframe.style.width = '800px'
 		iframe.style.height = '800px'
+		iframe.style.maxHeight = '100vh'
 		iframe.style.maxWidth = '100%'
 		iframe.style.background = '#fff'
 
