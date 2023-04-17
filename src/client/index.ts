@@ -23,6 +23,7 @@ import {
 	EventSenderClosedOverlay,
 	EventSenderTokensRefreshed,
 	EventSenderTokensLoaded,
+	EventTokenScriptCallback,
 } from './interface'
 import { SignedUNChallenge } from './auth/signedUNChallenge'
 import { TicketZKProof } from './auth/ticketZKProof'
@@ -883,6 +884,7 @@ export class Client {
 	async eventSender(eventName: 'disconnected-wallet', data: EventSenderDisconnectedWallet)
 	async eventSender(eventName: 'network-change', data: string)
 	async eventSender(eventName: 'error', data: EventSenderError)
+	async eventSender(eventName: 'tokenscript-callback', data: EventTokenScriptCallback)
 
 	async eventSender(eventName: TokenNegotiatorEvents, data: any) {
 		Promise.resolve(this.on(eventName, null, data))
@@ -1009,6 +1011,26 @@ export class Client {
 			// assign callback reference to web developers event e.g. negotiator.on('tokens', (tokensForWebPage) => { ... }));
 
 			this.clientCallBackEvents[type] = callback
+
+			if (type === 'tokenscript-callback') {
+				const action = this.getDataFromQuery('action')
+
+				if (action === 'ts-callback') {
+					const res: EventTokenScriptCallback = {}
+
+					if (this.getDataFromQuery('error')) {
+						res.error = this.getDataFromQuery('error')
+					} else {
+						res.result = {
+							status: this.getDataFromQuery('status'),
+							txNumber: this.getDataFromQuery('txNumber'),
+							txLink: this.getDataFromQuery('tsLink'),
+						}
+					}
+
+					this.eventSender('tokenscript-callback', res)
+				}
+			}
 		} else {
 			// event types: 'tokens', 'tokens-selected', 'proof'
 

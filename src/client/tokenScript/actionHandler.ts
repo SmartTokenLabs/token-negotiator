@@ -1,5 +1,6 @@
 import { Client } from '../index'
-import { OnChainTokenConfig } from '../interface'
+import { OnChainTokenConfig, TokenScriptResult } from '../interface'
+import { Messaging } from '../../core/messaging'
 
 export interface ChainMapInterface {
 	[key: number]: string
@@ -40,22 +41,56 @@ export const CHAIN_MAP: ChainMapInterface = {
 export class ActionHandler {
 	constructor(private client: Client) {}
 
-	executeTokenScriptAction(issuer: OnChainTokenConfig, action: string, tokenId?: number | string, callbackUri?: string) {
+	executeTokenScriptAction(
+		issuer: OnChainTokenConfig,
+		action: string,
+		tokenId?: number | string,
+		callbackUri?: string,
+	): Promise<void | TokenScriptResult> {
 		const config = this.client.config.tokenScript
 		const chain = issuer.tokenScript.chain ?? this.getChainIdFromName(issuer.chain)
 		const address = issuer.tokenScript.contract ?? issuer.contract
 
+		const params = new URLSearchParams()
+		params.set('chain', chain)
+		params.set('contract', address)
+		params.set('viewType', 'integration')
+
+		const origin = new URL(config.viewerUrl).origin
+
 		if (config.integrationType === 'redirect') {
 			if (!callbackUri) callbackUri = document.location.href
-
-			const params = new URLSearchParams()
-			params.set('chain', chain)
-			params.set('contract', address)
 			params.set('callbackUri', callbackUri)
 
 			document.location.href = config.viewerUrl + '?' + params.toString() + '#card=' + action
 		} else if (config.integrationType === 'iframe') {
-			throw new Error('iframe integration type is not yet supported.')
+			return new Promise((resolve, reject) => {
+				const messaging = new Messaging()
+
+				const frame = messaging.createIframe(() => {
+					reject(new Error('User aborted'))
+				})
+
+				window.addEventListener('message', (evt) => {
+					if (origin !== evt.origin) return
+
+					console.log(evt)
+
+					modal.style.display = 'none'
+					modal.remove()
+
+					if (evt.data.error) {
+						reject(new Error(evt.data.error))
+					} else {
+						resolve(evt.data)
+					}
+				})
+
+				frame.src = config.viewerUrl + '?' + params.toString() + '#card=' + action
+
+				const modal = messaging.getModal()
+				modal.style.display = 'block'
+			})
 		} else {
 			throw new Error('Integration type ' + config.integrationType + ' is not supported.')
 		}

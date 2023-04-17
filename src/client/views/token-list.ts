@@ -26,7 +26,7 @@ export class TokenList extends AbstractView {
 	interceptObs: IntersectionObserver | undefined
 
 	init() {
-		this.viewContainer.addEventListener('click', (e: any) => {
+		this.viewContainer.addEventListener('click', async (e: any) => {
 			if (e.target.classList.contains('mobileToggle-tn')) {
 				this.tokenToggleSelection()
 			} else if (e.target.classList.contains('load-more-btn-tn')) {
@@ -40,7 +40,19 @@ export class TokenList extends AbstractView {
 
 				const issuerConfig = this.client.getTokenStore().getCurrentIssuers(true)[issuer] as OnChainTokenConfig
 
-				actionHandler.executeTokenScriptAction(issuerConfig, action, tokenId)
+				try {
+					const res = await actionHandler.executeTokenScriptAction(issuerConfig, action, tokenId)
+
+					if (!res) return
+
+					this.client.eventSender('tokenscript-callback', {
+						result: res,
+					})
+				} catch (e) {
+					this.client.eventSender('tokenscript-callback', {
+						error: e.message,
+					})
+				}
 			}
 		})
 	}

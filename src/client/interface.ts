@@ -114,6 +114,7 @@ export type TokenNegotiatorEvents =
 	| 'tokens-loaded'
 	| 'network-change'
 	| 'error'
+	| 'tokenscript-callback'
 
 export interface EventSenderViewLoaded {
 	data: any
@@ -152,4 +153,15 @@ export interface EventSenderTokensLoaded {
 export type EventSenderConnectedWallet = WalletConnection | null
 export interface EventSenderDisconnectedWallet {
 	data: null
+}
+
+export interface EventTokenScriptCallback {
+	error?: string
+	result?: TokenScriptResult
+}
+
+export interface TokenScriptResult {
+	status: string
+	txNumber: string
+	txLink: string
 }
