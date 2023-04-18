@@ -15,7 +15,6 @@ export const requiredParams = (item: any, msg: string) => {
 	if (!item) throw new Error(msg)
 }
 
-// shallow equality comparison
 export const compareObjects = (o1: any, o2: any) => {
 	const keys1 = Object.keys(o1)
 	const keys2 = Object.keys(o2)
@@ -23,7 +22,6 @@ export const compareObjects = (o1: any, o2: any) => {
 		return false
 	}
 	for (let key of keys1) {
-		// compare commitment (array)
 		if (typeof o2[key] === 'object') {
 			if (JSON.stringify(o1[key]) !== JSON.stringify(o2[key])) {
 				return false

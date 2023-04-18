@@ -9,7 +9,6 @@ export class LocalOutlet {
 	constructor(config: OutletInterface & OffChainTokenConfig) {
 		this.tokenConfig = Object.assign(defaultConfig, config)
 
-		// set default tokenReader
 		if (!this.tokenConfig.tokenParser) {
 			this.tokenConfig.tokenParser = readSignedTicket
 		}
@@ -26,7 +25,6 @@ export class LocalOutlet {
 	}
 
 	async authenticate(unsignedToken: any, address: string, wallet: string, redirectMode: false | string = false) {
-		// check if token issuer
 		let tokenObj = await rawTokenCheck(unsignedToken, this.tokenConfig)
 
 		let authHandler = new AuthHandler(null, null, this.tokenConfig, tokenObj, address, wallet, redirectMode, unsignedToken)
