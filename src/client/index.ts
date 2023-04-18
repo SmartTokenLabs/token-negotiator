@@ -161,7 +161,13 @@ export class Client {
 	}
 
 	getDataFromQuery(itemKey: any): string {
-		return this.urlParams ? this.urlParams.get(URLNS + itemKey) : ''
+		if (this.urlParams) {
+			if (this.urlParams.has(URLNS + itemKey)) return this.urlParams.get(URLNS + itemKey)
+
+			return this.urlParams.get(itemKey) // Fallback to non-namespaced version for backward compatibility
+		}
+
+		return null
 	}
 
 	public async readProofCallback() {

@@ -273,6 +273,10 @@ export class Messaging {
 	private constructUrl(id: any, request: RequestInterfaceBase) {
 		let url = `${request.origin}#`
 
+		// Notify outlet that param namespace is in use.
+		// This enables using the namespace when redirecting back to the client page in order to support older negotiator versions
+		url += `tn-ns=1`
+
 		// TODO change in MAJOR release
 		for (const prefix of PREFIXES) {
 			url += `&${prefix}evtid=${id}&${prefix}action=${request.action}`

@@ -111,9 +111,20 @@ export class Outlet {
 		}
 	}
 
-	getDataFromQuery(itemKey: string, namespaced = true): string {
-		itemKey = (namespaced ? URLNS : '') + itemKey
-		return this.urlParams ? this.urlParams.get(itemKey) : ''
+	getDataFromQuery(itemKey: string): string {
+		if (this.urlParams) {
+			if (this.urlParams.has(URLNS + itemKey)) return this.urlParams.get(URLNS + itemKey)
+
+			return this.urlParams.get(itemKey) // Fallback to non-namespaced version for backward compatibility
+		}
+
+		return null
+	}
+
+	getCallbackUrlKey(key: string) {
+		if (this.getDataFromQuery('ns')) return URLNS + key
+
+		return key
 	}
 
 	getFilter() {
@@ -156,8 +167,8 @@ export class Outlet {
 
 						let token = JSON.parse(tokenString)
 
-						const attestationBlob = this.getDataFromQuery('attestation', false)
-						const attestationSecret = '0x' + this.getDataFromQuery('requestSecret', false)
+						const attestationBlob = this.getDataFromQuery('attestation')
+						const attestationSecret = '0x' + this.getDataFromQuery('requestSecret')
 
 						const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(token)
 
@@ -165,11 +176,11 @@ export class Outlet {
 
 						if (requesterURL) {
 							const params = new URLSearchParams(requesterURL.hash.substring(1))
-							params.set(URLNS + 'action', 'proof-callback')
-							params.set(URLNS + 'issuer', issuer)
-							params.set(URLNS + 'attestation', useToken.proof as string)
-							params.set(URLNS + 'type', ticketRecord.type)
-							params.set(URLNS + 'token', tokenString)
+							params.set(this.getCallbackUrlKey('action'), 'proof-callback')
+							params.set(this.getCallbackUrlKey('issuer'), issuer)
+							params.set(this.getCallbackUrlKey('attestation'), useToken.proof as string)
+							params.set(this.getCallbackUrlKey('type'), ticketRecord.type)
+							params.set(this.getCallbackUrlKey('token'), tokenString)
 
 							requesterURL.hash = params.toString()
 
@@ -378,9 +389,9 @@ export class Outlet {
 				let url = this.redirectCallbackUrl
 
 				const params = new URLSearchParams(url.hash.substring(1))
-				params.set(URLNS + 'action', OutletAction.GET_ISSUER_TOKENS + '-response')
-				params.set(URLNS + 'issuer', this.tokenConfig.collectionID)
-				params.set(URLNS + 'tokens', JSON.stringify(issuerTokens))
+				params.set(this.getCallbackUrlKey('action'), OutletAction.GET_ISSUER_TOKENS + '-response')
+				params.set(this.getCallbackUrlKey('issuer'), this.tokenConfig.collectionID)
+				params.set(this.getCallbackUrlKey('tokens'), JSON.stringify(issuerTokens))
 
 				url.hash = '#' + params.toString()
 
@@ -411,10 +422,10 @@ export class Outlet {
 			let url = this.redirectCallbackUrl
 
 			const params = new URLSearchParams(url.hash.substring(1))
-			params.set(URLNS + 'action', ResponseActionBase.ERROR)
-			params.set(URLNS + 'issuer', issuer || this.tokenConfig.collectionID)
-			params.set(URLNS + 'type', type)
-			params.set(URLNS + 'error', error)
+			params.set(this.getCallbackUrlKey('action'), ResponseActionBase.ERROR)
+			params.set(this.getCallbackUrlKey('issuer'), issuer || this.tokenConfig.collectionID)
+			params.set(this.getCallbackUrlKey('type'), type)
+			params.set(this.getCallbackUrlKey('error'), error)
 
 			url.hash = '#' + params.toString()
 
@@ -433,9 +444,9 @@ export class Outlet {
 		const requesterURL = this.redirectCallbackUrl
 
 		const params = new URLSearchParams(requesterURL.hash.substring(1))
-		params.set(URLNS + 'action', 'proof-callback')
-		params.set(URLNS + 'issuer', issuer)
-		params.set(URLNS + 'error', error)
+		params.set(this.getCallbackUrlKey('action'), 'proof-callback')
+		params.set(this.getCallbackUrlKey('issuer'), issuer)
+		params.set(this.getCallbackUrlKey('error'), error)
 
 		requesterURL.hash = params.toString()
 
