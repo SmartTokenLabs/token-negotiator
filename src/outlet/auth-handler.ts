@@ -5,7 +5,7 @@ import { OutletAction } from '../client/messaging'
 import { Outlet, OutletInterface } from './index'
 import { Authenticator } from '@tokenscript/attestation'
 import { logger, removeUrlSearchParams } from '../utils'
-import { isBrave, isMacOrIOS } from '../utils/support/getBrowserData'
+import { isBrave } from '../utils/support/getBrowserData'
 
 export interface DevconToken {
 	ticketBlob: string
@@ -108,9 +108,7 @@ export class AuthHandler {
 
 		this.attestationOrigin = tokenObj.attestationOrigin
 
-		// disable attestationInTab by default
 		this.attestationInTab = tokenObj.attestationInTab
-		// !== undefined ? tokenObj.attestationInTab : (isBrave() || isMacOrIOS());
 	}
 
 	openAttestationApp() {
@@ -133,9 +131,6 @@ export class AuthHandler {
 			button.innerHTML = 'Click to get Email Attestation'
 
 			button.addEventListener('click', () => {
-				// let winParams = preparePopupCenter(800, 700);
-				// this.attestationTabHandler = window.open(this.attestationOrigin,"Attestation",winParams);
-
 				this.attestationTabHandler = window.open(this.attestationOrigin, 'Attestation')
 
 				button.remove()
@@ -155,8 +150,6 @@ export class AuthHandler {
 						this.rejectHandler(new Error('User closed TAB'))
 					}
 				}, 2000)
-
-				// this.buttonOverlay.remove();
 			})
 
 			let wrapperID = this.wrapperBase + '_wrap_' + Date.now()
@@ -225,7 +218,6 @@ export class AuthHandler {
 			this.buttonOverlay.appendChild(button)
 			this.buttonOverlay.appendChild(styles)
 			document.body.appendChild(this.buttonOverlay)
-			// button.click();
 		} else {
 			logger(2, 'open attestation in iframe')
 			this.createIframe()
@@ -240,20 +232,17 @@ export class AuthHandler {
 			if (this.redirectUrl) {
 				const curParams = new URLSearchParams(document.location.hash.substring(1))
 
-				// Request parameters for attestation.id
 				const params = new URLSearchParams()
 				params.set('email', this.email)
 				params.set('address', this.address)
 				params.set('wallet', this.wallet)
 
-				// Add extra params that will be required for the Attestation.id -> Outlet callback URL
 				const callbackUrl = new URL(this.redirectUrl)
 				const callbackParams = removeUrlSearchParams(new URLSearchParams(callbackUrl.hash.substring(1)))
 				callbackParams.set(URLNS + 'action', OutletAction.EMAIL_ATTEST_CALLBACK)
 				callbackParams.set(URLNS + 'issuer', this.tokenDef.collectionID)
 				callbackParams.set(URLNS + 'token', JSON.stringify(this.unsignedToken))
 
-				// Outlet -> Client callback
 				const requestor = curParams.get(URLNS + 'requestor')
 				if (requestor) {
 					callbackParams.set(URLNS + 'requestor', requestor)
@@ -271,7 +260,6 @@ export class AuthHandler {
 				return
 			}
 
-			// don't do it for brave, brave doesn't support access to indexDB through iframe
 			if (this.attestationInTab && !isBrave()) {
 				this.tryingToGetAttestationInBackground = true
 			}
@@ -304,6 +292,7 @@ export class AuthHandler {
 		iframe.src = this.attestationOrigin ?? ''
 		iframe.style.width = '800px'
 		iframe.style.height = '800px'
+		iframe.style.maxHeight = '100vh'
 		iframe.style.maxWidth = '100%'
 		iframe.style.background = '#fff'
 
@@ -381,14 +370,9 @@ export class AuthHandler {
 		}
 
 		if (typeof event.data.display !== 'undefined') {
-			// force display/hide iframe/tab
-
 			if (event.data.display === true) {
-				// display works for iframe only
 				if (this.iframeWrap) {
 					if (this.tryingToGetAttestationInBackground) {
-						// doesnt have ready attestation,
-						// lets open attestation in the new tab
 						this.tryingToGetAttestationInBackground = false
 						this.iframe.remove()
 						this.iframeWrap.remove()
@@ -398,13 +382,10 @@ export class AuthHandler {
 
 					this.iframeWrap.style.display = 'flex'
 
-					// ask parent to show this iframe
 					if (this.outlet)
 						this.outlet.sendMessageResponse({
 							evtid: this.evtid,
 							evt: ResponseActionBase.SHOW_FRAME,
-							// max_width: "700px",
-							// min_height: "600px"
 						})
 				}
 			} else {
@@ -414,7 +395,6 @@ export class AuthHandler {
 					if (this.buttonOverlay) this.buttonOverlay.remove()
 				}
 
-				// display works for iframe only
 				if (this.iframeWrap) {
 					this.iframeWrap.style.display = 'none'
 				}
@@ -426,7 +406,6 @@ export class AuthHandler {
 		}
 
 		if (this.attestationTabHandler) {
-			// console.log("tab close disabled for now");
 			this.attestationTabHandler.close()
 		}
 
@@ -443,17 +422,5 @@ export class AuthHandler {
 		} catch (e: any) {
 			reject(e)
 		}
-
-		// construct UseDevconTicket, see
-		// https://github.com/TokenScript/attestation/blob/main/data-modules/src/UseDevconTicket.asd
-
-		// TODO we dont have ready UseDevconTicket constructor yet
-		// let useDevconTicket = new UseDevconTicket({
-		//     signedDevconTicket: signedDevonTicket,
-		//     identifierAttestation: identifierAttestation,
-		//     proof: proof
-		// })
-		// // Serialise it (for use as a transaction parameter) and return it
-		// return useDevconTicket.serialize();
 	}
 }

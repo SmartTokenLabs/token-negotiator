@@ -30,7 +30,6 @@ export class AttestedAddress extends AbstractAuthentication implements Authentic
 
 		if (!currentProof) {
 			if (wallet.provider instanceof SafeConnectProvider) {
-				// This will request and save a new challenge from safe connect
 				await wallet.provider.initSafeConnect()
 				currentProof = this.getSavedProof(wallet.address)
 			} else {
@@ -38,16 +37,11 @@ export class AttestedAddress extends AbstractAuthentication implements Authentic
 
 				let signature = await web3WalletProvider.signMessage(wallet.address, challenge.messageToSign)
 
-				// this.getUi().showLoader("Issuing Attestation");
-
 				let serverPayload = <ProofRequestInterface>{
 					type: 'address_attest',
 					subject: await SafeConnect.getLinkPublicKey(),
 					address: wallet.address,
 					signature: signature,
-					/* data: {
-						context: data.context
-					}*/
 				}
 
 				let attest = await SafeConnect.getAttestation(web3WalletProvider.safeConnectOptions.url, serverPayload)

@@ -5,7 +5,11 @@ export const getBrowserData = () => {
 	// detect browser
 	const isIE = UA && /msie|trident/.test(UA)
 	const isIE9 = UA && UA.indexOf('msie 9.0') > 0
-	const isEdge = UA && UA.indexOf('edg/') > 0
+	const isEdgeDesktop = UA && UA.indexOf('edg/') > 0
+	const isEdgeAndroid = UA && UA.indexOf('edga/') > 0
+	const isEdgeIOS = UA && UA.indexOf('edgios/') > 0
+	const isEdgeOtherMobile = UA && UA.indexOf('edge/') > 0
+	const isEdge = isEdgeDesktop || isEdgeAndroid || isEdgeIOS || isEdgeOtherMobile
 	const isChrome = UA && /chrome\/\d+/.test(UA) && !isEdge
 	const isPhantomJS = UA && /phantomjs/.test(UA)
 	const isFireFox = UA && /firefox|fxios\/\d+/.test(UA)
@@ -55,6 +59,8 @@ export const getBrowserData = () => {
 		iE: isIE,
 		iE9: isIE9,
 		edge: isEdge,
+		edgeAndroid: isEdgeAndroid,
+		edgeIOS: isEdgeIOS,
 		chrome: isChrome,
 		phantomJS: isPhantomJS,
 		fireFox: isFireFox,
@@ -63,7 +69,7 @@ export const getBrowserData = () => {
 		iOS: isIOS,
 		mac: isMac,
 		windows: isWindows,
-		desktop: navigator.userAgent?.indexOf("Mobi") === -1,
+		desktop: navigator.userAgent?.indexOf('Mobi') === -1,
 		touchDevice: isTouchDevice,
 		metaMask: isMetaMask,
 		anyMetamask: !!windowEthereum.isMetaMask && !isTrust && !windowEthereum.isBraveWallet,
@@ -84,10 +90,7 @@ export const getBrowserData = () => {
 }
 
 export function isMacOrIOS() {
-	return (
-		!!window.safari ||
-		/iphone|ipad|ipod|ios/.test(window.navigator.userAgent ? window.navigator.userAgent.toLowerCase() : '')
-	)
+	return !!window.safari || /iphone|ipad|ipod|ios/.test(window.navigator.userAgent ? window.navigator.userAgent.toLowerCase() : '')
 }
 
 export function isBrave() {
@@ -97,12 +100,7 @@ export function isBrave() {
 export function isIosSafari() {
 	let userAgent = window.navigator.userAgent ? window.navigator.userAgent.toLowerCase() : ''
 
-	return (
-		/ip(ad|od|hone)/i.test(userAgent) &&
-		/webkit/i.test(userAgent) &&
-		!/(crios|fxios|opios|mercury)/i.test(userAgent) &&
-		!isBrave()
-	)
+	return /ip(ad|od|hone)/i.test(userAgent) && /webkit/i.test(userAgent) && !/(crios|fxios|opios|mercury)/i.test(userAgent) && !isBrave()
 }
 
 export function isMacSafari() {
