@@ -5,7 +5,6 @@ import { getWalletInfo, WalletInfo } from './utils/wallet-info'
 import { SupportedWalletProviders } from '../../wallet/Web3WalletProvider'
 import { getBrowserData } from '../../utils/support/getBrowserData'
 
-
 export class SelectWallet extends AbstractView {
 	init() {
 		this.client.registerUiUpdateCallback(UIUpdateEventType.WALLET_DISCONNECTED, undefined)
@@ -31,7 +30,7 @@ export class SelectWallet extends AbstractView {
 
 			const browserData = getBrowserData()
 
-			if (!browserData.edgeIOS){
+			if (!browserData.edgeIOS) {
 				supportedWallets.push(getWalletInfo(SupportedWalletProviders.Torus))
 			}
 
@@ -102,10 +101,7 @@ export class SelectWallet extends AbstractView {
 		logger(2, 'Connect wallet: ' + wallet)
 
 		this.ui.showLoaderDelayed(
-			[
-				'<h4>Connecting to ' + walletlabel + '...</h4>',
-				'<small>You may need to unlock your wallet to continue.</small>',
-			],
+			['<h4>Connecting to ' + walletlabel + '...</h4>', '<small>You may need to unlock your wallet to continue.</small>'],
 			500,
 		)
 
@@ -121,7 +117,7 @@ export class SelectWallet extends AbstractView {
 				this.ui.updateUI('main', { viewName: 'main' }, { viewTransition: 'slide-in-right' })
 			}
 		} catch (err: any) {
-			logger(2, "negotiatorConnectToWallet error", e)
+			logger(2, 'negotiatorConnectToWallet error', e)
 			this.ui.showError(err)
 			return
 		}

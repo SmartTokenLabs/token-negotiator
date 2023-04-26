@@ -348,6 +348,33 @@ export class Web3WalletProvider {
 		return curAccount
 	}
 
+	private async registerSolanaProvider(provider: any, providerName: string) {
+		const connection = await provider.connect()
+		const accountAddress: string = connection.publicKey.toBase58()
+
+		this.registerNewWalletAddress(accountAddress, 'mainnet-beta', providerName, provider, 'solana')
+
+		provider.on('disconnect', () => {
+			this.client.disconnectWallet()
+		})
+
+		provider.on('accountChanged', (publicKey) => {
+			if (publicKey) {
+				// Set new public key and continue as usual
+				const newAccountAddress = publicKey.toBase58()
+				this.registerNewWalletAddress(newAccountAddress, 'mainnet-beta', providerName, provider, 'solana')
+				this.saveConnections()
+
+				this.emitSavedConnection(newAccountAddress)
+
+				this.client.getTokenStore().clearCachedTokens()
+				this.client.enrichTokenLookupDataOnChainTokens()
+			}
+		})
+
+		return accountAddress
+	}
+
 	async MetaMask(checkConnectionOnly: boolean) {
 		logger(2, 'connect MetaMask')
 
@@ -468,14 +495,7 @@ export class Web3WalletProvider {
 		logger(2, 'connect Phantom')
 
 		if (typeof window.solana !== 'undefined') {
-			const connection = await window.solana.connect()
-
-			const accountAddress: string = connection.publicKey.toBase58()
-
-			// mainnet-beta
-			// TODO: Create registerSolanaProvider method to create event listeners (see registerEvmProvider)
-			this.registerNewWalletAddress(accountAddress, 'mainnet-beta', 'phantom', window.solana, 'solana')
-			return accountAddress
+			return await this.registerSolanaProvider(window.solana, 'phantom')
 		} else {
 			throw new Error('Phantom is not available. Please check the extension is supported and active.')
 		}
