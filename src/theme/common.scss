@@ -835,6 +835,9 @@ li.issuer-connect-banner-tn .fungible-token-btn {
   outline: inherit;
   width: 132px;
   opacity: 0.8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .overlay-tn .skeleton-box {
