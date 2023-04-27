@@ -305,8 +305,8 @@ export class Outlet {
 			return new Promise<void>((resolve, reject) => {
 				const typeTxt = whiteListType === 'read' ? 'read' : 'read & write'
 				const permissionTxt = `${origin} is requesting ${typeTxt} access to your ${this.tokenConfig.title} tickets`
-				const acceptBtn = '<button id="tn-access-accept">Accept</button>'
-				const denyBtn = '<button id="tn-access-deny">Deny</button>'
+				const acceptBtn = '<button style="cursor: pointer" id="tn-access-accept">Accept</button>'
+				const denyBtn = '<button style="cursor: pointer" id="tn-access-deny">Deny</button>'
 
 				const content = this.tokenConfig.whitelistDialogRenderer
 					? this.tokenConfig.whitelistDialogRenderer(permissionTxt, acceptBtn, denyBtn)
