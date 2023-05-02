@@ -539,6 +539,14 @@ Configure the library using the following example.
 						blockchain: "evm",
 					},
 					{
+						blockchain: "ultra",
+						onChain: true,
+						collectionID: "ultranft",
+						contract: "eosio.nft.ft", // static
+						chain: "testnet", // testnet or mainnet
+                        factoryId: 2669 // most important value, describes NFT collection
+					},
+					{
 						hideToggle: true,
 						noTokenMsg:
 							"<p>If you have a token please:</p><p>1. Open your magic link inside this browser.2. Refresh this page.</p>",

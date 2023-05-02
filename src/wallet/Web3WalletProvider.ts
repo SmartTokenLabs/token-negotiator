@@ -8,6 +8,10 @@ interface WalletConnectionState {
 	[index: string]: WalletConnection
 }
 
+interface WalletMeta {
+	publicKeys?: string[]
+}
+
 export interface WalletConnection {
 	address: string
 	chainId: number | string
@@ -15,6 +19,7 @@ export interface WalletConnection {
 	blockchain: SupportedBlockchainsParam
 	provider?: ethers.providers.Web3Provider | any // solana(phantom) have different interface
 	ethers?: any
+	meta?: WalletMeta
 }
 
 export enum SupportedWalletProviders {
@@ -24,6 +29,7 @@ export enum SupportedWalletProviders {
 	Torus = 'Torus',
 	Phantom = 'Phantom',
 	Flow = 'Flow',
+	Ultra = 'Ultra',
 	SafeConnect = 'SafeConnect',
 }
 
@@ -159,7 +165,6 @@ export class Web3WalletProvider {
 		return address
 	}
 
-	// TODO: Implement signing for Solana & Flow wallets
 	async signMessage(address: string, message: string) {
 		let provider = this.getWalletProvider(address)
 		let connection = this.getConnectionByAddress(address)
@@ -170,6 +175,10 @@ export class Web3WalletProvider {
 		} else if (connection.blockchain === 'solana') {
 			const signedMessage = await provider.signMessage(strToUtfBytes(message), 'utf8')
 			return signedMessage.signature.toString('hex')
+		} else if (connection.blockchain === 'ultra') {
+			const response = await window.ultra.signMessage(message)
+			logger(2, response)
+			return response.data.signature
 		} else if (connection.blockchain === 'flow') {
 			let signatureObj = await provider.currentUser.signUserMessage(strToHexStr(message))
 
@@ -232,8 +241,9 @@ export class Web3WalletProvider {
 		providerType: string,
 		provider: any,
 		blockchain: SupportedBlockchainsParam,
+		walletMeta: WalletMeta = [] as WalletMeta,
 	) {
-		this.connections[address.toLowerCase()] = { address, chainId, providerType, provider, blockchain, ethers }
+		this.connections[address.toLowerCase()] = { address, chainId, providerType, provider, blockchain, ethers, meta: walletMeta }
 		switch (blockchain) {
 			case 'solana':
 				provider.on('connect', (publicKey) => {
@@ -275,6 +285,13 @@ export class Web3WalletProvider {
 				provider.currentUser().subscribe((user) => {
 					// TODO create multiple wallets and test wallet change
 					logger(2, '=========Flow user subscription: ', user)
+				})
+				break
+			case 'ultra':
+				provider.on('disconnect', () => {
+					// TODO handle disconnect
+					logger(2, '========= Ultra disconnected.')
+					this.client.disconnectWallet()
 				})
 				break
 			case 'evm':
@@ -528,6 +545,25 @@ export class Web3WalletProvider {
 		this.registerNewWalletAddress(currentUser.addr, 1, 'flow', fcl, 'flow')
 
 		return currentUser.addr
+	}
+
+	async Ultra() {
+		const response = await window.ultra.connect()
+
+		let accountID = ''
+		try {
+			accountID = response.data?.blockchainid.split('@')[0]
+			// No user address after authenticate() then connect was unsuccesfull
+		} catch (e) {
+			throw new Error('Failed to get Ultra wallet address')
+		}
+
+		if (!accountID) throw new Error('Failed to get Ultra wallet address')
+
+		// TODO set chainID
+		this.registerNewWalletAddress(accountID, 1, 'ultra', window.ultra, 'ultra')
+
+		return accountID
 	}
 
 	safeConnectAvailable() {

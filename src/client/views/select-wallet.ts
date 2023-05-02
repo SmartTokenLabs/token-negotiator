@@ -49,6 +49,11 @@ export class SelectWallet extends AbstractView {
 			walletButtons += this.getWalletButtonHtml(flow)
 		}
 
+		if (this.client.hasIssuerForBlockchain('ultra')) {
+			const ultra = getWalletInfo(SupportedWalletProviders.Ultra)
+			walletButtons += this.getWalletButtonHtml(ultra)
+		}
+
 		this.viewContainer.innerHTML = `
             <div class="inner-content-tn scroll-tn">
               <div class="wallet-selection-view-tn">

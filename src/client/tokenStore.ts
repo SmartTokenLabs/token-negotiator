@@ -1,4 +1,4 @@
-import { OffChainTokenConfig, OnChainIssuer, OnChainTokenConfig, SolanaIssuerConfig } from './interface'
+import { OffChainTokenConfig, OnChainIssuer, OnChainTokenConfig, SolanaIssuerConfig, UltraIssuerConfig } from './interface'
 
 import { logger } from '../utils'
 
@@ -16,7 +16,7 @@ interface TokenData {
 	[key: string]: any
 }
 
-type TokenConfig = OnChainTokenConfig | OffChainTokenConfig | SolanaIssuerConfig
+type TokenConfig = OnChainTokenConfig | OffChainTokenConfig | SolanaIssuerConfig | UltraIssuerConfig
 
 export class TokenStore {
 	public static LOCAL_STORAGE_KEY = 'tn-tokenStore'
