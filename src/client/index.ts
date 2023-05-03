@@ -136,6 +136,28 @@ export class Client {
 
 		this.messaging = new Messaging()
 		this.registerOutletProofEventListener()
+		this.handleRecievedRedirectMessages()
+	}
+
+	handleRecievedRedirectMessages() {
+		// const action = this.getDataFromQuery('action')
+		const issuer = this.getDataFromQuery('issuer')
+		const error = this.getDataFromQuery('error')
+		const type = this.getDataFromQuery('type')
+		setTimeout(() => {
+			if (error === 'USER_ABORT' && type === 'offchain-issuer-connection') {
+				let userAbortError = new Error(error)
+				userAbortError.name = 'USER_ABORT'
+				errorHandler(
+					'issuer denied connection with off chain issuer',
+					'error',
+					() => this.eventSender('error', { issuer: issuer, error: userAbortError }),
+					null,
+					true,
+					false,
+				)
+			}
+		}, 0)
 	}
 
 	getDataFromQuery(itemKey: any): string {
@@ -704,7 +726,6 @@ export class Client {
 
 	private loadLocalOutletTokens(issuer: OffChainTokenConfig) {
 		const localOutlet = new LocalOutlet(issuer as OutletInterface & OffChainTokenConfig)
-
 		return localOutlet.getTokens()
 	}
 
