@@ -106,6 +106,13 @@ export class Outlet {
 		return filter ? JSON.parse(filter) : {}
 	}
 
+	async modalDialogEventHandler(evtid: any, access: string) {
+		const action = await this.whitelistCheck(evtid, access === 'write' ? 'write' : 'read')
+		if (action === 'user-accept') this.sendTokens(evtid)
+		else if (action === 'user-abort')
+			this.sendErrorResponse(evtid, 'USER_ABORT', this.getDataFromQuery('issuer'), 'offchain-issuer-connection')
+	}
+
 	async pageOnLoadEventHandler() {
 		const evtid = this.getDataFromQuery('evtid')
 		const action = this.getDataFromQuery('action')
@@ -122,10 +129,7 @@ export class Outlet {
 		try {
 			switch (action) {
 				case OutletAction.GET_ISSUER_TOKENS: {
-					const action = await this.whitelistCheck(evtid, access === 'write' ? 'write' : 'read')
-					if (action === 'user-accept') this.sendTokens(evtid)
-					else if (action === 'user-abort')
-						this.sendErrorResponse(evtid, 'USER_ABORT', this.getDataFromQuery('issuer'), 'offchain-issuer-connection')
+					await this.modalDialogEventHandler(evtid, access)
 					break
 				}
 				case OutletAction.EMAIL_ATTEST_CALLBACK: {
@@ -198,11 +202,8 @@ export class Outlet {
 					// TODO: Remove singleUse - this is only needed in negotiator that calls readMagicLink.
 					//  move single link somewhere that it can be used by both Outlet & LocalOutlet
 					if (!this.singleUse) {
-						const action = await this.whitelistCheck(evtid, 'write')
 						await this.readMagicLink()
-						if (action === 'user-accept') this.sendTokens(evtid)
-						else if (action === 'user-abort')
-							this.sendErrorResponse(evtid, 'USER_ABORT', this.getDataFromQuery('issuer'), 'offchain-issuer-connection')
+						await this.modalDialogEventHandler(evtid, 'write')
 					}
 					break
 				}
