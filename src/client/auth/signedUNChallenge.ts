@@ -15,8 +15,8 @@ export class SignedUNChallenge extends AbstractAuthentication implements Authent
 	): Promise<AuthenticationResult> {
 		let web3WalletProvider = await this.client.getWalletProvider()
 
-		// TODO: Update once Flow & Solana signing support is added
-		let connection = web3WalletProvider.getSingleSignatureCompatibleConnection()
+		let connection =
+			web3WalletProvider.getConnectionByAddress(_tokens[0].walletAddress) ?? web3WalletProvider.getSingleSignatureCompatibleConnection()
 		if (!connection) {
 			throw new Error('WALLET_REQUIRED')
 		}
@@ -32,7 +32,7 @@ export class SignedUNChallenge extends AbstractAuthentication implements Authent
 		if (currentProof) {
 			let unChallenge = currentProof?.data as UNInterface
 
-			if (unChallenge.expiration < Date.now() || !UN.verifySignature(unChallenge)) {
+			if (unChallenge.expiration < Date.now() || !(await UN.verifySignature(unChallenge))) {
 				this.deleteProof(address)
 				currentProof = null
 			}

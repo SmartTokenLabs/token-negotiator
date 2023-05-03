@@ -265,7 +265,7 @@ export class Web3WalletProvider {
 				provider.on('connect', (publicKey) => {
 					let newAddress = publicKey.toBase58()
 					logger(2, 'connected wallet: ', newAddress)
-					this.registerNewWalletAddress(newAddress, 'mainnet-beta', 'phantom', window.solana, 'solana')
+					this.registerNewWalletAddress(newAddress, 'mainnet-beta', SupportedWalletProviders.Phantom, window.solana, 'solana')
 				})
 
 				provider.on('disconnect', () => {
@@ -276,7 +276,7 @@ export class Web3WalletProvider {
 					 * for now user cant connect to multiple wallets
 					 * but do we need it for future?
 					 */
-					this.client.disconnectWallet()
+					this.client.disconnectWallet(address, providerType)
 				})
 
 				provider.on('accountChanged', (publicKey) => {
@@ -284,7 +284,7 @@ export class Web3WalletProvider {
 					if (publicKey) {
 						// Set new public key and continue as usual
 						logger(2, `Switched to account ${publicKey.toBase58()}`)
-						this.registerNewWalletAddress(publicKey.toBase58(), 'mainnet-beta', 'phantom', window.solana, 'solana')
+						this.registerNewWalletAddress(publicKey.toBase58(), 'mainnet-beta', SupportedWalletProviders.Phantom, window.solana, 'solana')
 					} else {
 						logger(2, 'Disconnected from wallet')
 						delete this.connections[address.toLowerCase()]
@@ -293,7 +293,7 @@ export class Web3WalletProvider {
 						 * for now user cant connect to multiple wallets
 						 * but do we need it for future?
 						 */
-						this.client.disconnectWallet()
+						this.client.disconnectWallet(address, providerType)
 					}
 				})
 				break

@@ -661,28 +661,32 @@ export class Client {
 	private async loadOnChainTokens(issuer: OnChainIssuer): Promise<any[]> {
 		let walletProvider = await this.getWalletProvider()
 
-		// TODO: Collect tokens from all addresses for this blockchain
-		const walletAddress = walletProvider.getConnectedWalletAddresses(issuer.blockchain)?.[0]
+		const walletAddresses = walletProvider.getConnectedWalletAddresses(issuer.blockchain)
 
-		if (!walletAddress) {
+		if (!walletAddresses.length) {
 			throw new Error('WALLET_REQUIRED')
 		}
 
-		// TODO: Allow API to return tokens for multiple addresses
-		let tokens
+		const combinedTokens = []
 
-		if (issuer.fungible) {
-			tokens = await getFungibleTokenBalances(issuer, walletAddress)
-		} else {
-			tokens = await getNftTokens(issuer, walletAddress)
+		for (const walletAddress of walletAddresses) {
+			let tokens
+
+			if (issuer.fungible) {
+				tokens = await getFungibleTokenBalances(issuer, walletAddress)
+			} else {
+				tokens = await getNftTokens(issuer, walletAddress)
+			}
+
+			tokens.map((token) => {
+				token.walletAddress = walletAddress
+				return token
+			})
+
+			combinedTokens.push(...tokens)
 		}
 
-		tokens.map((token) => {
-			token.walletAddress = walletAddress
-			return token
-		})
-
-		return tokens
+		return combinedTokens
 	}
 
 	private async loadRemoteOutletTokens(issuer: OffChainTokenConfig): Promise<unknown[] | void> {
