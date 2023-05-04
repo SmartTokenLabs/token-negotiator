@@ -345,7 +345,7 @@ export class Outlet {
 						localStorage.setItem('tn-whitelist', JSON.stringify(accessWhitelist))
 					}
 
-					resolve()
+					void resolve()
 				})
 
 				document.getElementById('tn-access-deny').addEventListener('click', () => {
