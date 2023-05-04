@@ -140,7 +140,6 @@ export class Client {
 	}
 
 	handleRecievedRedirectMessages() {
-		// const action = this.getDataFromQuery('action')
 		const issuer = this.getDataFromQuery('issuer')
 		const error = this.getDataFromQuery('error')
 		const type = this.getDataFromQuery('type')
