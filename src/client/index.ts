@@ -950,10 +950,6 @@ export class Client {
 
 		if ((type === 'tokens' || type === 'tokens-selected') && callback) {
 			this.readTokensFromUrl()
-				.then()
-				.catch((err) => {
-					logger(2, err)
-				})
 		}
 
 		if (type === 'token-proof' && callback) {
