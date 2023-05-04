@@ -244,7 +244,6 @@ export class Web3WalletProvider {
 
 				provider.on('disconnect', () => {
 					logger(2, 'disconnected wallet.')
-					delete this.connections[address.toLowerCase()]
 					/**
 					 * TODO do we need to disconnect all wallets?
 					 * for now user cant connect to multiple wallets
@@ -254,14 +253,18 @@ export class Web3WalletProvider {
 				})
 
 				provider.on('accountChanged', (publicKey) => {
-					delete this.connections[address.toLowerCase()]
 					if (publicKey) {
+						delete this.connections[address.toLowerCase()]
 						// Set new public key and continue as usual
-						logger(2, `Switched to account ${publicKey.toBase58()}`)
-						this.registerNewWalletAddress(publicKey.toBase58(), 'mainnet-beta', 'phantom', window.solana, 'solana')
+						const newAccountAddress = publicKey.toBase58()
+						logger(2, `Switched to account ${newAccountAddress}`)
+						this.registerNewWalletAddress(newAccountAddress, 'mainnet-beta', 'phantom', window.solana, 'solana')
+						this.saveConnections()
+						this.emitSavedConnection(newAccountAddress)
+						this.client.getTokenStore().clearCachedTokens()
+						this.client.enrichTokenLookupDataOnChainTokens()
 					} else {
 						logger(2, 'Disconnected from wallet')
-						delete this.connections[address.toLowerCase()]
 						/**
 						 * TODO do we need to disconnect all wallets?
 						 * for now user cant connect to multiple wallets
@@ -353,25 +356,6 @@ export class Web3WalletProvider {
 		const accountAddress: string = connection.publicKey.toBase58()
 
 		this.registerNewWalletAddress(accountAddress, 'mainnet-beta', providerName, provider, 'solana')
-
-		provider.on('disconnect', () => {
-			this.client.disconnectWallet()
-		})
-
-		provider.on('accountChanged', (publicKey) => {
-			if (publicKey) {
-				// Set new public key and continue as usual
-				const newAccountAddress = publicKey.toBase58()
-				this.registerNewWalletAddress(newAccountAddress, 'mainnet-beta', providerName, provider, 'solana')
-				this.saveConnections()
-
-				this.emitSavedConnection(newAccountAddress)
-
-				this.client.getTokenStore().clearCachedTokens()
-				this.client.enrichTokenLookupDataOnChainTokens()
-			}
-		})
-
 		return accountAddress
 	}
 
