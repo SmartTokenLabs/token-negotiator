@@ -337,7 +337,7 @@ export class Outlet {
 
 				document.body.insertAdjacentHTML('beforeend', content)
 
-				document.getElementById('tn-access-accept').addEventListener('click', async () => {
+				document.getElementById('tn-access-accept').addEventListener('click', () => {
 					if (!accessWhitelist[origin] || whiteListType !== accessWhitelist[origin].type) {
 						accessWhitelist[origin] = {
 							type: whiteListType,
