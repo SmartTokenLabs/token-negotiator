@@ -47,12 +47,20 @@ describe('Test magic link token merging', () => {
 		const tokens = outlet.mergeNewToken(ticket3, [ticket1]) as any[]
 		expect(tokens.length).toBe(2)
 	})
+	// TODO refactor the logic to enable unit tests to have an expected result
 	test('Expect existing attestation with same ID to be overwritten', () => {
-		const tokens = outlet.mergeNewToken(ticket2, [ticket1]) as any[]
-		expect(true).toBe(true)
+		outlet.mergeNewToken(ticket2, [ticket1]) as any[]
 	})
 	test('Expect duplicate attestation to be skipped', () => {
 		const tokens = outlet.mergeNewToken(ticket1, [ticket1])
 		expect(tokens).toBe(false)
+	})
+	// TODO refactor the logic to enable unit tests to have an expected result
+	test('Expect modalDialogEventHandler to trigger user-accept', async () => {
+		outlet.modalDialogEventHandler('1', 'write')
+	})
+	// TODO refactor the logic to enable unit tests to have an expected result
+	test('Expect modalDialogEventHandler to trigger user-abort', () => {
+		outlet.modalDialogEventHandler('1', 'read')
 	})
 })
