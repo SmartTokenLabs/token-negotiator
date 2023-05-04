@@ -217,7 +217,7 @@ export class Client {
 
 		// Check if blockchain is supported one
 		// TODO: Put in separate method - issuers can also be specified via negotiate()
-		if (defaultConfig.issuers && defaultConfig.issuers.length) {
+		if (defaultConfig.issuers?.length) {
 			for (const issuer of defaultConfig.issuers) {
 				if (issuer.onChain === true) {
 					validateBlockchain(issuer.blockchain ?? '')
