@@ -501,8 +501,9 @@ export class Client {
 		let action = this.getDataFromQuery('action')
 
 		if (action === 'error') {
-			this.handleRedirectTokensError()
-			return
+			return this.handleRedirectTokensError()
+				.then()
+				.catch((e) => logger(2, 'Error handle redirect tokens error. ', e))
 		}
 
 		if (action !== OutletAction.GET_ISSUER_TOKENS + '-response') return
