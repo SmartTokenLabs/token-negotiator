@@ -93,6 +93,10 @@ export class Outlet {
 
 		if (!this.singleUse) {
 			this.pageOnLoadEventHandler()
+				.then()
+				.catch((e) => {
+					logger(2, 'Outlet pageOnLoadEventHandler error: ' + e.message)
+				})
 		}
 	}
 
@@ -191,7 +195,7 @@ export class Outlet {
 					const wallet: string = this.getDataFromQuery('wallet')
 					const address: string = this.getDataFromQuery('address')
 					requiredParams(token, 'unsigned token is missing')
-					this.sendTokenProof(evtid, token, address, wallet)
+					await this.sendTokenProof(evtid, token, address, wallet)
 					break
 				}
 				default: {

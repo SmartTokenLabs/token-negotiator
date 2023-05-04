@@ -256,12 +256,16 @@ export class Client {
 	}
 
 	public async disconnectWallet() {
-		let wp = await this.getWalletProvider()
-		wp.deleteConnections()
-		this.tokenStore.clearCachedTokens()
-		this.eventSender('connected-wallet', null)
-		this.eventSender('disconnected-wallet', null)
-		this.triggerUiUpdateCallback(UIUpdateEventType.WALLET_DISCONNECTED)
+		try {
+			let wp = await this.getWalletProvider()
+			await wp.deleteConnections()
+			this.tokenStore.clearCachedTokens()
+			this.eventSender('connected-wallet', null)
+			this.eventSender('disconnected-wallet', null)
+			this.triggerUiUpdateCallback(UIUpdateEventType.WALLET_DISCONNECTED)
+		} catch (e) {
+			logger(2, 'Failed to disconnect wallet', e)
+		}
 	}
 
 	async negotiatorConnectToWallet(walletType: string) {
@@ -385,7 +389,7 @@ export class Client {
 			autoOpenPopup = this.tokenStore.hasUnloadedTokens()
 
 			if (this.ui.viewIsNotStart() && this.tokenStore.hasUnloadedIssuers()) {
-				this.enrichTokenLookupDataOnChainTokens()
+				await this.enrichTokenLookupDataOnChainTokens()
 			} else {
 				this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADED)
 			}
@@ -740,7 +744,7 @@ export class Client {
 				600,
 				true,
 			)
-			this.enableAuthCancel(issuer)
+			await this.enableAuthCancel(issuer)
 		}
 
 		let AuthType
@@ -791,13 +795,17 @@ export class Client {
 	}
 
 	public enableAuthCancel(issuer): void {
-		waitForElementToExist('.cancel-auth-btn').then((cancelAuthButton: HTMLElement) => {
-			cancelAuthButton.onclick = () => {
-				const err = 'User cancelled authentication'
-				this.ui.showError(err)
-				this.eventSender('token-proof', { issuer, error: err, data: null })
-			}
-		})
+		waitForElementToExist('.cancel-auth-btn')
+			.then((cancelAuthButton: HTMLElement) => {
+				cancelAuthButton.onclick = () => {
+					const err = 'User cancelled authentication'
+					this.ui.showError(err)
+					this.eventSender('token-proof', { issuer, error: err, data: null })
+				}
+			})
+			.catch((err) => {
+				logger(2, err)
+			})
 	}
 
 	private async handleWalletRequired(authRequest) {
@@ -852,7 +860,7 @@ export class Client {
 	async eventSender(eventName: 'error', data: EventSenderError)
 
 	async eventSender(eventName: TokenNegotiatorEvents, data: any) {
-		Promise.resolve(this.on(eventName, null, data))
+		await Promise.resolve(this.on(eventName, null, data))
 	}
 
 	getOutletConfigForCurrentOrigin(origin: string = document.location.origin) {
@@ -957,9 +965,14 @@ export class Client {
 					logger(2, 'Outlet fired to parse URL hash params.')
 
 					let outlet = new Outlet(currentIssuer, true, this.urlParams)
-					outlet.pageOnLoadEventHandler().then(() => {
-						outlet = null
-					})
+					outlet
+						.pageOnLoadEventHandler()
+						.then(() => {
+							outlet = null
+						})
+						.catch((err) => {
+							logger(2, err)
+						})
 				}
 			}
 		}
