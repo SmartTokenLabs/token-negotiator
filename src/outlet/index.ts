@@ -306,7 +306,7 @@ export class Outlet {
 			(!accessWhitelist[origin] || (accessWhitelist[origin].type === 'read' && whiteListType === 'write'))
 
 		if (needsPermission /* || storageAccessRequired */) {
-			return new Promise<any>((resolve, reject) => {
+			return new Promise<void>((resolve, reject) => {
 				const typeTxt = whiteListType === 'read' ? 'read' : 'read & write'
 				const permissionTxt = `${origin} is requesting ${typeTxt} access to your ${this.tokenConfig.title} tickets`
 				const acceptBtn = '<button style="cursor: pointer" id="tn-access-accept">Accept</button>'
