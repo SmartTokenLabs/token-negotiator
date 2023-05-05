@@ -393,9 +393,9 @@ export class Web3WalletProvider {
 		logger(2, 'connect Wallet Connect')
 
 		const walletConnectProvider = await import('./WalletConnectProvider')
-
 		const walletConnect = await walletConnectProvider.getWalletConnectProviderInstance(checkConnectionOnly)
 
+		let connecting = true
 		return new Promise((resolve, reject) => {
 			if (checkConnectionOnly) {
 				walletConnect.connector.on('display_uri', (err, payload) => {
@@ -403,14 +403,26 @@ export class Web3WalletProvider {
 				})
 			}
 
+			// this is for the edge case when user rejects connection from wallet
+			walletConnect.connector.on('disconnect', (err, payload) => {
+				if (connecting) {
+					connecting = false
+					this.client.getUi().showError('User rejected connection')
+				}
+			})
+
 			walletConnect
 				.enable()
 				.then(() => {
+					connecting = false
 					const provider = new ethers.providers.Web3Provider(walletConnect, 'any')
 
 					resolve(this.registerEvmProvider(provider, 'WalletConnect'))
 				})
-				.catch((e) => reject(e))
+				.catch((e) => {
+					connecting = false
+					reject(e)
+				})
 		})
 	}
 
