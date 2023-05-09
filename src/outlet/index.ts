@@ -110,6 +110,13 @@ export class Outlet {
 		return filter ? JSON.parse(filter) : {}
 	}
 
+	async modalDialogEventHandler(evtid: any, access: string) {
+		const action = await this.whitelistCheck(evtid, access === 'write' ? 'write' : 'read')
+		if (action === 'user-accept') this.sendTokens(evtid)
+		else if (action === 'user-abort')
+			this.sendErrorResponse(evtid, 'USER_ABORT', this.getDataFromQuery('issuer'), 'offchain-issuer-connection')
+	}
+
 	async pageOnLoadEventHandler() {
 		const evtid = this.getDataFromQuery('evtid')
 		const action = this.getDataFromQuery('action')
@@ -126,10 +133,7 @@ export class Outlet {
 		try {
 			switch (action) {
 				case OutletAction.GET_ISSUER_TOKENS: {
-					await this.whitelistCheck(evtid, access === 'write' ? 'write' : 'read')
-
-					this.sendTokens(evtid)
-
+					await this.modalDialogEventHandler(evtid, access)
 					break
 				}
 				case OutletAction.EMAIL_ATTEST_CALLBACK: {
@@ -202,11 +206,9 @@ export class Outlet {
 					// TODO: Remove singleUse - this is only needed in negotiator that calls readMagicLink.
 					//  move single link somewhere that it can be used by both Outlet & LocalOutlet
 					if (!this.singleUse) {
-						await this.whitelistCheck(evtid, 'write')
 						await this.readMagicLink()
-						this.sendTokens(evtid)
+						await this.modalDialogEventHandler(evtid, 'write')
 					}
-
 					break
 				}
 			}
@@ -306,7 +308,7 @@ export class Outlet {
 			(!accessWhitelist[origin] || (accessWhitelist[origin].type === 'read' && whiteListType === 'write'))
 
 		if (needsPermission /* || storageAccessRequired */) {
-			return new Promise<void>((resolve, reject) => {
+			return new Promise<any>((resolve, reject) => {
 				const typeTxt = whiteListType === 'read' ? 'read' : 'read & write'
 				const permissionTxt = `${origin} is requesting ${typeTxt} access to your ${this.tokenConfig.title} tickets`
 				const acceptBtn = '<button style="cursor: pointer" id="tn-access-accept">Accept</button>'
@@ -344,12 +346,11 @@ export class Outlet {
 						}
 						localStorage.setItem('tn-whitelist', JSON.stringify(accessWhitelist))
 					}
-
-					resolve()
+					resolve('user-accept')
 				})
 
 				document.getElementById('tn-access-deny').addEventListener('click', () => {
-					reject('USER_ABORT')
+					resolve('user-abort')
 				})
 
 				this.sendMessageResponse({
@@ -460,13 +461,14 @@ export class Outlet {
 		})
 	}
 
-	public sendErrorResponse(evtid: any, error: string, issuer?: string) {
+	public sendErrorResponse(evtid: any, error: string, issuer?: string, type = 'error') {
 		if (this.redirectCallbackUrl) {
 			let url = this.redirectCallbackUrl
 
 			const params = new URLSearchParams(url.hash.substring(1))
 			params.set(URLNS + 'action', ResponseActionBase.ERROR)
-			params.set(URLNS + 'issuer', issuer)
+			params.set(URLNS + 'issuer', issuer || this.tokenConfig.collectionID)
+			params.set(URLNS + 'type', type)
 			params.set(URLNS + 'error', error)
 
 			url.hash = '#' + params.toString()
