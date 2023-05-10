@@ -100,6 +100,8 @@ export class SelectWallet extends AbstractView {
 
 		logger(2, 'Connect wallet: ' + wallet)
 
+		this.ui.setForceToOpen(true)
+
 		this.ui.showLoaderDelayed(
 			['<h4>Connecting to ' + walletlabel + '...</h4>', '<small>You may need to unlock your wallet to continue.</small>'],
 			500,

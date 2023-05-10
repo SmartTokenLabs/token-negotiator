@@ -78,12 +78,14 @@ export class Ui implements UiInterface {
 	currentView: ViewInterface | undefined
 	retryCallback?: Function
 	retryButton: HTMLButtonElement
+	forceToOpen: Boolean
 
 	private isStartView = true
 
 	constructor(options: UIOptionsInterface, client: Client) {
 		this.options = options
 		this.client = client
+		this.forceToOpen = false
 	}
 
 	async initialize() {
@@ -189,6 +191,7 @@ export class Ui implements UiInterface {
 				})
 
 				document.addEventListener('click', () => {
+					console.log('document event listener')
 					this.closeOverlay()
 				})
 
@@ -202,6 +205,10 @@ export class Ui implements UiInterface {
 
 	closeOverlay() {
 		if (this.options.uiType === 'inline') return
+		if (this.forceToOpen) {
+			this.setForceToOpen(false)
+			return
+		}
 		this.popupContainer.classList.add('close')
 		this.popupContainer.classList.remove('open')
 		this.client.eventSender('closed-overlay', null)
@@ -399,5 +406,9 @@ export class Ui implements UiInterface {
 
 	switchTheme(newTheme: UItheme) {
 		this.setTheme(newTheme)
+	}
+
+	setForceToOpen(open: boolean) {
+		this.forceToOpen = open
 	}
 }
