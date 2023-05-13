@@ -1,4 +1,5 @@
 /* eslint-disable no-mixed-spaces-and-tabs */
+import { ethers } from 'ethers'
 import { TextDecoder, TextEncoder } from 'text-encoding'
 global.TextEncoder = TextEncoder
 global.TextDecoder = TextDecoder
@@ -117,5 +118,42 @@ describe('wallet spec', () => {
 	test('web3WalletProvider method getSafeConnectProvider', async () => {
 		safeConnectProvider = await web3WalletProvider.getSafeConnectProvider()
 		expect(safeConnectProvider).toBeDefined()
+	})
+})
+
+describe('Provider tests', () => {
+	let web3WalletProvider: Web3WalletProvider
+	test('web3WalletProvider method connectWith - MetaMask', async () => {
+		web3WalletProvider = new Web3WalletProvider(tokenNegotiatorClient, null, null)
+		window.ethereum = {
+			enable: () => ['0x1263b90F4e1DFe89A8f9E623FF57adb252851fC3'],
+		}
+		try {
+			await web3WalletProvider.connectWith('MetaMask')
+		} catch (err) {
+			expect(err).toEqual(new Error('unsupported provider (argument="provider", value={}, code=INVALID_ARGUMENT, version=providers/5.7.2)'))
+		}
+	})
+
+	test('web3WalletProvider connect with void method for ETH connnection register wallet address', async () => {
+		web3WalletProvider = new Web3WalletProvider(tokenNegotiatorClient, null, null)
+		window.ethereum = {
+			enable: () => ['0x1263b90F4e1DFe89A8f9E623FF57adb252851fC3'],
+			// provider: {
+			// 	events: {
+			// 		accountsChanged: () => {},
+			// 		chainChanged: () => {},
+			// 		disconnect: () => {},
+			// 	},
+			// },
+		}
+		web3WalletProvider.registerNewWalletAddress(
+			'0x1263b90F4e1DFe89A8f9E623FF57adb252851fC3'.toLocaleLowerCase(),
+			'1',
+			'MetaMask',
+			window.ethereum,
+			'evm',
+		)
+		expect(web3WalletProvider.connections['0x1263b90f4e1dfe89a8f9e623ff57adb252851fc3'].provider).toBeDefined()
 	})
 })
