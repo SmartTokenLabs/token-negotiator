@@ -60,7 +60,7 @@ export class Messaging {
 		if (!forceTab && this.iframeStorageSupport === null) {
 			// TODO: temp to test safari top level context access.
 			// TODO do we need this verificaton?
-			// if (document.location.hash !== "#safari-iframe-test")
+			// if (window.location.hash !== "#safari-iframe-test")
 
 			this.iframeStorageSupport = !browserBlocksIframeStorage()
 		}
@@ -88,9 +88,9 @@ export class Messaging {
 			newLocation += `&${prefix}redirect=true&${prefix}requestor=${encodeURIComponent(redirectUrl)}`
 		}
 
-		logger(2, `redirect from ${document.location.href} to ${newLocation}`)
+		logger(2, `redirect from ${window.location.href} to ${newLocation}`)
 
-		document.location.href = newLocation
+		window.location.href = newLocation
 	}
 
 	private sendIframe(request: RequestInterfaceBase): Promise<ResponseInterfaceBase> {

@@ -28,7 +28,7 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 		let redirectMode: false | string =
 			request?.options?.useRedirect || shouldUseRedirectMode(this.client.config.offChainRedirectMode) || false
 
-		if (redirectMode) redirectMode = request?.options?.redirectUrl || document.location.href
+		if (redirectMode) redirectMode = request?.options?.redirectUrl || window.location.href
 
 		let useEthKey: UNInterface | null = null
 
@@ -48,7 +48,7 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 
 		let data
 
-		if (new URL(issuerConfig.tokenOrigin).origin === document.location.origin) {
+		if (new URL(issuerConfig.tokenOrigin).origin === window.location.origin) {
 			const localOutlet = new LocalOutlet(issuerConfig as OffChainTokenConfig & OutletInterface)
 
 			data = await localOutlet.authenticate(tokens[0], address, wallet, redirectMode)

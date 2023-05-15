@@ -211,7 +211,7 @@ export class AuthHandler {
 			this.rejectHandler = reject
 
 			if (this.redirectUrl) {
-				const curParams = new URLSearchParams(document.location.hash.substring(1))
+				const curParams = new URLSearchParams(window.location.hash.substring(1))
 
 				const params = new URLSearchParams()
 				params.set('email', this.ticketRecord.id)
@@ -236,7 +236,7 @@ export class AuthHandler {
 				const goto = `${this.attestationOrigin}#${params.toString()}`
 				logger(2, 'authenticate. go to: ', goto)
 
-				document.location.href = goto
+				window.location.href = goto
 
 				return
 			}

@@ -148,7 +148,7 @@ export class Outlet {
 
 		if (requester) this.redirectCallbackUrl = new URL(requester)
 
-		logger(2, 'Outlet received event ID ' + evtid + ' action ' + action + ' at ' + document.location.href)
+		logger(2, 'Outlet received event ID ' + evtid + ' action ' + action + ' at ' + window.location.href)
 
 		// TODO: should issuer be validated against requested issuer?
 
@@ -184,7 +184,7 @@ export class Outlet {
 
 							requesterURL.hash = params.toString()
 
-							document.location.href = requesterURL.href
+							window.location.href = requesterURL.href
 
 							return
 						}
@@ -198,7 +198,7 @@ export class Outlet {
 						this.dispatchAuthCallbackEvent(issuer, null, e.message)
 					}
 
-					document.location.hash = removeUrlSearchParams(this.urlParams, ['attestation', 'requestSecret', 'address', 'wallet']).toString()
+					window.location.hash = removeUrlSearchParams(this.urlParams, ['attestation', 'requestSecret', 'address', 'wallet']).toString()
 
 					break
 				}
@@ -234,7 +234,7 @@ export class Outlet {
 
 			document.body.dispatchEvent(event)
 		} catch (e) {
-			console.warn(e)
+			logger(2, e)
 		}
 	}
 
@@ -255,7 +255,7 @@ export class Outlet {
 
 		const origin = new URL(document.referrer).origin
 
-		if (origin === document.location.origin) return
+		if (origin === window.location.origin) return
 
 		let accessWhitelist = JSON.parse(localStorage.getItem('tn-whitelist')) ?? {}
 
@@ -340,7 +340,7 @@ export class Outlet {
 
 		const decodedToken = JSON.parse(token) as DecodedToken
 
-		const redirect = this.getDataFromQuery('redirect') === 'true' ? document.location.href : false
+		const redirect = this.getDataFromQuery('redirect') === 'true' ? window.location.href : false
 
 		try {
 			const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(decodedToken)
@@ -399,7 +399,7 @@ export class Outlet {
 
 				logger(2, 'tokens ready. go to: ', requesterURL)
 
-				document.location.href = requesterURL
+				window.location.href = requesterURL
 
 				return
 			} catch (e) {
@@ -429,7 +429,7 @@ export class Outlet {
 
 			url.hash = '#' + params.toString()
 
-			document.location.href = url.href
+			window.location.href = url.href
 			return
 		}
 
@@ -450,13 +450,13 @@ export class Outlet {
 
 		requesterURL.hash = params.toString()
 
-		document.location.href = requesterURL.href
+		window.location.href = requesterURL.href
 	}
 
 	private isSameOrigin() {
 		try {
 			let tokenUrl = new URL(this.tokenConfig.tokenOrigin)
-			if (tokenUrl.origin === document.location.origin) {
+			if (tokenUrl.origin === window.location.origin) {
 				return true
 			} else {
 				return false
