@@ -122,7 +122,10 @@ export class SelectWallet extends AbstractView {
 		} catch (err: any) {
 			logger(2, 'negotiatorConnectToWallet error', e)
 			this.ui.showError(err)
-			return
+			setTimeout(() => {
+				console.log('this.ui.setForceToOpen(false)')
+				this.ui.setForceToOpen(false)
+			}, 0)
 		}
 	}
 }

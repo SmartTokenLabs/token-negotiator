@@ -191,7 +191,6 @@ export class Ui implements UiInterface {
 				})
 
 				document.addEventListener('click', () => {
-					console.log('document event listener')
 					this.closeOverlay()
 				})
 
