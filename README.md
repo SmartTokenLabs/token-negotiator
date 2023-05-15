@@ -56,11 +56,6 @@ The following types of tokens are supported:
     </tr>
     <tr>
 	    <td>evm</td>
-      <td>avalanche testnet</td>
-      <td>Y</td>
-    </tr>
-    <tr>
-	    <td>evm</td>
       <td>fantom</td>
       <td>N</td>
     </tr>
@@ -83,11 +78,6 @@ The following types of tokens are supported:
       <td>evm</td>
       <td>cronos</td>
       <td>N</td>
-    </tr>
-    <tr>
-      <td>evm</td>
-      <td>cronos testnet</td>
-      <td>Y</td>
     </tr>
     <tr>
 	  <td>solana</td>
