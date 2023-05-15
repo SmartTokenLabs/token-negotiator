@@ -1,9 +1,9 @@
 // @ts-nocheck
 
-import { SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
+// import { SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
 
-import { filterTokens, readTokens, decodeTokens, storeMagicURL, readTokenFromMagicUrl, ethKeyIsValid } from './../index'
-import { readSignedTicket } from '../../outlet'
+// import { filterTokens, readTokens, decodeTokens, storeMagicURL, readTokenFromMagicUrl, ethKeyIsValid } from './../index'
+// import { readSignedTicket } from '../../outlet'
 
 // const mockToken = `?ticket="MIGWMA0MATYCBWE3ap3-AgEABEEEKJZVxMEXbkSZZBWnNUTX_5ieu8GUqf0bx_a0tBPF6QYskABaMJBYhDOXsmQt3csk_TfMZ2wdmfRkK7ePCOI2kgNCAOOZKRpcE6tLBuPbfE_SmwPk2wNjbj5vpa6kkD7eqQXvBOCa0WNo8dEHKvipeUGZZEWWjJKxooB44dEYdQO70Vgc"&secret=45845870684&id="mah@mah.com"`
 
@@ -40,7 +40,7 @@ import { readSignedTicket } from '../../outlet'
 
 // global.localStorage = fakeLocalStorage;
 
-describe('core Spec', () => {
+/* describe('core Spec', () => {
 	test('expect to read tokens but none are there', () => {
 		expect(readTokens('testing')).toEqual({ noTokens: true, success: true, tokens: [] })
 	})
@@ -122,4 +122,4 @@ describe('core Spec', () => {
 		const token = readTokenFromMagicUrl('ticket', 'secret', 'id')
 		expect(token.id).toEqual('nicktaras83@gmail.com')
 	})
-})
+})*/

@@ -1,4 +1,4 @@
-import { base64ToUint8array, compareObjects } from '../utils/index'
+/* import { base64ToUint8array, compareObjects } from '../utils/index'
 import { OutletInterface } from '../outlet'
 
 export interface OffChainTokenData {
@@ -6,17 +6,9 @@ export interface OffChainTokenData {
 	secret: string
 	id: string
 	magic_link: string
-}
+}*/
 
-export interface DecodedToken {
-	devconId: string
-	ticketIdNumber?: string
-	ticketIdString?: number
-	ticketClass: number
-	commitment: Uint8Array
-}
-
-interface FilterInterface {
+/* interface FilterInterface {
 	[key: string]: any
 }
 
@@ -40,9 +32,9 @@ export const filterTokens = (decodedTokens: DecodedToken[], filter: FilterInterf
 	} else {
 		return decodedTokens
 	}
-}
+}*/
 
-export const readTokens = (itemStorageKey: string) => {
+/* export const readTokens = (itemStorageKey: string) => {
 	const storageTickets = localStorage.getItem(itemStorageKey)
 
 	let tokens: OffChainTokenData[] = []
@@ -72,9 +64,9 @@ export const readTokens = (itemStorageKey: string) => {
 	}
 
 	return output
-}
+}*/
 
-export const decodeTokens = (rawTokens: string, tokenParser: any, unsignedTokenDataName: string, includeSignedToken = false) => {
+/* export const decodeTokens = (rawTokens: string, tokenParser: any, unsignedTokenDataName: string, includeSignedToken = false) => {
 	const x = JSON.parse(rawTokens)
 
 	if (x.length) {
@@ -109,9 +101,9 @@ function propsArrayBufferToArray(obj: { [key: string]: any }) {
 		}
 	})
 	return obj
-}
+}*/
 
-export const storeMagicURL = (tokens: OffChainTokenData[], itemStorageKey: string) => {
+/* export const storeMagicURL = (tokens: OffChainTokenData[], itemStorageKey: string) => {
 	if (tokens) {
 		localStorage.setItem(itemStorageKey, JSON.stringify(tokens))
 	}
@@ -140,9 +132,9 @@ export const readTokenFromMagicUrl = (
 		id: decodeURIComponent(idFromQuery),
 		magic_link: window.location.href,
 	}
-}
+}*/
 
-export const rawTokenCheck = async (unsignedToken: DecodedToken, tokenIssuer: OutletInterface) => {
+/* export const rawTokenCheck = async (unsignedToken: DecodedToken, tokenIssuer: OutletInterface) => {
 	let rawTokenData = getRawToken(unsignedToken, tokenIssuer)
 
 	if (!rawTokenData) return null
@@ -172,9 +164,9 @@ export const rawTokenCheck = async (unsignedToken: DecodedToken, tokenIssuer: Ou
 	if (tokenIssuer.attestationInTab) tokenObj.attestationInTab = true
 
 	return tokenObj
-}
+}*/
 
-export const getRawToken = (unsignedToken: DecodedToken, tokenIssuer: OutletInterface): OffChainTokenData => {
+/* export const getRawToken = (unsignedToken: DecodedToken, tokenIssuer: OutletInterface): OffChainTokenData => {
 	if (!unsignedToken || !Object.keys(unsignedToken).length) return
 
 	let tokensOutput = readTokens(tokenIssuer.itemStorageKey)
@@ -207,4 +199,4 @@ export const getRawToken = (unsignedToken: DecodedToken, tokenIssuer: OutletInte
 	}
 
 	return null
-}
+}*/

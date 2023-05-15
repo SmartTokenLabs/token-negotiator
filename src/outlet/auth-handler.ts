@@ -90,7 +90,7 @@ export class AuthHandler {
 		outlet?: Outlet,
 		evtid?: any,
 		private tokenDef: OutletInterface,
-		private tokenObj: DevconToken | any,
+		private tokenObj: { token: string; secret: string },
 		private address?: string,
 		private wallet?: string,
 		private redirectUrl?: false | string,
@@ -106,9 +106,10 @@ export class AuthHandler {
 		this.email = tokenObj.email
 		this.signedTokenSecret = tokenObj.ticketSecret
 
-		this.attestationOrigin = tokenObj.attestationOrigin
+		this.attestationOrigin = outlet.tokenConfig.attestationOrigin
+		/* this.attestationOrigin = tokenObj.attestationOrigin
 
-		this.attestationInTab = tokenObj.attestationInTab
+		this.attestationInTab = tokenObj.attestationInTab*/
 	}
 
 	openAttestationApp() {

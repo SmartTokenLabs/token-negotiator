@@ -1,4 +1,4 @@
-import {
+/* import {
 	rawTokenCheck,
 	readTokenFromMagicUrl,
 	storeMagicURL,
@@ -8,13 +8,16 @@ import {
 	readTokens,
 	OffChainTokenData,
 	DecodedToken,
-} from '../core'
+} from '../core'*/
 import { logger, requiredParams, removeUrlSearchParams } from '../utils'
 import { OutletAction, OutletResponseAction } from '../client/messaging'
 import { AuthHandler } from './auth-handler'
 import { SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
 import { AsnParser } from '@peculiar/asn1-schema'
 import { ResponseActionBase, ResponseInterfaceBase, URLNS } from '../core/messaging'
+import { EASSignerOrProvider } from '../../../attestation/src/main/javascript/crypto/src/eas/EasTicketAttestation'
+import { TicketStorage } from './ticketStorage'
+import { ethers } from 'ethers'
 
 export interface OutletInterface {
 	collectionID: string
@@ -25,6 +28,14 @@ export interface OutletInterface {
 	base64senderPublicKeys: { [key: string]: string }
 	base64attestorPubKey: string
 	signedTokenWhitelist?: string[]
+	eas?: {
+		config: {
+			address: string
+			version: string
+			chainId: number
+		}
+		provider: EASSignerOrProvider
+	}
 
 	whitelistDialogWidth: string
 	whitelistDialogHeight: string
@@ -47,6 +58,14 @@ export const defaultConfig = {
 	signedTokenWhitelist: [],
 	whitelistDialogWidth: '450px',
 	whitelistDialogHeight: '350px',
+	eas: {
+		config: {
+			address: '0xC2679fBD37d54388Ce493F1DB75320D236e1815e',
+			version: '0.26',
+			chainId: 11155111,
+		},
+		provider: new ethers.providers.JsonRpcProvider('https://rpc.sepolia.org/'),
+	},
 }
 
 export class readSignedTicket {
@@ -63,6 +82,7 @@ export class readSignedTicket {
 export class Outlet {
 	tokenConfig: OutletInterface
 	urlParams?: URLSearchParams
+	ticketStorage: TicketStorage
 
 	singleUse = false
 
@@ -83,6 +103,8 @@ export class Outlet {
 				logger(2, 'Failed to validate whitelist origin: ' + e.message)
 			}
 		})
+
+		this.ticketStorage = new TicketStorage(this.tokenConfig)
 
 		if (urlParams) {
 			this.urlParams = urlParams
@@ -112,7 +134,7 @@ export class Outlet {
 
 	async modalDialogEventHandler(evtid: any, access: string) {
 		const action = await this.whitelistCheck(evtid, access === 'write' ? 'write' : 'read')
-		if (action === 'user-accept') this.sendTokens(evtid)
+		if (action === 'user-accept') await this.sendTokens(evtid)
 		else if (action === 'user-abort')
 			this.sendErrorResponse(evtid, 'USER_ABORT', this.getDataFromQuery('issuer'), 'offchain-issuer-connection')
 	}
@@ -147,11 +169,13 @@ export class Outlet {
 						const attestationBlob = this.getDataFromQuery('attestation', false)
 						const attestationSecret = '0x' + this.getDataFromQuery('requestSecret', false)
 
+						const tokenObj = await this.ticketStorage.getStoredTicketFromDecodedToken(token)
+
 						let authHandler = new AuthHandler(
 							this,
 							evtid,
 							this.tokenConfig,
-							await rawTokenCheck(token, this.tokenConfig),
+							{ token: tokenObj.token, secret: tokenObj.secret },
 							null,
 							null,
 							false,
@@ -170,7 +194,7 @@ export class Outlet {
 							params.delete('#email')
 
 							let outlet = new Outlet(this.tokenConfig, true)
-							let issuerTokens = outlet.prepareTokenOutput({})
+							let issuerTokens = await outlet.prepareTokenOutput({})
 
 							logger(2, 'issuerTokens: ', issuerTokens)
 
@@ -219,17 +243,19 @@ export class Outlet {
 	}
 
 	public async readMagicLink() {
-		const { tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey } = this.tokenConfig
+		// const { tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey } = this.tokenConfig
 
 		try {
-			const newToken = readTokenFromMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, this.urlParams)
+			/* const newToken = readTokenFromMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, this.urlParams)
 			let tokensOutput = readTokens(itemStorageKey)
 
 			const newTokens = this.mergeNewToken(newToken, tokensOutput.tokens)
 
 			if (newTokens !== false) {
 				storeMagicURL(newTokens, itemStorageKey)
-			}
+			}*/
+
+			await this.ticketStorage.importTicketFromMagicLink(this.urlParams)
 
 			const event = new Event('tokensupdated')
 
@@ -244,7 +270,7 @@ export class Outlet {
 	 * @private
 	 * @returns false when no changes to the data are required - the token is already added
 	 */
-	public mergeNewToken(newToken: OffChainTokenData, existingTokens: OffChainTokenData[]): OffChainTokenData[] | false {
+	/* public mergeNewToken(newToken: OffChainTokenData, existingTokens: OffChainTokenData[]): OffChainTokenData[] | false {
 		const decodedNewToken = decodeToken(newToken, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName, false)
 
 		const newTokenId = this.getUniqueTokenId(decodedNewToken)
@@ -267,15 +293,15 @@ export class Outlet {
 
 		existingTokens.push(newToken)
 		return existingTokens
-	}
+	}*/
 
 	/**
 	 * Calculates a unique token ID to identify this ticket. Tickets can be reissued and have a different commitment, but are still the same token
 	 * @private
 	 */
-	private getUniqueTokenId(decodedToken: DecodedToken) {
+	/* private getUniqueTokenId(decodedToken: DecodedToken) {
 		return `${decodedToken.devconId}-${decodedToken.ticketIdNumber ?? decodedToken.ticketIdString}`
-	}
+	}*/
 
 	private dispatchAuthCallbackEvent(issuer: string, proof?: string, error?: string) {
 		const event = new CustomEvent('auth-callback', {
@@ -364,10 +390,10 @@ export class Outlet {
 		return 'user-accept'
 	}
 
-	prepareTokenOutput(filter: any) {
-		const storageTokens = localStorage.getItem(this.tokenConfig.itemStorageKey)
+	async prepareTokenOutput(filter: any) {
+		// const storageTokens = localStorage.getItem(this.tokenConfig.itemStorageKey)
 
-		if (!storageTokens) return []
+		// if (!storageTokens) return []
 
 		let includeSigned = false
 
@@ -375,9 +401,9 @@ export class Outlet {
 			includeSigned = true
 		}
 
-		const decodedTokens = decodeTokens(storageTokens, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName, includeSigned)
+		// const decodedTokens = decodeTokens(storageTokens, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName, includeSigned)
 
-		return filterTokens(decodedTokens, filter)
+		return this.ticketStorage.getDecodedTokens(includeSigned, filter)
 	}
 
 	async sendTokenProof(evtid: any, token: any, address: string, wallet: string) {
@@ -388,9 +414,20 @@ export class Outlet {
 		const redirect = this.getDataFromQuery('redirect') === 'true' ? document.location.href : false
 
 		try {
-			let tokenObj = await rawTokenCheck(unsignedToken, this.tokenConfig)
+			// let tokenObj = await rawTokenCheck(unsignedToken, this.tokenConfig)
 
-			let authHandler = new AuthHandler(this, evtid, this.tokenConfig, tokenObj, address, wallet, redirect, unsignedToken)
+			const ticketObj = await this.ticketStorage.getStoredTicketFromDecodedToken(unsignedToken)
+
+			let authHandler = new AuthHandler(
+				this,
+				evtid,
+				this.tokenConfig,
+				{ token: ticketObj.token, secret: ticketObj.secret },
+				address,
+				wallet,
+				redirect,
+				unsignedToken,
+			)
 
 			let tokenProof = await authHandler.authenticate()
 
@@ -424,8 +461,8 @@ export class Outlet {
 	}
 
 	// TODO: Consolidate redirect callback for tokens, proof & errors into the sendMessageResponse function to remove duplication
-	private sendTokens(evtid: any) {
-		let issuerTokens = this.prepareTokenOutput(this.getFilter())
+	private async sendTokens(evtid: any) {
+		let issuerTokens = await this.prepareTokenOutput(this.getFilter())
 
 		logger(2, 'issuerTokens: (Outlet.sendTokens)', issuerTokens)
 
