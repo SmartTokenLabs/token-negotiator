@@ -45,8 +45,8 @@ export const EAS_CONFIG = {
 const EAS_TICKET_SCHEMA = {
 	fields: [
 		{ name: 'devconId', type: 'string' },
+		{ name: 'ticketIdString', type: 'string' },
 		{ name: 'ticketClass', type: 'uint8' },
-		{ name: 'ticketId', type: 'string' },
 		{ name: 'commitment', type: 'bytes', isCommitment: true },
 	],
 }

@@ -484,7 +484,7 @@ export class Client {
 
 			try {
 				if (new URL(issuerConfig.tokenOrigin).origin === document.location.origin) {
-					tokens = this.loadLocalOutletTokens(issuerConfig)
+					tokens = await this.loadLocalOutletTokens(issuerConfig)
 				} else {
 					let responseIssuer = this.getDataFromQuery('issuer')
 
@@ -653,7 +653,7 @@ export class Client {
 			tokens = await this.loadOnChainTokens(config)
 		} else {
 			if (new URL(config.tokenOrigin).origin === document.location.origin) {
-				tokens = this.loadLocalOutletTokens(config)
+				tokens = await this.loadLocalOutletTokens(config)
 			} else {
 				tokens = await this.loadRemoteOutletTokens(config)
 
@@ -729,9 +729,9 @@ export class Client {
 		return res.data?.tokens ?? []
 	}
 
-	private loadLocalOutletTokens(issuer: OffChainTokenConfig) {
+	private async loadLocalOutletTokens(issuer: OffChainTokenConfig) {
 		const localOutlet = new LocalOutlet(issuer as OutletInterface & OffChainTokenConfig)
-		return localOutlet.getTokens()
+		return await localOutlet.getTokens()
 	}
 
 	updateSelectedTokens(selectedTokens) {

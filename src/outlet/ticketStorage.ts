@@ -3,6 +3,7 @@ import { EasTicketAttestation } from '@tokenscript/attestation/dist/eas/EasTicke
 import { OutletInterface } from './index'
 import { KeyPair, KeysArray } from '@tokenscript/attestation/dist/libs/KeyPair'
 import { base64ToUint8array } from '../utils'
+import { uint8tohex } from '@tokenscript/attestation/dist/libs/utils'
 
 export type TokenType = 'asn' | 'eas'
 
@@ -40,8 +41,8 @@ export class TicketStorage {
 			{
 				fields: [
 					{ name: 'devconId', type: 'string' },
-					{ name: 'ticketClass', type: 'uint8' },
 					{ name: 'ticketIdString', type: 'string' },
+					{ name: 'ticketClass', type: 'uint8' },
 					{ name: 'commitment', type: 'bytes', isCommitment: true },
 				],
 			},
@@ -114,6 +115,7 @@ export class TicketStorage {
 		const tokenId = this.getUniqueTokenId(decodedToken)
 
 		for (const ticket of this.tickets) {
+			// Backward compatibility with old data
 			if (!ticket.tokenId) {
 				ticket.tokenId = this.getUniqueTokenId(await this.decodeTokenData(ticket.type ?? 'asn', ticket.token))
 				this.storeTickets()
@@ -129,43 +131,41 @@ export class TicketStorage {
 		let tokenData: DecodedToken
 
 		if (type === 'eas') {
-			console.log('Creating EAS ticket: ')
-
-			this.easManager.loadFromEncoded(token)
-
-			if (validate) await this.easManager.validateEasAttestation()
-
-			tokenData = this.easManager.getAttestationData() as DecodedToken
-
-			tokenData = Object.values(this.easManager.getAttestationData()).reduce((tokens, item) => {
-				tokens[item.name] = item.value
-				return tokens
-			}, {}) as DecodedToken
-
-			console.log('token data: ', tokenData)
+			tokenData = await this.decodeEasToken(token, validate)
 		} else {
-			tokenData = this.decodeAsnToken(token)
+			tokenData = this.decodeAsnToken(token, validate)
 		}
 
 		return tokenData
 	}
 
-	private decodeAsnToken(encodedToken: string) {
+	private async decodeEasToken(token: string, validate = false) {
+		this.easManager.loadFromEncoded(token)
+
+		if (validate) await this.easManager.validateEasAttestation()
+
+		return this.easManager.getAttestationData() as DecodedToken
+	}
+
+	private decodeAsnToken(encodedToken: string, validate = false) {
 		let decodedToken = new this.config.tokenParser(base64ToUint8array(encodedToken).buffer)
 
+		// TODO: Validate ASN.1 tokens when they are imported
 		if (decodedToken && decodedToken[this.config.unsignedTokenDataName]) {
 			let token = decodedToken[this.config.unsignedTokenDataName]
 
-			token = this.propsArrayBufferToArray(token)
+			token = this.propsArrayBufferToHex(token)
 
 			return token
 		}
+
+		throw new Error('Failed to decode token.')
 	}
 
-	private propsArrayBufferToArray(obj: { [key: string]: any }) {
+	private propsArrayBufferToHex(obj: DecodedToken) {
 		Object.keys(obj).forEach((key) => {
-			if (obj[key] instanceof ArrayBuffer) {
-				obj[key] = Array.from(new Uint8Array(obj[key]))
+			if (obj[key] instanceof Uint8Array) {
+				obj[key] = '0x' + uint8tohex(new Uint8Array(obj[key]))
 			}
 		})
 		return obj
