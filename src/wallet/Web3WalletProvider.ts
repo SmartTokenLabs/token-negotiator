@@ -402,7 +402,7 @@ export class Web3WalletProvider {
 			walletConnect.connector.on('disconnect', (err, payload) => {
 				if (connecting) {
 					connecting = false
-					this.client.getUi().showError('User rejected connection')
+					reject(new Error('User rejected connection'))
 				}
 			})
 
