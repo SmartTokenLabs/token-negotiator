@@ -236,43 +236,6 @@ export class Web3WalletProvider {
 		this.connections[address.toLowerCase()] = { address, chainId, providerType, provider, blockchain, ethers }
 		switch (blockchain) {
 			case 'solana':
-				provider.on('connect', (publicKey) => {
-					let newAddress = publicKey.toBase58()
-					logger(2, 'connected wallet: ', newAddress)
-					this.registerNewWalletAddress(newAddress, 'mainnet-beta', 'phantom', window.solana, 'solana')
-				})
-
-				provider.on('disconnect', () => {
-					logger(2, 'disconnected wallet.')
-					/**
-					 * TODO do we need to disconnect all wallets?
-					 * for now user cant connect to multiple wallets
-					 * but do we need it for future?
-					 */
-					this.client.disconnectWallet()
-				})
-
-				provider.on('accountChanged', (publicKey) => {
-					if (publicKey) {
-						delete this.connections[address.toLowerCase()]
-						// Set new public key and continue as usual
-						const newAccountAddress = publicKey.toBase58()
-						logger(2, `Switched to account ${newAccountAddress}`)
-						this.registerNewWalletAddress(newAccountAddress, 'mainnet-beta', 'phantom', window.solana, 'solana')
-						this.saveConnections()
-						this.emitSavedConnection(newAccountAddress)
-						this.client.getTokenStore().clearCachedTokens()
-						this.client.enrichTokenLookupDataOnChainTokens()
-					} else {
-						logger(2, 'Disconnected from wallet')
-						/**
-						 * TODO do we need to disconnect all wallets?
-						 * for now user cant connect to multiple wallets
-						 * but do we need it for future?
-						 */
-						this.client.disconnectWallet()
-					}
-				})
 				break
 			case 'flow':
 				provider.currentUser().subscribe((user) => {
@@ -350,7 +313,38 @@ export class Web3WalletProvider {
 		const connection = await provider.connect()
 		const accountAddress: string = connection.publicKey.toBase58()
 
+		let curAccount = accountAddress
 		this.registerNewWalletAddress(accountAddress, 'mainnet-beta', providerName, provider, 'solana')
+
+		// event hooks
+		provider.on('connect', (publicKey) => {
+			let newAddress = publicKey.toBase58()
+			logger(2, 'connected wallet: ', newAddress)
+			this.registerNewWalletAddress(newAddress, 'mainnet-beta', 'phantom', window.solana, 'solana')
+		})
+
+		provider.on('disconnect', () => {
+			logger(2, 'disconnected wallet.')
+			this.client.disconnectWallet()
+		})
+
+		provider.on('accountChanged', (publicKey) => {
+			if (publicKey) {
+				delete this.connections[curAccount.toLowerCase()]
+				// Set new public key and continue as usual
+				const newAccountAddress = publicKey.toBase58()
+				curAccount = newAccountAddress
+				this.registerNewWalletAddress(curAccount, 'mainnet-beta', 'phantom', window.solana, 'solana')
+				this.saveConnections()
+				this.emitSavedConnection(curAccount)
+				this.client.getTokenStore().clearCachedTokens()
+				this.client.enrichTokenLookupDataOnChainTokens()
+			} else {
+				logger(2, 'disconnected wallet.')
+				this.client.disconnectWallet()
+			}
+		})
+
 		return accountAddress
 	}
 
