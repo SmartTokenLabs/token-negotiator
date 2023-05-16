@@ -27,6 +27,7 @@ This release focussed on bug fixes to Wallet Connections, enhancing error handli
 * Enable IM Token with off chain flow
 * Solana Token Discovery faced some issues through this release cycle, now fixed
 * Addition of Icon Graphic for IM Token
+* Solana event hooks were not working expectedly, now fixed.
 
 ### Performance Improvements
 
