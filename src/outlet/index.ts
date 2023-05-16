@@ -15,7 +15,7 @@ import { AuthHandler } from './auth-handler'
 import { SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
 import { AsnParser } from '@peculiar/asn1-schema'
 import { ResponseActionBase, ResponseInterfaceBase, URLNS } from '../core/messaging'
-import { EASSignerOrProvider } from '../../../attestation/src/main/javascript/crypto/src/eas/EasTicketAttestation'
+import { EASSignerOrProvider } from '@tokenscript/attestation/dist/eas/EasTicketAttestation'
 import { TicketStorage } from './ticketStorage'
 import { ethers } from 'ethers'
 

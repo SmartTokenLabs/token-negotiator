@@ -7,15 +7,6 @@ import { Authenticator } from '@tokenscript/attestation'
 import { logger, removeUrlSearchParams } from '../utils'
 import { isBrave } from '../utils/support/getBrowserData'
 
-export interface DevconToken {
-	ticketBlob: string
-	ticketSecret: bigint
-	email?: string
-	magicLink?: string
-	attestationOrigin: string
-	attestationInTab?: boolean
-}
-
 interface PostMessageData {
 	force?: boolean
 	email?: string

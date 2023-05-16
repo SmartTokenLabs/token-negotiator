@@ -1,7 +1,7 @@
 import { URLSearchParams } from 'url'
-import { EasTicketAttestation } from '../../../attestation/src/main/javascript/crypto/src/eas/EasTicketAttestation'
+import { EasTicketAttestation } from '@tokenscript/attestation/dist/eas/EasTicketAttestation'
 import { OutletInterface } from './index'
-import { KeyPair, KeysArray } from '../../../attestation/src/main/javascript/crypto/src/libs/KeyPair'
+import { KeyPair, KeysArray } from '@tokenscript/attestation/dist/libs/KeyPair'
 import { base64ToUint8array } from '../utils'
 
 export type TokenType = 'asn' | 'eas'
@@ -15,6 +15,7 @@ export interface StoredTicketRecord {
 }
 
 export interface DecodedToken {
+	type: TokenType
 	devconId: string
 	ticketIdNumber?: string
 	ticketIdString?: number
@@ -30,7 +31,7 @@ export class TicketStorage {
 	private keysArray: KeysArray
 	private easManager: EasTicketAttestation
 
-	private tickets: StoredTicketRecord[]
+	private tickets: StoredTicketRecord[] = []
 
 	constructor(private config: OutletInterface) {
 		this.keysArray = KeyPair.parseKeyArrayStrings(this.config.base64senderPublicKeys)
@@ -60,7 +61,7 @@ export class TicketStorage {
 
 		if (!(tokenFromQuery && secretFromQuery)) throw new Error('Incomplete token params in URL.')
 
-		const tokenData = await this.decodeTokenData(typeFromQuery, tokenFromQuery)
+		const tokenData = await this.decodeTokenData(typeFromQuery, tokenFromQuery, true)
 
 		await this.updateOrInsertTicket({
 			type: typeFromQuery,
@@ -75,6 +76,9 @@ export class TicketStorage {
 		const tokens = await Promise.all(
 			this.tickets.map(async (ticket) => {
 				const tokenData = await this.decodeTokenData(ticket.type, ticket.token)
+
+				tokenData.type = ticket.type
+
 				return includeSignedToken ? { signedToken: ticket.token, ...tokenData } : tokenData
 			}),
 		)
@@ -125,11 +129,20 @@ export class TicketStorage {
 		let tokenData: DecodedToken
 
 		if (type === 'eas') {
+			console.log('Creating EAS ticket: ')
+
 			this.easManager.loadFromEncoded(token)
 
 			if (validate) await this.easManager.validateEasAttestation()
 
 			tokenData = this.easManager.getAttestationData() as DecodedToken
+
+			tokenData = Object.values(this.easManager.getAttestationData()).reduce((tokens, item) => {
+				tokens[item.name] = item.value
+				return tokens
+			}, {}) as DecodedToken
+
+			console.log('token data: ', tokenData)
 		} else {
 			tokenData = this.decodeAsnToken(token)
 		}
@@ -185,6 +198,8 @@ export class TicketStorage {
 
 	private loadTickets() {
 		try {
+			if (!localStorage.getItem(this.config.itemStorageKey)) return
+
 			this.tickets = JSON.parse(localStorage.getItem(this.config.itemStorageKey)) as unknown as StoredTicketRecord[]
 		} catch (e) {
 			this.tickets = []
