@@ -360,9 +360,8 @@ export class Outlet {
 					min_height: this.tokenConfig.whitelistDialogHeight,
 				})
 			})
-		} else {
-			return 'user-accept'
 		}
+		return 'user-accept'
 	}
 
 	prepareTokenOutput(filter: any) {
