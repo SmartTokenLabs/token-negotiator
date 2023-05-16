@@ -346,11 +346,11 @@ export class Outlet {
 						}
 						localStorage.setItem('tn-whitelist', JSON.stringify(accessWhitelist))
 					}
-					return resolve('user-accept')
+					resolve('user-accept')
 				})
 
 				document.getElementById('tn-access-deny').addEventListener('click', () => {
-					return resolve('user-abort')
+					resolve('user-abort')
 				})
 
 				this.sendMessageResponse({
@@ -360,6 +360,8 @@ export class Outlet {
 					min_height: this.tokenConfig.whitelistDialogHeight,
 				})
 			})
+		} else {
+			return 'user-accept'
 		}
 	}
 
