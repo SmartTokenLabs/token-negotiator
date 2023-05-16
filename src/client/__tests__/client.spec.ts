@@ -36,19 +36,7 @@ const config = {
 function getOffChainConfigClient() {
 	return new Client({
 		type: 'active',
-		issuers: [
-			{
-				collectionID: 'devcon',
-				title: 'Devcon',
-				onChain: false,
-				tokenOrigin: 'http://localhost:3002/',
-				attestationOrigin: 'https://stage.attestation.id/',
-				unEndPoint: 'https://crypto-verify.herokuapp.com/use-devcon-ticket',
-				image: 'https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg',
-				base64senderPublicKey: '',
-				base64attestorPubKey: '',
-			},
-		],
+		issuers: [tokenIssuer],
 	})
 }
 
