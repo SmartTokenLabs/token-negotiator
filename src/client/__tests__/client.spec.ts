@@ -410,4 +410,10 @@ describe('client spec', () => {
 			expect(err).toEqual(new Error('WALLET_REQUIRED'))
 		}
 	})
+
+	test('when no redirect errors are found via handleRecievedRedirectMessages', async () => {
+		const tokenNegotiatorClient = getOnChainConfigClient()
+		const error = tokenNegotiatorClient.handleRecievedRedirectMessages()
+		expect(error).toEqual(null)
+	})
 })
