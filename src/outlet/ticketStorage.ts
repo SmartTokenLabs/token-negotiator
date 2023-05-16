@@ -17,8 +17,8 @@ export interface StoredTicketRecord {
 export interface DecodedToken {
 	type: TokenType
 	devconId: string
-	ticketIdNumber?: string
-	ticketIdString?: number
+	ticketIdNumber?: number
+	ticketIdString?: string
 	ticketClass: number
 	commitment: Uint8Array
 }

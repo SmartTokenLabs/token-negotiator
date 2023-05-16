@@ -10,6 +10,7 @@ import crypto from "crypto";
 Object.defineProperty(global.self, "crypto", { // eslint-disable-line
 	value: {
 		subtle: crypto.webcrypto.subtle,
+		getRandomValues: arr => crypto.randomBytes(arr.length)
 	},
 });
 

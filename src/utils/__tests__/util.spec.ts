@@ -2,14 +2,7 @@
 window.DISPLAY_DEBUG_LEVEL = 1
 
 import { hasUncaughtExceptionCaptureCallback } from 'process'
-import {
-	logger,
-	requiredParams,
-	compareObjects,
-	base64ToUint8array,
-	waitForElementToExist,
-	removeUrlSearchParams,
-} from './../index'
+import { logger, requiredParams, compareObjects, base64ToUint8array, waitForElementToExist, removeUrlSearchParams } from './../index'
 import { errorHandler } from '../index'
 
 // TODO: add unit tests for the following functions:
@@ -53,9 +46,7 @@ describe('util Spec object comparison', () => {
 describe('util Spec base64ToUint8array', () => {
 	test('expect base64 to be Uint8array', () => {
 		expect(base64ToUint8array('RVJDNzIxLU5vbi1GdW5naWJsZS1Ub2tlbg==').toString()).toEqual(
-			[
-				69, 82, 67, 55, 50, 49, 45, 78, 111, 110, 45, 70, 117, 110, 103, 105, 98, 108, 101, 45, 84, 111, 107, 101, 110,
-			].toString(),
+			[69, 82, 67, 55, 50, 49, 45, 78, 111, 110, 45, 70, 117, 110, 103, 105, 98, 108, 101, 45, 84, 111, 107, 101, 110].toString(),
 		)
 	})
 })
