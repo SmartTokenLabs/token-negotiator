@@ -346,11 +346,11 @@ export class Outlet {
 						}
 						localStorage.setItem('tn-whitelist', JSON.stringify(accessWhitelist))
 					}
-					resolve('user-accept')
+					return resolve('user-accept')
 				})
 
 				document.getElementById('tn-access-deny').addEventListener('click', () => {
-					resolve('user-abort')
+					return resolve('user-abort')
 				})
 
 				this.sendMessageResponse({
