@@ -576,8 +576,18 @@ describe('client spec cross-version', () => {
 		let url = new URL(document.location.href)
 		expect((new URLSearchParams(url.hash.substring(1))).get("action")).toBe("get-issuer-tokens")
 		
+		// console.log(
+		// 	`window.location.hash = "${window.location.hash}",
+		// 	window.location.href = "${window.location.href}",
+		// 	document.location.hash = "${document.location.hash}",
+		// 	document.location.href = "${document.location.href}",`
+		// )
+
 		window.location.hash = url.hash
 		document.location.hash = url.hash
+		document.referrer = nonLocalUrl
+		localStorage.setItem("tn-whitelist","{\"https://non-local.url\":{\"type\":\"read\"}}")
+		
 		new Outlet(tokenIssuer);
 
 		// need delay, because pageOnLoadEventHandler() is async

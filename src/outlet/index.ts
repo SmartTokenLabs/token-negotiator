@@ -268,61 +268,61 @@ export class Outlet {
 			this.tokenConfig.signedTokenWhitelist.indexOf(origin) === -1 &&
 			(!accessWhitelist[origin] || (accessWhitelist[origin].type === 'read' && whiteListType === 'write'))
 
-		if (needsPermission /* || storageAccessRequired */) {
-			return new Promise<any>((resolve, reject) => {
-				const typeTxt = whiteListType === 'read' ? 'read' : 'read & write'
-				const permissionTxt = `${origin} is requesting ${typeTxt} access to your ${this.tokenConfig.title} tickets`
-				const acceptBtn = '<button style="cursor: pointer" id="tn-access-accept">Accept</button>'
-				const denyBtn = '<button style="cursor: pointer" id="tn-access-deny">Deny</button>'
+		if (!needsPermission) return 'user-accept'
 
-				const content = this.tokenConfig.whitelistDialogRenderer
-					? this.tokenConfig.whitelistDialogRenderer(permissionTxt, acceptBtn, denyBtn)
-					: `
-						<div style="font-family: sans-serif; text-align: center; position: absolute; width: 100vw; min-height: 100vh;top: 0;
-						left: 0;
-						background: #0C0A50;
-						z-index: 99999;
-						display: flex;
-						flex-direction: column;
-						justify-content: center;
-						align-items: center;
-						color: #fff;
-						padding: 30px;
-						font-size: 24px;
-						line-height: 1.2;">
-							<p>${permissionTxt}</p>
-							<div>
-							${acceptBtn}
-							${denyBtn}
-							</div>
+		/* || storageAccessRequired */
+		return new Promise<any>((resolve, reject) => {
+			const typeTxt = whiteListType === 'read' ? 'read' : 'read & write'
+			const permissionTxt = `${origin} is requesting ${typeTxt} access to your ${this.tokenConfig.title} tickets`
+			const acceptBtn = '<button style="cursor: pointer" id="tn-access-accept">Accept</button>'
+			const denyBtn = '<button style="cursor: pointer" id="tn-access-deny">Deny</button>'
+
+			const content = this.tokenConfig.whitelistDialogRenderer
+				? this.tokenConfig.whitelistDialogRenderer(permissionTxt, acceptBtn, denyBtn)
+				: `
+					<div style="font-family: sans-serif; text-align: center; position: absolute; width: 100vw; min-height: 100vh;top: 0;
+					left: 0;
+					background: #0C0A50;
+					z-index: 99999;
+					display: flex;
+					flex-direction: column;
+					justify-content: center;
+					align-items: center;
+					color: #fff;
+					padding: 30px;
+					font-size: 24px;
+					line-height: 1.2;">
+						<p>${permissionTxt}</p>
+						<div>
+						${acceptBtn}
+						${denyBtn}
 						</div>
-					`
+					</div>
+				`
 
-				document.body.insertAdjacentHTML('beforeend', content)
+			document.body.insertAdjacentHTML('beforeend', content)
 
-				document.getElementById('tn-access-accept').addEventListener('click', () => {
-					if (!accessWhitelist[origin] || whiteListType !== accessWhitelist[origin].type) {
-						accessWhitelist[origin] = {
-							type: whiteListType,
-						}
-						localStorage.setItem('tn-whitelist', JSON.stringify(accessWhitelist))
+			document.getElementById('tn-access-accept').addEventListener('click', () => {
+				if (!accessWhitelist[origin] || whiteListType !== accessWhitelist[origin].type) {
+					accessWhitelist[origin] = {
+						type: whiteListType,
 					}
-					resolve('user-accept')
-				})
-
-				document.getElementById('tn-access-deny').addEventListener('click', () => {
-					resolve('user-abort')
-				})
-
-				this.sendMessageResponse({
-					evtid,
-					evt: ResponseActionBase.SHOW_FRAME,
-					max_width: this.tokenConfig.whitelistDialogWidth,
-					min_height: this.tokenConfig.whitelistDialogHeight,
-				})
+					localStorage.setItem('tn-whitelist', JSON.stringify(accessWhitelist))
+				}
+				resolve('user-accept')
 			})
-		}
-		return 'user-accept'
+
+			document.getElementById('tn-access-deny').addEventListener('click', () => {
+				resolve('user-abort')
+			})
+
+			this.sendMessageResponse({
+				evtid,
+				evt: ResponseActionBase.SHOW_FRAME,
+				max_width: this.tokenConfig.whitelistDialogWidth,
+				min_height: this.tokenConfig.whitelistDialogHeight,
+			})
+		})
 	}
 
 	async prepareTokenOutput(filter?: FilterInterface) {
