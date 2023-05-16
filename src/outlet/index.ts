@@ -361,6 +361,7 @@ export class Outlet {
 				})
 			})
 		}
+		return 'user-accept'
 	}
 
 	prepareTokenOutput(filter: any) {
