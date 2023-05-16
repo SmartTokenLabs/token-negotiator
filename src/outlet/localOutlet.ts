@@ -1,5 +1,4 @@
 import { defaultConfig, OutletInterface, readSignedTicket } from './index'
-// import { filterTokens } from '../core'
 import { AuthHandler } from './auth-handler'
 import { OffChainTokenConfig } from '../client/interface'
 import { TicketStorage } from './ticketStorage'
@@ -19,12 +18,6 @@ export class LocalOutlet {
 	}
 
 	async getTokens() {
-		/* const storageTokens = localStorage.getItem(this.tokenConfig.itemStorageKey)
-
-		if (!storageTokens) return []
-
-		const decodedTokens = decodeTokens(storageTokens, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName, true)*/
-
 		return this.ticketStorage.getDecodedTokens(true, this.tokenConfig.filter)
 	}
 

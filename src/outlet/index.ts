@@ -1,14 +1,3 @@
-/* import {
-	rawTokenCheck,
-	readTokenFromMagicUrl,
-	storeMagicURL,
-	decodeTokens,
-	decodeToken,
-	filterTokens,
-	readTokens,
-	OffChainTokenData,
-	DecodedToken,
-} from '../core'*/
 import { logger, requiredParams, removeUrlSearchParams } from '../utils'
 import { OutletAction, OutletResponseAction } from '../client/messaging'
 import { AuthHandler } from './auth-handler'
@@ -243,18 +232,7 @@ export class Outlet {
 	}
 
 	public async readMagicLink() {
-		// const { tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey } = this.tokenConfig
-
 		try {
-			/* const newToken = readTokenFromMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, this.urlParams)
-			let tokensOutput = readTokens(itemStorageKey)
-
-			const newTokens = this.mergeNewToken(newToken, tokensOutput.tokens)
-
-			if (newTokens !== false) {
-				storeMagicURL(newTokens, itemStorageKey)
-			}*/
-
 			await this.ticketStorage.importTicketFromMagicLink(this.urlParams)
 
 			const event = new Event('tokensupdated')
@@ -264,44 +242,6 @@ export class Outlet {
 			console.warn(e)
 		}
 	}
-
-	/**
-	 * Merges a new magic link into the existing token data. If a token is found with the same ID it is overwritten.
-	 * @private
-	 * @returns false when no changes to the data are required - the token is already added
-	 */
-	/* public mergeNewToken(newToken: OffChainTokenData, existingTokens: OffChainTokenData[]): OffChainTokenData[] | false {
-		const decodedNewToken = decodeToken(newToken, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName, false)
-
-		const newTokenId = this.getUniqueTokenId(decodedNewToken)
-
-		for (const [index, tokenData] of existingTokens.entries()) {
-			// Nothing required, this token already exists
-			if (tokenData.token === newToken.token) {
-				return false
-			}
-
-			const decodedTokenData = decodeToken(tokenData, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName, false)
-
-			const tokenId = this.getUniqueTokenId(decodedTokenData)
-
-			if (newTokenId === tokenId) {
-				existingTokens[index] = newToken
-				return existingTokens
-			}
-		}
-
-		existingTokens.push(newToken)
-		return existingTokens
-	}*/
-
-	/**
-	 * Calculates a unique token ID to identify this ticket. Tickets can be reissued and have a different commitment, but are still the same token
-	 * @private
-	 */
-	/* private getUniqueTokenId(decodedToken: DecodedToken) {
-		return `${decodedToken.devconId}-${decodedToken.ticketIdNumber ?? decodedToken.ticketIdString}`
-	}*/
 
 	private dispatchAuthCallbackEvent(issuer: string, proof?: string, error?: string) {
 		const event = new CustomEvent('auth-callback', {
@@ -391,17 +331,11 @@ export class Outlet {
 	}
 
 	async prepareTokenOutput(filter: any) {
-		// const storageTokens = localStorage.getItem(this.tokenConfig.itemStorageKey)
-
-		// if (!storageTokens) return []
-
 		let includeSigned = false
 
 		if (this.tokenConfig.signedTokenWhitelist?.length && this.tokenConfig.signedTokenWhitelist.indexOf(this.getRequestOrigin()) > -1) {
 			includeSigned = true
 		}
-
-		// const decodedTokens = decodeTokens(storageTokens, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName, includeSigned)
 
 		return this.ticketStorage.getDecodedTokens(includeSigned, filter)
 	}
