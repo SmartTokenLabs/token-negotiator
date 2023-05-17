@@ -5,7 +5,7 @@ import { SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/Si
 import { AsnParser } from '@peculiar/asn1-schema'
 import { ResponseActionBase, ResponseInterfaceBase, URLNS } from '../core/messaging'
 import { EASSignerOrProvider } from '@tokenscript/attestation/dist/eas/EasTicketAttestation'
-import { TicketStorage } from './ticketStorage'
+import { DecodedToken, FilterInterface, TicketStorage } from './ticketStorage'
 import { ethers } from 'ethers'
 
 export interface OutletInterface {
@@ -160,17 +160,14 @@ export class Outlet {
 
 						const tokenObj = await this.ticketStorage.getStoredTicketFromDecodedToken(token)
 
-						let authHandler = new AuthHandler(
-							this,
-							evtid,
-							this.tokenConfig,
-							{ token: tokenObj.token, secret: tokenObj.secret },
-							null,
-							null,
-							false,
+						const useToken = await AuthHandler.getUseToken(
+							attestationBlob,
+							attestationSecret,
+							tokenObj.token,
+							tokenObj.secret,
+							this.tokenConfig.base64attestorPubKey,
+							this.tokenConfig.base64senderPublicKeys,
 						)
-
-						const useToken = await authHandler.getUseToken(attestationBlob, attestationSecret)
 
 						if (requesterURL) {
 							const params = new URLSearchParams(requesterURL.hash.substring(1))
@@ -178,16 +175,12 @@ export class Outlet {
 							params.set(URLNS + 'issuer', issuer)
 							params.set(URLNS + 'attestation', useToken as string)
 
-							// TODO: Remove once https://github.com/AlphaWallet/attestation.id/pull/196 is merged
-							params.delete('email')
-							params.delete('#email')
+							// let outlet = new Outlet(this.tokenConfig, true)
+							// let issuerTokens = await outlet.prepareTokenOutput({})
 
-							let outlet = new Outlet(this.tokenConfig, true)
-							let issuerTokens = await outlet.prepareTokenOutput({})
+							// logger(2, 'issuerTokens: ', issuerTokens)
 
-							logger(2, 'issuerTokens: ', issuerTokens)
-
-							params.set(URLNS + 'tokens', JSON.stringify(issuerTokens))
+							params.set(URLNS + 'token', tokenString)
 
 							requesterURL.hash = params.toString()
 
@@ -330,7 +323,7 @@ export class Outlet {
 		return 'user-accept'
 	}
 
-	async prepareTokenOutput(filter: any) {
+	async prepareTokenOutput(filter?: FilterInterface) {
 		let includeSigned = false
 
 		if (this.tokenConfig.signedTokenWhitelist?.length && this.tokenConfig.signedTokenWhitelist.indexOf(this.getRequestOrigin()) > -1) {
@@ -343,25 +336,14 @@ export class Outlet {
 	async sendTokenProof(evtid: any, token: any, address: string, wallet: string) {
 		if (!token) return 'error'
 
-		const unsignedToken = JSON.parse(token)
+		const decodedToken = JSON.parse(token) as DecodedToken
 
 		const redirect = this.getDataFromQuery('redirect') === 'true' ? document.location.href : false
 
 		try {
-			// let tokenObj = await rawTokenCheck(unsignedToken, this.tokenConfig)
+			const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(decodedToken)
 
-			const ticketObj = await this.ticketStorage.getStoredTicketFromDecodedToken(unsignedToken)
-
-			let authHandler = new AuthHandler(
-				this,
-				evtid,
-				this.tokenConfig,
-				{ token: ticketObj.token, secret: ticketObj.secret },
-				address,
-				wallet,
-				redirect,
-				unsignedToken,
-			)
+			let authHandler = new AuthHandler(this.tokenConfig, ticketRecord, decodedToken, address, wallet, redirect, this, evtid)
 
 			let tokenProof = await authHandler.authenticate()
 

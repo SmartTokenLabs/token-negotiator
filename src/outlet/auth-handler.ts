@@ -1,19 +1,20 @@
-// @ts-nocheck
-
 import { ResponseActionBase, URLNS } from '../core/messaging'
 import { OutletAction } from '../client/messaging'
 import { Outlet, OutletInterface } from './index'
 import { Authenticator } from '@tokenscript/attestation'
 import { logger, removeUrlSearchParams } from '../utils'
 import { isBrave } from '../utils/support/getBrowserData'
+import { KeyPair } from '@tokenscript/attestation/dist/libs/KeyPair'
+import { DecodedToken, StoredTicketRecord } from './ticketStorage'
 
 interface PostMessageData {
 	force?: boolean
 	email?: string
-	magicLink?: string
+	wallet?: string
+	address?: string
 }
 
-function preparePopupCenter(w, h) {
+/* function preparePopupCenter(w, h) {
 	let win = window
 	if (window.parent !== window) {
 		win = window.parent
@@ -47,16 +48,12 @@ function preparePopupCenter(w, h) {
 		top=${top}, 
 		left=${left}
 	`
-}
+}*/
 
 export class AuthHandler {
-	private outlet: Outlet
-	private evtid: any
-
 	private signedTokenBlob: string | undefined
-	private magicLink: string | undefined
 	private email: string | undefined
-	private signedTokenSecret: bigint | undefined
+	private signedTokenSecret: string | undefined
 	private attestationOrigin: string | undefined
 
 	private attestationInTab: boolean
@@ -68,7 +65,7 @@ export class AuthHandler {
 	private iframeWrap: HTMLElement | null = null
 
 	private attestationBlob: string | null = null
-	private attestationSecret: bigint | null = null
+	private attestationSecret: string | null = null
 
 	private base64attestorPubKey: string | undefined
 	private base64senderPublicKeys: { [key: string]: string }
@@ -78,29 +75,22 @@ export class AuthHandler {
 	private rejectHandler: Function
 
 	constructor(
-		outlet?: Outlet,
-		evtid?: any,
-		private tokenDef: OutletInterface,
-		private tokenObj: { token: string; secret: string },
+		private tokenConfig: OutletInterface,
+		private ticketRecord: StoredTicketRecord,
+		private decodedToken: DecodedToken,
 		private address?: string,
 		private wallet?: string,
 		private redirectUrl?: false | string,
-		private unsignedToken?: any,
+		private outlet?: Outlet,
+		private evtid?: number | string,
 	) {
-		this.outlet = outlet
-		this.evtid = evtid
-		this.base64senderPublicKeys = tokenDef.base64senderPublicKeys
-		this.base64attestorPubKey = tokenDef.base64attestorPubKey
+		this.base64senderPublicKeys = tokenConfig.base64senderPublicKeys
+		this.base64attestorPubKey = tokenConfig.base64attestorPubKey
+		this.attestationOrigin = tokenConfig.attestationOrigin
 
-		this.signedTokenBlob = tokenObj.ticketBlob
-		this.magicLink = tokenObj.magicLink
-		this.email = tokenObj.email
-		this.signedTokenSecret = tokenObj.ticketSecret
-
-		this.attestationOrigin = outlet.tokenConfig.attestationOrigin
-		/* this.attestationOrigin = tokenObj.attestationOrigin
-
-		this.attestationInTab = tokenObj.attestationInTab*/
+		this.signedTokenBlob = ticketRecord.token
+		this.email = ticketRecord.id
+		this.signedTokenSecret = ticketRecord.secret
 	}
 
 	openAttestationApp() {
@@ -232,8 +222,8 @@ export class AuthHandler {
 				const callbackUrl = new URL(this.redirectUrl)
 				const callbackParams = removeUrlSearchParams(new URLSearchParams(callbackUrl.hash.substring(1)))
 				callbackParams.set(URLNS + 'action', OutletAction.EMAIL_ATTEST_CALLBACK)
-				callbackParams.set(URLNS + 'issuer', this.tokenDef.collectionID)
-				callbackParams.set(URLNS + 'token', JSON.stringify(this.unsignedToken))
+				callbackParams.set(URLNS + 'issuer', this.tokenConfig.collectionID)
+				callbackParams.set(URLNS + 'token', JSON.stringify(this.decodedToken))
 
 				const requestor = curParams.get(URLNS + 'requestor')
 				if (requestor) {
@@ -272,7 +262,7 @@ export class AuthHandler {
 				}
 			})
 
-			this.openAttestationApp(reject)
+			this.openAttestationApp()
 		})
 	}
 
@@ -299,39 +289,45 @@ export class AuthHandler {
 		document.body.appendChild(iframeWrap)
 	}
 
-	public async getUseToken(attestationBlob: any, attestationSecret: any) {
+	public static async getUseToken(
+		attestationBlob: string,
+		attestationSecret: string,
+		ticketBlob: string,
+		ticketSecret: string,
+		base64attestorPubKey: string,
+		base64senderPublicKeys: { [key: string]: KeyPair | KeyPair[] | string },
+	) {
 		try {
-			if (!this.signedTokenSecret) {
+			if (!ticketSecret) {
 				throw new Error('signedTokenSecret required')
 			}
 			if (!attestationSecret) {
 				throw new Error('attestationSecret required')
 			}
-			if (!this.signedTokenBlob) {
+			if (!ticketSecret) {
 				throw new Error('signedTokenBlob required')
 			}
 			if (!attestationBlob) {
 				throw new Error('attestationBlob required')
 			}
-			if (!this.base64attestorPubKey) {
+			if (!base64attestorPubKey) {
 				throw new Error('base64attestorPubKey required')
 			}
-			if (!this.base64senderPublicKeys) {
+			if (!base64senderPublicKeys) {
 				throw new Error('base64senderPublicKeys required')
 			}
 
 			let useToken = await Authenticator.getUseTicket(
-				this.signedTokenSecret,
-				attestationSecret,
-				this.signedTokenBlob,
+				BigInt(ticketSecret),
+				BigInt(attestationSecret),
+				ticketBlob,
 				attestationBlob,
-				this.base64attestorPubKey,
-				this.base64senderPublicKeys,
+				base64attestorPubKey,
+				base64senderPublicKeys,
 			)
 
 			if (useToken) {
 				logger(2, 'this.authResultCallback( useToken ): ')
-				if (this.buttonOverlay) this.buttonOverlay.remove()
 				return useToken
 			} else {
 				logger(2, 'this.authResultCallback( empty ): ')
@@ -340,7 +336,6 @@ export class AuthHandler {
 		} catch (e) {
 			logger(2, `UseDevconTicket failed.`, e.message)
 			logger(3, e)
-			if (this.buttonOverlay) this.buttonOverlay.remove()
 			throw new Error('Failed to create UseTicket. ' + e.message)
 		}
 	}
@@ -409,10 +404,19 @@ export class AuthHandler {
 		this.attestationSecret = event.data?.requestSecret
 
 		try {
-			const useToken = this.getUseToken(this.attestationBlob, this.attestationSecret)
+			const useToken = await AuthHandler.getUseToken(
+				this.attestationBlob,
+				this.attestationSecret,
+				this.signedTokenBlob,
+				this.signedTokenSecret,
+				this.base64attestorPubKey,
+				this.base64senderPublicKeys,
+			)
 			resolve(useToken)
 		} catch (e: any) {
 			reject(e)
 		}
+
+		if (this.buttonOverlay) this.buttonOverlay.remove()
 	}
 }

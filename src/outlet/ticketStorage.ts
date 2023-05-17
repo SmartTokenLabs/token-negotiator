@@ -24,7 +24,7 @@ export interface DecodedToken {
 	commitment: Uint8Array
 }
 
-interface FilterInterface {
+export interface FilterInterface {
 	[key: string]: any
 }
 
