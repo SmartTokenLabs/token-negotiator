@@ -34,6 +34,8 @@ import { shouldUseRedirectMode } from '../utils/support/getBrowserData'
 import { VERSION } from '../version'
 import { getFungibleTokenBalances, getFungibleTokensMeta } from '../utils/token/fungibleTokenProvider'
 import { URLNS } from '../core/messaging'
+import { TokenType } from '../outlet/ticketStorage'
+import { ProofResult } from '../outlet/auth-handler'
 
 if (typeof window !== 'undefined') window.tn = { VERSION }
 
@@ -162,7 +164,7 @@ export class Client {
 		return this.urlParams ? this.urlParams.get(URLNS + itemKey) : ''
 	}
 
-	public readProofCallback() {
+	public async readProofCallback() {
 		if (!this.getDataFromQuery) return false
 
 		let action = this.getDataFromQuery('action')
@@ -171,9 +173,12 @@ export class Client {
 
 		const issuer = this.getDataFromQuery('issuer')
 		const attest = this.getDataFromQuery('attestation')
+		const type = this.getDataFromQuery('type') as TokenType
 		const error = this.getDataFromQuery('error')
 
-		this.emitRedirectProofEvent(issuer, attest, error)
+		await TicketZKProof.validateProof(this.tokenStore.getCurrentIssuers(false)[issuer] as OffChainTokenConfig, attest, type as TokenType)
+
+		this.emitRedirectProofEvent(issuer, { proof: attest, type }, error)
 	}
 
 	private removeCallbackParamsFromUrl() {
@@ -190,7 +195,7 @@ export class Client {
 		})
 	}
 
-	private emitRedirectProofEvent(issuer: string, proof?: string, error?: string) {
+	private emitRedirectProofEvent(issuer: string, proof?: ProofResult, error?: string) {
 		// Wait to ensure UI is initialized
 		setTimeout(() => {
 			if (error) {
@@ -199,7 +204,7 @@ export class Client {
 				this.eventSender('token-proof', {
 					issuer,
 					error: null,
-					data: { proof },
+					data: proof,
 				})
 			}
 		}, 500)

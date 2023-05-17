@@ -1,6 +1,6 @@
 import { logger, requiredParams, removeUrlSearchParams } from '../utils'
 import { OutletAction, OutletResponseAction } from '../client/messaging'
-import { AuthHandler } from './auth-handler'
+import { AuthHandler, ProofResult } from './auth-handler'
 import { SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
 import { AsnParser } from '@peculiar/asn1-schema'
 import { ResponseActionBase, ResponseInterfaceBase, URLNS } from '../core/messaging'
@@ -154,8 +154,6 @@ export class Outlet {
 					try {
 						const tokenString = this.getDataFromQuery('token')
 
-						console.log('tokens from URL: ', tokenString)
-
 						let token = JSON.parse(tokenString)
 
 						const attestationBlob = this.getDataFromQuery('attestation', false)
@@ -169,16 +167,8 @@ export class Outlet {
 							const params = new URLSearchParams(requesterURL.hash.substring(1))
 							params.set(URLNS + 'action', 'proof-callback')
 							params.set(URLNS + 'issuer', issuer)
-							params.set(URLNS + 'attestation', useToken as string)
-
-							// TODO: Remove once https://github.com/AlphaWallet/attestation.id/pull/196 is merged
-							params.delete('email')
-							params.delete('#email')
-							// let outlet = new Outlet(this.tokenConfig, true)
-							// let issuerTokens = await outlet.prepareTokenOutput({})
-
-							// logger(2, 'issuerTokens: ', issuerTokens)
-
+							params.set(URLNS + 'attestation', useToken.proof as string)
+							params.set(URLNS + 'type', ticketRecord.type)
 							params.set(URLNS + 'token', tokenString)
 
 							requesterURL.hash = params.toString()
@@ -237,7 +227,7 @@ export class Outlet {
 		}
 	}
 
-	private dispatchAuthCallbackEvent(issuer: string, proof?: string, error?: string) {
+	private dispatchAuthCallbackEvent(issuer: string, proof?: ProofResult, error?: string) {
 		const event = new CustomEvent('auth-callback', {
 			detail: {
 				proof: proof,
@@ -353,7 +343,7 @@ export class Outlet {
 				evt: OutletResponseAction.PROOF,
 				data: {
 					issuer: this.tokenConfig.collectionID,
-					proof: tokenProof,
+					...tokenProof,
 				},
 			})
 		} catch (e: any) {

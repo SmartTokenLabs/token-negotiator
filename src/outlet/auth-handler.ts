@@ -4,7 +4,7 @@ import { Outlet, OutletInterface } from './index'
 import { Authenticator } from '@tokenscript/attestation'
 import { logger, removeUrlSearchParams } from '../utils'
 import { isBrave } from '../utils/support/getBrowserData'
-import { DecodedToken, DEFAULT_EAS_SCHEMA, StoredTicketRecord } from './ticketStorage'
+import { DecodedToken, DEFAULT_EAS_SCHEMA, StoredTicketRecord, TokenType } from './ticketStorage'
 import { EasZkProof } from '@tokenscript/attestation/dist/eas/EasZkProof'
 
 interface PostMessageData {
@@ -14,6 +14,12 @@ interface PostMessageData {
 	address?: string
 }
 
+export interface ProofResult {
+	proof: string
+	type: TokenType
+}
+
+// TODO: Is this needed? Can it be removed?
 /* function preparePopupCenter(w, h) {
 	let win = window
 	if (window.parent !== window) {
@@ -200,7 +206,7 @@ export class AuthHandler {
 	}
 
 	// TODO: combine functionality with messaging to enable tab support? Changes required in attestation.id code
-	public authenticate() {
+	public authenticate(): Promise<{ proof: string; type: TokenType }> {
 		return new Promise((resolve, reject) => {
 			this.rejectHandler = reject
 
@@ -310,11 +316,6 @@ export class AuthHandler {
 
 			let useToken
 
-			console.log('Generating ZKProof: ', ticketRecord.type)
-
-			console.log('Attestation secret: ', attestationSecret)
-			console.log('Ticket secret: ', ticketRecord.secret)
-
 			if (ticketRecord.type === 'eas') {
 				const easZkProof = new EasZkProof(DEFAULT_EAS_SCHEMA, issuerConfig.eas.config, issuerConfig.eas.provider)
 
@@ -339,7 +340,7 @@ export class AuthHandler {
 
 			if (useToken) {
 				logger(2, 'this.authResultCallback( useToken ): ')
-				return useToken
+				return <ProofResult>{ proof: useToken, type: ticketRecord.type }
 			} else {
 				logger(2, 'this.authResultCallback( empty ): ')
 				throw new Error('Empty useToken')
@@ -351,7 +352,7 @@ export class AuthHandler {
 		}
 	}
 
-	async postMessageAttestationListener(event: MessageEvent, resolve: Function, reject: Function) {
+	async postMessageAttestationListener(event: MessageEvent, resolve: (res: ProofResult) => void, reject: Function) {
 		logger(2, 'postMessageAttestationListener event (auth-handler)', event.data)
 
 		let attestationHandler = this.attestationTabHandler ? this.attestationTabHandler : this.iframe.contentWindow
