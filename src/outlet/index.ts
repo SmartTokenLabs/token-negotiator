@@ -153,21 +153,17 @@ export class Outlet {
 
 					try {
 						const tokenString = this.getDataFromQuery('token')
+
+						console.log('tokens from URL: ', tokenString)
+
 						let token = JSON.parse(tokenString)
 
 						const attestationBlob = this.getDataFromQuery('attestation', false)
 						const attestationSecret = '0x' + this.getDataFromQuery('requestSecret', false)
 
-						const tokenObj = await this.ticketStorage.getStoredTicketFromDecodedToken(token)
+						const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(token)
 
-						const useToken = await AuthHandler.getUseToken(
-							attestationBlob,
-							attestationSecret,
-							tokenObj.token,
-							tokenObj.secret,
-							this.tokenConfig.base64attestorPubKey,
-							this.tokenConfig.base64senderPublicKeys,
-						)
+						const useToken = await AuthHandler.getUseToken(this.tokenConfig, attestationBlob, attestationSecret, ticketRecord)
 
 						if (requesterURL) {
 							const params = new URLSearchParams(requesterURL.hash.substring(1))
@@ -175,6 +171,9 @@ export class Outlet {
 							params.set(URLNS + 'issuer', issuer)
 							params.set(URLNS + 'attestation', useToken as string)
 
+							// TODO: Remove once https://github.com/AlphaWallet/attestation.id/pull/196 is merged
+							params.delete('email')
+							params.delete('#email')
 							// let outlet = new Outlet(this.tokenConfig, true)
 							// let issuerTokens = await outlet.prepareTokenOutput({})
 
@@ -191,6 +190,8 @@ export class Outlet {
 
 						this.dispatchAuthCallbackEvent(issuer, useToken, null)
 					} catch (e: any) {
+						console.error(e)
+
 						if (requesterURL) return this.proofRedirectError(issuer, e.message)
 
 						this.dispatchAuthCallbackEvent(issuer, null, e.message)
@@ -439,14 +440,16 @@ export class Outlet {
 	}
 
 	public proofRedirectError(issuer: string, error: string) {
-		const requesterURL = this.redirectCallbackUrl.href
+		const requesterURL = this.redirectCallbackUrl
 
-		const params = new URLSearchParams()
+		const params = new URLSearchParams(requesterURL.hash.substring(1))
 		params.set(URLNS + 'action', 'proof-callback')
 		params.set(URLNS + 'issuer', issuer)
 		params.set(URLNS + 'error', error)
 
-		document.location.href = requesterURL + '#' + params.toString()
+		requesterURL.hash = params.toString()
+
+		document.location.href = requesterURL.href
 	}
 
 	private isSameOrigin() {

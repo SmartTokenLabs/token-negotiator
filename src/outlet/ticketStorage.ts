@@ -8,11 +8,26 @@ import { uint8tohex } from '@tokenscript/attestation/dist/libs/utils'
 export type TokenType = 'asn' | 'eas'
 
 export interface StoredTicketRecord {
+	/**
+	 * The format of the attestation
+	 */
 	type: TokenType
+	/**
+	 * The encoded token in base64
+	 */
 	token: string
+	/**
+	 * The id (usually email) used for the pedersen commitment
+	 */
 	id: string
+	/**
+	 * The secret used to generate the pedersen commitment
+	 */
 	secret: string
-	tokenId: string // This is not a UID, rather it is an ID based on conference ID & ticket ID
+	/**
+	 * This is not a UID, rather it is an ID based on conference ID & ticket ID
+	 */
+	tokenId: string
 }
 
 export interface DecodedToken {
@@ -28,6 +43,15 @@ export interface FilterInterface {
 	[key: string]: any
 }
 
+export const DEFAULT_EAS_SCHEMA = {
+	fields: [
+		{ name: 'devconId', type: 'string' },
+		{ name: 'ticketIdString', type: 'string' },
+		{ name: 'ticketClass', type: 'uint8' },
+		{ name: 'commitment', type: 'bytes', isCommitment: true },
+	],
+}
+
 export class TicketStorage {
 	private keysArray: KeysArray
 	private easManager: EasTicketAttestation
@@ -37,19 +61,7 @@ export class TicketStorage {
 	constructor(private config: OutletInterface) {
 		this.keysArray = KeyPair.parseKeyArrayStrings(this.config.base64senderPublicKeys)
 
-		this.easManager = new EasTicketAttestation(
-			{
-				fields: [
-					{ name: 'devconId', type: 'string' },
-					{ name: 'ticketIdString', type: 'string' },
-					{ name: 'ticketClass', type: 'uint8' },
-					{ name: 'commitment', type: 'bytes', isCommitment: true },
-				],
-			},
-			this.config.eas.config,
-			this.config.eas.provider,
-			this.keysArray,
-		)
+		this.easManager = new EasTicketAttestation(DEFAULT_EAS_SCHEMA, this.config.eas.config, this.config.eas.provider, this.keysArray)
 
 		this.loadTickets()
 	}

@@ -4,8 +4,8 @@ import { Outlet, OutletInterface } from './index'
 import { Authenticator } from '@tokenscript/attestation'
 import { logger, removeUrlSearchParams } from '../utils'
 import { isBrave } from '../utils/support/getBrowserData'
-import { KeyPair } from '@tokenscript/attestation/dist/libs/KeyPair'
-import { DecodedToken, StoredTicketRecord } from './ticketStorage'
+import { DecodedToken, DEFAULT_EAS_SCHEMA, StoredTicketRecord } from './ticketStorage'
+import { EasZkProof } from '@tokenscript/attestation/dist/eas/EasZkProof'
 
 interface PostMessageData {
 	force?: boolean
@@ -51,9 +51,6 @@ interface PostMessageData {
 }*/
 
 export class AuthHandler {
-	private signedTokenBlob: string | undefined
-	private email: string | undefined
-	private signedTokenSecret: string | undefined
 	private attestationOrigin: string | undefined
 
 	private attestationInTab: boolean
@@ -87,10 +84,6 @@ export class AuthHandler {
 		this.base64senderPublicKeys = tokenConfig.base64senderPublicKeys
 		this.base64attestorPubKey = tokenConfig.base64attestorPubKey
 		this.attestationOrigin = tokenConfig.attestationOrigin
-
-		this.signedTokenBlob = ticketRecord.token
-		this.email = ticketRecord.id
-		this.signedTokenSecret = ticketRecord.secret
 	}
 
 	openAttestationApp() {
@@ -215,7 +208,7 @@ export class AuthHandler {
 				const curParams = new URLSearchParams(document.location.hash.substring(1))
 
 				const params = new URLSearchParams()
-				params.set('email', this.email)
+				params.set('email', this.ticketRecord.id)
 				params.set('address', this.address)
 				params.set('wallet', this.wallet)
 
@@ -290,41 +283,59 @@ export class AuthHandler {
 	}
 
 	public static async getUseToken(
+		issuerConfig: OutletInterface,
 		attestationBlob: string,
 		attestationSecret: string,
-		ticketBlob: string,
-		ticketSecret: string,
-		base64attestorPubKey: string,
-		base64senderPublicKeys: { [key: string]: KeyPair | KeyPair[] | string },
+		ticketRecord: StoredTicketRecord,
 	) {
 		try {
-			if (!ticketSecret) {
+			if (!ticketRecord.secret) {
 				throw new Error('signedTokenSecret required')
 			}
 			if (!attestationSecret) {
 				throw new Error('attestationSecret required')
 			}
-			if (!ticketSecret) {
+			if (!ticketRecord.token) {
 				throw new Error('signedTokenBlob required')
 			}
 			if (!attestationBlob) {
 				throw new Error('attestationBlob required')
 			}
-			if (!base64attestorPubKey) {
+			if (!issuerConfig.base64attestorPubKey) {
 				throw new Error('base64attestorPubKey required')
 			}
-			if (!base64senderPublicKeys) {
+			if (!issuerConfig.base64senderPublicKeys) {
 				throw new Error('base64senderPublicKeys required')
 			}
 
-			let useToken = await Authenticator.getUseTicket(
-				BigInt(ticketSecret),
-				BigInt(attestationSecret),
-				ticketBlob,
-				attestationBlob,
-				base64attestorPubKey,
-				base64senderPublicKeys,
-			)
+			let useToken
+
+			console.log('Generating ZKProof: ', ticketRecord.type)
+
+			console.log('Attestation secret: ', attestationSecret)
+			console.log('Ticket secret: ', ticketRecord.secret)
+
+			if (ticketRecord.type === 'eas') {
+				const easZkProof = new EasZkProof(DEFAULT_EAS_SCHEMA, issuerConfig.eas.config, issuerConfig.eas.provider)
+
+				useToken = easZkProof.getUseTicket(
+					BigInt(ticketRecord.secret),
+					BigInt(attestationSecret),
+					ticketRecord.token,
+					attestationBlob,
+					issuerConfig.base64attestorPubKey,
+					issuerConfig.base64senderPublicKeys,
+				)
+			} else {
+				useToken = await Authenticator.getUseTicket(
+					BigInt(ticketRecord.secret),
+					BigInt(attestationSecret),
+					ticketRecord.token,
+					attestationBlob,
+					issuerConfig.base64attestorPubKey,
+					issuerConfig.base64senderPublicKeys,
+				)
+			}
 
 			if (useToken) {
 				logger(2, 'this.authResultCallback( useToken ): ')
@@ -348,7 +359,7 @@ export class AuthHandler {
 		if (typeof event.data.ready !== 'undefined' && event.data.ready === true) {
 			let sendData: PostMessageData = { force: false }
 
-			if (this.email) sendData.email = this.email
+			if (this.ticketRecord.id) sendData.email = this.ticketRecord.id
 			if (this.wallet) sendData.wallet = this.wallet
 			if (this.address) sendData.address = this.address
 
@@ -404,14 +415,7 @@ export class AuthHandler {
 		this.attestationSecret = event.data?.requestSecret
 
 		try {
-			const useToken = await AuthHandler.getUseToken(
-				this.attestationBlob,
-				this.attestationSecret,
-				this.signedTokenBlob,
-				this.signedTokenSecret,
-				this.base64attestorPubKey,
-				this.base64senderPublicKeys,
-			)
+			const useToken = await AuthHandler.getUseToken(this.tokenConfig, this.attestationBlob, this.attestationSecret, this.ticketRecord)
 			resolve(useToken)
 		} catch (e: any) {
 			reject(e)
