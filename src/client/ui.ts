@@ -204,10 +204,7 @@ export class Ui implements UiInterface {
 
 	closeOverlay() {
 		if (this.options.uiType === 'inline') return
-		if (this.forceToOpen) {
-			this.setForceToOpen(false)
-			return
-		}
+		if (this.forceToOpen) return
 		this.popupContainer.classList.add('close')
 		this.popupContainer.classList.remove('open')
 		this.client.eventSender('closed-overlay', null)
