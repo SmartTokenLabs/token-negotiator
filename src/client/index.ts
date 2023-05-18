@@ -9,7 +9,6 @@ import {
 	OnChainTokenConfig,
 	AuthenticateInterface,
 	NegotiationInterface,
-	SolanaIssuerConfig,
 	TokenNegotiatorEvents,
 	EventSenderTokenProof,
 	EventSenderTokensSelected,
@@ -58,7 +57,6 @@ export const defaultConfig: NegotiationInterface = {
 	issuers: [],
 	uiOptions: {
 		uiType: 'popup',
-		// value ".overlay-tn" hardcoded in ui.ts
 		containerElement: '.overlay-tn',
 		openingHeading: 'Validate your token ownership for access',
 		issuerHeading: 'Detected tokens',
@@ -72,12 +70,7 @@ export const defaultConfig: NegotiationInterface = {
 	tokenPersistenceTTL: 600,
 	unSupportedUserAgent: {
 		authentication: {
-			config: {
-				// metaMaskAndroid: true,
-				// alphaWalletAndroid: true,
-				// mewAndroid: true,
-				// imTokenAndroid: true,
-			},
+			config: {},
 			errorMessage: NOT_SUPPORTED_ERROR,
 		},
 		full: {
@@ -107,7 +100,6 @@ export enum ClientErrorMessage {
 }
 
 export class Client {
-	private negotiateAlreadyFired: boolean
 	public issuersLoaded: boolean
 	public config: NegotiationInterface
 	private web3WalletProvider: Web3WalletProvider
@@ -139,13 +131,31 @@ export class Client {
 
 		this.config = this.mergeConfig(defaultConfig, config)
 
-		this.negotiateAlreadyFired = false
-
 		this.tokenStore = new TokenStore(this.config.autoEnableTokens, this.config.tokenPersistenceTTL)
 		if (this.config.issuers?.length > 0) this.tokenStore.updateIssuers(this.config.issuers)
 
 		this.messaging = new Messaging()
 		this.registerOutletProofEventListener()
+	}
+
+	handleRecievedRedirectMessages() {
+		const issuer = this.getDataFromQuery('issuer')
+		const error = this.getDataFromQuery('error')
+		const type = this.getDataFromQuery('type')
+		if (error === 'USER_ABORT' && type === 'offchain-issuer-connection') {
+			let userAbortError = new Error(error)
+			userAbortError.name = 'USER_ABORT'
+			errorHandler(
+				'issuer denied connection with off chain issuer',
+				'error',
+				() => this.eventSender('error', { issuer: issuer, error: userAbortError }),
+				null,
+				true,
+				false,
+			)
+			return userAbortError
+		}
+		return null
 	}
 
 	getDataFromQuery(itemKey: any): string {
@@ -206,7 +216,7 @@ export class Client {
 
 		// Check if blockchain is supported one
 		// TODO: Put in separate method - issuers can also be specified via negotiate()
-		if (defaultConfig.issuers && defaultConfig.issuers.length) {
+		if (defaultConfig.issuers?.length) {
 			for (const issuer of defaultConfig.issuers) {
 				if (issuer.onChain === true) {
 					validateBlockchain(issuer.blockchain ?? '')
@@ -244,12 +254,9 @@ export class Client {
 	public hasIssuerForBlockchain(blockchain: 'evm' | 'solana' | 'flow') {
 		return (
 			this.config.issuers.filter((issuer: OnChainTokenConfig) => {
-				// EVM should always be active when we have off-chain attestations as it's used for UN challenge signing
 				if (blockchain === 'evm' && !issuer.onChain) return true
-				// window.solana must be defined if solana module imported
 				if (blockchain === 'solana' && typeof window.solana === 'undefined') return false
 
-				// Defaults to evm if blockchain isn't specified and is an onchain token
 				return (issuer.blockchain ? issuer.blockchain.toLowerCase() : 'evm') === blockchain
 			}).length > 0
 		)
@@ -269,12 +276,16 @@ export class Client {
 	}
 
 	public async disconnectWallet() {
-		let wp = await this.getWalletProvider()
-		wp.deleteConnections()
-		this.tokenStore.clearCachedTokens()
-		this.eventSender('connected-wallet', null)
-		this.eventSender('disconnected-wallet', null)
-		this.triggerUiUpdateCallback(UIUpdateEventType.WALLET_DISCONNECTED)
+		try {
+			let wp = await this.getWalletProvider()
+			await wp.deleteConnections()
+			this.tokenStore.clearCachedTokens()
+			this.eventSender('connected-wallet', null)
+			this.eventSender('disconnected-wallet', null)
+			this.triggerUiUpdateCallback(UIUpdateEventType.WALLET_DISCONNECTED)
+		} catch (e) {
+			logger(2, 'Failed to disconnect wallet', e)
+		}
 	}
 
 	async negotiatorConnectToWallet(walletType: string) {
@@ -388,6 +399,8 @@ export class Client {
 			await this.passiveNegotiationStrategy()
 		}
 
+		this.handleRecievedRedirectMessages()
+
 		this.eventSender('loaded', null)
 	}
 
@@ -398,9 +411,8 @@ export class Client {
 			autoOpenPopup = this.tokenStore.hasUnloadedTokens()
 
 			if (this.ui.viewIsNotStart() && this.tokenStore.hasUnloadedIssuers()) {
-				this.enrichTokenLookupDataOnChainTokens()
+				await this.enrichTokenLookupDataOnChainTokens()
 			} else {
-				// Main screen may be shown so it requires an update event though tokens are already loaded for the updated issuers
 				this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADED)
 			}
 		} else {
@@ -409,7 +421,6 @@ export class Client {
 			autoOpenPopup = true
 		}
 
-		// emit existing cached tokens
 		if (this.config.autoEnableTokens && Object.keys(this.tokenStore.getSelectedTokens()).length)
 			this.eventSender('tokens-selected', {
 				selectedTokens: this.tokenStore.getSelectedTokens(),
@@ -475,16 +486,9 @@ export class Client {
 				if (new URL(issuerConfig.tokenOrigin).origin === document.location.origin) {
 					tokens = this.loadLocalOutletTokens(issuerConfig)
 				} else {
-					// Check response URL for redirect result for this issuer.
 					let responseIssuer = this.getDataFromQuery('issuer')
 
-					if (
-						(action === OutletAction.GET_ISSUER_TOKENS + '-response' ||
-							// have to read tokens from "proof-callback" action,
-							// in other way page will be redirected in loop
-							action === 'proof-callback') &&
-						issuer === responseIssuer
-					) {
+					if ((action === OutletAction.GET_ISSUER_TOKENS + '-response' || action === 'proof-callback') && issuer === responseIssuer) {
 						let responseTokensEncoded = this.getDataFromQuery('tokens')
 						try {
 							tokens = JSON.parse(responseTokensEncoded)
@@ -519,8 +523,9 @@ export class Client {
 		let action = this.getDataFromQuery('action')
 
 		if (action === 'error') {
-			this.handleRedirectTokensError()
-			return
+			return this.handleRedirectTokensError()
+				.then()
+				.catch((e) => logger(2, 'Error handle redirect tokens error. ', e))
 		}
 
 		if (action !== OutletAction.GET_ISSUER_TOKENS + '-response') return
@@ -626,10 +631,6 @@ export class Client {
 			tokens[issuer] = { tokens: tokens[issuer] }
 		}
 
-		// function loggingIdentity<Type extends Lengthwise>(arg: Type): Type {
-		// 	console.log(arg.length); // Now we know it has a .length property, so no more error
-		// 	return arg;
-		// }
 		this.eventSender('tokens', tokens)
 		this.eventSender('tokens-loaded', { loadedCollections: Object.keys(tokens).length })
 
@@ -710,8 +711,6 @@ export class Client {
 
 		const redirectRequired = shouldUseRedirectMode(this.config.offChainRedirectMode)
 
-		// When using redirect mode, in order to prevent loops, we set tokens to a null array before redirecting.
-		// This will ensure that if the page fails to load or the user rejects the request, they will need to manually refresh to try again
 		if (redirectRequired) this.tokenStore.setTokens(issuer.collectionID, [])
 
 		const res = await this.messaging.sendMessage(
@@ -732,7 +731,6 @@ export class Client {
 
 	private loadLocalOutletTokens(issuer: OffChainTokenConfig) {
 		const localOutlet = new LocalOutlet(issuer as OutletInterface & OffChainTokenConfig)
-
 		return localOutlet.getTokens()
 	}
 
@@ -819,13 +817,17 @@ export class Client {
 	}
 
 	public enableAuthCancel(issuer): void {
-		waitForElementToExist('.cancel-auth-btn').then((cancelAuthButton: HTMLElement) => {
-			cancelAuthButton.onclick = () => {
-				const err = 'User cancelled authentication'
-				this.ui.showError(err)
-				this.eventSender('token-proof', { issuer, error: err, data: null })
-			}
-		})
+		waitForElementToExist('.cancel-auth-btn')
+			.then((cancelAuthButton: HTMLElement) => {
+				cancelAuthButton.onclick = () => {
+					const err = 'User cancelled authentication'
+					this.ui.showError(err)
+					this.eventSender('token-proof', { issuer, error: err, data: null })
+				}
+			})
+			.catch((err) => {
+				logger(2, err)
+			})
 	}
 
 	private async handleWalletRequired(authRequest) {
@@ -865,7 +867,6 @@ export class Client {
 		this.eventSender('token-proof', { issuer, error: err, data: null })
 	}
 
-	// eventSender overrides
 	async eventSender(eventName: 'loaded', data: EventSenderViewLoaded)
 	async eventSender(eventName: 'tokens-refreshed', data: EventSenderTokensRefreshed)
 	async eventSender(eventName: 'closed-overlay', data: EventSenderClosedOverlay)
@@ -881,7 +882,7 @@ export class Client {
 	async eventSender(eventName: 'error', data: EventSenderError)
 
 	async eventSender(eventName: TokenNegotiatorEvents, data: any) {
-		Promise.resolve(this.on(eventName, null, data))
+		await Promise.resolve(this.on(eventName, null, data))
 	}
 
 	getOutletConfigForCurrentOrigin(origin: string = document.location.origin) {
@@ -892,11 +893,7 @@ export class Client {
 			let issuerConfig = allIssuers[key] as OffChainTokenConfig
 
 			try {
-				if (
-					new URL(issuerConfig.tokenOrigin).origin === origin
-					// should not be 2 tokens with same origin
-					// && issuerConfig.collectionID == issuer
-				) {
+				if (new URL(issuerConfig.tokenOrigin).origin === origin) {
 					currentIssuers.push(issuerConfig)
 				}
 			} catch (err) {
@@ -925,7 +922,6 @@ export class Client {
 				logger(2, err)
 			}
 
-			// if any issuerConfig missing tokenOrigin or something wrong then skip sameOrigin flow
 			if (!thisOneSameOrigin) {
 				onlySameOriginFlag = false
 			}
@@ -960,7 +956,6 @@ export class Client {
 				}) // Site is redirecting
 
 			if (res.evt === OutletResponseAction.ISSUER_TOKENS) {
-				// Store tokens if origin exists in config - this is a workaround for devcon
 				const issuerConfig = this.getOutletConfigForCurrentOrigin(url.origin)
 				if (issuerConfig) this.tokenStore.setTokens(issuerConfig.collectionID, res.data.tokens)
 
@@ -974,12 +969,10 @@ export class Client {
 	on(type: TokenNegotiatorEvents, callback?: any, data?: any) {
 		requiredParams(type, 'Event type is not defined')
 
-		// try to read tokens when listener attached
 		if ((type === 'tokens' || type === 'tokens-selected') && callback) {
 			this.readTokensFromUrl()
 		}
 
-		// read token-proof only when callback attached ( init listener by user )
 		if (type === 'token-proof' && callback) {
 			logger(2, 'token-proof listener atteched. check URL HASH for proof callbacks.')
 
@@ -994,20 +987,21 @@ export class Client {
 					logger(2, 'Outlet fired to parse URL hash params.')
 
 					let outlet = new Outlet(currentIssuer, true, this.urlParams)
-					outlet.pageOnLoadEventHandler().then(() => {
-						outlet = null
-					})
+					outlet
+						.pageOnLoadEventHandler()
+						.then(() => {
+							outlet = null
+						})
+						.catch((err) => {
+							logger(2, err)
+						})
 				}
 			}
 		}
 
 		if (callback) {
-			// assign callback reference to web developers event e.g. negotiator.on('tokens', (tokensForWebPage) => { ... }));
-
 			this.clientCallBackEvents[type] = callback
 		} else {
-			// event types: 'tokens', 'tokens-selected', 'proof'
-
 			if (this.clientCallBackEvents[type]) {
 				return this.clientCallBackEvents[type].call(type, data)
 			}

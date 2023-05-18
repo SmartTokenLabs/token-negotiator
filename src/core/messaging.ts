@@ -24,8 +24,7 @@ export interface ResponseInterfaceBase {
 export enum ResponseActionBase {
 	COOKIE_CHECK = 'cookie-check',
 	ERROR = 'error',
-	SHOW_FRAME = 'show-frame', // User input required in the iframe - don't resolve promise yet, setup iframe view if required.
-	// USER_CANCEL = "user_cancel" Could be handled different to an error
+	SHOW_FRAME = 'show-frame',
 }
 
 declare global {
@@ -63,13 +62,8 @@ export class Messaging {
 			// TODO do we need this verificaton?
 			// if (document.location.hash !== "#safari-iframe-test")
 
-			//
-			// this.iframeStorageSupport = !isMacOrIOS() && !isBrave();
 			this.iframeStorageSupport = !browserBlocksIframeStorage()
 		}
-
-		// Uncomment to test popup mode
-		// this.iframeStorageSupport = false;
 
 		if (!forceTab && this.iframeStorageSupport !== false) {
 			try {
@@ -90,7 +84,6 @@ export class Messaging {
 		let newLocation = this.constructUrl(id, request)
 
 		// TODO change in MAJOR release
-		// stay non-prefixed items, because its breaking change, we can remove non-prefixed params until MAJOR version released
 		for (const prefix of PREFIXES) {
 			newLocation += `&${prefix}redirect=true&${prefix}requestor=${encodeURIComponent(redirectUrl)}`
 		}
@@ -155,7 +148,6 @@ export class Messaging {
 
 		let listener = (event: any) => {
 			if (event.data.target) {
-				// we dont use this field at the moment
 				return
 			}
 

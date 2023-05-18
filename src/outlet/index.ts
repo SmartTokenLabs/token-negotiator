@@ -12,7 +12,6 @@ import {
 import { logger, requiredParams, removeUrlSearchParams } from '../utils'
 import { OutletAction, OutletResponseAction } from '../client/messaging'
 import { AuthHandler } from './auth-handler'
-// requred for default TicketDecoder.
 import { SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
 import { AsnParser } from '@peculiar/asn1-schema'
 import { ResponseActionBase, ResponseInterfaceBase, URLNS } from '../core/messaging'
@@ -31,7 +30,6 @@ export interface OutletInterface {
 	whitelistDialogHeight: string
 	whitelistDialogRenderer?: (permissionTxt: string, acceptBtn: string, denyBtn: string) => string
 
-	// Possibly deprecated parameters which have defaults
 	tokenUrlName?: string
 	tokenSecretName?: string
 	tokenIdName?: string
@@ -74,7 +72,6 @@ export class Outlet {
 		this.tokenConfig = Object.assign(defaultConfig, config)
 		this.singleUse = singleUse
 
-		// set default tokenReader
 		if (!this.tokenConfig.tokenParser) {
 			this.tokenConfig.tokenParser = readSignedTicket
 		}
@@ -94,9 +91,12 @@ export class Outlet {
 			this.urlParams = new URLSearchParams(params)
 		}
 
-		// to avoid duplicate run in syncOutlet()
 		if (!this.singleUse) {
 			this.pageOnLoadEventHandler()
+				.then()
+				.catch((e) => {
+					logger(2, 'Outlet pageOnLoadEventHandler error: ' + e.message)
+				})
 		}
 	}
 
@@ -110,6 +110,13 @@ export class Outlet {
 		return filter ? JSON.parse(filter) : {}
 	}
 
+	async modalDialogEventHandler(evtid: any, access: string) {
+		const action = await this.whitelistCheck(evtid, access === 'write' ? 'write' : 'read')
+		if (action === 'user-accept') this.sendTokens(evtid)
+		else if (action === 'user-abort')
+			this.sendErrorResponse(evtid, 'USER_ABORT', this.getDataFromQuery('issuer'), 'offchain-issuer-connection')
+	}
+
 	async pageOnLoadEventHandler() {
 		const evtid = this.getDataFromQuery('evtid')
 		const action = this.getDataFromQuery('action')
@@ -119,22 +126,14 @@ export class Outlet {
 
 		if (requester) this.redirectCallbackUrl = new URL(requester)
 
-		// disable this check, because mostly user will open MagicLink from QR code reader or by MagicLink click at email, so document.referrer will be empty
-		// if (!document.referrer && !this.getDataFromQuery('DEBUG'))
-		//   return;
-
 		logger(2, 'Outlet received event ID ' + evtid + ' action ' + action + ' at ' + document.location.href)
-		// Outlet Page OnLoad Event Handler
 
 		// TODO: should issuer be validated against requested issuer?
 
 		try {
 			switch (action) {
 				case OutletAction.GET_ISSUER_TOKENS: {
-					await this.whitelistCheck(evtid, access === 'write' ? 'write' : 'read')
-
-					this.sendTokens(evtid)
-
+					await this.modalDialogEventHandler(evtid, access)
 					break
 				}
 				case OutletAction.EMAIL_ATTEST_CALLBACK: {
@@ -145,7 +144,6 @@ export class Outlet {
 						const tokenString = this.getDataFromQuery('token')
 						let token = JSON.parse(tokenString)
 
-						// Note: these params come from attestation.id and are not namespaced
 						const attestationBlob = this.getDataFromQuery('attestation', false)
 						const attestationSecret = '0x' + this.getDataFromQuery('requestSecret', false)
 
@@ -153,7 +151,6 @@ export class Outlet {
 							this,
 							evtid,
 							this.tokenConfig,
-							// callbackParams.token,
 							await rawTokenCheck(token, this.tokenConfig),
 							null,
 							null,
@@ -162,7 +159,6 @@ export class Outlet {
 
 						const useToken = await authHandler.getUseToken(attestationBlob, attestationSecret)
 
-						// re-direct back to origin
 						if (requesterURL) {
 							const params = new URLSearchParams(requesterURL.hash.substring(1))
 							params.set(URLNS + 'action', 'proof-callback')
@@ -173,8 +169,6 @@ export class Outlet {
 							params.delete('email')
 							params.delete('#email')
 
-							// add tokens to avoid redirect loop
-							// when use redirect to get tokens
 							let outlet = new Outlet(this.tokenConfig, true)
 							let issuerTokens = outlet.prepareTokenOutput({})
 
@@ -189,7 +183,6 @@ export class Outlet {
 							return
 						}
 
-						// Same origin request, emit event
 						this.dispatchAuthCallbackEvent(issuer, useToken, null)
 					} catch (e: any) {
 						if (requesterURL) return this.proofRedirectError(issuer, e.message)
@@ -202,28 +195,20 @@ export class Outlet {
 					break
 				}
 				case OutletAction.GET_PROOF: {
-					// This will re-direct with the params
 					const token: string = this.getDataFromQuery('token')
 					const wallet: string = this.getDataFromQuery('wallet')
 					const address: string = this.getDataFromQuery('address')
 					requiredParams(token, 'unsigned token is missing')
-					this.sendTokenProof(evtid, token, address, wallet)
+					await this.sendTokenProof(evtid, token, address, wallet)
 					break
 				}
 				default: {
-					// store local storage item that can be later used to check if third party cookies are allowed.
-					// Note: This test can only be performed when the localstorage / cookie is assigned, then later requested.
-					/* localStorage.setItem("cookie-support-check", "test");
-					this.sendCookieCheck(evtid);*/
-
 					// TODO: Remove singleUse - this is only needed in negotiator that calls readMagicLink.
 					//  move single link somewhere that it can be used by both Outlet & LocalOutlet
 					if (!this.singleUse) {
-						await this.whitelistCheck(evtid, 'write')
 						await this.readMagicLink()
-						this.sendTokens(evtid)
+						await this.modalDialogEventHandler(evtid, 'write')
 					}
-
 					break
 				}
 			}
@@ -248,8 +233,6 @@ export class Outlet {
 
 			const event = new Event('tokensupdated')
 
-			// Dispatch the event to force negotiator to reread tokens.
-			// MagicLinkReader part of Outlet usually works in the parent window, same as Client, so it use same document
 			document.body.dispatchEvent(event)
 		} catch (e) {
 			console.warn(e)
@@ -276,14 +259,12 @@ export class Outlet {
 
 			const tokenId = this.getUniqueTokenId(decodedTokenData)
 
-			// Overwrite existing token
 			if (newTokenId === tokenId) {
 				existingTokens[index] = newToken
 				return existingTokens
 			}
 		}
 
-		// Add as new token
 		existingTokens.push(newToken)
 		return existingTokens
 	}
@@ -327,11 +308,11 @@ export class Outlet {
 			(!accessWhitelist[origin] || (accessWhitelist[origin].type === 'read' && whiteListType === 'write'))
 
 		if (needsPermission /* || storageAccessRequired */) {
-			return new Promise<void>((resolve, reject) => {
+			return new Promise<any>((resolve, reject) => {
 				const typeTxt = whiteListType === 'read' ? 'read' : 'read & write'
 				const permissionTxt = `${origin} is requesting ${typeTxt} access to your ${this.tokenConfig.title} tickets`
-				const acceptBtn = '<button id="tn-access-accept">Accept</button>'
-				const denyBtn = '<button id="tn-access-deny">Deny</button>'
+				const acceptBtn = '<button style="cursor: pointer" id="tn-access-accept">Accept</button>'
+				const denyBtn = '<button style="cursor: pointer" id="tn-access-deny">Deny</button>'
 
 				const content = this.tokenConfig.whitelistDialogRenderer
 					? this.tokenConfig.whitelistDialogRenderer(permissionTxt, acceptBtn, denyBtn)
@@ -358,32 +339,18 @@ export class Outlet {
 
 				document.body.insertAdjacentHTML('beforeend', content)
 
-				document.getElementById('tn-access-accept').addEventListener('click', async () => {
-					/* if (storageAccessRequired) {
-						try {
-							await document.requestStorageAccess()
-						} catch (e) {
-							console.error(e)
-							reject(new Error('IFRAME_STORAGE'))
-							return
-						}
-						// Ensure whitelist is loaded from top-level storage context
-						// this is not required if already granted or using a browser without the storageAccess API
-						accessWhitelist = JSON.parse(localStorage.getItem('tn-whitelist')) ?? {}
-					}*/
-
+				document.getElementById('tn-access-accept').addEventListener('click', () => {
 					if (!accessWhitelist[origin] || whiteListType !== accessWhitelist[origin].type) {
 						accessWhitelist[origin] = {
 							type: whiteListType,
 						}
 						localStorage.setItem('tn-whitelist', JSON.stringify(accessWhitelist))
 					}
-
-					resolve()
+					resolve('user-accept')
 				})
 
 				document.getElementById('tn-access-deny').addEventListener('click', () => {
-					reject('USER_ABORT')
+					resolve('user-abort')
 				})
 
 				this.sendMessageResponse({
@@ -394,17 +361,8 @@ export class Outlet {
 				})
 			})
 		}
+		return 'user-accept'
 	}
-
-	/* sendCookieCheck(evtid: string){
-		this.sendMessageResponse({
-			evtid: evtid,
-			evt: ResponseActionBase.COOKIE_CHECK,
-			data: {
-				thirdPartyCookies: localStorage.getItem("cookie-support-check"),
-			}
-		});
-	}*/
 
 	prepareTokenOutput(filter: any) {
 		const storageTokens = localStorage.getItem(this.tokenConfig.itemStorageKey)
@@ -419,7 +377,6 @@ export class Outlet {
 
 		const decodedTokens = decodeTokens(storageTokens, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName, includeSigned)
 
-		// remove duplicates check
 		return filterTokens(decodedTokens, filter)
 	}
 
@@ -431,7 +388,6 @@ export class Outlet {
 		const redirect = this.getDataFromQuery('redirect') === 'true' ? document.location.href : false
 
 		try {
-			// check if token issuer
 			let tokenObj = await rawTokenCheck(unsignedToken, this.tokenConfig)
 
 			let authHandler = new AuthHandler(this, evtid, this.tokenConfig, tokenObj, address, wallet, redirect, unsignedToken)
@@ -506,13 +462,14 @@ export class Outlet {
 		})
 	}
 
-	public sendErrorResponse(evtid: any, error: string, issuer?: string) {
+	public sendErrorResponse(evtid: any, error: string, issuer?: string, type = 'error') {
 		if (this.redirectCallbackUrl) {
 			let url = this.redirectCallbackUrl
 
 			const params = new URLSearchParams(url.hash.substring(1))
 			params.set(URLNS + 'action', ResponseActionBase.ERROR)
-			params.set(URLNS + 'issuer', issuer)
+			params.set(URLNS + 'issuer', issuer || this.tokenConfig.collectionID)
+			params.set(URLNS + 'type', type)
 			params.set(URLNS + 'error', error)
 
 			url.hash = '#' + params.toString()
@@ -553,23 +510,17 @@ export class Outlet {
 	}
 
 	public sendMessageResponse(response: ResponseInterfaceBase) {
-		// dont send Message if no referrer defined
 		if (!document.referrer) {
 			return
 		}
 
 		let target
 
-		// opened by JS
 		if (window.opener && window.opener !== window) {
 			target = window.opener
-			// iframe
 		} else if (window.parent !== window) {
 			target = window.parent
 		}
-
-		// let pUrl = new URL(document.referrer);
-		// origin = pUrl.origin;
 
 		if (target) {
 			target.postMessage(response, '*')
@@ -577,8 +528,6 @@ export class Outlet {
 
 		// TODO: this is probably no longer needed as brave is set to always use redirect mode now
 		if (!this.isSameOrigin()) {
-			// At least Brave iOS browser blocks close(), so user have to see the message and close tab.
-			// Message appears when tokens succesully sent with postMessage
 			let style = `
 				background: #eee;
 				padding: 10px;

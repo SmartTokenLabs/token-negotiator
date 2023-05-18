@@ -69,7 +69,7 @@ export const getBrowserData = () => {
 		iOS: isIOS,
 		mac: isMac,
 		windows: isWindows,
-		desktop: navigator.userAgent?.indexOf("Mobi") === -1,
+		desktop: navigator.userAgent?.indexOf('Mobi') === -1,
 		touchDevice: isTouchDevice,
 		metaMask: isMetaMask,
 		anyMetamask: !!windowEthereum.isMetaMask && !isTrust && !windowEthereum.isBraveWallet,
@@ -90,10 +90,7 @@ export const getBrowserData = () => {
 }
 
 export function isMacOrIOS() {
-	return (
-		!!window.safari ||
-		/iphone|ipad|ipod|ios/.test(window.navigator.userAgent ? window.navigator.userAgent.toLowerCase() : '')
-	)
+	return !!window.safari || /iphone|ipad|ipod|ios/.test(window.navigator.userAgent ? window.navigator.userAgent.toLowerCase() : '')
 }
 
 export function isBrave() {
@@ -103,12 +100,7 @@ export function isBrave() {
 export function isIosSafari() {
 	let userAgent = window.navigator.userAgent ? window.navigator.userAgent.toLowerCase() : ''
 
-	return (
-		/ip(ad|od|hone)/i.test(userAgent) &&
-		/webkit/i.test(userAgent) &&
-		!/(crios|fxios|opios|mercury)/i.test(userAgent) &&
-		!isBrave()
-	)
+	return /ip(ad|od|hone)/i.test(userAgent) && /webkit/i.test(userAgent) && !/(crios|fxios|opios|mercury)/i.test(userAgent) && !isBrave()
 }
 
 export function isMacSafari() {

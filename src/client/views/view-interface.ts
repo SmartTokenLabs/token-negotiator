@@ -40,9 +40,7 @@ export abstract class AbstractView implements ViewInterface {
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-empty-function
-	public init(): void {
-		// Init can be used to implement extra constructor code without overriding the constructor
-	}
+	public init(): void {}
 
 	abstract render(): void
 

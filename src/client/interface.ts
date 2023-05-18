@@ -4,7 +4,6 @@ import { SafeConnectOptions } from '../wallet/SafeConnectProvider'
 import { BrowserDataInterface } from '../utils/support/isSupported'
 import { WalletConnection } from '../wallet/Web3WalletProvider'
 
-// add new blockchain to both rows
 export type SupportedBlockchainsParam = 'evm' | 'flow' | 'solana'
 export const SignatureSupportedBlockchainsParamList = ['evm', 'flow', 'solana']
 
@@ -55,7 +54,6 @@ export interface NegotiationInterface {
 	autoEnableTokens?: boolean
 	messagingForceTab?: boolean
 	safeConnectOptions?: SafeConnectOptions
-	// force enable/disable redirect mode. The default (undefined) is to only use redirect for browsers where iframes are not possible.
 	offChainRedirectMode?: 'always' | 'never'
 	tokenPersistenceTTL?: number
 	unSupportedUserAgent?: {

@@ -78,12 +78,14 @@ export class Ui implements UiInterface {
 	currentView: ViewInterface | undefined
 	retryCallback?: Function
 	retryButton: HTMLButtonElement
+	forceToOpen: Boolean
 
 	private isStartView = true
 
 	constructor(options: UIOptionsInterface, client: Client) {
 		this.options = options
 		this.client = client
+		this.forceToOpen = false
 	}
 
 	async initialize() {
@@ -202,6 +204,7 @@ export class Ui implements UiInterface {
 
 	closeOverlay() {
 		if (this.options.uiType === 'inline') return
+		if (this.forceToOpen) return
 		this.popupContainer.classList.add('close')
 		this.popupContainer.classList.remove('open')
 		this.client.eventSender('closed-overlay', null)
@@ -209,7 +212,6 @@ export class Ui implements UiInterface {
 
 	openOverlay() {
 		if (this.options.uiType === 'inline') return
-		// Prevent out-of-popup click from closing the popup straight away
 		setTimeout(() => {
 			this.client.eventSender('opened-overlay', null)
 			this.popupContainer.classList.add('open')
@@ -244,7 +246,6 @@ export class Ui implements UiInterface {
 			if (data?.viewName) viewName = data.viewName
 		}
 
-		// Manually specified view options can override ones set in the viewOverrides config
 		if (options) viewOptions = { ...viewOptions, ...options }
 
 		if (!this.viewContainer) {
@@ -252,7 +253,6 @@ export class Ui implements UiInterface {
 			return
 		}
 
-		// Setup state transition
 		let transitionClass
 		let oldViewRef
 
@@ -261,10 +261,8 @@ export class Ui implements UiInterface {
 		if (viewOptions?.viewTransition && AVAILABLE_TRANSITIONS.indexOf(viewOptions?.viewTransition) > -1) {
 			transitionClass = viewOptions?.viewTransition + '-tn'
 
-			// Keep reference to old view for cleanup
 			oldViewRef = this.viewContainer
 
-			// Inset new view container - add transition class to ensure it's out of frame
 			const newViewContainer = document.createElement('div')
 
 			this.transitionContainer.classList.add(transitionClass)
@@ -276,7 +274,6 @@ export class Ui implements UiInterface {
 				this.transitionContainer.appendChild(newViewContainer)
 			}
 
-			// Set new viewContainer ref
 			this.viewContainer = newViewContainer
 		}
 
@@ -310,7 +307,6 @@ export class Ui implements UiInterface {
 				this.transitionContainer.classList.remove('slide-in', transitionClass)
 			}, 300)
 
-			// Add transition start class into viewport to start animation
 			this.transitionContainer.classList.add('slide-in')
 		}
 
@@ -406,5 +402,9 @@ export class Ui implements UiInterface {
 
 	switchTheme(newTheme: UItheme) {
 		this.setTheme(newTheme)
+	}
+
+	setForceToOpen(open: boolean) {
+		this.forceToOpen = open
 	}
 }

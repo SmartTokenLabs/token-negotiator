@@ -34,7 +34,6 @@ export class SafeConnectChallenge extends AbstractAuthentication implements Auth
 			let walletConnection = web3WalletProvider.getConnectedWalletData('evm')?.[0].provider
 
 			if (walletConnection instanceof SafeConnectProvider) {
-				// This will request and save a new challenge from safe connect
 				await safeConnect.initSafeConnect()
 				currentProof = this.getSavedProof(address)
 
