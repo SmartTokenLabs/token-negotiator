@@ -333,6 +333,13 @@ export class Ui implements UiInterface {
 			if (error === ClientError.USER_ABORT) return this.dismissLoader()
 		}
 
+		// TODO we should handle and map all errors to user friendly messaging in a separate file.
+		if (typeof error === 'string') {
+			if (error.includes(`Failed to read the 'localStorage' property from 'Window'`)) {
+				error = `<p>Your browser settings have denied access to your storage. To continue, please enable third party storage settings or try a different browser.</p>`
+			}
+		}
+
 		const loader = this.loadContainer.querySelector('.loader-tn') as HTMLDivElement
 		loader.style.display = 'none'
 
