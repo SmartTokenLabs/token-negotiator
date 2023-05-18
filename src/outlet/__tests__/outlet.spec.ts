@@ -67,7 +67,7 @@ async function createTestMagicLink(ticketType, ticketId, ticketClass) {
 		await attestationManager.createEasAttestation(
 			{
 				devconId: '6',
-				ticketId: ticketId,
+				ticketIdString: ticketId,
 				ticketClass: ticketClass,
 				commitment: email,
 			},
