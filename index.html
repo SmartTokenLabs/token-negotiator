@@ -1,313 +1,332 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Document</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
 
-		<script
-			type="text/javascript"
-			src="./token-negotiator-dist/negotiator.js"
-		></script>
-		<link rel="stylesheet" href="./token-negotiator-dist/theme/style.css" />
-	</head>
-	<body onload="init()">
-		<button onclick="switchTheme()">Switch theme</button>
-		<button onclick="reloadIssuers()">Reload</button>
-		<div class="overlay-tn"></div>
-		<script>
-			var theme = "dark";
-			function init() {
-				window.negotiator = new negotiator.Client({
-					type: "active",
-					issuers: [
-						{
-							collectionID: "devcon",
-							onChain: false,
-							title: "Devcon",
-							image:
-								"https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
-							tokenOrigin: "https://stltesting.tk/token-outlet/",
-							attestationOrigin: "https://attestation.id/",
-							unEndPoint:
-								"https://crypto-verify.herokuapp.com/use-devcon-ticket",
-							base64senderPublicKeys: {
-								6: "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABGMxHraqggr2keTXszIcchTjYjH5WXpDaBOYgXva82mKcGnKgGRORXSmcjWN2suUCMkLQj3UNlZCFWF10wIrrlw=",
-								55: "MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEAGJAHCiHbrCNAY9fAMdom4dGD6v/KkTIgRCkwLCjXFTkXWGrCEXHaZ8kWwdqlu0oYCrNQ2vdlqOl0s26/LzO8A==",
-							},
-							base64attestorPubKey:
-								"MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ=",
-							ticketIssuesUrlWebsitePrivateKey:
-								"MIICSwIBADCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBBIIBVTCCAVECAQEEIM/T+SzcXcdtcNIqo6ck0nJTYzKL5ywYBFNSpI7R8AuBoIHjMIHgAgEBMCwGByqGSM49AQECIQD////////////////////////////////////+///8LzBEBCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcEQQR5vmZ++dy7rFWgYpXOhwsHApv82y3OKNlZ8oFbFvgXmEg62ncmo8RlXaT7/A4RCKj9F7RIpoVUGZxH0I/7ENS4AiEA/////////////////////rqu3OavSKA7v9JejNA2QUECAQGhRANCAARjMR62qoIK9pHk17MyHHIU42Ix+Vl6Q2gTmIF72vNpinBpyoBkTkV0pnI1jdrLlAjJC0I91DZWQhVhddMCK65c",
-						},
-						// {
-						// hideToggle : false,
-						// noTokenMsg: "<p>If you have a token please:</p><p>1. Open your magic link inside this browser.<br/>2. Refresh this page.</p>",
-						// collectionID: 'devcon',
-						// title: "Devcon",
-						// onChain: false,
-						// tokenOrigin: "http://localhost:3002/",
-						// attestationOrigin: "https://attestation.id/",
-						// unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
-						// image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
-						// base64senderPublicKeys:
-						//     {
-						//         "AttestationDAO" : 'MFYwEAYHKoZIzj0CAQYFK...'
-						//     },
-						// base64attestorPubKey: "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ="
-						// },
-						{
-							collectionID: "crypto-cowboy-country",
-							tokenProgram: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
-							collectionAddress:
-								"bf0aae3dd0078a9feb975f1e3242ddcb7774d551c7fd2a3f07a89c827ed606b2",
-							updateAuthority: "CCCUzWanUNegjGby11DjujDvPaNN68jd9Rimwk2MZzqZ",
-							onChain: true,
-							symbol: "CCC",
-							chain: "mainnet",
-							blockchain: "solana",
-						},
-						// {
-						//   collectionID: "penthouse-panther-club",
-						//   collectionAddress: "ff846ef2eed57e5367cf8826e63f4d53fe28d28aa67417accb6e4b48cbd19136",
-						//   updateAuthority: "92oYPmrr1BHznizuZmpKZ3MFRadMFYRTCxo9Pf34mZKX",
-						//   tokenProgram: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
-						//   onChain: true,
-						//   symbol: "PPC",
-						//   chain: "mainnet",
-						//   blockchain: "solana",
-						// },
-						// {
-						//   hideToggle : false,
-						//   collectionID: "pixel",
-						//   collectionAddress: "166424b16c4c7f40eb852f9eb2d0d6869a9ed7ac54a8e6afbd516676bfbbeb19",
-						//   onChain: true,
-						//   symbol: "PIXEL",
-						//   chain: "mainnet",
-						//   blockchain: "solana",
-						// },
-						// {
-						//   onChain: true,
-						//   collectionID: "expansion-punks",
-						//   contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37',
-						//   chain: 'eth',
-						//   blockchain: "evm",
-						// },
-						// {
-						//   onChain: true,
-						//   collectionID: "fantom-collection-test",
-						//   contract: '0x94e22c14118353651636f9af43cd0a5a08b93da3',
-						//   chain: 'fantom',
-						//   blockchain: "evm",
-						// },
-						// {
-						//   hideToggle : true,
-						//   noTokenMsg: "<p>If you have a token please:</p><p>1. Open your magic link inside this browser.<br/>2. Refresh this page.</p>",
-						//   onChain: true,
-						//   collectionID: "bsc-collection-test",
-						//   contract: '0xF5db804101d8600c26598A1Ba465166c33CdAA4b',
-						//   chain: 'bsc',
-						//   blockchain: "evm",
-						// },
-						// {
-						//   onChain: true,
-						//   collectionID: "tt",
-						//   contract: '0x76be3b62873462d2142405439777e971754e8e77',
-						//   chain: 'eth',
-						//   blockchain: "evm",
-						// },
-						// { onChain: true, collectionID: "Perion", contract: '0x96af92ae2d822a0f191455ceca4d4e7ee227668e', chain: 'mumbai', blockchain: "evm" },
-						// { collectionID: 'COOLCATS-#2426-14', onChain: true, contract: '0x3C7e352481F4b2fdEc1e642a3f0018661c77513D', chain: 'eth', openSeaSlug: 'devcon-vi-suit-up-collection' },
-						// { collectionID: 'Town-Hall', onChain: true, contract: '0x81b30ff521D1fEB67EDE32db726D95714eb00637', chain: 'Optimism' },
-						{
-							collectionID: "Blusteak Kangaroo #64",
-							onChain: true,
-							contract: "0xa996F7F3BC647EebC98C684aB0A302c9b85d2FA1",
-							chain: "Avalanche",
-						},
-						{
-							collectionID: "Alone Pirate",
-							onChain: true,
-							contract: "0x36535ec384B94342558e37282527b5052587af6A",
-							chain: "Arbitrum",
-						},
-						// {
-						// 	collectionID: "NBA",
-						// 	onChain: true,
-						// 	contract: "A.0b2a3299cc857e29.TopShot",
-						// 	chain: "mainnet",
-						// 	blockchain: "flow",
-						// },
-						// {
-						//   onChain: true,
-						//   erc: 20,
-						//   fungible: true,
-						//   collectionID: "polygon",
-						//   contract: '0x52459834ca561cb55411699e9c2143683bcf865f',
-						//   chain: 'matic',
-						//   blockchain: "evm",
-						//   // Add fungible as a boolean
-						//   // symbol: 'USX'
-						// },
-						{
-							contract: "0x107065a122f92636a1358a70a0efe0f1a080a7e5",
-							onChain: true,
-							fungible: true,
-							collectionID: "USX",
-							chain: "matic",
-						},
-						{
-							contract: "0x429f49faec3d568ef83ec803e02df78e25d5ee7d",
-							onChain: true,
-							fungible: true,
-							collectionID: "Ella",
-							chain: "matic",
-						},
-						{
-							contract: "0xaaa5b9e6c589642f98a1cda99b9d024b8407285a",
-							onChain: true,
-							fungible: true,
-							collectionID: "TITAN",
-							chain: "matic",
-						},
-					],
-					uiOptions: {
-						openingHeading:
-							"Open a new world of discounts available with your tokens.",
-						issuerHeading: "Get discount with Ticket",
-						repeatAction: "try again",
-						theme: theme,
-						position: "top-right",
-					},
-					unSupportedUserAgent: {
-						authentication: {
-							config: {
-								metaMaskAndroid: true,
-								alphaWalletAndroid: true,
-								mewAndroid: true,
-								imTokenAndroid: true,
-							},
-							errorMessage:
-								"No Support for Authentication with this user agent. Try Chrome, Safari or Edge instead.",
-						},
-						full: {
-							config: {
-								iE: true,
-								iE9: true,
-							},
-							errorMessage:
-								"This browser is not supported. Please try using Chrome, Edge, FireFox or Safari.",
-						},
-					},
-					safeConnectOptions: {
-						url: "https://safeconnect.tokenscript.org",
-						initialProof: false,
-					},
-					experimentalFeatures: ["magicLinkWallet"]
-				});
+    <script
+      type="text/javascript"
+      src="./token-negotiator-dist/negotiator.js"
+    ></script>
+    <link rel="stylesheet" href="./token-negotiator-dist/theme/style.css" />
+  </head>
+  <body onload="init()">
+    <button onclick="switchTheme()">Switch theme</button>
+    <button onclick="reloadIssuers()">Reload</button>
+    <div class="overlay-tn"></div>
+    <script>
+      var theme = "dark";
+      function init() {
+        window.negotiator = new negotiator.Client({
+          type: "active",
+          issuers: [
+            {
+              collectionID: "devcon",
+              onChain: false,
+              title: "Devcon",
+              image:
+                "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
+              tokenOrigin: "https://stltesting.tk/token-outlet/",
+              attestationOrigin: "https://attestation.id/",
+              unEndPoint:
+                "https://crypto-verify.herokuapp.com/use-devcon-ticket",
+              base64senderPublicKeys: {
+                6: "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABGMxHraqggr2keTXszIcchTjYjH5WXpDaBOYgXva82mKcGnKgGRORXSmcjWN2suUCMkLQj3UNlZCFWF10wIrrlw=",
+                55: "MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEAGJAHCiHbrCNAY9fAMdom4dGD6v/KkTIgRCkwLCjXFTkXWGrCEXHaZ8kWwdqlu0oYCrNQ2vdlqOl0s26/LzO8A==",
+              },
+              base64attestorPubKey:
+                "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ=",
+              ticketIssuesUrlWebsitePrivateKey:
+                "MIICSwIBADCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBBIIBVTCCAVECAQEEIM/T+SzcXcdtcNIqo6ck0nJTYzKL5ywYBFNSpI7R8AuBoIHjMIHgAgEBMCwGByqGSM49AQECIQD////////////////////////////////////+///8LzBEBCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcEQQR5vmZ++dy7rFWgYpXOhwsHApv82y3OKNlZ8oFbFvgXmEg62ncmo8RlXaT7/A4RCKj9F7RIpoVUGZxH0I/7ENS4AiEA/////////////////////rqu3OavSKA7v9JejNA2QUECAQGhRANCAARjMR62qoIK9pHk17MyHHIU42Ix+Vl6Q2gTmIF72vNpinBpyoBkTkV0pnI1jdrLlAjJC0I91DZWQhVhddMCK65c",
+            },
+            // {
+            // hideToggle : false,
+            // noTokenMsg: "<p>If you have a token please:</p><p>1. Open your magic link inside this browser.<br/>2. Refresh this page.</p>",
+            // collectionID: 'devcon',
+            // title: "Devcon",
+            // onChain: false,
+            // tokenOrigin: "http://localhost:3002/",
+            // attestationOrigin: "https://attestation.id/",
+            // unEndPoint: "https://crypto-verify.herokuapp.com/use-devcon-ticket",
+            // image: "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
+            // base64senderPublicKeys:
+            //     {
+            //         "AttestationDAO" : 'MFYwEAYHKoZIzj0CAQYFK...'
+            //     },
+            // base64attestorPubKey: "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ="
+            // },
+            {
+              collectionID: "crypto-cowboy-country",
+              tokenProgram: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+              collectionAddress:
+                "bf0aae3dd0078a9feb975f1e3242ddcb7774d551c7fd2a3f07a89c827ed606b2",
+              updateAuthority: "CCCUzWanUNegjGby11DjujDvPaNN68jd9Rimwk2MZzqZ",
+              onChain: true,
+              symbol: "CCC",
+              chain: "mainnet",
+              blockchain: "solana",
+            },
+            // {
+            //   collectionID: "penthouse-panther-club",
+            //   collectionAddress: "ff846ef2eed57e5367cf8826e63f4d53fe28d28aa67417accb6e4b48cbd19136",
+            //   updateAuthority: "92oYPmrr1BHznizuZmpKZ3MFRadMFYRTCxo9Pf34mZKX",
+            //   tokenProgram: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+            //   onChain: true,
+            //   symbol: "PPC",
+            //   chain: "mainnet",
+            //   blockchain: "solana",
+            // },
+            // {
+            //   hideToggle : false,
+            //   collectionID: "pixel",
+            //   collectionAddress: "166424b16c4c7f40eb852f9eb2d0d6869a9ed7ac54a8e6afbd516676bfbbeb19",
+            //   onChain: true,
+            //   symbol: "PIXEL",
+            //   chain: "mainnet",
+            //   blockchain: "solana",
+            // },
+            // {
+            //   onChain: true,
+            //   collectionID: "expansion-punks",
+            //   contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37',
+            //   chain: 'eth',
+            //   blockchain: "evm",
+            // },
+            // {
+            //   onChain: true,
+            //   collectionID: "fantom-collection-test",
+            //   contract: '0x94e22c14118353651636f9af43cd0a5a08b93da3',
+            //   chain: 'fantom',
+            //   blockchain: "evm",
+            // },
+            // {
+            //   hideToggle : true,
+            //   noTokenMsg: "<p>If you have a token please:</p><p>1. Open your magic link inside this browser.<br/>2. Refresh this page.</p>",
+            //   onChain: true,
+            //   collectionID: "bsc-collection-test",
+            //   contract: '0xF5db804101d8600c26598A1Ba465166c33CdAA4b',
+            //   chain: 'bsc',
+            //   blockchain: "evm",
+            // },
+            // {
+            //   onChain: true,
+            //   collectionID: "tt",
+            //   contract: '0x76be3b62873462d2142405439777e971754e8e77',
+            //   chain: 'eth',
+            //   blockchain: "evm",
+            // },
+            // { onChain: true, collectionID: "Perion", contract: '0x96af92ae2d822a0f191455ceca4d4e7ee227668e', chain: 'mumbai', blockchain: "evm" },
+            // { collectionID: 'COOLCATS-#2426-14', onChain: true, contract: '0x3C7e352481F4b2fdEc1e642a3f0018661c77513D', chain: 'eth', openSeaSlug: 'devcon-vi-suit-up-collection' },
+            // { collectionID: 'Town-Hall', onChain: true, contract: '0x81b30ff521D1fEB67EDE32db726D95714eb00637', chain: 'Optimism' },
+            {
+              collectionID: "Blusteak Kangaroo #64",
+              onChain: true,
+              contract: "0xa996F7F3BC647EebC98C684aB0A302c9b85d2FA1",
+              chain: "Avalanche",
+            },
+            {
+              collectionID: "Alone Pirate",
+              onChain: true,
+              contract: "0x36535ec384B94342558e37282527b5052587af6A",
+              chain: "Arbitrum",
+            },
+            // {
+            // 	collectionID: "NBA",
+            // 	onChain: true,
+            // 	contract: "A.0b2a3299cc857e29.TopShot",
+            // 	chain: "mainnet",
+            // 	blockchain: "flow",
+            // },
+            // {
+            //   onChain: true,
+            //   erc: 20,
+            //   fungible: true,
+            //   collectionID: "polygon",
+            //   contract: '0x52459834ca561cb55411699e9c2143683bcf865f',
+            //   chain: 'matic',
+            //   blockchain: "evm",
+            //   // Add fungible as a boolean
+            //   // symbol: 'USX'
+            // },
+            {
+              contract: "0x107065a122f92636a1358a70a0efe0f1a080a7e5",
+              onChain: true,
+              fungible: true,
+              collectionID: "USX",
+              chain: "matic",
+            },
+            {
+              contract: "0x429f49faec3d568ef83ec803e02df78e25d5ee7d",
+              onChain: true,
+              fungible: true,
+              collectionID: "Ella",
+              chain: "matic",
+            },
+            {
+              contract: "0xaaa5b9e6c589642f98a1cda99b9d024b8407285a",
+              onChain: true,
+              fungible: true,
+              collectionID: "TITAN",
+              chain: "matic",
+            },
+          ],
+          uiOptions: {
+            openingHeading:
+              "Open a new world of perks, benefits and opportunities with your attestation, collectible or token.",
+            issuerHeading: "Get discount with Ticket",
+            repeatAction: "try again",
+            theme: theme,
+            position: "top-right",
+          },
+          unSupportedUserAgent: {
+            authentication: {
+              config: {
+                metaMaskAndroid: true,
+                alphaWalletAndroid: true,
+                mewAndroid: true,
+                imTokenAndroid: true,
+              },
+              errorMessage:
+                "No Support for Authentication with this user agent. Try Chrome, Safari or Edge instead.",
+            },
+            full: {
+              config: {
+                iE: true,
+                iE9: true,
+              },
+              errorMessage:
+                "This browser is not supported. Please try using Chrome, Edge, FireFox or Safari.",
+            },
+          },
+          safeConnectOptions: {
+            url: "https://safeconnect.tokenscript.org",
+            initialProof: false,
+          },
+          experimentalFeatures: ["magicLinkWallet"],
+        });
 
-				window.negotiator.on("tokens-selected", (tokens) => {
-					console.log("tokens-selected", tokens);
-				});
-				window.negotiator.on("connected-wallet", (wallet) => {
-					console.log("connected wallet", wallet);
-					window.testingWallet = wallet;
-				});
-				window.negotiator.on("network-change", (chain) => {
-					console.log("network change", chain);
-					window.testingChain = chain;
-				});
-				window.negotiator.on("disconnected-wallet", () => {
-					console.log("wallet successfully disconnected");
-				});
-				window.negotiator.on("loaded", () => {
-					console.log("token negotiator loaded");
-				});
-				window.negotiator.on("tokens-refreshed", () => {
-					console.log("tokens-refreshed");
-				});
-				window.negotiator.on("opened-overlay", () => {
-					console.log("opened overlay");
-				});
-				window.negotiator.on("closed-overlay", () => {
-					console.log("closed overlay");
-				});
-				window.negotiator.on("view-changed", (data) => {
-					console.log("view change", data);
-				});
-				window.negotiator.on("token-proof", (proof) => {
-					console.log(proof);
-				});
+        window.negotiator.on("tokens-selected", (tokens) => {
+          console.log("tokens-selected", tokens);
+        });
+        window.negotiator.on("connected-wallet", (wallet) => {
+          console.log("connected wallet", wallet);
+          window.testingWallet = wallet;
+        });
+        window.negotiator.on("network-change", (chain) => {
+          console.log("network change", chain);
+          window.testingChain = chain;
+        });
+        window.negotiator.on("disconnected-wallet", () => {
+          console.log("wallet successfully disconnected");
+        });
+        window.negotiator.on("loaded", () => {
+          console.log("token negotiator loaded");
+        });
+        window.negotiator.on("tokens-refreshed", () => {
+          console.log("tokens-refreshed");
+        });
+        window.negotiator.on("opened-overlay", () => {
+          console.log("opened overlay");
+        });
+        window.negotiator.on("closed-overlay", () => {
+          console.log("closed overlay");
+        });
+        window.negotiator.on("view-changed", (data) => {
+          console.log("view change", data);
+        });
+        window.negotiator.on("token-proof", (proof) => {
+          console.log(proof);
+        });
 
-				window.negotiator.on('tokens-loaded', (data) => {
-					console.log(`${data.loadedCollections} tokens were loaded`)
-				})
+        window.negotiator.on("tokens-loaded", (data) => {
+          console.log(`${data.loadedCollections} tokens were loaded`);
+        });
 
-				window.negotiator.negotiate();
-			}
+        window.negotiator.negotiate();
+      }
 
-			function reloadIssuers() {
-				window.negotiator.negotiate([
-					{
-						collectionID: "penthouse-panther-club",
-						collectionAddress: "ff846ef2eed57e5367cf8826e63f4d53fe28d28aa67417accb6e4b48cbd19136",
-						updateAuthority: "92oYPmrr1BHznizuZmpKZ3MFRadMFYRTCxo9Pf34mZKX",
-						tokenProgram: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
-						onChain: true,
-						symbol: "PPC",
-						chain: "mainnet",
-						blockchain: "solana",
-					},
-					{
-						hideToggle : false,
-						collectionID: "pixel",
-						collectionAddress: "166424b16c4c7f40eb852f9eb2d0d6869a9ed7ac54a8e6afbd516676bfbbeb19",
-						onChain: true,
-						symbol: "PIXEL",
-						chain: "mainnet",
-						blockchain: "solana",
-					},
-					{
-						onChain: true,
-						collectionID: "expansion-punks",
-						contract: '0x0d0167a823c6619d430b1a96ad85b888bcf97c37',
-						chain: 'eth',
-						blockchain: "evm",
-					},
-					{
-						onChain: true,
-						collectionID: "fantom-collection-test",
-						contract: '0x94e22c14118353651636f9af43cd0a5a08b93da3',
-						chain: 'fantom',
-						blockchain: "evm",
-					},
-					{
-						hideToggle : true,
-						noTokenMsg: "<p>If you have a token please:</p><p>1. Open your magic link inside this browser.<br/>2. Refresh this page.</p>",
-						onChain: true,
-						collectionID: "bsc-collection-test",
-						contract: '0xF5db804101d8600c26598A1Ba465166c33CdAA4b',
-						chain: 'bsc',
-						blockchain: "evm",
-					},
-					{
-						onChain: true,
-						collectionID: "tt",
-						contract: '0x76be3b62873462d2142405439777e971754e8e77',
-						chain: 'eth',
-						blockchain: "evm",
-					},
-					{ onChain: true, collectionID: "Perion", contract: '0x96af92ae2d822a0f191455ceca4d4e7ee227668e', chain: 'mumbai', blockchain: "evm" },
-					{ collectionID: 'COOLCATS-#2426-14', onChain: true, contract: '0x3C7e352481F4b2fdEc1e642a3f0018661c77513D', chain: 'eth', openSeaSlug: 'devcon-vi-suit-up-collection' },
-					{ collectionID: 'Town-Hall', onChain: true, contract: '0x81b30ff521D1fEB67EDE32db726D95714eb00637', chain: 'Optimism' },
-			])
-				
-			}
-			function switchTheme() {
-				theme = theme === "dark" ? "light" : "dark";
-				window.negotiator.switchTheme(theme);
-			}
-		</script>
-	</body>
+      function reloadIssuers() {
+        window.negotiator.negotiate([
+          {
+            collectionID: "penthouse-panther-club",
+            collectionAddress:
+              "ff846ef2eed57e5367cf8826e63f4d53fe28d28aa67417accb6e4b48cbd19136",
+            updateAuthority: "92oYPmrr1BHznizuZmpKZ3MFRadMFYRTCxo9Pf34mZKX",
+            tokenProgram: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+            onChain: true,
+            symbol: "PPC",
+            chain: "mainnet",
+            blockchain: "solana",
+          },
+          {
+            hideToggle: false,
+            collectionID: "pixel",
+            collectionAddress:
+              "166424b16c4c7f40eb852f9eb2d0d6869a9ed7ac54a8e6afbd516676bfbbeb19",
+            onChain: true,
+            symbol: "PIXEL",
+            chain: "mainnet",
+            blockchain: "solana",
+          },
+          {
+            onChain: true,
+            collectionID: "expansion-punks",
+            contract: "0x0d0167a823c6619d430b1a96ad85b888bcf97c37",
+            chain: "eth",
+            blockchain: "evm",
+          },
+          {
+            onChain: true,
+            collectionID: "fantom-collection-test",
+            contract: "0x94e22c14118353651636f9af43cd0a5a08b93da3",
+            chain: "fantom",
+            blockchain: "evm",
+          },
+          {
+            hideToggle: true,
+            noTokenMsg:
+              "<p>If you have a token please:</p><p>1. Open your magic link inside this browser.<br/>2. Refresh this page.</p>",
+            onChain: true,
+            collectionID: "bsc-collection-test",
+            contract: "0xF5db804101d8600c26598A1Ba465166c33CdAA4b",
+            chain: "bsc",
+            blockchain: "evm",
+          },
+          {
+            onChain: true,
+            collectionID: "tt",
+            contract: "0x76be3b62873462d2142405439777e971754e8e77",
+            chain: "eth",
+            blockchain: "evm",
+          },
+          {
+            onChain: true,
+            collectionID: "Perion",
+            contract: "0x96af92ae2d822a0f191455ceca4d4e7ee227668e",
+            chain: "mumbai",
+            blockchain: "evm",
+          },
+          {
+            collectionID: "COOLCATS-#2426-14",
+            onChain: true,
+            contract: "0x3C7e352481F4b2fdEc1e642a3f0018661c77513D",
+            chain: "eth",
+            openSeaSlug: "devcon-vi-suit-up-collection",
+          },
+          {
+            collectionID: "Town-Hall",
+            onChain: true,
+            contract: "0x81b30ff521D1fEB67EDE32db726D95714eb00637",
+            chain: "Optimism",
+          },
+        ]);
+      }
+      function switchTheme() {
+        theme = theme === "dark" ? "light" : "dark";
+        window.negotiator.switchTheme(theme);
+      }
+    </script>
+  </body>
 </html>
