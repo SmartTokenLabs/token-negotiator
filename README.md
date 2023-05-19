@@ -222,7 +222,7 @@ const negotiator = new Client({
 		},
 	],
 	uiOptions: {
-		openingHeading: "Open a new world of discounts available with your tokens.",
+		openingHeading: "Open a new world of perks, benefits and opportunities with your attestation, collectible or token.",
 		issuerHeading: "Get discount with Ticket",
 		repeatAction: "try again",
 		theme: "light",
@@ -548,7 +548,7 @@ Configure the library using the following example.
 				],
 				uiOptions: {
 					openingHeading:
-						"Open a new world of discounts available with your tokens.",
+						"Open a new world of perks, benefits and opportunities with your attestation, collectible or token.",
 					issuerHeading: "Get discount with Ticket",
 					repeatAction: "try again",
 					theme: "light",
