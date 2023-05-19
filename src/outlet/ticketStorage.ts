@@ -128,8 +128,9 @@ export class TicketStorage {
 
 		for (const ticket of this.tickets) {
 			// Backward compatibility with old data
-			if (!ticket.tokenId) {
-				ticket.tokenId = this.getUniqueTokenId(await this.decodeTokenData(ticket.type ?? 'asn', ticket.token))
+			if (!ticket.tokenId || !ticket.type) {
+				ticket.type = ticket.type ?? 'asn'
+				ticket.tokenId = this.getUniqueTokenId(await this.decodeTokenData(ticket.type, ticket.token))
 				this.storeTickets()
 			}
 
@@ -184,13 +185,14 @@ export class TicketStorage {
 	}
 
 	private async updateOrInsertTicket(tokenRecord: StoredTicketRecord) {
-		for (const [index, token] of this.tickets.entries()) {
+		for (const [index, ticket] of this.tickets.entries()) {
 			// Backward compatibility with old data
-			if (!token.tokenId) {
-				token.tokenId = this.getUniqueTokenId(await this.decodeTokenData(token.type ?? 'asn', token.token))
+			if (!ticket.tokenId || !ticket.type) {
+				ticket.type = ticket.type ?? 'asn'
+				ticket.tokenId = this.getUniqueTokenId(await this.decodeTokenData(ticket.type, ticket.token))
 			}
 
-			if (token.tokenId === tokenRecord.tokenId) {
+			if (ticket.tokenId === tokenRecord.tokenId) {
 				this.tickets[index] = tokenRecord
 				this.storeTickets()
 				return

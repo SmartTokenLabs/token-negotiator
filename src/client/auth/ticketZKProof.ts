@@ -92,7 +92,7 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 			},
 		}
 
-		await TicketZKProof.validateProof(issuerConfig, data.proof, data.type, useEthKey.address ?? '')
+		await TicketZKProof.validateProof(issuerConfig, data.proof, data.type, useEthKey?.address ?? '')
 
 		if (useEthKey) proof.data.useEthKey = useEthKey
 
