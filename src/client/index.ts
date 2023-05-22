@@ -58,7 +58,7 @@ export const defaultConfig: NegotiationInterface = {
 	uiOptions: {
 		uiType: 'popup',
 		containerElement: '.overlay-tn',
-		openingHeading: 'Validate your token ownership for access',
+		openingHeading: 'Open a new world of perks, benefits and opportunities with your attestation, collectible or token.',
 		issuerHeading: 'Detected tokens',
 		autoPopup: true,
 		position: 'bottom-right',
