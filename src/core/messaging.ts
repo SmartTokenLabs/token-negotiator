@@ -325,8 +325,6 @@ export class Messaging {
 
 		let modal = this.getModal(closeCallback)
 
-		const modelEl = modal.getElementsByClassName('modal-body-tn')[0]
-		modelEl.innerHTML = ''
 		modal.getElementsByClassName('modal-body-tn')[0].appendChild(iframe)
 
 		return iframe
