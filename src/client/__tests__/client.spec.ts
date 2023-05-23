@@ -9,7 +9,7 @@ import { Client as client_2_0, Outlet as outlet_2_0 } from 'tn2_0'
 import { Client as client_2_2, Outlet as outlet_2_2 } from 'tn2_2'
 
 function delay(time) {
-	return new Promise(resolve => setTimeout(resolve, time));
+	return new Promise((resolve) => setTimeout(resolve, time))
 }
 
 let tokenIssuer = {
@@ -28,9 +28,7 @@ const config = {
 	type: 'passive',
 	// requred to force redirect mode for Client 2.2
 	enableOffChainRedirectMode: true,
-	issuers: [
-		tokenIssuer
-	],
+	issuers: [tokenIssuer],
 }
 
 function getOffChainConfigClient() {
@@ -68,21 +66,20 @@ function getOnChainSolanaConfigClient() {
 	})
 }
 
-
-  class LocalStorageMock {
+class LocalStorageMock {
 	constructor() {
-	  this.store = {};
+		this.store = {}
 	}
-  
+
 	clear() {
-	  this.store = {};
+		this.store = {}
 	}
-  
+
 	getItem(key) {
 		// console.log("LocalStorageMock (getItem):", key, this.store[key])
-	  return this.store[key] || null;
+		return this.store[key] || null
 	}
-  
+
 	setItem(key, value) {
 		// console.log("LocalStorageMock (setItem):", key, value)
 		if (value) {
@@ -91,11 +88,11 @@ function getOnChainSolanaConfigClient() {
 			delete this.store[key]
 		}
 	}
-  
+
 	removeItem(key) {
-	  delete this.store[key];
+		delete this.store[key]
 	}
-  }
+}
 
 describe('client spec', () => {
 	test('tokenNegotiatorClient a failed new instance of client - missing issuers key', () => {
@@ -137,7 +134,7 @@ describe('client spec', () => {
 				image: 'https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg',
 				onChain: false,
 				title: 'Devcon',
-				tokenOrigin: 'http://localhost:3002/',
+				tokenOrigin: 'http://some.url/',
 				unEndPoint: 'https://crypto-verify.herokuapp.com/use-devcon-ticket',
 			},
 		})
@@ -166,7 +163,7 @@ describe('client spec', () => {
 				image: 'https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg',
 				onChain: false,
 				title: 'Devcon',
-				tokenOrigin: 'http://localhost:3002/',
+				tokenOrigin: 'http://some.url/',
 				unEndPoint: 'https://crypto-verify.herokuapp.com/use-devcon-ticket',
 			},
 		})
@@ -400,17 +397,16 @@ describe('client spec', () => {
 	})
 
 	test('tokenNegotiatorClient abstractAuth saveProof', async () => {
-		let localStorageOriginal = localStorage;
-		Object.defineProperty(global, 'localStorage', { value: new LocalStorageMock() });
+		let localStorageOriginal = localStorage
+		Object.defineProperty(global, 'localStorage', { value: new LocalStorageMock() })
 
 		const abstractAuth = new AbstractAuthentication()
-		abstractAuth.TYPE = "test"
-		await abstractAuth.saveProof('tn-proof', {a:1})
-		expect(localStorage.getItem('tn-proof')).toEqual(JSON.stringify({"test-tn-proof":{a:1}}))
+		abstractAuth.TYPE = 'test'
+		await abstractAuth.saveProof('tn-proof', { a: 1 })
+		expect(localStorage.getItem('tn-proof')).toEqual(JSON.stringify({ 'test-tn-proof': { a: 1 } }))
 		await abstractAuth.deleteProof('tn-proof')
 		expect(localStorage.getItem('tn-proof')).toEqual(JSON.stringify({}))
-		Object.defineProperty(global, 'localStorage', { value: localStorageOriginal });
-
+		Object.defineProperty(global, 'localStorage', { value: localStorageOriginal })
 	})
 
 	test('tokenNegotiatorClient abstractAuth getSavedProof', () => {
@@ -428,11 +424,11 @@ describe('client spec', () => {
 
 	test('tokenNegotiatorClient abstractAuth deletePRoof', async () => {
 		const abstractAuth = new AbstractAuthentication()
-		expect(abstractAuth.getSavedProof("123")).toEqual(null)
-		abstractAuth.saveProof("123", "222")
-		expect(abstractAuth.getSavedProof("123")).toEqual("222")
+		expect(abstractAuth.getSavedProof('123')).toEqual(null)
+		abstractAuth.saveProof('123', '222')
+		expect(abstractAuth.getSavedProof('123')).toEqual('222')
 		await abstractAuth.deleteProof('123')
-		expect(abstractAuth.getSavedProof("123")).toEqual(null)
+		expect(abstractAuth.getSavedProof('123')).toEqual(null)
 	})
 
 	test('tokenNegotiatorClient ticketZKProof', async () => {
@@ -474,96 +470,92 @@ describe('client spec', () => {
 })
 
 describe('client spec cross-version', () => {
-
 	let originalDocument = document
 	let originalLocation = window.location
 
-	const nonLocalUrl = "https://non-local.url"
+	const nonLocalUrl = 'https://non-local.url'
 
 	beforeAll(() => {
 		Object.defineProperty(global, 'document', {
-			value: { 
+			value: {
 				location: {
-					href: "",
-					referrer: "",
-					hash: "",
-					search: "",
-					origin: ""
+					href: '',
+					referrer: '',
+					hash: '',
+					search: '',
+					origin: '',
 				},
-				addEventListener: ()=>{
-					return true;
-				}
-			}
-		});
+				addEventListener: () => {
+					return true
+				},
+			},
+		})
 
 		Object.defineProperty(window, 'location', {
 			value: {
-			  href: nonLocalUrl,
-			  origin: nonLocalUrl
+				href: nonLocalUrl,
+				origin: nonLocalUrl,
 			},
-			writable: true // possibility to override
-		});
+			writable: true, // possibility to override
+		})
 
 		// required to force redirect mode
 		window.navigator.brave = 1
-	});
+	})
 
 	afterAll(() => {
 		Object.defineProperty(global, 'document', {
-			value: originalDocument
-		});
+			value: originalDocument,
+		})
 
 		Object.defineProperty(window, 'location', {
-			value: originalLocation
-		});
-	});
+			value: originalLocation,
+		})
+	})
 
 	test('Outlet_2_0 save magicLink', async () => {
-		
-		let magicLinkParams = "?ticket=MIGTME0MATYCAgFNAgEBBEEEF6_tKK2dCfLQiwS4FuqmiQDVrafJ05vCOkYN4iT28JULCClrvI2_kGTxrL12sXlH9w9mohLQlMdmaWvFzaZVlgNCAKu7SESOLf7L5sjZPcTQVkAu9YTC88mNK8oyUjiP2gsnTUxr0BGr0eWSTYmbDqNlX3JXOEqvEH39LEQjWsXn44oc&secret=45845870684&mail=oleh.hryb.us@gmail.com"
+		let magicLinkParams =
+			'?ticket=MIGTME0MATYCAgFNAgEBBEEEF6_tKK2dCfLQiwS4FuqmiQDVrafJ05vCOkYN4iT28JULCClrvI2_kGTxrL12sXlH9w9mohLQlMdmaWvFzaZVlgNCAKu7SESOLf7L5sjZPcTQVkAu9YTC88mNK8oyUjiP2gsnTUxr0BGr0eWSTYmbDqNlX3JXOEqvEH39LEQjWsXn44oc&secret=45845870684&mail=oleh.hryb.us@gmail.com'
 
 		window.location.search = magicLinkParams
 
 		// LocalStorage must be empty
 		expect(localStorage.getItem(defaultConfig.itemStorageKey)).toBe(null)
 		new outlet_2_0(tokenIssuer)
-		
+
 		expect(localStorage.getItem(defaultConfig.itemStorageKey)).toContain(magicLinkParams)
 	})
 
 	test('Redirect Client_lastest -> Outlet 2.2', async () => {
-
 		let client = new Client(config)
 
 		// prepare Redirect URL
 		await client.negotiate()
 		let url = new URL(window.location.href)
-		expect((new URLSearchParams(url.hash.substring(1))).get("action")).toBe("get-issuer-tokens")
-		
+		expect(new URLSearchParams(url.hash.substring(1)).get('action')).toBe('get-issuer-tokens')
+
 		window.location.hash = url.hash
-		new outlet_2_2(tokenIssuer);
+		new outlet_2_2(tokenIssuer)
 
 		// need delay, because pageOnLoadEventHandler() is async
 		await delay(1000)
 
-		let hash = (new URL(document.location.href)).hash.substring(1)
-		expect((new URLSearchParams(hash)).get("action")).toBe("get-issuer-tokens-response")
-		
+		let hash = new URL(document.location.href).hash.substring(1)
+		expect(new URLSearchParams(hash).get('action')).toBe('get-issuer-tokens-response')
 	})
 
 	test('Redirect Client_2.2 -> Outlet_lastest', async () => {
-
 		let client = new client_2_2(config)
 
-		window.location.hash = "" 
-		window.location.href = "http://localhost" 
-		document.location.hash = ""
-		document.location.href = "http://localhost"
+		window.location.hash = ''
+		window.location.href = 'http://localhost'
+		document.location.hash = ''
+		document.location.href = 'http://localhost'
 		// prepare Redirect URL
 		await client.negotiate()
 		let url = new URL(document.location.href)
-		expect((new URLSearchParams(url.hash.substring(1))).get("action")).toBe("get-issuer-tokens")
-		
+		expect(new URLSearchParams(url.hash.substring(1)).get('action')).toBe('get-issuer-tokens')
+
 		// console.log(
 		// 	`window.location.hash = "${window.location.hash}",
 		// 	window.location.href = "${window.location.href}",
@@ -574,25 +566,22 @@ describe('client spec cross-version', () => {
 		window.location.hash = url.hash
 		document.location.hash = url.hash
 		document.referrer = nonLocalUrl
-		localStorage.setItem("tn-whitelist","{\"https://non-local.url\":{\"type\":\"read\"}}")
-		
-		new Outlet(tokenIssuer);
+		localStorage.setItem('tn-whitelist', '{"https://non-local.url":{"type":"read"}}')
+
+		new Outlet(tokenIssuer)
 
 		// need delay, because pageOnLoadEventHandler() is async
 		await delay(1000)
 
-		let hash = (new URL(window.location.href)).hash.substring(1)
-		expect((new URLSearchParams(hash)).get("action")).toBe("get-issuer-tokens-response")
-		
+		let hash = new URL(window.location.href).hash.substring(1)
+		expect(new URLSearchParams(hash).get('action')).toBe('get-issuer-tokens-response')
 	})
 
 	test('tokenNegotiatorClient read prefixed param', async () => {
 		window.location.hash = `p1=1&${URLNS}p2=2`
 		let client = getOffChainConfigClient()
 
-		expect(client.getDataFromQuery("p2")).toBe("2")
-		expect(client.getDataFromQuery("p1")).toBe("1")
+		expect(client.getDataFromQuery('p2')).toBe('2')
+		expect(client.getDataFromQuery('p1')).toBe('1')
 	})
-
-	
 })
