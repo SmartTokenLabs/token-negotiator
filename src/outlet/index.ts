@@ -314,16 +314,6 @@ export class Outlet {
 		return 'user-accept'
 	}
 
-	async prepareTokenOutput(filter?: FilterInterface) {
-		let includeSigned = false
-
-		if (this.tokenConfig.signedTokenWhitelist?.length && this.tokenConfig.signedTokenWhitelist.indexOf(this.getRequestOrigin()) > -1) {
-			includeSigned = true
-		}
-
-		return this.ticketStorage.getDecodedTokens(includeSigned, filter)
-	}
-
 	async sendTokenProof(evtid: any, token: any, address: string, wallet: string) {
 		if (!token) return 'error'
 
@@ -355,21 +345,9 @@ export class Outlet {
 		}
 	}
 
-	private getRequestOrigin() {
-		const requester = document.referrer
-
-		if (!requester) return null
-
-		try {
-			return new URL(requester).origin
-		} catch (e) {
-			return null
-		}
-	}
-
 	// TODO: Consolidate redirect callback for tokens, proof & errors into the sendMessageResponse function to remove duplication
 	private async sendTokens(evtid: any) {
-		let issuerTokens = await this.prepareTokenOutput(this.getFilter())
+		let issuerTokens = await this.ticketStorage.getDecodedTokens(this.getFilter())
 
 		logger(2, 'issuerTokens: (Outlet.sendTokens)', issuerTokens)
 

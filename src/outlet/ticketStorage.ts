@@ -85,14 +85,11 @@ export class TicketStorage {
 		})
 	}
 
-	public async getDecodedTokens(includeSignedToken = false, filter?: FilterInterface) {
+	public async getDecodedTokens(filter?: FilterInterface) {
 		const tokens = await Promise.all(
 			this.tickets.map(async (ticket) => {
 				const tokenData = await this.decodeTokenData(ticket.type, ticket.token)
-
-				tokenData.type = ticket.type
-
-				return includeSignedToken ? { signedToken: ticket.token, ...tokenData } : tokenData
+				return { type: ticket.type, signedToken: ticket.token, ...tokenData }
 			}),
 		)
 
