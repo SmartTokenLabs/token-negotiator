@@ -327,7 +327,7 @@ export class Messaging {
 
 		const modalBody = modal.getElementsByClassName('modal-body-tn')[0]
 
-		if (!modalBody.firstChild) {
+		if (!modalBody.hasChildNodes()) {
 			modalBody.appendChild(iframe)
 		}
 
