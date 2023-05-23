@@ -1,20 +1,12 @@
-import {
-	rawTokenCheck,
-	readTokenFromMagicUrl,
-	storeMagicURL,
-	decodeTokens,
-	decodeToken,
-	filterTokens,
-	readTokens,
-	OffChainTokenData,
-	DecodedToken,
-} from '../core'
 import { logger, requiredParams, removeUrlSearchParams } from '../utils'
 import { OutletAction, OutletResponseAction } from '../client/messaging'
-import { AuthHandler } from './auth-handler'
+import { AuthHandler, ProofResult } from './auth-handler'
 import { SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
 import { AsnParser } from '@peculiar/asn1-schema'
 import { ResponseActionBase, ResponseInterfaceBase, URLNS } from '../core/messaging'
+import { EASSignerOrProvider } from '@tokenscript/attestation/dist/eas/EasTicketAttestation'
+import { DecodedToken, FilterInterface, TicketStorage } from './ticketStorage'
+import { ethers } from 'ethers'
 
 export interface OutletInterface {
 	collectionID: string
@@ -25,6 +17,14 @@ export interface OutletInterface {
 	base64senderPublicKeys: { [key: string]: string }
 	base64attestorPubKey: string
 	signedTokenWhitelist?: string[]
+	eas?: {
+		config: {
+			address: string
+			version: string
+			chainId: number
+		}
+		provider: EASSignerOrProvider
+	}
 
 	whitelistDialogWidth: string
 	whitelistDialogHeight: string
@@ -47,6 +47,14 @@ export const defaultConfig = {
 	signedTokenWhitelist: [],
 	whitelistDialogWidth: '450px',
 	whitelistDialogHeight: '350px',
+	eas: {
+		config: {
+			address: '0xC2679fBD37d54388Ce493F1DB75320D236e1815e',
+			version: '0.26',
+			chainId: 11155111,
+		},
+		provider: new ethers.providers.JsonRpcProvider('https://rpc.sepolia.org/'),
+	},
 }
 
 export class readSignedTicket {
@@ -63,6 +71,7 @@ export class readSignedTicket {
 export class Outlet {
 	tokenConfig: OutletInterface
 	urlParams?: URLSearchParams
+	ticketStorage: TicketStorage
 
 	singleUse = false
 
@@ -83,6 +92,8 @@ export class Outlet {
 				logger(2, 'Failed to validate whitelist origin: ' + e.message)
 			}
 		})
+
+		this.ticketStorage = new TicketStorage(this.tokenConfig)
 
 		if (urlParams) {
 			this.urlParams = urlParams
@@ -112,7 +123,7 @@ export class Outlet {
 
 	async modalDialogEventHandler(evtid: any, access: string) {
 		const action = await this.whitelistCheck(evtid, access === 'write' ? 'write' : 'read')
-		if (action === 'user-accept') this.sendTokens(evtid)
+		if (action === 'user-accept') await this.sendTokens(evtid)
 		else if (action === 'user-abort')
 			this.sendErrorResponse(evtid, 'USER_ABORT', this.getDataFromQuery('issuer'), 'offchain-issuer-connection')
 	}
@@ -142,39 +153,23 @@ export class Outlet {
 
 					try {
 						const tokenString = this.getDataFromQuery('token')
+
 						let token = JSON.parse(tokenString)
 
 						const attestationBlob = this.getDataFromQuery('attestation', false)
 						const attestationSecret = '0x' + this.getDataFromQuery('requestSecret', false)
 
-						let authHandler = new AuthHandler(
-							this,
-							evtid,
-							this.tokenConfig,
-							await rawTokenCheck(token, this.tokenConfig),
-							null,
-							null,
-							false,
-						)
+						const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(token)
 
-						const useToken = await authHandler.getUseToken(attestationBlob, attestationSecret)
+						const useToken = await AuthHandler.getUseToken(this.tokenConfig, attestationBlob, attestationSecret, ticketRecord)
 
 						if (requesterURL) {
 							const params = new URLSearchParams(requesterURL.hash.substring(1))
 							params.set(URLNS + 'action', 'proof-callback')
 							params.set(URLNS + 'issuer', issuer)
-							params.set(URLNS + 'attestation', useToken as string)
-
-							// TODO: Remove once https://github.com/AlphaWallet/attestation.id/pull/196 is merged
-							params.delete('email')
-							params.delete('#email')
-
-							let outlet = new Outlet(this.tokenConfig, true)
-							let issuerTokens = outlet.prepareTokenOutput({})
-
-							logger(2, 'issuerTokens: ', issuerTokens)
-
-							params.set(URLNS + 'tokens', JSON.stringify(issuerTokens))
+							params.set(URLNS + 'attestation', useToken.proof as string)
+							params.set(URLNS + 'type', ticketRecord.type)
+							params.set(URLNS + 'token', tokenString)
 
 							requesterURL.hash = params.toString()
 
@@ -185,6 +180,8 @@ export class Outlet {
 
 						this.dispatchAuthCallbackEvent(issuer, useToken, null)
 					} catch (e: any) {
+						console.error(e)
+
 						if (requesterURL) return this.proofRedirectError(issuer, e.message)
 
 						this.dispatchAuthCallbackEvent(issuer, null, e.message)
@@ -219,17 +216,8 @@ export class Outlet {
 	}
 
 	public async readMagicLink() {
-		const { tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey } = this.tokenConfig
-
 		try {
-			const newToken = readTokenFromMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, this.urlParams)
-			let tokensOutput = readTokens(itemStorageKey)
-
-			const newTokens = this.mergeNewToken(newToken, tokensOutput.tokens)
-
-			if (newTokens !== false) {
-				storeMagicURL(newTokens, itemStorageKey)
-			}
+			await this.ticketStorage.importTicketFromMagicLink(this.urlParams)
 
 			const event = new Event('tokensupdated')
 
@@ -239,45 +227,7 @@ export class Outlet {
 		}
 	}
 
-	/**
-	 * Merges a new magic link into the existing token data. If a token is found with the same ID it is overwritten.
-	 * @private
-	 * @returns false when no changes to the data are required - the token is already added
-	 */
-	public mergeNewToken(newToken: OffChainTokenData, existingTokens: OffChainTokenData[]): OffChainTokenData[] | false {
-		const decodedNewToken = decodeToken(newToken, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName, false)
-
-		const newTokenId = this.getUniqueTokenId(decodedNewToken)
-
-		for (const [index, tokenData] of existingTokens.entries()) {
-			// Nothing required, this token already exists
-			if (tokenData.token === newToken.token) {
-				return false
-			}
-
-			const decodedTokenData = decodeToken(tokenData, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName, false)
-
-			const tokenId = this.getUniqueTokenId(decodedTokenData)
-
-			if (newTokenId === tokenId) {
-				existingTokens[index] = newToken
-				return existingTokens
-			}
-		}
-
-		existingTokens.push(newToken)
-		return existingTokens
-	}
-
-	/**
-	 * Calculates a unique token ID to identify this ticket. Tickets can be reissued and have a different commitment, but are still the same token
-	 * @private
-	 */
-	private getUniqueTokenId(decodedToken: DecodedToken) {
-		return `${decodedToken.devconId}-${decodedToken.ticketIdNumber ?? decodedToken.ticketIdString}`
-	}
-
-	private dispatchAuthCallbackEvent(issuer: string, proof?: string, error?: string) {
+	private dispatchAuthCallbackEvent(issuer: string, proof?: ProofResult, error?: string) {
 		const event = new CustomEvent('auth-callback', {
 			detail: {
 				proof: proof,
@@ -364,33 +314,27 @@ export class Outlet {
 		return 'user-accept'
 	}
 
-	prepareTokenOutput(filter: any) {
-		const storageTokens = localStorage.getItem(this.tokenConfig.itemStorageKey)
-
-		if (!storageTokens) return []
-
+	async prepareTokenOutput(filter?: FilterInterface) {
 		let includeSigned = false
 
 		if (this.tokenConfig.signedTokenWhitelist?.length && this.tokenConfig.signedTokenWhitelist.indexOf(this.getRequestOrigin()) > -1) {
 			includeSigned = true
 		}
 
-		const decodedTokens = decodeTokens(storageTokens, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName, includeSigned)
-
-		return filterTokens(decodedTokens, filter)
+		return this.ticketStorage.getDecodedTokens(includeSigned, filter)
 	}
 
 	async sendTokenProof(evtid: any, token: any, address: string, wallet: string) {
 		if (!token) return 'error'
 
-		const unsignedToken = JSON.parse(token)
+		const decodedToken = JSON.parse(token) as DecodedToken
 
 		const redirect = this.getDataFromQuery('redirect') === 'true' ? document.location.href : false
 
 		try {
-			let tokenObj = await rawTokenCheck(unsignedToken, this.tokenConfig)
+			const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(decodedToken)
 
-			let authHandler = new AuthHandler(this, evtid, this.tokenConfig, tokenObj, address, wallet, redirect, unsignedToken)
+			let authHandler = new AuthHandler(this.tokenConfig, ticketRecord, decodedToken, address, wallet, redirect, this, evtid)
 
 			let tokenProof = await authHandler.authenticate()
 
@@ -399,7 +343,7 @@ export class Outlet {
 				evt: OutletResponseAction.PROOF,
 				data: {
 					issuer: this.tokenConfig.collectionID,
-					proof: tokenProof,
+					...tokenProof,
 				},
 			})
 		} catch (e: any) {
@@ -424,8 +368,8 @@ export class Outlet {
 	}
 
 	// TODO: Consolidate redirect callback for tokens, proof & errors into the sendMessageResponse function to remove duplication
-	private sendTokens(evtid: any) {
-		let issuerTokens = this.prepareTokenOutput(this.getFilter())
+	private async sendTokens(evtid: any) {
+		let issuerTokens = await this.prepareTokenOutput(this.getFilter())
 
 		logger(2, 'issuerTokens: (Outlet.sendTokens)', issuerTokens)
 
@@ -486,14 +430,16 @@ export class Outlet {
 	}
 
 	public proofRedirectError(issuer: string, error: string) {
-		const requesterURL = this.redirectCallbackUrl.href
+		const requesterURL = this.redirectCallbackUrl
 
-		const params = new URLSearchParams()
+		const params = new URLSearchParams(requesterURL.hash.substring(1))
 		params.set(URLNS + 'action', 'proof-callback')
 		params.set(URLNS + 'issuer', issuer)
 		params.set(URLNS + 'error', error)
 
-		document.location.href = requesterURL + '#' + params.toString()
+		requesterURL.hash = params.toString()
+
+		document.location.href = requesterURL.href
 	}
 
 	private isSameOrigin() {

@@ -50,12 +50,7 @@ export class SafeConnect {
 
 	public static async getAttestation(safeConnectUrl: string, serverPayload: ProofRequestInterface) {
 		try {
-			return (await this.apiRequest(
-				safeConnectUrl,
-				'POST',
-				'issue-attestation',
-				serverPayload,
-			)) as ProofResponseInterface
+			return (await this.apiRequest(safeConnectUrl, 'POST', 'issue-attestation', serverPayload)) as ProofResponseInterface
 		} catch (e) {
 			throw new Error('Failed to get address attestation: ' + e.message)
 		}
@@ -86,11 +81,7 @@ export class SafeConnect {
 		return await res.json()
 	}
 
-	public static async createAndSignLinkAttestation(
-		addressAttest: string,
-		linkedEthAddress: string,
-		holdingPrivKey: CryptoKey,
-	) {
+	public static async createAndSignLinkAttestation(addressAttest: string, linkedEthAddress: string, holdingPrivKey: CryptoKey) {
 		const linkAttest = new EthereumKeyLinkingAttestation()
 
 		linkAttest.create(addressAttest, linkedEthAddress, 3600 + 600, undefined, Math.round(Date.now() / 1000) - 600)
