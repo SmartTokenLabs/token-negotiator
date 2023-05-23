@@ -86,7 +86,9 @@ export class SelectWallet extends AbstractView {
 
 	private getWalletButtonHtml(wallet: WalletInfo) {
 		return `
-			<button class="wallet-button-tn" data-wallet="${wallet.name}" aria-label="${wallet.label} wallet button">
+			<button class="wallet-button-tn ${wallet.name === 'WalletConnectV2' ? 'WalletConnectV2' : ''}" data-wallet="${wallet.name}" aria-label="${
+			wallet.label
+		} wallet button">
 				${wallet.imgBig}
 				<p>${wallet.label}</p>
 			</button>
