@@ -18,7 +18,7 @@ export class LocalOutlet {
 	}
 
 	async getTokens() {
-		return this.ticketStorage.getDecodedTokens(true, this.tokenConfig.filter)
+		return this.ticketStorage.getDecodedTokens(this.tokenConfig.filter)
 	}
 
 	async authenticate(decodedToken: DecodedToken, address: string, wallet: string, redirectMode: false | string = false) {
