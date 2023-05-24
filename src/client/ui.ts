@@ -322,7 +322,7 @@ export class Ui implements UiInterface {
 	getCustomUserError(error) {
 		let output = error
 		if (error.contains(`Failed to read the 'localStorage' property from 'Window'`)) {
-			output = 'Please enable cookies in your browser to use this feature.'
+			output = 'Please enable cookies in your browser to use this feature or try a different browser.'
 		}
 		return output
 	}
