@@ -111,9 +111,20 @@ export class Outlet {
 		}
 	}
 
-	getDataFromQuery(itemKey: string, namespaced = true): string {
-		itemKey = (namespaced ? URLNS : '') + itemKey
-		return this.urlParams ? this.urlParams.get(itemKey) : ''
+	getDataFromQuery(itemKey: string): string {
+		if (this.urlParams) {
+			if (this.urlParams.has(URLNS + itemKey)) return this.urlParams.get(URLNS + itemKey)
+
+			return this.urlParams.get(itemKey) // Fallback to non-namespaced version for backward compatibility
+		}
+
+		return null
+	}
+
+	getCallbackUrlKey(key: string) {
+		if (this.getDataFromQuery('ns')) return URLNS + key
+
+		return key
 	}
 
 	getFilter() {
@@ -137,7 +148,7 @@ export class Outlet {
 
 		if (requester) this.redirectCallbackUrl = new URL(requester)
 
-		logger(2, 'Outlet received event ID ' + evtid + ' action ' + action + ' at ' + document.location.href)
+		logger(2, 'Outlet received event ID ' + evtid + ' action ' + action + ' at ' + window.location.href)
 
 		// TODO: should issuer be validated against requested issuer?
 
@@ -156,8 +167,8 @@ export class Outlet {
 
 						let token = JSON.parse(tokenString)
 
-						const attestationBlob = this.getDataFromQuery('attestation', false)
-						const attestationSecret = '0x' + this.getDataFromQuery('requestSecret', false)
+						const attestationBlob = this.getDataFromQuery('attestation')
+						const attestationSecret = '0x' + this.getDataFromQuery('requestSecret')
 
 						const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(token)
 
@@ -165,15 +176,15 @@ export class Outlet {
 
 						if (requesterURL) {
 							const params = new URLSearchParams(requesterURL.hash.substring(1))
-							params.set(URLNS + 'action', 'proof-callback')
-							params.set(URLNS + 'issuer', issuer)
-							params.set(URLNS + 'attestation', useToken.proof as string)
-							params.set(URLNS + 'type', ticketRecord.type)
-							params.set(URLNS + 'token', tokenString)
+							params.set(this.getCallbackUrlKey('action'), 'proof-callback')
+							params.set(this.getCallbackUrlKey('issuer'), issuer)
+							params.set(this.getCallbackUrlKey('attestation'), useToken.proof as string)
+							params.set(this.getCallbackUrlKey('type'), ticketRecord.type)
+							params.set(this.getCallbackUrlKey('token'), tokenString)
 
 							requesterURL.hash = params.toString()
 
-							document.location.href = requesterURL.href
+							window.location.href = requesterURL.href
 
 							return
 						}
@@ -187,7 +198,7 @@ export class Outlet {
 						this.dispatchAuthCallbackEvent(issuer, null, e.message)
 					}
 
-					document.location.hash = removeUrlSearchParams(this.urlParams, ['attestation', 'requestSecret', 'address', 'wallet']).toString()
+					window.location.hash = removeUrlSearchParams(this.urlParams, ['attestation', 'requestSecret', 'address', 'wallet']).toString()
 
 					break
 				}
@@ -223,7 +234,7 @@ export class Outlet {
 
 			document.body.dispatchEvent(event)
 		} catch (e) {
-			console.warn(e)
+			logger(2, e)
 		}
 	}
 
@@ -244,7 +255,7 @@ export class Outlet {
 
 		const origin = new URL(document.referrer).origin
 
-		if (origin === document.location.origin) return
+		if (origin === window.location.origin) return
 
 		let accessWhitelist = JSON.parse(localStorage.getItem('tn-whitelist')) ?? {}
 
@@ -257,61 +268,61 @@ export class Outlet {
 			this.tokenConfig.signedTokenWhitelist.indexOf(origin) === -1 &&
 			(!accessWhitelist[origin] || (accessWhitelist[origin].type === 'read' && whiteListType === 'write'))
 
-		if (needsPermission /* || storageAccessRequired */) {
-			return new Promise<any>((resolve, reject) => {
-				const typeTxt = whiteListType === 'read' ? 'read' : 'read & write'
-				const permissionTxt = `${origin} is requesting ${typeTxt} access to your ${this.tokenConfig.title} tickets`
-				const acceptBtn = '<button style="cursor: pointer" id="tn-access-accept">Accept</button>'
-				const denyBtn = '<button style="cursor: pointer" id="tn-access-deny">Deny</button>'
+		if (!needsPermission) return 'user-accept'
 
-				const content = this.tokenConfig.whitelistDialogRenderer
-					? this.tokenConfig.whitelistDialogRenderer(permissionTxt, acceptBtn, denyBtn)
-					: `
-						<div style="font-family: sans-serif; text-align: center; position: absolute; width: 100vw; min-height: 100vh;top: 0;
-						left: 0;
-						background: #0C0A50;
-						z-index: 99999;
-						display: flex;
-						flex-direction: column;
-						justify-content: center;
-						align-items: center;
-						color: #fff;
-						padding: 30px;
-						font-size: 24px;
-						line-height: 1.2;">
-							<p>${permissionTxt}</p>
-							<div>
-							${acceptBtn}
-							${denyBtn}
-							</div>
+		/* || storageAccessRequired */
+		return new Promise<any>((resolve, reject) => {
+			const typeTxt = whiteListType === 'read' ? 'read' : 'read & write'
+			const permissionTxt = `${origin} is requesting ${typeTxt} access to your ${this.tokenConfig.title} tickets`
+			const acceptBtn = '<button style="cursor: pointer" id="tn-access-accept">Accept</button>'
+			const denyBtn = '<button style="cursor: pointer" id="tn-access-deny">Deny</button>'
+
+			const content = this.tokenConfig.whitelistDialogRenderer
+				? this.tokenConfig.whitelistDialogRenderer(permissionTxt, acceptBtn, denyBtn)
+				: `
+					<div style="font-family: sans-serif; text-align: center; position: absolute; width: 100vw; min-height: 100vh;top: 0;
+					left: 0;
+					background: #0C0A50;
+					z-index: 99999;
+					display: flex;
+					flex-direction: column;
+					justify-content: center;
+					align-items: center;
+					color: #fff;
+					padding: 30px;
+					font-size: 24px;
+					line-height: 1.2;">
+						<p>${permissionTxt}</p>
+						<div>
+						${acceptBtn}
+						${denyBtn}
 						</div>
-					`
+					</div>
+				`
 
-				document.body.insertAdjacentHTML('beforeend', content)
+			document.body.insertAdjacentHTML('beforeend', content)
 
-				document.getElementById('tn-access-accept').addEventListener('click', () => {
-					if (!accessWhitelist[origin] || whiteListType !== accessWhitelist[origin].type) {
-						accessWhitelist[origin] = {
-							type: whiteListType,
-						}
-						localStorage.setItem('tn-whitelist', JSON.stringify(accessWhitelist))
+			document.getElementById('tn-access-accept').addEventListener('click', () => {
+				if (!accessWhitelist[origin] || whiteListType !== accessWhitelist[origin].type) {
+					accessWhitelist[origin] = {
+						type: whiteListType,
 					}
-					resolve('user-accept')
-				})
-
-				document.getElementById('tn-access-deny').addEventListener('click', () => {
-					resolve('user-abort')
-				})
-
-				this.sendMessageResponse({
-					evtid,
-					evt: ResponseActionBase.SHOW_FRAME,
-					max_width: this.tokenConfig.whitelistDialogWidth,
-					min_height: this.tokenConfig.whitelistDialogHeight,
-				})
+					localStorage.setItem('tn-whitelist', JSON.stringify(accessWhitelist))
+				}
+				resolve('user-accept')
 			})
-		}
-		return 'user-accept'
+
+			document.getElementById('tn-access-deny').addEventListener('click', () => {
+				resolve('user-abort')
+			})
+
+			this.sendMessageResponse({
+				evtid,
+				evt: ResponseActionBase.SHOW_FRAME,
+				max_width: this.tokenConfig.whitelistDialogWidth,
+				min_height: this.tokenConfig.whitelistDialogHeight,
+			})
+		})
 	}
 
 	async sendTokenProof(evtid: any, token: any, address: string, wallet: string) {
@@ -319,7 +330,7 @@ export class Outlet {
 
 		const decodedToken = JSON.parse(token) as DecodedToken
 
-		const redirect = this.getDataFromQuery('redirect') === 'true' ? document.location.href : false
+		const redirect = this.getDataFromQuery('redirect') === 'true' ? window.location.href : false
 
 		try {
 			const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(decodedToken)
@@ -356,9 +367,9 @@ export class Outlet {
 				let url = this.redirectCallbackUrl
 
 				const params = new URLSearchParams(url.hash.substring(1))
-				params.set(URLNS + 'action', OutletAction.GET_ISSUER_TOKENS + '-response')
-				params.set(URLNS + 'issuer', this.tokenConfig.collectionID)
-				params.set(URLNS + 'tokens', JSON.stringify(issuerTokens))
+				params.set(this.getCallbackUrlKey('action'), OutletAction.GET_ISSUER_TOKENS + '-response')
+				params.set(this.getCallbackUrlKey('issuer'), this.tokenConfig.collectionID)
+				params.set(this.getCallbackUrlKey('tokens'), JSON.stringify(issuerTokens))
 
 				url.hash = '#' + params.toString()
 
@@ -366,7 +377,7 @@ export class Outlet {
 
 				logger(2, 'tokens ready. go to: ', requesterURL)
 
-				document.location.href = requesterURL
+				window.location.href = requesterURL
 
 				return
 			} catch (e) {
@@ -389,14 +400,14 @@ export class Outlet {
 			let url = this.redirectCallbackUrl
 
 			const params = new URLSearchParams(url.hash.substring(1))
-			params.set(URLNS + 'action', ResponseActionBase.ERROR)
-			params.set(URLNS + 'issuer', issuer || this.tokenConfig.collectionID)
-			params.set(URLNS + 'type', type)
-			params.set(URLNS + 'error', error)
+			params.set(this.getCallbackUrlKey('action'), ResponseActionBase.ERROR)
+			params.set(this.getCallbackUrlKey('issuer'), issuer || this.tokenConfig.collectionID)
+			params.set(this.getCallbackUrlKey('type'), type)
+			params.set(this.getCallbackUrlKey('error'), error)
 
 			url.hash = '#' + params.toString()
 
-			document.location.href = url.href
+			window.location.href = url.href
 			return
 		}
 
@@ -411,19 +422,19 @@ export class Outlet {
 		const requesterURL = this.redirectCallbackUrl
 
 		const params = new URLSearchParams(requesterURL.hash.substring(1))
-		params.set(URLNS + 'action', 'proof-callback')
-		params.set(URLNS + 'issuer', issuer)
-		params.set(URLNS + 'error', error)
+		params.set(this.getCallbackUrlKey('action'), 'proof-callback')
+		params.set(this.getCallbackUrlKey('issuer'), issuer)
+		params.set(this.getCallbackUrlKey('error'), error)
 
 		requesterURL.hash = params.toString()
 
-		document.location.href = requesterURL.href
+		window.location.href = requesterURL.href
 	}
 
 	private isSameOrigin() {
 		try {
 			let tokenUrl = new URL(this.tokenConfig.tokenOrigin)
-			if (tokenUrl.origin === document.location.origin) {
+			if (tokenUrl.origin === window.location.origin) {
 				return true
 			} else {
 				return false

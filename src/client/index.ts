@@ -161,7 +161,13 @@ export class Client {
 	}
 
 	getDataFromQuery(itemKey: any): string {
-		return this.urlParams ? this.urlParams.get(URLNS + itemKey) : ''
+		if (this.urlParams) {
+			if (this.urlParams.has(URLNS + itemKey)) return this.urlParams.get(URLNS + itemKey)
+
+			return this.urlParams.get(itemKey) // Fallback to non-namespaced version for backward compatibility
+		}
+
+		return null
 	}
 
 	public async readProofCallback() {
@@ -182,11 +188,11 @@ export class Client {
 	}
 
 	private removeCallbackParamsFromUrl() {
-		let params = new URLSearchParams(document.location.hash.substring(1))
+		let params = new URLSearchParams(window.location.hash.substring(1))
 
 		params = removeUrlSearchParams(params)
 
-		document.location.hash = '#' + params.toString()
+		window.location.hash = '#' + params.toString()
 	}
 
 	private registerOutletProofEventListener() {
@@ -488,7 +494,7 @@ export class Client {
 			const issuerConfig = this.tokenStore.getCurrentIssuers()[issuer] as OffChainTokenConfig
 
 			try {
-				if (new URL(issuerConfig.tokenOrigin).origin === document.location.origin) {
+				if (new URL(issuerConfig.tokenOrigin).origin === window.location.origin) {
 					tokens = await this.loadLocalOutletTokens(issuerConfig)
 				} else {
 					let responseIssuer = this.getDataFromQuery('issuer')
@@ -551,7 +557,7 @@ export class Client {
 		let tokens
 
 		try {
-			if (new URL(issuerConfig.tokenOrigin).origin !== document.location.origin) {
+			if (new URL(issuerConfig.tokenOrigin).origin !== window.location.origin) {
 				// TODO make solution:
 				// in case if we have multiple tokens then redirect flow will not work
 				// because page will reload on first remote token
@@ -657,7 +663,7 @@ export class Client {
 		if (config.onChain === true) {
 			tokens = await this.loadOnChainTokens(config)
 		} else {
-			if (new URL(config.tokenOrigin).origin === document.location.origin) {
+			if (new URL(config.tokenOrigin).origin === window.location.origin) {
 				tokens = await this.loadLocalOutletTokens(config)
 			} else {
 				tokens = await this.loadRemoteOutletTokens(config)
@@ -726,7 +732,7 @@ export class Client {
 			},
 			this.config.messagingForceTab,
 			this.config.type === 'active' ? this.ui : null,
-			redirectRequired ? document.location.href : false,
+			redirectRequired ? window.location.href : false,
 		)
 
 		if (!res) return // Site is redirecting
@@ -890,7 +896,7 @@ export class Client {
 		await Promise.resolve(this.on(eventName, null, data))
 	}
 
-	getOutletConfigForCurrentOrigin(origin: string = document.location.origin) {
+	getOutletConfigForCurrentOrigin(origin: string = window.location.origin) {
 		let allIssuers = this.tokenStore.getCurrentIssuers(false)
 		let currentIssuers = []
 
@@ -920,7 +926,7 @@ export class Client {
 			let issuerConfig = allIssuers[key] as OffChainTokenConfig
 			let thisOneSameOrigin = false
 			try {
-				if (new URL(issuerConfig.tokenOrigin).origin === document.location.origin) {
+				if (new URL(issuerConfig.tokenOrigin).origin === window.location.origin) {
 					thisOneSameOrigin = true
 				}
 			} catch (err) {
@@ -952,7 +958,7 @@ export class Client {
 				},
 				this.config.messagingForceTab,
 				undefined,
-				redirectRequired ? document.location.href : false,
+				redirectRequired ? window.location.href : false,
 			)
 
 			if (!res)
