@@ -222,7 +222,7 @@ const negotiator = new Client({
 		},
 	],
 	uiOptions: {
-		openingHeading: "Open a new world of discounts available with your tokens.",
+		openingHeading: "Open a new world of perks, benefits and opportunities with your attestation, collectible or token.",
 		issuerHeading: "Get discount with Ticket",
 		repeatAction: "try again",
 		theme: "light",
@@ -548,7 +548,7 @@ Configure the library using the following example.
 				],
 				uiOptions: {
 					openingHeading:
-						"Open a new world of discounts available with your tokens.",
+						"Open a new world of perks, benefits and opportunities with your attestation, collectible or token.",
 					issuerHeading: "Get discount with Ticket",
 					repeatAction: "try again",
 					theme: "light",
@@ -605,7 +605,7 @@ This table lists all possible configuration options for Token Negotiator client.
 | **uiOptions**                          | An object defining UI specific options                                                                                                                                                                                                                         | N        | UIOptionsInterface                            |                                          |
 | uiOptions.uiType                       | The type of UI that should be used for active negotiation type.                                                                                                                                                                                                | N        | "popup" or "inline"                           | popup                                    |
 | uiOptions.containerElement             | The query selector of the element that should contain the negotiator UI                                                                                                                                                                                        | N        | string                                        | .overlay-tn                              |
-| uiOptions.openingHeading               | Custom text to display on the start page                                                                                                                                                                                                                       | N        | string                                        | Validate your token ownership for access |
+| uiOptions.openingHeading               | Custom text to display on the start page                                                                                                                                                                                                                       | N        | string                                        | Open a new world of perks, benefits and opportunities with your attestation, collectible or token. |
 | uiOptions.issuerHeading                | Custom heading to display on the issuer list                                                                                                                                                                                                                   | N        | string                                        | Detected tokens                          |
 | uiOptions.repeatAction                 | (Deprecated) Text for retry actions                                                                                                                                                                                                                            | N        | string                                        |                                          |
 | uiOptions.theme                        | The theme to use for the UI                                                                                                                                                                                                                                    | N        | "light" or "dark"                             | light                                    |

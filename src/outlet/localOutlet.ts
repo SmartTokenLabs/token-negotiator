@@ -1,10 +1,11 @@
 import { defaultConfig, OutletInterface, readSignedTicket } from './index'
-import { decodeTokens, filterTokens, rawTokenCheck } from '../core'
 import { AuthHandler } from './auth-handler'
 import { OffChainTokenConfig } from '../client/interface'
+import { DecodedToken, TicketStorage } from './ticketStorage'
 
 export class LocalOutlet {
 	private tokenConfig
+	private ticketStorage: TicketStorage
 
 	constructor(config: OutletInterface & OffChainTokenConfig) {
 		this.tokenConfig = Object.assign(defaultConfig, config)
@@ -12,22 +13,18 @@ export class LocalOutlet {
 		if (!this.tokenConfig.tokenParser) {
 			this.tokenConfig.tokenParser = readSignedTicket
 		}
+
+		this.ticketStorage = new TicketStorage(this.tokenConfig)
 	}
 
-	getTokens() {
-		const storageTokens = localStorage.getItem(this.tokenConfig.itemStorageKey)
-
-		if (!storageTokens) return []
-
-		const decodedTokens = decodeTokens(storageTokens, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName, true)
-
-		return filterTokens(decodedTokens, this.tokenConfig.filter)
+	async getTokens() {
+		return this.ticketStorage.getDecodedTokens(this.tokenConfig.filter)
 	}
 
-	async authenticate(unsignedToken: any, address: string, wallet: string, redirectMode: false | string = false) {
-		let tokenObj = await rawTokenCheck(unsignedToken, this.tokenConfig)
+	async authenticate(decodedToken: DecodedToken, address: string, wallet: string, redirectMode: false | string = false) {
+		const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(decodedToken)
 
-		let authHandler = new AuthHandler(null, null, this.tokenConfig, tokenObj, address, wallet, redirectMode, unsignedToken)
+		let authHandler = new AuthHandler(this.tokenConfig, ticketRecord, decodedToken, address, wallet, redirectMode)
 
 		return await authHandler.authenticate()
 	}

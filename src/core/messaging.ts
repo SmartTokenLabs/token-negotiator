@@ -60,7 +60,7 @@ export class Messaging {
 		if (!forceTab && this.iframeStorageSupport === null) {
 			// TODO: temp to test safari top level context access.
 			// TODO do we need this verificaton?
-			// if (document.location.hash !== "#safari-iframe-test")
+			// if (window.location.hash !== "#safari-iframe-test")
 
 			this.iframeStorageSupport = !browserBlocksIframeStorage()
 		}
@@ -88,9 +88,9 @@ export class Messaging {
 			newLocation += `&${prefix}redirect=true&${prefix}requestor=${encodeURIComponent(redirectUrl)}`
 		}
 
-		logger(2, `redirect from ${document.location.href} to ${newLocation}`)
+		logger(2, `redirect from ${window.location.href} to ${newLocation}`)
 
-		document.location.href = newLocation
+		window.location.href = newLocation
 	}
 
 	private sendIframe(request: RequestInterfaceBase): Promise<ResponseInterfaceBase> {
@@ -272,6 +272,10 @@ export class Messaging {
 	//		This will prevent edge-case encoding issues.
 	private constructUrl(id: any, request: RequestInterfaceBase) {
 		let url = `${request.origin}#`
+
+		// Notify outlet that param namespace is in use.
+		// This enables using the namespace when redirecting back to the client page in order to support older negotiator versions
+		url += `tn-ns=1`
 
 		// TODO change in MAJOR release
 		for (const prefix of PREFIXES) {

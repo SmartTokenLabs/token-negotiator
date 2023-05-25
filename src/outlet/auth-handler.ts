@@ -1,28 +1,26 @@
-// @ts-nocheck
-
 import { ResponseActionBase, URLNS } from '../core/messaging'
 import { OutletAction } from '../client/messaging'
 import { Outlet, OutletInterface } from './index'
 import { Authenticator } from '@tokenscript/attestation'
 import { logger, removeUrlSearchParams } from '../utils'
 import { isBrave } from '../utils/support/getBrowserData'
-
-export interface DevconToken {
-	ticketBlob: string
-	ticketSecret: bigint
-	email?: string
-	magicLink?: string
-	attestationOrigin: string
-	attestationInTab?: boolean
-}
+import { DecodedToken, DEFAULT_EAS_SCHEMA, StoredTicketRecord, TokenType } from './ticketStorage'
+import { EasZkProof } from '@tokenscript/attestation/dist/eas/EasZkProof'
 
 interface PostMessageData {
 	force?: boolean
 	email?: string
-	magicLink?: string
+	wallet?: string
+	address?: string
 }
 
-function preparePopupCenter(w, h) {
+export interface ProofResult {
+	proof: string
+	type: TokenType
+}
+
+// TODO: Is this needed? Can it be removed?
+/* function preparePopupCenter(w, h) {
 	let win = window
 	if (window.parent !== window) {
 		win = window.parent
@@ -56,16 +54,9 @@ function preparePopupCenter(w, h) {
 		top=${top}, 
 		left=${left}
 	`
-}
+}*/
 
 export class AuthHandler {
-	private outlet: Outlet
-	private evtid: any
-
-	private signedTokenBlob: string | undefined
-	private magicLink: string | undefined
-	private email: string | undefined
-	private signedTokenSecret: bigint | undefined
 	private attestationOrigin: string | undefined
 
 	private attestationInTab: boolean
@@ -77,7 +68,7 @@ export class AuthHandler {
 	private iframeWrap: HTMLElement | null = null
 
 	private attestationBlob: string | null = null
-	private attestationSecret: bigint | null = null
+	private attestationSecret: string | null = null
 
 	private base64attestorPubKey: string | undefined
 	private base64senderPublicKeys: { [key: string]: string }
@@ -87,28 +78,18 @@ export class AuthHandler {
 	private rejectHandler: Function
 
 	constructor(
-		outlet?: Outlet,
-		evtid?: any,
-		private tokenDef: OutletInterface,
-		private tokenObj: DevconToken | any,
+		private tokenConfig: OutletInterface,
+		private ticketRecord: StoredTicketRecord,
+		private decodedToken: DecodedToken,
 		private address?: string,
 		private wallet?: string,
 		private redirectUrl?: false | string,
-		private unsignedToken?: any,
+		private outlet?: Outlet,
+		private evtid?: number | string,
 	) {
-		this.outlet = outlet
-		this.evtid = evtid
-		this.base64senderPublicKeys = tokenDef.base64senderPublicKeys
-		this.base64attestorPubKey = tokenDef.base64attestorPubKey
-
-		this.signedTokenBlob = tokenObj.ticketBlob
-		this.magicLink = tokenObj.magicLink
-		this.email = tokenObj.email
-		this.signedTokenSecret = tokenObj.ticketSecret
-
-		this.attestationOrigin = tokenObj.attestationOrigin
-
-		this.attestationInTab = tokenObj.attestationInTab
+		this.base64senderPublicKeys = tokenConfig.base64senderPublicKeys
+		this.base64attestorPubKey = tokenConfig.base64attestorPubKey
+		this.attestationOrigin = tokenConfig.attestationOrigin
 	}
 
 	openAttestationApp() {
@@ -225,23 +206,23 @@ export class AuthHandler {
 	}
 
 	// TODO: combine functionality with messaging to enable tab support? Changes required in attestation.id code
-	public authenticate() {
+	public authenticate(): Promise<{ proof: string; type: TokenType }> {
 		return new Promise((resolve, reject) => {
 			this.rejectHandler = reject
 
 			if (this.redirectUrl) {
-				const curParams = new URLSearchParams(document.location.hash.substring(1))
+				const curParams = new URLSearchParams(window.location.hash.substring(1))
 
 				const params = new URLSearchParams()
-				params.set('email', this.email)
+				params.set('email', this.ticketRecord.id)
 				params.set('address', this.address)
 				params.set('wallet', this.wallet)
 
 				const callbackUrl = new URL(this.redirectUrl)
 				const callbackParams = removeUrlSearchParams(new URLSearchParams(callbackUrl.hash.substring(1)))
 				callbackParams.set(URLNS + 'action', OutletAction.EMAIL_ATTEST_CALLBACK)
-				callbackParams.set(URLNS + 'issuer', this.tokenDef.collectionID)
-				callbackParams.set(URLNS + 'token', JSON.stringify(this.unsignedToken))
+				callbackParams.set(URLNS + 'issuer', this.tokenConfig.collectionID)
+				callbackParams.set(URLNS + 'token', JSON.stringify(this.decodedToken))
 
 				const requestor = curParams.get(URLNS + 'requestor')
 				if (requestor) {
@@ -255,7 +236,7 @@ export class AuthHandler {
 				const goto = `${this.attestationOrigin}#${params.toString()}`
 				logger(2, 'authenticate. go to: ', goto)
 
-				document.location.href = goto
+				window.location.href = goto
 
 				return
 			}
@@ -280,7 +261,7 @@ export class AuthHandler {
 				}
 			})
 
-			this.openAttestationApp(reject)
+			this.openAttestationApp()
 		})
 	}
 
@@ -307,40 +288,59 @@ export class AuthHandler {
 		document.body.appendChild(iframeWrap)
 	}
 
-	public async getUseToken(attestationBlob: any, attestationSecret: any) {
+	public static async getUseToken(
+		issuerConfig: OutletInterface,
+		attestationBlob: string,
+		attestationSecret: string,
+		ticketRecord: StoredTicketRecord,
+	) {
 		try {
-			if (!this.signedTokenSecret) {
+			if (!ticketRecord.secret) {
 				throw new Error('signedTokenSecret required')
 			}
 			if (!attestationSecret) {
 				throw new Error('attestationSecret required')
 			}
-			if (!this.signedTokenBlob) {
+			if (!ticketRecord.token) {
 				throw new Error('signedTokenBlob required')
 			}
 			if (!attestationBlob) {
 				throw new Error('attestationBlob required')
 			}
-			if (!this.base64attestorPubKey) {
+			if (!issuerConfig.base64attestorPubKey) {
 				throw new Error('base64attestorPubKey required')
 			}
-			if (!this.base64senderPublicKeys) {
+			if (!issuerConfig.base64senderPublicKeys) {
 				throw new Error('base64senderPublicKeys required')
 			}
 
-			let useToken = await Authenticator.getUseTicket(
-				this.signedTokenSecret,
-				attestationSecret,
-				this.signedTokenBlob,
-				attestationBlob,
-				this.base64attestorPubKey,
-				this.base64senderPublicKeys,
-			)
+			let useToken
+
+			if (ticketRecord.type === 'eas') {
+				const easZkProof = new EasZkProof(DEFAULT_EAS_SCHEMA, issuerConfig.eas.config, issuerConfig.eas.provider)
+
+				useToken = easZkProof.getUseTicket(
+					BigInt(ticketRecord.secret),
+					BigInt(attestationSecret),
+					ticketRecord.token,
+					attestationBlob,
+					issuerConfig.base64attestorPubKey,
+					issuerConfig.base64senderPublicKeys,
+				)
+			} else {
+				useToken = await Authenticator.getUseTicket(
+					BigInt(ticketRecord.secret),
+					BigInt(attestationSecret),
+					ticketRecord.token,
+					attestationBlob,
+					issuerConfig.base64attestorPubKey,
+					issuerConfig.base64senderPublicKeys,
+				)
+			}
 
 			if (useToken) {
 				logger(2, 'this.authResultCallback( useToken ): ')
-				if (this.buttonOverlay) this.buttonOverlay.remove()
-				return useToken
+				return <ProofResult>{ proof: useToken, type: ticketRecord.type }
 			} else {
 				logger(2, 'this.authResultCallback( empty ): ')
 				throw new Error('Empty useToken')
@@ -348,12 +348,11 @@ export class AuthHandler {
 		} catch (e) {
 			logger(2, `UseDevconTicket failed.`, e.message)
 			logger(3, e)
-			if (this.buttonOverlay) this.buttonOverlay.remove()
 			throw new Error('Failed to create UseTicket. ' + e.message)
 		}
 	}
 
-	async postMessageAttestationListener(event: MessageEvent, resolve: Function, reject: Function) {
+	async postMessageAttestationListener(event: MessageEvent, resolve: (res: ProofResult) => void, reject: Function) {
 		logger(2, 'postMessageAttestationListener event (auth-handler)', event.data)
 
 		let attestationHandler = this.attestationTabHandler ? this.attestationTabHandler : this.iframe.contentWindow
@@ -361,7 +360,7 @@ export class AuthHandler {
 		if (typeof event.data.ready !== 'undefined' && event.data.ready === true) {
 			let sendData: PostMessageData = { force: false }
 
-			if (this.email) sendData.email = this.email
+			if (this.ticketRecord.id) sendData.email = this.ticketRecord.id
 			if (this.wallet) sendData.wallet = this.wallet
 			if (this.address) sendData.address = this.address
 
@@ -417,10 +416,12 @@ export class AuthHandler {
 		this.attestationSecret = event.data?.requestSecret
 
 		try {
-			const useToken = this.getUseToken(this.attestationBlob, this.attestationSecret)
+			const useToken = await AuthHandler.getUseToken(this.tokenConfig, this.attestationBlob, this.attestationSecret, this.ticketRecord)
 			resolve(useToken)
 		} catch (e: any) {
 			reject(e)
 		}
+
+		if (this.buttonOverlay) this.buttonOverlay.remove()
 	}
 }

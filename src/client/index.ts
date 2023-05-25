@@ -34,6 +34,8 @@ import { shouldUseRedirectMode } from '../utils/support/getBrowserData'
 import { VERSION } from '../version'
 import { getFungibleTokenBalances, getFungibleTokensMeta } from '../utils/token/fungibleTokenProvider'
 import { URLNS } from '../core/messaging'
+import { TokenType } from '../outlet/ticketStorage'
+import { ProofResult } from '../outlet/auth-handler'
 
 if (typeof window !== 'undefined') window.tn = { VERSION }
 
@@ -58,7 +60,7 @@ export const defaultConfig: NegotiationInterface = {
 	uiOptions: {
 		uiType: 'popup',
 		containerElement: '.overlay-tn',
-		openingHeading: 'Validate your token ownership for access',
+		openingHeading: 'Open a new world of perks, benefits and opportunities with your attestation, collectible or token.',
 		issuerHeading: 'Detected tokens',
 		autoPopup: true,
 		position: 'bottom-right',
@@ -159,10 +161,16 @@ export class Client {
 	}
 
 	getDataFromQuery(itemKey: any): string {
-		return this.urlParams ? this.urlParams.get(URLNS + itemKey) : ''
+		if (this.urlParams) {
+			if (this.urlParams.has(URLNS + itemKey)) return this.urlParams.get(URLNS + itemKey)
+
+			return this.urlParams.get(itemKey) // Fallback to non-namespaced version for backward compatibility
+		}
+
+		return null
 	}
 
-	public readProofCallback() {
+	public async readProofCallback() {
 		if (!this.getDataFromQuery) return false
 
 		let action = this.getDataFromQuery('action')
@@ -171,17 +179,20 @@ export class Client {
 
 		const issuer = this.getDataFromQuery('issuer')
 		const attest = this.getDataFromQuery('attestation')
+		const type = this.getDataFromQuery('type') as TokenType
 		const error = this.getDataFromQuery('error')
 
-		this.emitRedirectProofEvent(issuer, attest, error)
+		await TicketZKProof.validateProof(this.tokenStore.getCurrentIssuers(false)[issuer] as OffChainTokenConfig, attest, type as TokenType)
+
+		this.emitRedirectProofEvent(issuer, { proof: attest, type }, error)
 	}
 
 	private removeCallbackParamsFromUrl() {
-		let params = new URLSearchParams(document.location.hash.substring(1))
+		let params = new URLSearchParams(window.location.hash.substring(1))
 
 		params = removeUrlSearchParams(params)
 
-		document.location.hash = '#' + params.toString()
+		window.location.hash = '#' + params.toString()
 	}
 
 	private registerOutletProofEventListener() {
@@ -190,7 +201,7 @@ export class Client {
 		})
 	}
 
-	private emitRedirectProofEvent(issuer: string, proof?: string, error?: string) {
+	private emitRedirectProofEvent(issuer: string, proof?: ProofResult, error?: string) {
 		// Wait to ensure UI is initialized
 		setTimeout(() => {
 			if (error) {
@@ -199,7 +210,7 @@ export class Client {
 				this.eventSender('token-proof', {
 					issuer,
 					error: null,
-					data: { proof },
+					data: proof,
 				})
 			}
 		}, 500)
@@ -483,8 +494,8 @@ export class Client {
 			const issuerConfig = this.tokenStore.getCurrentIssuers()[issuer] as OffChainTokenConfig
 
 			try {
-				if (new URL(issuerConfig.tokenOrigin).origin === document.location.origin) {
-					tokens = this.loadLocalOutletTokens(issuerConfig)
+				if (new URL(issuerConfig.tokenOrigin).origin === window.location.origin) {
+					tokens = await this.loadLocalOutletTokens(issuerConfig)
 				} else {
 					let responseIssuer = this.getDataFromQuery('issuer')
 
@@ -546,7 +557,7 @@ export class Client {
 		let tokens
 
 		try {
-			if (new URL(issuerConfig.tokenOrigin).origin !== document.location.origin) {
+			if (new URL(issuerConfig.tokenOrigin).origin !== window.location.origin) {
 				// TODO make solution:
 				// in case if we have multiple tokens then redirect flow will not work
 				// because page will reload on first remote token
@@ -652,8 +663,8 @@ export class Client {
 		if (config.onChain === true) {
 			tokens = await this.loadOnChainTokens(config)
 		} else {
-			if (new URL(config.tokenOrigin).origin === document.location.origin) {
-				tokens = this.loadLocalOutletTokens(config)
+			if (new URL(config.tokenOrigin).origin === window.location.origin) {
+				tokens = await this.loadLocalOutletTokens(config)
 			} else {
 				tokens = await this.loadRemoteOutletTokens(config)
 
@@ -721,7 +732,7 @@ export class Client {
 			},
 			this.config.messagingForceTab,
 			this.config.type === 'active' ? this.ui : null,
-			redirectRequired ? document.location.href : false,
+			redirectRequired ? window.location.href : false,
 		)
 
 		if (!res) return // Site is redirecting
@@ -729,9 +740,9 @@ export class Client {
 		return res.data?.tokens ?? []
 	}
 
-	private loadLocalOutletTokens(issuer: OffChainTokenConfig) {
+	private async loadLocalOutletTokens(issuer: OffChainTokenConfig) {
 		const localOutlet = new LocalOutlet(issuer as OutletInterface & OffChainTokenConfig)
-		return localOutlet.getTokens()
+		return await localOutlet.getTokens()
 	}
 
 	updateSelectedTokens(selectedTokens) {
@@ -885,7 +896,7 @@ export class Client {
 		await Promise.resolve(this.on(eventName, null, data))
 	}
 
-	getOutletConfigForCurrentOrigin(origin: string = document.location.origin) {
+	getOutletConfigForCurrentOrigin(origin: string = window.location.origin) {
 		let allIssuers = this.tokenStore.getCurrentIssuers(false)
 		let currentIssuers = []
 
@@ -915,7 +926,7 @@ export class Client {
 			let issuerConfig = allIssuers[key] as OffChainTokenConfig
 			let thisOneSameOrigin = false
 			try {
-				if (new URL(issuerConfig.tokenOrigin).origin === document.location.origin) {
+				if (new URL(issuerConfig.tokenOrigin).origin === window.location.origin) {
 					thisOneSameOrigin = true
 				}
 			} catch (err) {
@@ -947,7 +958,7 @@ export class Client {
 				},
 				this.config.messagingForceTab,
 				undefined,
-				redirectRequired ? document.location.href : false,
+				redirectRequired ? window.location.href : false,
 			)
 
 			if (!res)

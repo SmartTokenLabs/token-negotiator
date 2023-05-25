@@ -1,20 +1,12 @@
-import {
-	rawTokenCheck,
-	readTokenFromMagicUrl,
-	storeMagicURL,
-	decodeTokens,
-	decodeToken,
-	filterTokens,
-	readTokens,
-	OffChainTokenData,
-	DecodedToken,
-} from '../core'
 import { logger, requiredParams, removeUrlSearchParams } from '../utils'
 import { OutletAction, OutletResponseAction } from '../client/messaging'
-import { AuthHandler } from './auth-handler'
+import { AuthHandler, ProofResult } from './auth-handler'
 import { SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
 import { AsnParser } from '@peculiar/asn1-schema'
 import { ResponseActionBase, ResponseInterfaceBase, URLNS } from '../core/messaging'
+import { EASSignerOrProvider } from '@tokenscript/attestation/dist/eas/EasTicketAttestation'
+import { DecodedToken, FilterInterface, TicketStorage } from './ticketStorage'
+import { ethers } from 'ethers'
 
 export interface OutletInterface {
 	collectionID: string
@@ -25,6 +17,14 @@ export interface OutletInterface {
 	base64senderPublicKeys: { [key: string]: string }
 	base64attestorPubKey: string
 	signedTokenWhitelist?: string[]
+	eas?: {
+		config: {
+			address: string
+			version: string
+			chainId: number
+		}
+		provider: EASSignerOrProvider
+	}
 
 	whitelistDialogWidth: string
 	whitelistDialogHeight: string
@@ -47,6 +47,14 @@ export const defaultConfig = {
 	signedTokenWhitelist: [],
 	whitelistDialogWidth: '450px',
 	whitelistDialogHeight: '350px',
+	eas: {
+		config: {
+			address: '0xC2679fBD37d54388Ce493F1DB75320D236e1815e',
+			version: '0.26',
+			chainId: 11155111,
+		},
+		provider: new ethers.providers.JsonRpcProvider('https://rpc.sepolia.org/'),
+	},
 }
 
 export class readSignedTicket {
@@ -63,6 +71,7 @@ export class readSignedTicket {
 export class Outlet {
 	tokenConfig: OutletInterface
 	urlParams?: URLSearchParams
+	ticketStorage: TicketStorage
 
 	singleUse = false
 
@@ -84,6 +93,8 @@ export class Outlet {
 			}
 		})
 
+		this.ticketStorage = new TicketStorage(this.tokenConfig)
+
 		if (urlParams) {
 			this.urlParams = urlParams
 		} else {
@@ -100,9 +111,20 @@ export class Outlet {
 		}
 	}
 
-	getDataFromQuery(itemKey: string, namespaced = true): string {
-		itemKey = (namespaced ? URLNS : '') + itemKey
-		return this.urlParams ? this.urlParams.get(itemKey) : ''
+	getDataFromQuery(itemKey: string): string {
+		if (this.urlParams) {
+			if (this.urlParams.has(URLNS + itemKey)) return this.urlParams.get(URLNS + itemKey)
+
+			return this.urlParams.get(itemKey) // Fallback to non-namespaced version for backward compatibility
+		}
+
+		return null
+	}
+
+	getCallbackUrlKey(key: string) {
+		if (this.getDataFromQuery('ns')) return URLNS + key
+
+		return key
 	}
 
 	getFilter() {
@@ -112,7 +134,7 @@ export class Outlet {
 
 	async modalDialogEventHandler(evtid: any, access: string) {
 		const action = await this.whitelistCheck(evtid, access === 'write' ? 'write' : 'read')
-		if (action === 'user-accept') this.sendTokens(evtid)
+		if (action === 'user-accept') await this.sendTokens(evtid)
 		else if (action === 'user-abort')
 			this.sendErrorResponse(evtid, 'USER_ABORT', this.getDataFromQuery('issuer'), 'offchain-issuer-connection')
 	}
@@ -126,7 +148,7 @@ export class Outlet {
 
 		if (requester) this.redirectCallbackUrl = new URL(requester)
 
-		logger(2, 'Outlet received event ID ' + evtid + ' action ' + action + ' at ' + document.location.href)
+		logger(2, 'Outlet received event ID ' + evtid + ' action ' + action + ' at ' + window.location.href)
 
 		// TODO: should issuer be validated against requested issuer?
 
@@ -142,55 +164,41 @@ export class Outlet {
 
 					try {
 						const tokenString = this.getDataFromQuery('token')
+
 						let token = JSON.parse(tokenString)
 
-						const attestationBlob = this.getDataFromQuery('attestation', false)
-						const attestationSecret = '0x' + this.getDataFromQuery('requestSecret', false)
+						const attestationBlob = this.getDataFromQuery('attestation')
+						const attestationSecret = '0x' + this.getDataFromQuery('requestSecret')
 
-						let authHandler = new AuthHandler(
-							this,
-							evtid,
-							this.tokenConfig,
-							await rawTokenCheck(token, this.tokenConfig),
-							null,
-							null,
-							false,
-						)
+						const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(token)
 
-						const useToken = await authHandler.getUseToken(attestationBlob, attestationSecret)
+						const useToken = await AuthHandler.getUseToken(this.tokenConfig, attestationBlob, attestationSecret, ticketRecord)
 
 						if (requesterURL) {
 							const params = new URLSearchParams(requesterURL.hash.substring(1))
-							params.set(URLNS + 'action', 'proof-callback')
-							params.set(URLNS + 'issuer', issuer)
-							params.set(URLNS + 'attestation', useToken as string)
-
-							// TODO: Remove once https://github.com/AlphaWallet/attestation.id/pull/196 is merged
-							params.delete('email')
-							params.delete('#email')
-
-							let outlet = new Outlet(this.tokenConfig, true)
-							let issuerTokens = outlet.prepareTokenOutput({})
-
-							logger(2, 'issuerTokens: ', issuerTokens)
-
-							params.set(URLNS + 'tokens', JSON.stringify(issuerTokens))
+							params.set(this.getCallbackUrlKey('action'), 'proof-callback')
+							params.set(this.getCallbackUrlKey('issuer'), issuer)
+							params.set(this.getCallbackUrlKey('attestation'), useToken.proof as string)
+							params.set(this.getCallbackUrlKey('type'), ticketRecord.type)
+							params.set(this.getCallbackUrlKey('token'), tokenString)
 
 							requesterURL.hash = params.toString()
 
-							document.location.href = requesterURL.href
+							window.location.href = requesterURL.href
 
 							return
 						}
 
 						this.dispatchAuthCallbackEvent(issuer, useToken, null)
 					} catch (e: any) {
+						console.error(e)
+
 						if (requesterURL) return this.proofRedirectError(issuer, e.message)
 
 						this.dispatchAuthCallbackEvent(issuer, null, e.message)
 					}
 
-					document.location.hash = removeUrlSearchParams(this.urlParams, ['attestation', 'requestSecret', 'address', 'wallet']).toString()
+					window.location.hash = removeUrlSearchParams(this.urlParams, ['attestation', 'requestSecret', 'address', 'wallet']).toString()
 
 					break
 				}
@@ -219,65 +227,18 @@ export class Outlet {
 	}
 
 	public async readMagicLink() {
-		const { tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey } = this.tokenConfig
-
 		try {
-			const newToken = readTokenFromMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, this.urlParams)
-			let tokensOutput = readTokens(itemStorageKey)
-
-			const newTokens = this.mergeNewToken(newToken, tokensOutput.tokens)
-
-			if (newTokens !== false) {
-				storeMagicURL(newTokens, itemStorageKey)
-			}
+			await this.ticketStorage.importTicketFromMagicLink(this.urlParams)
 
 			const event = new Event('tokensupdated')
 
 			document.body.dispatchEvent(event)
 		} catch (e) {
-			console.warn(e)
+			logger(2, e)
 		}
 	}
 
-	/**
-	 * Merges a new magic link into the existing token data. If a token is found with the same ID it is overwritten.
-	 * @private
-	 * @returns false when no changes to the data are required - the token is already added
-	 */
-	public mergeNewToken(newToken: OffChainTokenData, existingTokens: OffChainTokenData[]): OffChainTokenData[] | false {
-		const decodedNewToken = decodeToken(newToken, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName, false)
-
-		const newTokenId = this.getUniqueTokenId(decodedNewToken)
-
-		for (const [index, tokenData] of existingTokens.entries()) {
-			// Nothing required, this token already exists
-			if (tokenData.token === newToken.token) {
-				return false
-			}
-
-			const decodedTokenData = decodeToken(tokenData, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName, false)
-
-			const tokenId = this.getUniqueTokenId(decodedTokenData)
-
-			if (newTokenId === tokenId) {
-				existingTokens[index] = newToken
-				return existingTokens
-			}
-		}
-
-		existingTokens.push(newToken)
-		return existingTokens
-	}
-
-	/**
-	 * Calculates a unique token ID to identify this ticket. Tickets can be reissued and have a different commitment, but are still the same token
-	 * @private
-	 */
-	private getUniqueTokenId(decodedToken: DecodedToken) {
-		return `${decodedToken.devconId}-${decodedToken.ticketIdNumber ?? decodedToken.ticketIdString}`
-	}
-
-	private dispatchAuthCallbackEvent(issuer: string, proof?: string, error?: string) {
+	private dispatchAuthCallbackEvent(issuer: string, proof?: ProofResult, error?: string) {
 		const event = new CustomEvent('auth-callback', {
 			detail: {
 				proof: proof,
@@ -294,7 +255,7 @@ export class Outlet {
 
 		const origin = new URL(document.referrer).origin
 
-		if (origin === document.location.origin) return
+		if (origin === window.location.origin) return
 
 		let accessWhitelist = JSON.parse(localStorage.getItem('tn-whitelist')) ?? {}
 
@@ -307,90 +268,74 @@ export class Outlet {
 			this.tokenConfig.signedTokenWhitelist.indexOf(origin) === -1 &&
 			(!accessWhitelist[origin] || (accessWhitelist[origin].type === 'read' && whiteListType === 'write'))
 
-		if (needsPermission /* || storageAccessRequired */) {
-			return new Promise<any>((resolve, reject) => {
-				const typeTxt = whiteListType === 'read' ? 'read' : 'read & write'
-				const permissionTxt = `${origin} is requesting ${typeTxt} access to your ${this.tokenConfig.title} tickets`
-				const acceptBtn = '<button style="cursor: pointer" id="tn-access-accept">Accept</button>'
-				const denyBtn = '<button style="cursor: pointer" id="tn-access-deny">Deny</button>'
+		if (!needsPermission) return 'user-accept'
 
-				const content = this.tokenConfig.whitelistDialogRenderer
-					? this.tokenConfig.whitelistDialogRenderer(permissionTxt, acceptBtn, denyBtn)
-					: `
-						<div style="font-family: sans-serif; text-align: center; position: absolute; width: 100vw; min-height: 100vh;top: 0;
-						left: 0;
-						background: #0C0A50;
-						z-index: 99999;
-						display: flex;
-						flex-direction: column;
-						justify-content: center;
-						align-items: center;
-						color: #fff;
-						padding: 30px;
-						font-size: 24px;
-						line-height: 1.2;">
-							<p>${permissionTxt}</p>
-							<div>
-							${acceptBtn}
-							${denyBtn}
-							</div>
+		/* || storageAccessRequired */
+		return new Promise<any>((resolve, reject) => {
+			const typeTxt = whiteListType === 'read' ? 'read' : 'read & write'
+			const permissionTxt = `${origin} is requesting ${typeTxt} access to your ${this.tokenConfig.title} tickets`
+			const acceptBtn = '<button style="cursor: pointer" id="tn-access-accept">Accept</button>'
+			const denyBtn = '<button style="cursor: pointer" id="tn-access-deny">Deny</button>'
+
+			const content = this.tokenConfig.whitelistDialogRenderer
+				? this.tokenConfig.whitelistDialogRenderer(permissionTxt, acceptBtn, denyBtn)
+				: `
+					<div style="font-family: sans-serif; text-align: center; position: absolute; width: 100vw; min-height: 100vh;top: 0;
+					left: 0;
+					background: #0C0A50;
+					z-index: 99999;
+					display: flex;
+					flex-direction: column;
+					justify-content: center;
+					align-items: center;
+					color: #fff;
+					padding: 30px;
+					font-size: 24px;
+					line-height: 1.2;">
+						<p>${permissionTxt}</p>
+						<div>
+						${acceptBtn}
+						${denyBtn}
 						</div>
-					`
+					</div>
+				`
 
-				document.body.insertAdjacentHTML('beforeend', content)
+			document.body.insertAdjacentHTML('beforeend', content)
 
-				document.getElementById('tn-access-accept').addEventListener('click', () => {
-					if (!accessWhitelist[origin] || whiteListType !== accessWhitelist[origin].type) {
-						accessWhitelist[origin] = {
-							type: whiteListType,
-						}
-						localStorage.setItem('tn-whitelist', JSON.stringify(accessWhitelist))
+			document.getElementById('tn-access-accept').addEventListener('click', () => {
+				if (!accessWhitelist[origin] || whiteListType !== accessWhitelist[origin].type) {
+					accessWhitelist[origin] = {
+						type: whiteListType,
 					}
-					resolve('user-accept')
-				})
-
-				document.getElementById('tn-access-deny').addEventListener('click', () => {
-					resolve('user-abort')
-				})
-
-				this.sendMessageResponse({
-					evtid,
-					evt: ResponseActionBase.SHOW_FRAME,
-					max_width: this.tokenConfig.whitelistDialogWidth,
-					min_height: this.tokenConfig.whitelistDialogHeight,
-				})
+					localStorage.setItem('tn-whitelist', JSON.stringify(accessWhitelist))
+				}
+				resolve('user-accept')
 			})
-		}
-		return 'user-accept'
-	}
 
-	prepareTokenOutput(filter: any) {
-		const storageTokens = localStorage.getItem(this.tokenConfig.itemStorageKey)
+			document.getElementById('tn-access-deny').addEventListener('click', () => {
+				resolve('user-abort')
+			})
 
-		if (!storageTokens) return []
-
-		let includeSigned = false
-
-		if (this.tokenConfig.signedTokenWhitelist?.length && this.tokenConfig.signedTokenWhitelist.indexOf(this.getRequestOrigin()) > -1) {
-			includeSigned = true
-		}
-
-		const decodedTokens = decodeTokens(storageTokens, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName, includeSigned)
-
-		return filterTokens(decodedTokens, filter)
+			this.sendMessageResponse({
+				evtid,
+				evt: ResponseActionBase.SHOW_FRAME,
+				max_width: this.tokenConfig.whitelistDialogWidth,
+				min_height: this.tokenConfig.whitelistDialogHeight,
+			})
+		})
 	}
 
 	async sendTokenProof(evtid: any, token: any, address: string, wallet: string) {
 		if (!token) return 'error'
 
-		const unsignedToken = JSON.parse(token)
+		const decodedToken = JSON.parse(token) as DecodedToken
 
-		const redirect = this.getDataFromQuery('redirect') === 'true' ? document.location.href : false
+		const redirect = this.getDataFromQuery('redirect') === 'true' ? window.location.href : false
 
 		try {
-			let tokenObj = await rawTokenCheck(unsignedToken, this.tokenConfig)
+			const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(decodedToken)
 
-			let authHandler = new AuthHandler(this, evtid, this.tokenConfig, tokenObj, address, wallet, redirect, unsignedToken)
+			let authHandler = new AuthHandler(this.tokenConfig, ticketRecord, decodedToken, address, wallet, redirect, this, evtid)
 
 			let tokenProof = await authHandler.authenticate()
 
@@ -399,7 +344,7 @@ export class Outlet {
 				evt: OutletResponseAction.PROOF,
 				data: {
 					issuer: this.tokenConfig.collectionID,
-					proof: tokenProof,
+					...tokenProof,
 				},
 			})
 		} catch (e: any) {
@@ -411,21 +356,9 @@ export class Outlet {
 		}
 	}
 
-	private getRequestOrigin() {
-		const requester = document.referrer
-
-		if (!requester) return null
-
-		try {
-			return new URL(requester).origin
-		} catch (e) {
-			return null
-		}
-	}
-
 	// TODO: Consolidate redirect callback for tokens, proof & errors into the sendMessageResponse function to remove duplication
-	private sendTokens(evtid: any) {
-		let issuerTokens = this.prepareTokenOutput(this.getFilter())
+	private async sendTokens(evtid: any) {
+		let issuerTokens = await this.ticketStorage.getDecodedTokens(this.getFilter())
 
 		logger(2, 'issuerTokens: (Outlet.sendTokens)', issuerTokens)
 
@@ -434,9 +367,9 @@ export class Outlet {
 				let url = this.redirectCallbackUrl
 
 				const params = new URLSearchParams(url.hash.substring(1))
-				params.set(URLNS + 'action', OutletAction.GET_ISSUER_TOKENS + '-response')
-				params.set(URLNS + 'issuer', this.tokenConfig.collectionID)
-				params.set(URLNS + 'tokens', JSON.stringify(issuerTokens))
+				params.set(this.getCallbackUrlKey('action'), OutletAction.GET_ISSUER_TOKENS + '-response')
+				params.set(this.getCallbackUrlKey('issuer'), this.tokenConfig.collectionID)
+				params.set(this.getCallbackUrlKey('tokens'), JSON.stringify(issuerTokens))
 
 				url.hash = '#' + params.toString()
 
@@ -444,7 +377,7 @@ export class Outlet {
 
 				logger(2, 'tokens ready. go to: ', requesterURL)
 
-				document.location.href = requesterURL
+				window.location.href = requesterURL
 
 				return
 			} catch (e) {
@@ -467,14 +400,14 @@ export class Outlet {
 			let url = this.redirectCallbackUrl
 
 			const params = new URLSearchParams(url.hash.substring(1))
-			params.set(URLNS + 'action', ResponseActionBase.ERROR)
-			params.set(URLNS + 'issuer', issuer || this.tokenConfig.collectionID)
-			params.set(URLNS + 'type', type)
-			params.set(URLNS + 'error', error)
+			params.set(this.getCallbackUrlKey('action'), ResponseActionBase.ERROR)
+			params.set(this.getCallbackUrlKey('issuer'), issuer || this.tokenConfig.collectionID)
+			params.set(this.getCallbackUrlKey('type'), type)
+			params.set(this.getCallbackUrlKey('error'), error)
 
 			url.hash = '#' + params.toString()
 
-			document.location.href = url.href
+			window.location.href = url.href
 			return
 		}
 
@@ -486,20 +419,22 @@ export class Outlet {
 	}
 
 	public proofRedirectError(issuer: string, error: string) {
-		const requesterURL = this.redirectCallbackUrl.href
+		const requesterURL = this.redirectCallbackUrl
 
-		const params = new URLSearchParams()
-		params.set(URLNS + 'action', 'proof-callback')
-		params.set(URLNS + 'issuer', issuer)
-		params.set(URLNS + 'error', error)
+		const params = new URLSearchParams(requesterURL.hash.substring(1))
+		params.set(this.getCallbackUrlKey('action'), 'proof-callback')
+		params.set(this.getCallbackUrlKey('issuer'), issuer)
+		params.set(this.getCallbackUrlKey('error'), error)
 
-		document.location.href = requesterURL + '#' + params.toString()
+		requesterURL.hash = params.toString()
+
+		window.location.href = requesterURL.href
 	}
 
 	private isSameOrigin() {
 		try {
 			let tokenUrl = new URL(this.tokenConfig.tokenOrigin)
-			if (tokenUrl.origin === document.location.origin) {
+			if (tokenUrl.origin === window.location.origin) {
 				return true
 			} else {
 				return false
