@@ -1,6 +1,14 @@
 import { OutletAction, OutletResponseAction, Messaging } from './messaging'
 import { Ui, UiInterface, UItheme } from './ui'
-import { logger, requiredParams, waitForElementToExist, errorHandler, removeUrlSearchParams } from '../utils'
+import {
+	logger,
+	requiredParams,
+	waitForElementToExist,
+	errorHandler,
+	removeUrlSearchParams,
+	createOffChainCollectionHash,
+	createIssuerHashMap,
+} from '../utils'
 import { getNftCollection, getNftTokens } from '../utils/token/nftProvider'
 import { Authenticator } from '@tokenscript/attestation'
 import { TokenStore } from './tokenStore'
@@ -706,6 +714,16 @@ export class Client {
 		})
 
 		return tokens
+	}
+
+	public prepareMultiOutletRequest(initialIssuer: OffChainTokenConfig) {
+		const requestBatch = [initialIssuer]
+
+		for (const issuer of Object.values(this.tokenStore.getCurrentIssuers(false)) as OffChainTokenConfig[]) {
+			if (issuer.tokenOrigin === initialIssuer.tokenOrigin) requestBatch.push(issuer)
+		}
+
+		return createIssuerHashMap(requestBatch)
 	}
 
 	private async loadRemoteOutletTokens(issuer: OffChainTokenConfig): Promise<unknown[] | void> {

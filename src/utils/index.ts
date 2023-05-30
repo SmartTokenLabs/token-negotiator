@@ -1,4 +1,12 @@
 import { URLNS } from '../core/messaging'
+import { KeyPair } from '@tokenscript/attestation/dist/libs/KeyPair'
+import { sha256 } from 'ethers/lib/utils'
+import { OffChainTokenConfig } from '../client/interface'
+import { TextEncoder, TextDecoder } from 'util'
+
+export interface IssuerHashMap {
+	[collectionId: string]: string[]
+}
 
 declare global {
 	interface Window {
@@ -193,4 +201,29 @@ export const hexStringToUint8Array = (hexString: string): Uint8Array => {
 		uint8Array[i / 2] = parseInt(hexString.slice(i, i + 2), 16)
 	}
 	return uint8Array
+}
+
+export const createIssuerHashMap = (issuers: OffChainTokenConfig[]): IssuerHashMap => {
+	const hashObj = {}
+
+	for (const issuer of issuers) {
+		hashObj[issuer.collectionID] = []
+
+		const keysArr = KeyPair.parseKeyArrayStrings(issuer.base64senderPublicKeys)
+
+		for (let [eventId, keys] of Object.entries(keysArr)) {
+			if (!Array.isArray(keys)) keys = [keys]
+
+			for (const key of keys) {
+				hashObj[issuer.collectionID].push(createOffChainCollectionHash(key, eventId))
+			}
+		}
+	}
+
+	return hashObj
+}
+
+export const createOffChainCollectionHash = (key: KeyPair, eventId: string) => {
+	const encoder = new TextEncoder()
+	return sha256(encoder.encode(key.getPublicKeyAsHexStr() + '-' + eventId))
 }
