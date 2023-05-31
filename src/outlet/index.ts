@@ -171,11 +171,13 @@ export class Outlet {
 					break
 				}
 				case OutletAction.GET_PROOF: {
+					// TODO: Replace with new request to handle multiple issuers & tokens
+					const issuer: string = this.getDataFromQuery('issuer')
 					const token: string = this.getDataFromQuery('token')
 					const wallet: string = this.getDataFromQuery('wallet')
 					const address: string = this.getDataFromQuery('address')
 					requiredParams(token, 'unsigned token is missing')
-					await this.sendTokenProof(evtid, token, address, wallet)
+					await this.sendTokenProof(evtid, issuer, token, address, wallet)
 
 					break
 				}
@@ -305,7 +307,7 @@ export class Outlet {
 		})
 	}
 
-	async sendTokenProof(evtid: any, token: any, address: string, wallet: string) {
+	async sendTokenProof(evtid: string, collectionId: string, token: string, address: string, wallet: string) {
 		if (!token) return 'error'
 
 		const decodedToken = JSON.parse(token) as DecodedToken
@@ -313,8 +315,8 @@ export class Outlet {
 		const redirect = this.getDataFromQuery('redirect') === 'true' ? window.location.href : false
 
 		try {
-			// TODO: Add support for multiple issuers and multiple tokens, currently first issuer is hard-coded
-			const issuer = this.tokenConfig.issuers[0]
+			// TODO: Add support for multiple issuers and multiple tokens
+			const issuer = this.getIssuerConfigById(collectionId)
 
 			const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(createIssuerHashArray(issuer), decodedToken)
 
@@ -330,7 +332,7 @@ export class Outlet {
 					...tokenProof,
 				},
 			})
-		} catch (e: any) {
+		} catch (e) {
 			logger(2, e)
 
 			if (redirect) return this.proofRedirectError(this.getDataFromQuery('issuer'), e.message)
