@@ -4,6 +4,7 @@ import { OutletInterface } from './index'
 import { KeyPair, KeysArray } from '@tokenscript/attestation/dist/libs/KeyPair'
 import { base64ToUint8array } from '../utils'
 import { uint8tohex } from '@tokenscript/attestation/dist/libs/utils'
+import { WC_DEFAULT_RPC_MAP } from '../wallet/WalletConnectV2Provider'
 
 export type TokenType = 'asn' | 'eas'
 
@@ -61,7 +62,7 @@ export class TicketStorage {
 	constructor(private config: OutletInterface) {
 		this.keysArray = KeyPair.parseKeyArrayStrings(this.config.base64senderPublicKeys)
 
-		this.easManager = new EasTicketAttestation(DEFAULT_EAS_SCHEMA, this.config.eas.config, this.config.eas.provider, this.keysArray)
+		this.easManager = new EasTicketAttestation(DEFAULT_EAS_SCHEMA, undefined, WC_DEFAULT_RPC_MAP, this.keysArray)
 
 		this.loadTickets()
 	}

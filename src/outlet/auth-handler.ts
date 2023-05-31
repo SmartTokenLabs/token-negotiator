@@ -6,6 +6,7 @@ import { logger, removeUrlSearchParams } from '../utils'
 import { isBrave } from '../utils/support/getBrowserData'
 import { DecodedToken, DEFAULT_EAS_SCHEMA, StoredTicketRecord, TokenType } from './ticketStorage'
 import { EasZkProof } from '@tokenscript/attestation/dist/eas/EasZkProof'
+import { EAS_RPC_CONFIG } from '../core/eas'
 
 interface PostMessageData {
 	force?: boolean
@@ -317,7 +318,7 @@ export class AuthHandler {
 			let useToken
 
 			if (ticketRecord.type === 'eas') {
-				const easZkProof = new EasZkProof(DEFAULT_EAS_SCHEMA, issuerConfig.eas.config, issuerConfig.eas.provider)
+				const easZkProof = new EasZkProof(DEFAULT_EAS_SCHEMA, EAS_RPC_CONFIG)
 
 				useToken = easZkProof.getUseTicket(
 					BigInt(ticketRecord.secret),

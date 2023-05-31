@@ -5,8 +5,7 @@ import { SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/Si
 import { AsnParser } from '@peculiar/asn1-schema'
 import { ResponseActionBase, ResponseInterfaceBase, URLNS } from '../core/messaging'
 import { EASSignerOrProvider } from '@tokenscript/attestation/dist/eas/EasTicketAttestation'
-import { DecodedToken, FilterInterface, TicketStorage } from './ticketStorage'
-import { ethers } from 'ethers'
+import { DecodedToken, TicketStorage } from './ticketStorage'
 
 export interface OutletInterface {
 	collectionID: string
@@ -17,14 +16,6 @@ export interface OutletInterface {
 	base64senderPublicKeys: { [key: string]: string }
 	base64attestorPubKey: string
 	signedTokenWhitelist?: string[]
-	eas?: {
-		config: {
-			address: string
-			version: string
-			chainId: number
-		}
-		provider: EASSignerOrProvider
-	}
 
 	whitelistDialogWidth: string
 	whitelistDialogHeight: string
@@ -47,14 +38,6 @@ export const defaultConfig = {
 	signedTokenWhitelist: [],
 	whitelistDialogWidth: '450px',
 	whitelistDialogHeight: '350px',
-	eas: {
-		config: {
-			address: '0xC2679fBD37d54388Ce493F1DB75320D236e1815e',
-			version: '0.26',
-			chainId: 11155111,
-		},
-		provider: new ethers.providers.JsonRpcProvider('https://rpc.sepolia.org/'),
-	},
 }
 
 export class readSignedTicket {

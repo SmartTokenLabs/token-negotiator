@@ -1,4 +1,3 @@
-import { EASSignerOrProvider } from '@tokenscript/attestation/dist/eas/EasTicketAttestation'
 import { logger, removeUrlSearchParams, requiredParams } from '../../utils'
 import { ResponseActionBase, ResponseInterfaceBase, URLNS } from '../../core/messaging'
 import { OutletAction, OutletResponseAction } from '../../client/messaging'
@@ -20,28 +19,18 @@ export interface OutletIssuerInterface {
 export interface MultiOutletInterface {
 	issuers: OutletIssuerInterface[]
 
-	whitelistDialogWidth: string
-	whitelistDialogHeight: string
+	whitelistDialogWidth?: string
+	whitelistDialogHeight?: string
 	whitelistDialogRenderer?: (permissionTxt: string, acceptBtn: string, denyBtn: string) => string
 
 	// TODO: Move to token specific config
 	signedTokenWhitelist?: string[]
+}
 
-	// TODO: Remove
-	tokenUrlName?: string
-	tokenSecretName?: string
-	tokenIdName?: string
-	unsignedTokenDataName?: string
-	itemStorageKey?: string
-	eas?: {
-		config: {
-			address: string
-			version: string
-			chainId: number
-		}
-		provider: EASSignerOrProvider
-	}
-	attestationInTab?: boolean
+export const defaultConfig = {
+	signedTokenWhitelist: [],
+	whitelistDialogWidth: '450px',
+	whitelistDialogHeight: '350px',
 }
 
 export class MultiOutlet {
@@ -52,6 +41,8 @@ export class MultiOutlet {
 	redirectCallbackUrl?: URL
 
 	constructor(private tokenConfig: MultiOutletInterface, urlParams: any = null) {
+		this.tokenConfig = Object.assign(defaultConfig, tokenConfig)
+
 		// TODO: Whitelist per collectionId
 		this.tokenConfig.signedTokenWhitelist = this.tokenConfig.signedTokenWhitelist.map((origin) => {
 			try {
@@ -72,11 +63,10 @@ export class MultiOutlet {
 
 		// TODO: Remove single use
 		// if (!this.singleUse) {
-		this.pageOnLoadEventHandler()
-			.then()
-			.catch((e) => {
-				logger(2, 'Outlet pageOnLoadEventHandler error: ' + e.message)
-			})
+		this.pageOnLoadEventHandler().catch((e) => {
+			console.error(e)
+			logger(2, 'Outlet pageOnLoadEventHandler error: ' + e.message)
+		})
 		// }
 	}
 
@@ -118,8 +108,6 @@ export class MultiOutlet {
 		if (requester) this.redirectCallbackUrl = new URL(requester)
 
 		logger(2, 'Outlet received event ID ' + evtid + ' action ' + action + ' at ' + window.location.href)
-
-		// TODO: should issuer be validated against requested issuer?
 
 		try {
 			switch (action) {
@@ -187,7 +175,7 @@ export class MultiOutlet {
 					//  move single link somewhere that it can be used by both Outlet & LocalOutlet
 					// if (!this.singleUse) {
 					await this.readMagicLink()
-					await this.modalDialogEventHandler(evtid, 'write')
+					// await this.modalDialogEventHandler(evtid, 'write')
 					// }
 					break
 				}

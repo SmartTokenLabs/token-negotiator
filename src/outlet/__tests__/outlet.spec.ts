@@ -62,7 +62,10 @@ async function createTestMagicLink(ticketType, ticketId, ticketClass) {
 		const provider = new ethers.providers.JsonRpcProvider(SEPOLIA_RPC)
 		const wallet = new ethers.Wallet(KeyPair.privateFromPEM(issuerPrivKey).getPrivateAsHexString(), provider)
 
-		const attestationManager = new EasTicketAttestation(EAS_TICKET_SCHEMA, EAS_CONFIG, wallet)
+		const attestationManager = new EasTicketAttestation(EAS_TICKET_SCHEMA, {
+			EASconfig: EAS_CONFIG,
+			signer: wallet,
+		})
 
 		await attestationManager.createEasAttestation(
 			{

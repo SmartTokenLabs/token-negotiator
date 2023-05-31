@@ -4,19 +4,19 @@ import { readSignedTicket } from '../index'
 import { KeyPair } from '@tokenscript/attestation/dist/libs/KeyPair'
 import { base64ToUint8array, createOffChainCollectionHash, IssuerHashMap } from '../../utils'
 import { uint8tohex } from '@tokenscript/attestation/dist/libs/utils'
-import { DecodedToken, FilterInterface, StoredTicketRecord, TokenType } from '../ticketStorage'
+import { DecodedToken, DEFAULT_EAS_SCHEMA, FilterInterface, StoredTicketRecord, TokenType } from '../ticketStorage'
 import { Ticket } from '@tokenscript/attestation/dist/Ticket'
 import { MultiOutletInterface } from './index'
+import { EAS_RPC_CONFIG } from '../../core/eas'
 
 interface TicketStorageSchema {
 	[collectionHash: string]: StoredTicketRecord[]
 }
 
 export class TicketStorage {
-	// private keysArray: KeysArray
 	private easManager: EasTicketAttestation
 
-	private ticketCollections: TicketStorageSchema
+	private ticketCollections: TicketStorageSchema = {}
 
 	private static LOCAL_STORAGE_KEY = 'tn-tokens'
 
@@ -25,8 +25,7 @@ export class TicketStorage {
 	constructor(private config: MultiOutletInterface) {
 		this.processSigningKeys()
 
-		// @ts-ignore
-		this.easManager = new EasTicketAttestation(DEFAULT_EAS_SCHEMA, this.config.eas.config, this.config.eas.provider, this.signingKeys)
+		this.easManager = new EasTicketAttestation(DEFAULT_EAS_SCHEMA, undefined, EAS_RPC_CONFIG, this.signingKeys)
 
 		this.loadTickets()
 	}
@@ -55,9 +54,9 @@ export class TicketStorage {
 
 	public async importTicketFromMagicLink(urlParams: URLSearchParams) {
 		// TODO: Remove these and replace with static config
-		const tokenFromQuery = decodeURIComponent(urlParams.get(this.config.tokenUrlName))
-		const secretFromQuery = urlParams.get(this.config.tokenSecretName)
-		const idFromQuery = urlParams.has(this.config.tokenIdName) ? urlParams.get(this.config.tokenIdName) : ''
+		const tokenFromQuery = decodeURIComponent(urlParams.get('ticket'))
+		const secretFromQuery = urlParams.get('secret')
+		const idFromQuery = urlParams.has('id') ? urlParams.get('id') : ''
 		const typeFromQuery = (urlParams.has('type') ? urlParams.get('type') : 'asn') as TokenType
 
 		if (!(tokenFromQuery && secretFromQuery)) throw new Error('Incomplete token params in URL.')
@@ -186,9 +185,9 @@ export class TicketStorage {
 			let decodedToken = new readSignedTicket(base64ToUint8array(token))
 
 			// TODO: Validate ASN.1 tokens when they are imported
-			if (!decodedToken || !decodedToken[this.config.unsignedTokenDataName]) throw new Error('Failed to decode token.')
+			if (!decodedToken || !decodedToken['ticket']) throw new Error('Failed to decode token.')
 
-			tokenData = this.propsArrayBufferToHex(decodedToken[this.config.unsignedTokenDataName])
+			tokenData = this.propsArrayBufferToHex(decodedToken['ticket'])
 		}
 
 		return tokenData
@@ -206,7 +205,7 @@ export class TicketStorage {
 	private async updateOrInsertTicket(collectionHash: string, tokenRecord: StoredTicketRecord) {
 		const collectionTickets = this.ticketCollections[collectionHash] ?? []
 
-		for (const [index, ticket] of collectionTickets.entries()) {
+		for (const [index, ticket] of Object.entries(collectionTickets)) {
 			// TODO: Can be removed with multi-outlet
 			// Backward compatibility with old data
 			if (!ticket.tokenId || !ticket.type) {
@@ -216,12 +215,14 @@ export class TicketStorage {
 
 			if (ticket.tokenId === tokenRecord.tokenId) {
 				collectionTickets[index] = tokenRecord
+				this.ticketCollections[collectionHash] = collectionTickets
 				this.storeTickets()
 				return
 			}
 		}
 
 		collectionTickets.push(tokenRecord)
+		this.ticketCollections[collectionHash] = collectionTickets
 		this.storeTickets()
 	}
 
@@ -235,7 +236,7 @@ export class TicketStorage {
 
 	private loadTickets() {
 		try {
-			if (!localStorage.getItem(this.config.itemStorageKey)) return
+			if (!localStorage.getItem(TicketStorage.LOCAL_STORAGE_KEY)) return
 
 			this.ticketCollections = JSON.parse(localStorage.getItem(TicketStorage.LOCAL_STORAGE_KEY)) as unknown as TicketStorageSchema
 		} catch (e) {
