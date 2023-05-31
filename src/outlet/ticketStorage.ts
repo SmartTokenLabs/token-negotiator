@@ -7,6 +7,7 @@ import { uint8tohex } from '@tokenscript/attestation/dist/libs/utils'
 import { Ticket } from '@tokenscript/attestation/dist/Ticket'
 import { OutletInterface } from './index'
 import { EAS_RPC_CONFIG } from '../core/eas'
+import { OffChainTokenConfig } from '../client/interface'
 
 export type TokenType = 'asn' | 'eas'
 
@@ -68,7 +69,7 @@ export class TicketStorage {
 
 	private signingKeys: { [eventId: string]: KeyPair[] } = {}
 
-	constructor(private issuers?: OutletIssuerInterface[]) {
+	constructor(private issuers: OutletIssuerInterface[] | OffChainTokenConfig[]) {
 		this.processSigningKeys()
 
 		this.easManager = new EasTicketAttestation(DEFAULT_EAS_SCHEMA, undefined, EAS_RPC_CONFIG, this.signingKeys)
@@ -130,7 +131,7 @@ export class TicketStorage {
 	 * @param request
 	 * @param filter
 	 */
-	public async getDecodedTokens(request: IssuerHashMap, filter?: FilterInterface) {
+	public async getDecodedTokens(request: IssuerHashMap) {
 		const result: { [collectionId: string]: DecodedToken[] } = {}
 
 		for (const collectionId in request) {
@@ -148,35 +149,11 @@ export class TicketStorage {
 					}),
 				)
 
-				if (filter) tokens = TicketStorage.filterTokens(tokens, filter)
-
 				result[collectionId].push(...tokens)
 			}
 		}
 
 		return result
-	}
-
-	private static filterTokens(decodedTokens: DecodedToken[], filter: FilterInterface = {}) {
-		let res: DecodedToken[] = []
-
-		if (decodedTokens.length && typeof filter === 'object' && Object.keys(filter).length) {
-			let filterKeys = Object.keys(filter)
-
-			decodedTokens.forEach((token: DecodedToken) => {
-				let fitFilter = 1
-
-				filterKeys.forEach((key) => {
-					if (token[key] && token[key].toString() !== filter[key].toString()) fitFilter = 0
-				})
-
-				if (fitFilter) res.push(token)
-			})
-
-			return res
-		} else {
-			return decodedTokens
-		}
 	}
 
 	// TODO: This is for authentication and needs to be reworked to support multiple issuers at a time

@@ -3,9 +3,14 @@ import { DecodedToken, FilterInterface, TicketStorage } from './ticketStorage'
 import { IssuerHashMap, logger } from '../utils'
 import { OutletIssuerInterface } from './index'
 import { URLSearchParams } from 'url'
+import { OffChainTokenConfig } from '../client/interface'
 
 export class LocalOutlet {
-	private ticketStorage = new TicketStorage()
+	private ticketStorage: TicketStorage
+
+	constructor(issuers: OffChainTokenConfig[]) {
+		this.ticketStorage = new TicketStorage(issuers)
+	}
 
 	public async readMagicLink(urlParams: URLSearchParams) {
 		try {
@@ -19,8 +24,8 @@ export class LocalOutlet {
 		}
 	}
 
-	async getTokens(request: IssuerHashMap, filter?: FilterInterface) {
-		return this.ticketStorage.getDecodedTokens(request, filter)
+	async getTokens(request: IssuerHashMap) {
+		return this.ticketStorage.getDecodedTokens(request)
 	}
 
 	async authenticate(

@@ -95,11 +95,6 @@ export class Outlet {
 		return key
 	}
 
-	getFilter() {
-		const filter = this.getDataFromQuery('filter')
-		return filter ? JSON.parse(filter) : {}
-	}
-
 	async modalDialogEventHandler(evtid: any, access: string) {
 		const action = await this.whitelistCheck(evtid, access === 'write' ? 'write' : 'read')
 		if (action === 'user-accept') await this.sendTokens(evtid)
@@ -345,7 +340,7 @@ export class Outlet {
 	private async sendTokens(evtid: any) {
 		const requestHashes = JSON.parse(this.getDataFromQuery('request'))
 
-		let issuerTokens = await this.ticketStorage.getDecodedTokens(requestHashes, this.getFilter())
+		let issuerTokens = await this.ticketStorage.getDecodedTokens(requestHashes)
 
 		logger(2, 'issuerTokens: (Outlet.sendTokens)', issuerTokens)
 

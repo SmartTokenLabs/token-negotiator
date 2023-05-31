@@ -2,7 +2,6 @@ import { URLNS } from '../core/messaging'
 import { KeyPair } from '@tokenscript/attestation/dist/libs/KeyPair'
 import { sha256 } from 'ethers/lib/utils'
 import { OffChainTokenConfig } from '../client/interface'
-import { hash } from 'tweetnacl'
 import { OutletIssuerInterface } from '../outlet'
 
 export interface IssuerHashMap {
@@ -16,7 +15,7 @@ declare global {
 }
 
 export function logger(level: number, ...args: any[]) {
-	if (!window.DISPLAY_DEBUG_LEVEL || level > parseInt(window.DISPLAY_DEBUG_LEVEL)) return
+	// if (!window.DISPLAY_DEBUG_LEVEL || level > parseInt(window.DISPLAY_DEBUG_LEVEL)) return
 	console.log(...args)
 }
 
@@ -223,7 +222,7 @@ export const createIssuerHashArray = (issuer: OffChainTokenConfig | OutletIssuer
 		if (!Array.isArray(keys)) keys = [keys]
 
 		for (const key of keys) {
-			hashes[issuer.collectionID].push(createOffChainCollectionHash(key, eventId))
+			hashes.push(createOffChainCollectionHash(key, eventId))
 		}
 	}
 
