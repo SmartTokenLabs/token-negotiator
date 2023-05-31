@@ -50,7 +50,7 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 		let data
 
 		if (new URL(issuerConfig.tokenOrigin).origin === window.location.origin) {
-			const localOutlet = new LocalOutlet()
+			const localOutlet = new LocalOutlet(Object.values(this.client.getTokenStore().getCurrentIssuers(false)) as OffChainTokenConfig[])
 
 			const issuerHashes = createIssuerHashArray(issuerConfig)
 

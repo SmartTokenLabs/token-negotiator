@@ -531,8 +531,6 @@ export class Client {
 	}
 
 	readTokensFromUrl() {
-		let issuers = this.tokenStore.getCurrentIssuers(false)
-
 		let action = this.getDataFromQuery('action')
 
 		if (action === 'error') {
@@ -543,41 +541,22 @@ export class Client {
 
 		if (action !== OutletAction.GET_ISSUER_TOKENS + '-response') return
 
-		let issuer = this.getDataFromQuery('issuer')
-
-		if (!issuer) {
+		if (!this.getDataFromQuery('tokens')) {
 			logger(3, 'No issuer in URL.')
-			return
-		}
-
-		const issuerConfig = issuers[issuer] as OffChainTokenConfig
-		if (!issuerConfig) {
-			logger(3, `No issuer config for "${issuer}" in URL.`)
 			return
 		}
 
 		let tokens
 
 		try {
-			if (new URL(issuerConfig.tokenOrigin).origin !== window.location.origin) {
-				// TODO make solution:
-				// in case if we have multiple tokens then redirect flow will not work
-				// because page will reload on first remote token
-
-				let resposeTokensEncoded = this.getDataFromQuery('tokens')
-				try {
-					tokens = JSON.parse(resposeTokensEncoded) as OutletTokenResult
-				} catch (e) {
-					logger(2, 'Error parse tokens from Response. ', e)
-				}
+			let resposeTokensEncoded = this.getDataFromQuery('tokens')
+			try {
+				tokens = JSON.parse(resposeTokensEncoded) as OutletTokenResult
+			} catch (e) {
+				logger(2, 'Error parse tokens from Response. ', e)
 			}
 		} catch (err) {
 			logger(1, 'Error read tokens from URL')
-			return
-		}
-
-		if (!tokens) {
-			logger(2, `No tokens for "${issuer}" in URL.`)
 			return
 		}
 
