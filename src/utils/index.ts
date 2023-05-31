@@ -2,8 +2,7 @@ import { URLNS } from '../core/messaging'
 import { KeyPair } from '@tokenscript/attestation/dist/libs/KeyPair'
 import { sha256 } from 'ethers/lib/utils'
 import { OffChainTokenConfig } from '../client/interface'
-import { TextEncoder, TextDecoder } from 'util'
-import { Attestation } from '@tokenscript/attestation/dist/libs/Attestation'
+import { TextEncoder } from 'util'
 
 export interface IssuerHashMap {
 	[collectionId: string]: string[]
