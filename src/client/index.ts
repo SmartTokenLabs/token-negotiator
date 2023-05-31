@@ -1,14 +1,6 @@
 import { OutletAction, OutletResponseAction, Messaging } from './messaging'
 import { Ui, UiInterface, UItheme } from './ui'
-import {
-	logger,
-	requiredParams,
-	waitForElementToExist,
-	errorHandler,
-	removeUrlSearchParams,
-	createOffChainCollectionHash,
-	createIssuerHashMap,
-} from '../utils'
+import { logger, requiredParams, waitForElementToExist, errorHandler, removeUrlSearchParams, createIssuerMap } from '../utils'
 import { getNftCollection, getNftTokens } from '../utils/token/nftProvider'
 import { Authenticator } from '@tokenscript/attestation'
 import { TokenStore } from './tokenStore'
@@ -717,13 +709,11 @@ export class Client {
 	}
 
 	public prepareMultiOutletRequest(initialIssuer: OffChainTokenConfig) {
-		const requestBatch = [initialIssuer]
-
+		const requestBatchOfSameOutletIssuers = [initialIssuer]
 		for (const issuer of Object.values(this.tokenStore.getCurrentIssuers(false)) as OffChainTokenConfig[]) {
-			if (issuer.tokenOrigin === initialIssuer.tokenOrigin) requestBatch.push(issuer)
+			if (issuer.tokenOrigin === initialIssuer.tokenOrigin) requestBatchOfSameOutletIssuers.push(issuer)
 		}
-
-		return createIssuerHashMap(requestBatch)
+		return createIssuerMap(requestBatchOfSameOutletIssuers)
 	}
 
 	private async loadRemoteOutletTokens(issuer: OffChainTokenConfig): Promise<unknown[] | void> {
@@ -731,12 +721,15 @@ export class Client {
 			issuer: OffChainTokenConfig
 			filter?: {}
 			access?: string
+			multiIssuer?: any
 		} = {
 			issuer: issuer,
 			filter: issuer.filters,
 		}
 
 		if (issuer.accessRequestType) data.access = issuer.accessRequestType
+
+		data.multiIssuer = this.prepareMultiOutletRequest(issuer)
 
 		const redirectRequired = shouldUseRedirectMode(this.config.offChainRedirectMode)
 

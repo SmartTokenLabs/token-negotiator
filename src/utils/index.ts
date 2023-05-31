@@ -1,8 +1,9 @@
 import { URLNS } from '../core/messaging'
 import { KeyPair } from '@tokenscript/attestation/dist/libs/KeyPair'
-import { sha256 } from 'ethers/lib/utils'
+import { base64, sha256 } from 'ethers/lib/utils'
 import { OffChainTokenConfig } from '../client/interface'
 import { TextEncoder, TextDecoder } from 'util'
+import { Attestation } from '@tokenscript/attestation/dist/libs/Attestation'
 
 export interface IssuerHashMap {
 	[collectionId: string]: string[]
@@ -203,27 +204,29 @@ export const hexStringToUint8Array = (hexString: string): Uint8Array => {
 	return uint8Array
 }
 
-export const createIssuerHashMap = (issuers: OffChainTokenConfig[]): IssuerHashMap => {
+const outletData = {
+	devcon: {},
+}
+
+export const createIssuerMap = (issuers: any[]) => {
 	const hashObj = {}
 
 	for (const issuer of issuers) {
-		hashObj[issuer.collectionID] = []
-
-		const keysArr = KeyPair.parseKeyArrayStrings(issuer.base64senderPublicKeys)
-
-		for (let [eventId, keys] of Object.entries(keysArr)) {
-			if (!Array.isArray(keys)) keys = [keys]
-
-			for (const key of keys) {
-				hashObj[issuer.collectionID].push(createOffChainCollectionHash(key, eventId))
-			}
-		}
+		hashObj[issuer.collectionID] = issuer
+		// TODO trim the data down to just what we need e.g.
+		// hashObj[issuer.collectionID].collectionID = issuer.collectionID
 	}
 
-	return hashObj
-}
+	// example output structure (after base64 decoded)
+	// {
+	// 	devcon: {
+	// 		...key values
+	// 	},
+	// 	edcon: {
+	// 		...key values
+	// 	},
+	// }
 
-export const createOffChainCollectionHash = (key: KeyPair, eventId: string) => {
-	const encoder = new TextEncoder()
-	return sha256(encoder.encode(key.getPublicKeyAsHexStr() + '-' + eventId))
+	if (typeof Buffer === 'undefined') return btoa(JSON.stringify(hashObj))
+	else return Buffer.from(JSON.stringify(hashObj)).toString('base64')
 }

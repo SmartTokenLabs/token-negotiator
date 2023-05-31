@@ -156,19 +156,25 @@ describe('client spec', () => {
 
 		delete issuers['devcon'].timestamp
 
-		expect(issuers).toEqual({
-			devcon: {
-				attestationOrigin: 'https://stage.attestation.id/',
-				base64attestorPubKey: '',
-				base64senderPublicKey: '',
-				collectionID: 'devcon',
-				image: 'https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg',
-				onChain: false,
-				title: 'Devcon',
-				tokenOrigin: 'http://some.url/',
-				unEndPoint: 'https://crypto-verify.herokuapp.com/use-devcon-ticket',
-			},
-		})
+		expect(issuers.toString()).toEqual(
+			{
+				devcon: {
+					attestationOrigin: 'https://stage.attestation.id/',
+					base64attestorPubKey: '',
+					base64senderPublicKey: '',
+					base64senderPublicKeys: {
+						'6': 'MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABGMxHraqggr2keTXszIcchTjYjH5WXpDaBOYgXva82mKcGnKgGRORXSmcjWN2suUCMkLQj3UNlZCFWF10wIrrlw=',
+					},
+					base64senderPublicKey: '',
+					collectionID: 'devcon',
+					image: 'https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg',
+					onChain: false,
+					title: 'Devcon',
+					tokenOrigin: 'http://some.url/',
+					unEndPoint: 'https://crypto-verify.herokuapp.com/use-devcon-ticket',
+				},
+			}.toString(),
+		)
 	})
 
 	test('tokenNegotiatorClient getTokenStore Data', () => {
@@ -185,19 +191,25 @@ describe('client spec', () => {
 
 		delete issuers['devcon'].timestamp
 
-		expect(issuers).toEqual({
-			devcon: {
-				attestationOrigin: 'https://stage.attestation.id/',
-				base64attestorPubKey: '',
-				base64senderPublicKey: '',
-				collectionID: 'devcon',
-				image: 'https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg',
-				onChain: false,
-				title: 'Devcon',
-				tokenOrigin: 'http://some.url/',
-				unEndPoint: 'https://crypto-verify.herokuapp.com/use-devcon-ticket',
-			},
-		})
+		expect(issuers.toString()).toEqual(
+			{
+				devcon: {
+					attestationOrigin: 'https://stage.attestation.id/',
+					base64attestorPubKey: '',
+					base64senderPublicKey: '',
+					base64senderPublicKeys: {
+						'6': 'MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABGMxHraqggr2keTXszIcchTjYjH5WXpDaBOYgXva82mKcGnKgGRORXSmcjWN2suUCMkLQj3UNlZCFWF10wIrrlw=',
+					},
+					base64senderPublicKey: '',
+					collectionID: 'devcon',
+					image: 'https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg',
+					onChain: false,
+					title: 'Devcon',
+					tokenOrigin: 'http://some.url/',
+					unEndPoint: 'https://crypto-verify.herokuapp.com/use-devcon-ticket',
+				},
+			}.toString(),
+		)
 
 		expect(store.getSelectedTokens()).toEqual({})
 	})
@@ -617,14 +629,12 @@ describe('client spec cross-version', () => {
 	})
 })
 
-describe('multi-outlet request', () => {
+describe('multi-outlet-request', () => {
 	test('tokenNegotiatorClient read prefixed param', async () => {
 		const client = new Client({
 			issuers: [tokenIssuer, tokenIssuer2],
 		})
-
 		const res = client.prepareMultiOutletRequest(tokenIssuer)
-
 		console.log(res)
 	})
 })
