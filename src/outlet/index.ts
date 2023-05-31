@@ -1,8 +1,8 @@
-import { logger, removeUrlSearchParams, requiredParams } from '../utils'
+import { createIssuerHashArray, logger, removeUrlSearchParams, requiredParams } from '../utils'
 import { ResponseActionBase, ResponseInterfaceBase, URLNS } from '../core/messaging'
 import { OutletAction, OutletResponseAction } from '../client/messaging'
 import { AuthHandler, ProofResult } from './auth-handler'
-import { TicketStorage } from './ticketStorage'
+import { DecodedToken, TicketStorage } from './ticketStorage'
 import { SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
 import { AsnParser } from '@peculiar/asn1-schema'
 
@@ -125,7 +125,7 @@ export class Outlet {
 					break
 				}
 				case OutletAction.EMAIL_ATTEST_CALLBACK: {
-					/* const requesterURL = this.redirectCallbackUrl
+					const requesterURL = this.redirectCallbackUrl
 					const issuer = this.getDataFromQuery('issuer')
 
 					try {
@@ -136,9 +136,11 @@ export class Outlet {
 						const attestationBlob = this.getDataFromQuery('attestation')
 						const attestationSecret = '0x' + this.getDataFromQuery('requestSecret')
 
-						const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(token)
+						const issuerConfig = this.getIssuerConfigById(issuer)
 
-						const useToken = await AuthHandler.getUseToken(this.tokenConfig, attestationBlob, attestationSecret, ticketRecord)
+						const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(createIssuerHashArray(issuerConfig), token)
+
+						const useToken = await AuthHandler.getUseToken(issuerConfig, attestationBlob, attestationSecret, ticketRecord)
 
 						if (requesterURL) {
 							const params = new URLSearchParams(requesterURL.hash.substring(1))
@@ -164,18 +166,16 @@ export class Outlet {
 						this.dispatchAuthCallbackEvent(issuer, null, e.message)
 					}
 
-					window.location.hash = removeUrlSearchParams(this.urlParams, ['attestation', 'requestSecret', 'address', 'wallet']).toString()*/
-
-					throw new Error('Not implemented for multi-outlet!!')
+					window.location.hash = removeUrlSearchParams(this.urlParams, ['attestation', 'requestSecret', 'address', 'wallet']).toString()
 
 					break
 				}
 				case OutletAction.GET_PROOF: {
-					/* const token: string = this.getDataFromQuery('token')
+					const token: string = this.getDataFromQuery('token')
 					const wallet: string = this.getDataFromQuery('wallet')
 					const address: string = this.getDataFromQuery('address')
 					requiredParams(token, 'unsigned token is missing')
-					await this.sendTokenProof(evtid, token, address, wallet)*/
+					await this.sendTokenProof(evtid, token, address, wallet)
 
 					break
 				}
@@ -193,6 +193,14 @@ export class Outlet {
 			console.error(e)
 			this.sendErrorResponse(evtid, e?.message ?? e, this.getDataFromQuery('issuer'))
 		}
+	}
+
+	private getIssuerConfigById(collectionId: string) {
+		for (const issuer of this.tokenConfig.issuers) {
+			if (issuer.collectionID === collectionId) return issuer
+		}
+
+		throw new Error('Issuer ' + collectionId + ' not found')
 	}
 
 	public async readMagicLink() {
@@ -297,7 +305,7 @@ export class Outlet {
 		})
 	}
 
-	/* async sendTokenProof(evtid: any, token: any, address: string, wallet: string) {
+	async sendTokenProof(evtid: any, token: any, address: string, wallet: string) {
 		if (!token) return 'error'
 
 		const decodedToken = JSON.parse(token) as DecodedToken
@@ -305,9 +313,12 @@ export class Outlet {
 		const redirect = this.getDataFromQuery('redirect') === 'true' ? window.location.href : false
 
 		try {
-			const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(decodedToken)
+			// TODO: Add support for multiple issuers and multiple tokens, currently first issuer is hard-coded
+			const issuer = this.tokenConfig.issuers[0]
 
-			let authHandler = new AuthHandler(this.tokenConfig, ticketRecord, decodedToken, address, wallet, redirect, this, evtid)
+			const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(createIssuerHashArray(issuer), decodedToken)
+
+			let authHandler = new AuthHandler(issuer, ticketRecord, decodedToken, address, wallet, redirect, this, evtid)
 
 			let tokenProof = await authHandler.authenticate()
 
@@ -315,7 +326,7 @@ export class Outlet {
 				evtid: evtid,
 				evt: OutletResponseAction.PROOF,
 				data: {
-					issuer: this.tokenConfig.collectionID,
+					issuer: issuer.collectionID,
 					...tokenProof,
 				},
 			})
@@ -326,7 +337,7 @@ export class Outlet {
 
 			this.sendErrorResponse(evtid, e.message)
 		}
-	}*/
+	}
 
 	// TODO: Consolidate redirect callback for tokens, proof & errors into the sendMessageResponse function to remove duplication
 	private async sendTokens(evtid: any) {

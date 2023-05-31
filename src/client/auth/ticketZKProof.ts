@@ -5,8 +5,8 @@ import { Authenticator } from '@tokenscript/attestation'
 import { SignedUNChallenge } from './signedUNChallenge'
 import { UNInterface } from './util/UN'
 import { LocalOutlet } from '../../outlet/localOutlet'
-import { defaultConfig, OutletInterface, OutletIssuerInterface } from '../../outlet'
-import { logger } from '../../utils'
+import { OutletIssuerInterface } from '../../outlet'
+import { createIssuerHashArray, logger } from '../../utils'
 import { shouldUseRedirectMode } from '../../utils/support/getBrowserData'
 import { EasZkProof } from '@tokenscript/attestation/dist/eas/EasZkProof'
 import { DEFAULT_EAS_SCHEMA, TokenType } from '../../outlet/ticketStorage'
@@ -52,8 +52,7 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 		if (new URL(issuerConfig.tokenOrigin).origin === window.location.origin) {
 			const localOutlet = new LocalOutlet()
 
-			// TODO: Update to populate issuer hashes
-			const issuerHashes = []
+			const issuerHashes = createIssuerHashArray(issuerConfig)
 
 			data = await localOutlet.authenticate(
 				issuerConfig as OffChainTokenConfig & OutletIssuerInterface,
