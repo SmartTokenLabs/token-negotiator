@@ -37,8 +37,6 @@ declare global {
 /* URL namespace is used to avoid possible collisions with URL parameter names */
 export const URLNS = 'tn-'
 
-const PREFIXES = parseInt(VERSION) <= 2 ? ['', URLNS] : [URLNS]
-
 export class Messaging {
 	iframeStorageSupport: null | boolean = null
 	iframe: any = null
@@ -83,10 +81,7 @@ export class Messaging {
 		let id = Messaging.getUniqueEventId()
 		let newLocation = this.constructUrl(id, request)
 
-		// TODO change in MAJOR release
-		for (const prefix of PREFIXES) {
-			newLocation += `&${prefix}redirect=true&${prefix}requestor=${encodeURIComponent(redirectUrl)}`
-		}
+		newLocation += `&${URLNS}redirect=true&${URLNS}requestor=${encodeURIComponent(redirectUrl)}`
 
 		logger(2, `redirect from ${window.location.href} to ${newLocation}`)
 
@@ -268,55 +263,34 @@ export class Messaging {
 		}
 	}
 
-	// TODO: Use URLSearchParams object to build this query rather than manually constructing it
-	//		This will prevent edge-case encoding issues.
-	private constructUrl(id: any, request: RequestInterfaceBase) {
-		let url = `${request.origin}#`
+	private constructUrl(id: string, request: RequestInterfaceBase) {
+		const url = new URL(request.origin)
+		const params = new URLSearchParams()
 
-		// Notify outlet that param namespace is in use.
-		// This enables using the namespace when redirecting back to the client page in order to support older negotiator versions
-		url += `tn-ns=1`
+		params.set(URLNS + 'evtid', id)
+		params.set(URLNS + 'action', request.action)
 
-		// TODO change in MAJOR release
-		for (const prefix of PREFIXES) {
-			url += `&${prefix}evtid=${id}&${prefix}action=${request.action}`
-		}
-
-		// in request to Outlet() to get tokens we dont have any token
-		if (typeof request.data.token !== 'undefined') {
-			// TODO change in MAJOR release
-			for (const prefix of PREFIXES) {
-				url += `&${prefix}token=${encodeURIComponent(JSON.stringify(request.data.token))}`
-			}
-		}
+		let extraParams = ''
 
 		for (let key in request.data) {
 			let value = request.data[key]
 
-			// no sense to send issuer config. Outlet() use own config,
-			// it can be dangerous if Outlet beleive to external config from URL HASH
-			if (key === 'issuer' || key === 'token') continue
-
 			if (!value) continue
 
 			if (value instanceof Array || value instanceof Object) {
-				// TODO change in MAJOR release
-				for (const prefix of PREFIXES) {
-					url += `&${prefix}${key}=${JSON.stringify(value)}`
-				}
+				params.set(URLNS + key, JSON.stringify(value))
 			} else {
 				if (key === 'urlParams') {
-					url += `&${value}`
+					extraParams += `&${value}`
 				} else {
-					// TODO change in MAJOR release
-					for (const prefix of PREFIXES) {
-						url += `&${prefix}${key}=${value}`
-					}
+					params.set(URLNS + key, value)
 				}
 			}
 		}
 
-		return url
+		url.hash = params.toString()
+
+		return url.toString() + extraParams
 	}
 
 	public openTab(url: string) {
