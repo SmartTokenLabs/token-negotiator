@@ -1,40 +1,34 @@
-import { logger, requiredParams, removeUrlSearchParams } from '../utils'
+import { logger, removeUrlSearchParams, requiredParams } from '../utils'
+import { ResponseActionBase, ResponseInterfaceBase, URLNS } from '../core/messaging'
 import { OutletAction, OutletResponseAction } from '../client/messaging'
 import { AuthHandler, ProofResult } from './auth-handler'
+import { TicketStorage } from './ticketStorage'
 import { SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
 import { AsnParser } from '@peculiar/asn1-schema'
-import { ResponseActionBase, ResponseInterfaceBase, URLNS } from '../core/messaging'
-import { EASSignerOrProvider } from '@tokenscript/attestation/dist/eas/EasTicketAttestation'
-import { DecodedToken, TicketStorage } from './ticketStorage'
 
-export interface OutletInterface {
+export interface OutletIssuerInterface {
 	collectionID: string
 	title?: string
+	tokenOrigin?: string
 	attestationOrigin: string
-	attestationInTab?: boolean
 	tokenParser?: any
 	base64senderPublicKeys: { [key: string]: string }
 	base64attestorPubKey: string
-	signedTokenWhitelist?: string[]
+	// signedTokenWhitelist?: string[]
+}
 
-	whitelistDialogWidth: string
-	whitelistDialogHeight: string
+export interface OutletInterface {
+	issuers: OutletIssuerInterface[]
+
+	whitelistDialogWidth?: string
+	whitelistDialogHeight?: string
 	whitelistDialogRenderer?: (permissionTxt: string, acceptBtn: string, denyBtn: string) => string
 
-	tokenUrlName?: string
-	tokenSecretName?: string
-	tokenIdName?: string
-	unsignedTokenDataName?: string
-	itemStorageKey?: string
-	tokenOrigin?: string
+	// TODO: Move to token specific config
+	signedTokenWhitelist?: string[]
 }
 
 export const defaultConfig = {
-	tokenUrlName: 'ticket',
-	tokenSecretName: 'secret',
-	tokenIdName: 'mail',
-	unsignedTokenDataName: 'ticket',
-	itemStorageKey: 'dcTokens',
 	signedTokenWhitelist: [],
 	whitelistDialogWidth: '450px',
 	whitelistDialogHeight: '350px',
@@ -52,22 +46,16 @@ export class readSignedTicket {
 }
 
 export class Outlet {
-	tokenConfig: OutletInterface
-	urlParams?: URLSearchParams
-	ticketStorage: TicketStorage
+	private ticketStorage: TicketStorage
 
-	singleUse = false
+	urlParams?: URLSearchParams
 
 	redirectCallbackUrl?: URL
 
-	constructor(config: OutletInterface, singleUse = false, urlParams: any = null) {
-		this.tokenConfig = Object.assign(defaultConfig, config)
-		this.singleUse = singleUse
+	constructor(private tokenConfig: OutletInterface, urlParams: any = null) {
+		this.tokenConfig = Object.assign(defaultConfig, tokenConfig)
 
-		if (!this.tokenConfig.tokenParser) {
-			this.tokenConfig.tokenParser = readSignedTicket
-		}
-
+		// TODO: Whitelist per collectionId
 		this.tokenConfig.signedTokenWhitelist = this.tokenConfig.signedTokenWhitelist.map((origin) => {
 			try {
 				return new URL(origin).origin
@@ -76,7 +64,7 @@ export class Outlet {
 			}
 		})
 
-		this.ticketStorage = new TicketStorage(this.tokenConfig)
+		this.ticketStorage = new TicketStorage(this.tokenConfig.issuers)
 
 		if (urlParams) {
 			this.urlParams = urlParams
@@ -85,13 +73,10 @@ export class Outlet {
 			this.urlParams = new URLSearchParams(params)
 		}
 
-		if (!this.singleUse) {
-			this.pageOnLoadEventHandler()
-				.then()
-				.catch((e) => {
-					logger(2, 'Outlet pageOnLoadEventHandler error: ' + e.message)
-				})
-		}
+		this.pageOnLoadEventHandler().catch((e) => {
+			console.error(e)
+			logger(2, 'Outlet pageOnLoadEventHandler error: ' + e.message)
+		})
 	}
 
 	getDataFromQuery(itemKey: string): string {
@@ -133,8 +118,6 @@ export class Outlet {
 
 		logger(2, 'Outlet received event ID ' + evtid + ' action ' + action + ' at ' + window.location.href)
 
-		// TODO: should issuer be validated against requested issuer?
-
 		try {
 			switch (action) {
 				case OutletAction.GET_ISSUER_TOKENS: {
@@ -142,7 +125,7 @@ export class Outlet {
 					break
 				}
 				case OutletAction.EMAIL_ATTEST_CALLBACK: {
-					const requesterURL = this.redirectCallbackUrl
+					/* const requesterURL = this.redirectCallbackUrl
 					const issuer = this.getDataFromQuery('issuer')
 
 					try {
@@ -181,25 +164,28 @@ export class Outlet {
 						this.dispatchAuthCallbackEvent(issuer, null, e.message)
 					}
 
-					window.location.hash = removeUrlSearchParams(this.urlParams, ['attestation', 'requestSecret', 'address', 'wallet']).toString()
+					window.location.hash = removeUrlSearchParams(this.urlParams, ['attestation', 'requestSecret', 'address', 'wallet']).toString()*/
+
+					throw new Error('Not implemented for multi-outlet!!')
 
 					break
 				}
 				case OutletAction.GET_PROOF: {
-					const token: string = this.getDataFromQuery('token')
+					/* const token: string = this.getDataFromQuery('token')
 					const wallet: string = this.getDataFromQuery('wallet')
 					const address: string = this.getDataFromQuery('address')
 					requiredParams(token, 'unsigned token is missing')
-					await this.sendTokenProof(evtid, token, address, wallet)
+					await this.sendTokenProof(evtid, token, address, wallet)*/
+
 					break
 				}
 				default: {
 					// TODO: Remove singleUse - this is only needed in negotiator that calls readMagicLink.
 					//  move single link somewhere that it can be used by both Outlet & LocalOutlet
-					if (!this.singleUse) {
-						await this.readMagicLink()
-						await this.modalDialogEventHandler(evtid, 'write')
-					}
+					// if (!this.singleUse) {
+					await this.readMagicLink()
+					// await this.modalDialogEventHandler(evtid, 'write')
+					// }
 					break
 				}
 			}
@@ -256,7 +242,10 @@ export class Outlet {
 		/* || storageAccessRequired */
 		return new Promise<any>((resolve, reject) => {
 			const typeTxt = whiteListType === 'read' ? 'read' : 'read & write'
-			const permissionTxt = `${origin} is requesting ${typeTxt} access to your ${this.tokenConfig.title} tickets`
+			const permissionTxt = `${origin} is requesting ${typeTxt} access to your tickets`
+
+			// TODO: Dialog should display title & icon list for all configured issuers
+
 			const acceptBtn = '<button style="cursor: pointer" id="tn-access-accept">Accept</button>'
 			const denyBtn = '<button style="cursor: pointer" id="tn-access-deny">Deny</button>'
 
@@ -308,7 +297,7 @@ export class Outlet {
 		})
 	}
 
-	async sendTokenProof(evtid: any, token: any, address: string, wallet: string) {
+	/* async sendTokenProof(evtid: any, token: any, address: string, wallet: string) {
 		if (!token) return 'error'
 
 		const decodedToken = JSON.parse(token) as DecodedToken
@@ -337,11 +326,13 @@ export class Outlet {
 
 			this.sendErrorResponse(evtid, e.message)
 		}
-	}
+	}*/
 
 	// TODO: Consolidate redirect callback for tokens, proof & errors into the sendMessageResponse function to remove duplication
 	private async sendTokens(evtid: any) {
-		let issuerTokens = await this.ticketStorage.getDecodedTokens(this.getFilter())
+		const requestHashes = JSON.parse(this.getDataFromQuery('request'))
+
+		let issuerTokens = await this.ticketStorage.getDecodedTokens(requestHashes, this.getFilter())
 
 		logger(2, 'issuerTokens: (Outlet.sendTokens)', issuerTokens)
 
@@ -351,7 +342,7 @@ export class Outlet {
 
 				const params = new URLSearchParams(url.hash.substring(1))
 				params.set(this.getCallbackUrlKey('action'), OutletAction.GET_ISSUER_TOKENS + '-response')
-				params.set(this.getCallbackUrlKey('issuer'), this.tokenConfig.collectionID)
+				// params.set(this.getCallbackUrlKey('issuer'), this.tokenConfig.collectionID)
 				params.set(this.getCallbackUrlKey('tokens'), JSON.stringify(issuerTokens))
 
 				url.hash = '#' + params.toString()
@@ -372,7 +363,7 @@ export class Outlet {
 			evtid: evtid,
 			evt: OutletResponseAction.ISSUER_TOKENS,
 			data: {
-				issuer: this.tokenConfig.collectionID,
+				// issuer: this.tokenConfig.collectionID,
 				tokens: issuerTokens,
 			},
 		})
@@ -384,7 +375,7 @@ export class Outlet {
 
 			const params = new URLSearchParams(url.hash.substring(1))
 			params.set(this.getCallbackUrlKey('action'), ResponseActionBase.ERROR)
-			params.set(this.getCallbackUrlKey('issuer'), issuer || this.tokenConfig.collectionID)
+			params.set(this.getCallbackUrlKey('issuer'), issuer)
 			params.set(this.getCallbackUrlKey('type'), type)
 			params.set(this.getCallbackUrlKey('error'), error)
 
@@ -414,19 +405,6 @@ export class Outlet {
 		window.location.href = requesterURL.href
 	}
 
-	private isSameOrigin() {
-		try {
-			let tokenUrl = new URL(this.tokenConfig.tokenOrigin)
-			if (tokenUrl.origin === window.location.origin) {
-				return true
-			} else {
-				return false
-			}
-		} catch (e) {
-			return false
-		}
-	}
-
 	public sendMessageResponse(response: ResponseInterfaceBase) {
 		if (!document.referrer) {
 			return
@@ -442,23 +420,6 @@ export class Outlet {
 
 		if (target) {
 			target.postMessage(response, '*')
-		}
-
-		// TODO: this is probably no longer needed as brave is set to always use redirect mode now
-		if (!this.isSameOrigin()) {
-			let style = `
-				background: #eee;
-				padding: 10px;
-				color: #000;
-				display: inline-block;
-				border-radius: 4px;
-				font-size: 1.2em;
-				box-shadow: rgb(0 0 0 / 35%) 0px 5px 15px;
-			`
-			let div = document.createElement('div')
-			div.innerHTML = 'Data sent. Please close the tab and back to main app.'
-			div.setAttribute('style', style)
-			document.body.appendChild(div)
 		}
 	}
 }

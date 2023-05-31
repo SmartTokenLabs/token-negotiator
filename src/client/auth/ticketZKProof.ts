@@ -5,7 +5,7 @@ import { Authenticator } from '@tokenscript/attestation'
 import { SignedUNChallenge } from './signedUNChallenge'
 import { UNInterface } from './util/UN'
 import { LocalOutlet } from '../../outlet/localOutlet'
-import { defaultConfig, OutletInterface } from '../../outlet'
+import { defaultConfig, OutletInterface, OutletIssuerInterface } from '../../outlet'
 import { logger } from '../../utils'
 import { shouldUseRedirectMode } from '../../utils/support/getBrowserData'
 import { EasZkProof } from '@tokenscript/attestation/dist/eas/EasZkProof'
@@ -50,9 +50,19 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 		let data
 
 		if (new URL(issuerConfig.tokenOrigin).origin === window.location.origin) {
-			const localOutlet = new LocalOutlet(issuerConfig as OffChainTokenConfig & OutletInterface)
+			const localOutlet = new LocalOutlet()
 
-			data = await localOutlet.authenticate(tokens[0], address, wallet, redirectMode)
+			// TODO: Update to populate issuer hashes
+			const issuerHashes = []
+
+			data = await localOutlet.authenticate(
+				issuerConfig as OffChainTokenConfig & OutletIssuerInterface,
+				issuerHashes,
+				tokens[0],
+				address,
+				wallet,
+				redirectMode,
+			)
 		} else {
 			logger(2, 'run OutletAction.GET_PROOF at ', window.location.href)
 			let res = await this.messaging.sendMessage(

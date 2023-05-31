@@ -1,12 +1,13 @@
 import { ResponseActionBase, URLNS } from '../core/messaging'
 import { OutletAction } from '../client/messaging'
-import { Outlet, OutletInterface } from './index'
+import { Outlet, OutletInterface, OutletIssuerInterface } from './index'
 import { Authenticator } from '@tokenscript/attestation'
 import { logger, removeUrlSearchParams } from '../utils'
 import { isBrave } from '../utils/support/getBrowserData'
 import { DecodedToken, DEFAULT_EAS_SCHEMA, StoredTicketRecord, TokenType } from './ticketStorage'
 import { EasZkProof } from '@tokenscript/attestation/dist/eas/EasZkProof'
 import { EAS_RPC_CONFIG } from '../core/eas'
+import { OffChainTokenConfig } from '../client/interface'
 
 interface PostMessageData {
 	force?: boolean
@@ -79,7 +80,7 @@ export class AuthHandler {
 	private rejectHandler: Function
 
 	constructor(
-		private tokenConfig: OutletInterface,
+		private tokenConfig: OutletIssuerInterface,
 		private ticketRecord: StoredTicketRecord,
 		private decodedToken: DecodedToken,
 		private address?: string,
@@ -290,7 +291,7 @@ export class AuthHandler {
 	}
 
 	public static async getUseToken(
-		issuerConfig: OutletInterface,
+		issuerConfig: OutletIssuerInterface,
 		attestationBlob: string,
 		attestationSecret: string,
 		ticketRecord: StoredTicketRecord,

@@ -393,8 +393,8 @@ export class Client {
 
 		if (currentIssuer) {
 			logger(2, 'Sync Outlet fired in Client to read MagicLink before negotiate().')
-			let outlet = new Outlet(currentIssuer, true)
-			await outlet.readMagicLink()
+			let outlet = new LocalOutlet()
+			await outlet.readMagicLink(this.urlParams)
 			outlet = null
 		}
 
@@ -759,8 +759,9 @@ export class Client {
 	}
 
 	private async loadLocalOutletTokens(issuer: OffChainTokenConfig) {
-		const localOutlet = new LocalOutlet(issuer as OutletInterface & OffChainTokenConfig)
-		return await localOutlet.getTokens()
+		// TODO: Pass correct parameters
+		/* const localOutlet = new LocalOutlet(issuer as OutletInterface & OffChainTokenConfig)
+		return await localOutlet.getTokens()*/
 	}
 
 	updateSelectedTokens(selectedTokens) {
@@ -1015,7 +1016,8 @@ export class Client {
 				if (currentIssuer) {
 					logger(2, 'Outlet fired to parse URL hash params.')
 
-					let outlet = new Outlet(currentIssuer, true, this.urlParams)
+					// TODO: fix to use local outlet or utility function
+					/* let outlet = new LocalOutlet(currentIssuer, true, this.urlParams)
 					outlet
 						.pageOnLoadEventHandler()
 						.then(() => {
@@ -1023,7 +1025,7 @@ export class Client {
 						})
 						.catch((err) => {
 							logger(2, err)
-						})
+						})*/
 				}
 			}
 		}
