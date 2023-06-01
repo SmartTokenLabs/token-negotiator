@@ -84,7 +84,9 @@ export class Outlet {
 
 	getDataFromQuery(itemKey: string): string {
 		if (this.urlParams) {
-			return this.urlParams.get(URLNS + itemKey)
+			if (this.urlParams.has(URLNS + itemKey)) return this.urlParams.get(URLNS + itemKey)
+
+			return this.urlParams.get(itemKey) // Fallback to non-namespaced version for attestation.id parameters
 		}
 
 		return null
