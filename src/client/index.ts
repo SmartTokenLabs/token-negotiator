@@ -163,9 +163,7 @@ export class Client {
 
 	getDataFromQuery(itemKey: any): string {
 		if (this.urlParams) {
-			if (this.urlParams.has(URLNS + itemKey)) return this.urlParams.get(URLNS + itemKey)
-
-			return this.urlParams.get(itemKey) // Fallback to non-namespaced version for backward compatibility
+			return this.urlParams.get(URLNS + itemKey)
 		}
 
 		return null

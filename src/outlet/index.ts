@@ -81,18 +81,14 @@ export class Outlet {
 
 	getDataFromQuery(itemKey: string): string {
 		if (this.urlParams) {
-			if (this.urlParams.has(URLNS + itemKey)) return this.urlParams.get(URLNS + itemKey)
-
-			return this.urlParams.get(itemKey) // Fallback to non-namespaced version for backward compatibility
+			return this.urlParams.get(URLNS + itemKey)
 		}
 
 		return null
 	}
 
 	getCallbackUrlKey(key: string) {
-		if (this.getDataFromQuery('ns')) return URLNS + key
-
-		return key
+		return URLNS + key
 	}
 
 	async modalDialogEventHandler(evtid: any, access: string) {
@@ -177,12 +173,10 @@ export class Outlet {
 					break
 				}
 				default: {
-					// TODO: Remove singleUse - this is only needed in negotiator that calls readMagicLink.
-					//  move single link somewhere that it can be used by both Outlet & LocalOutlet
-					// if (!this.singleUse) {
-					await this.readMagicLink()
-					// await this.modalDialogEventHandler(evtid, 'write')
-					// }
+					if (this.getDataFromQuery('ticket')) {
+						await this.readMagicLink()
+						await this.modalDialogEventHandler(evtid, 'write')
+					}
 					break
 				}
 			}
