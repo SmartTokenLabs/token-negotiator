@@ -1,10 +1,11 @@
-import { createIssuerHashArray, logger, removeUrlSearchParams, requiredParams } from '../utils'
+import { createIssuerHashArray, createIssuerHashMap, IssuerHashMap, logger, removeUrlSearchParams, requiredParams } from '../utils'
 import { ResponseActionBase, ResponseInterfaceBase, URLNS } from '../core/messaging'
 import { OutletAction, OutletResponseAction } from '../client/messaging'
 import { AuthHandler, ProofResult } from './auth-handler'
 import { DecodedToken, TicketStorage } from './ticketStorage'
 import { SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
 import { AsnParser } from '@peculiar/asn1-schema'
+import { OffChainTokenConfig } from '../client/interface'
 
 export interface OutletIssuerInterface {
 	collectionID: string
@@ -48,6 +49,8 @@ export class readSignedTicket {
 export class Outlet {
 	private ticketStorage: TicketStorage
 
+	private issuerHashMap?: IssuerHashMap
+
 	urlParams?: URLSearchParams
 
 	redirectCallbackUrl?: URL
@@ -89,6 +92,11 @@ export class Outlet {
 
 	getCallbackUrlKey(key: string) {
 		return URLNS + key
+	}
+
+	getIssuerHashMap() {
+		if (!this.issuerHashMap) this.issuerHashMap = createIssuerHashMap(this.tokenConfig.issuers as unknown as OffChainTokenConfig[])
+		return this.issuerHashMap
 	}
 
 	async modalDialogEventHandler(evtid: any, access: string) {

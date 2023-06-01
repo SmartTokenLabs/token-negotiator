@@ -943,12 +943,15 @@ export class Client {
 
 		const redirectRequired = shouldUseRedirectMode(this.config.offChainRedirectMode)
 
+		const request = createIssuerHashMap(Object.values(this.tokenStore.getCurrentIssuers(false)) as OffChainTokenConfig[])
+
 		try {
 			let res = await this.messaging.sendMessage(
 				{
 					action: OutletAction.MAGIC_URL,
 					origin: url.origin + url.pathname,
 					data: {
+						request,
 						urlParams: params,
 					},
 				},
