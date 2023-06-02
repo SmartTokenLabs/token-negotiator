@@ -5,7 +5,8 @@ import { AuthHandler, ProofResult } from './auth-handler'
 import { DecodedToken, TicketStorage } from './ticketStorage'
 import { SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
 import { AsnParser } from '@peculiar/asn1-schema'
-import { OffChainTokenConfig } from '../client/interface'
+import { IssuerConfigInterface, OffChainTokenConfig } from '../client/interface'
+import { Whitelist } from './whitelist'
 
 export interface OutletIssuerInterface {
 	collectionID: string
@@ -15,22 +16,17 @@ export interface OutletIssuerInterface {
 	tokenParser?: any
 	base64senderPublicKeys: { [key: string]: string }
 	base64attestorPubKey: string
-	// signedTokenWhitelist?: string[]
+	whitelist?: string[]
 }
 
 export interface OutletInterface {
 	issuers: OutletIssuerInterface[]
-
 	whitelistDialogWidth?: string
 	whitelistDialogHeight?: string
 	whitelistDialogRenderer?: (permissionTxt: string, acceptBtn: string, denyBtn: string) => string
-
-	// TODO: Move to token specific config
-	signedTokenWhitelist?: string[]
 }
 
 export const defaultConfig = {
-	signedTokenWhitelist: [],
 	whitelistDialogWidth: '450px',
 	whitelistDialogHeight: '350px',
 }
@@ -48,8 +44,7 @@ export class readSignedTicket {
 
 export class Outlet {
 	private ticketStorage: TicketStorage
-
-	private issuerHashMap?: IssuerHashMap
+	private whitelist: Whitelist
 
 	urlParams?: URLSearchParams
 
@@ -58,16 +53,17 @@ export class Outlet {
 	constructor(private tokenConfig: OutletInterface, urlParams: any = null) {
 		this.tokenConfig = Object.assign(defaultConfig, tokenConfig)
 
-		// TODO: Whitelist per collectionId
-		this.tokenConfig.signedTokenWhitelist = this.tokenConfig.signedTokenWhitelist.map((origin) => {
-			try {
-				return new URL(origin).origin
-			} catch (e) {
-				logger(2, 'Failed to validate whitelist origin: ' + e.message)
-			}
-		})
-
 		this.ticketStorage = new TicketStorage(this.tokenConfig.issuers)
+		this.whitelist = new Whitelist(this.tokenConfig, () => {
+			const evtid = this.getDataFromQuery('evtid')
+
+			this.sendMessageResponse({
+				evtid,
+				evt: ResponseActionBase.SHOW_FRAME,
+				max_width: this.tokenConfig.whitelistDialogWidth,
+				min_height: this.tokenConfig.whitelistDialogHeight,
+			})
+		})
 
 		if (urlParams) {
 			this.urlParams = urlParams
@@ -96,18 +92,6 @@ export class Outlet {
 		return URLNS + key
 	}
 
-	getIssuerHashMap() {
-		if (!this.issuerHashMap) this.issuerHashMap = createIssuerHashMap(this.tokenConfig.issuers as unknown as OffChainTokenConfig[])
-		return this.issuerHashMap
-	}
-
-	async modalDialogEventHandler(evtid: any, access: string) {
-		const action = await this.whitelistCheck(evtid, access === 'write' ? 'write' : 'read')
-		if (action === 'user-accept') await this.sendTokens(evtid)
-		else if (action === 'user-abort')
-			this.sendErrorResponse(evtid, 'USER_ABORT', this.getDataFromQuery('issuer'), 'offchain-issuer-connection')
-	}
-
 	async pageOnLoadEventHandler() {
 		const evtid = this.getDataFromQuery('evtid')
 		const action = this.getDataFromQuery('action')
@@ -122,7 +106,7 @@ export class Outlet {
 		try {
 			switch (action) {
 				case OutletAction.GET_ISSUER_TOKENS: {
-					await this.modalDialogEventHandler(evtid, access)
+					await this.sendTokens(evtid)
 					break
 				}
 				case OutletAction.EMAIL_ATTEST_CALLBACK: {
@@ -185,7 +169,7 @@ export class Outlet {
 				default: {
 					if (this.getDataFromQuery('ticket')) {
 						await this.readMagicLink()
-						await this.modalDialogEventHandler(evtid, 'write')
+						await this.sendTokens(evtid)
 					}
 					break
 				}
@@ -228,84 +212,6 @@ export class Outlet {
 		window.dispatchEvent(event)
 	}
 
-	private async whitelistCheck(evtid, whiteListType: 'read' | 'write') {
-		if ((!window.parent && !window.opener) || !document.referrer) return
-
-		const origin = new URL(document.referrer).origin
-
-		if (origin === window.location.origin) return
-
-		let accessWhitelist = JSON.parse(localStorage.getItem('tn-whitelist')) ?? {}
-
-		// TODO: Storage access API no longer gives access to localStorage in firefox, only cookies like Safari
-		//		I'm keeping this here in case chrome implements state partitioning in the same way as Firefox
-		//		originally did. If chrome goes the way of Mozilla & Apple then this can be removed
-		// const storageAccessRequired = document.hasStorageAccess && !(await document.hasStorageAccess())
-
-		const needsPermission =
-			this.tokenConfig.signedTokenWhitelist.indexOf(origin) === -1 &&
-			(!accessWhitelist[origin] || (accessWhitelist[origin].type === 'read' && whiteListType === 'write'))
-
-		if (!needsPermission) return 'user-accept'
-
-		/* || storageAccessRequired */
-		return new Promise<any>((resolve, reject) => {
-			const typeTxt = whiteListType === 'read' ? 'read' : 'read & write'
-			const permissionTxt = `${origin} is requesting ${typeTxt} access to your tickets`
-
-			// TODO: Dialog should display title & icon list for all configured issuers
-
-			const acceptBtn = '<button style="cursor: pointer" id="tn-access-accept">Accept</button>'
-			const denyBtn = '<button style="cursor: pointer" id="tn-access-deny">Deny</button>'
-
-			const content = this.tokenConfig.whitelistDialogRenderer
-				? this.tokenConfig.whitelistDialogRenderer(permissionTxt, acceptBtn, denyBtn)
-				: `
-					<div style="font-family: sans-serif; text-align: center; position: absolute; width: 100vw; min-height: 100vh;top: 0;
-					left: 0;
-					background: #0C0A50;
-					z-index: 99999;
-					display: flex;
-					flex-direction: column;
-					justify-content: center;
-					align-items: center;
-					color: #fff;
-					padding: 30px;
-					font-size: 24px;
-					line-height: 1.2;">
-						<p>${permissionTxt}</p>
-						<div>
-						${acceptBtn}
-						${denyBtn}
-						</div>
-					</div>
-				`
-
-			document.body.insertAdjacentHTML('beforeend', content)
-
-			document.getElementById('tn-access-accept').addEventListener('click', () => {
-				if (!accessWhitelist[origin] || whiteListType !== accessWhitelist[origin].type) {
-					accessWhitelist[origin] = {
-						type: whiteListType,
-					}
-					localStorage.setItem('tn-whitelist', JSON.stringify(accessWhitelist))
-				}
-				resolve('user-accept')
-			})
-
-			document.getElementById('tn-access-deny').addEventListener('click', () => {
-				resolve('user-abort')
-			})
-
-			this.sendMessageResponse({
-				evtid,
-				evt: ResponseActionBase.SHOW_FRAME,
-				max_width: this.tokenConfig.whitelistDialogWidth,
-				min_height: this.tokenConfig.whitelistDialogHeight,
-			})
-		})
-	}
-
 	async sendTokenProof(evtid: string, collectionId: string, token: string, address: string, wallet: string) {
 		if (!token) return 'error'
 
@@ -342,7 +248,43 @@ export class Outlet {
 
 	// TODO: Consolidate redirect callback for tokens, proof & errors into the sendMessageResponse function to remove duplication
 	private async sendTokens(evtid: any) {
-		const requestHashes = JSON.parse(this.getDataFromQuery('request'))
+		const requestHashes = JSON.parse(this.getDataFromQuery('request')) as IssuerHashMap
+
+		if (!requestHashes) return
+
+		// Create a map of outlet hashes to issuer config
+		const hashToConfigMap = {}
+
+		for (const issuer of this.tokenConfig.issuers) {
+			const hashes = createIssuerHashArray(issuer)
+			for (const hash of hashes) {
+				hashToConfigMap[hash] = issuer
+			}
+		}
+
+		const reqIssuers: OutletIssuerInterface[] = []
+
+		// Loop through client request hashes & create an array of issuers for whitelist processing
+		for (const issuer in requestHashes) {
+			for (const hash of requestHashes[issuer]) {
+				if (hashToConfigMap[hash]) {
+					if (reqIssuers.indexOf(hashToConfigMap[hash]) === -1) reqIssuers.push(hashToConfigMap[hash])
+				}
+			}
+		}
+
+		const whitelistedIssuers = await this.whitelist.whitelistCheck(reqIssuers, false)
+
+		// Remove hashes that don't exist in outlets own config and non-whitelisted issuers
+		for (const issuer in requestHashes) {
+			const filteredHashes = []
+			for (const hash of requestHashes[issuer]) {
+				if (hashToConfigMap[hash] && whitelistedIssuers.indexOf(hashToConfigMap[hash].collectionID) > -1) {
+					filteredHashes.push(hash)
+				}
+			}
+			requestHashes[issuer] = filteredHashes
+		}
 
 		let issuerTokens = await this.ticketStorage.getDecodedTokens(requestHashes)
 
