@@ -102,10 +102,9 @@ export class TicketStorage {
 	}
 
 	public async importTicketFromMagicLink(urlParams: URLSearchParams) {
-		// TODO: Remove these and replace with static config
 		const tokenFromQuery = decodeURIComponent(urlParams.get('ticket'))
 		const secretFromQuery = urlParams.get('secret')
-		const idFromQuery = urlParams.has('id') ? urlParams.get('id') : ''
+		const idFromQuery = urlParams.has('id') ? urlParams.get('id') : urlParams.get('mail') ?? ''
 		const typeFromQuery = (urlParams.has('type') ? urlParams.get('type') : 'asn') as TokenType
 
 		if (!(tokenFromQuery && secretFromQuery)) throw new Error('Incomplete token params in URL.')
