@@ -2,15 +2,7 @@
 window.DISPLAY_DEBUG_LEVEL = 1
 
 import { hasUncaughtExceptionCaptureCallback } from 'process'
-import {
-	logger,
-	requiredParams,
-	compareObjects,
-	base64ToUint8array,
-	waitForElementToExist,
-	removeUrlSearchParams,
-	createIssuerMap,
-} from './../index'
+import { logger, requiredParams, compareObjects, base64ToUint8array, waitForElementToExist, removeUrlSearchParams } from './../index'
 import { errorHandler } from '../index'
 
 // TODO: add unit tests for the following functions:
@@ -151,6 +143,37 @@ describe('util Spec removeUrlSearchParams', () => {
 			},
 		]
 
-		expect(createIssuerMap(issuers)).toContain('eyJkZXZjb24iOnsi')
+		expect(createIssuerHashMap(issuers)).toContain('eyJkZXZjb24iOnsi')
 	})
 })
+
+// export const createIssuerHashMap = (issuers: OffChainTokenConfig[]): IssuerHashMap => {
+// 	const hashObj = {}
+
+// 	for (const issuer of issuers) {
+// 		hashObj[issuer.collectionID] = createIssuerHashArray(issuer)
+// 	}
+
+// 	return hashObj
+// }
+
+// export const createIssuerHashArray = (issuer: OffChainTokenConfig | OutletIssuerInterface) => {
+// 	const hashes = []
+
+// 	const keysArr = KeyPair.parseKeyArrayStrings(issuer.base64senderPublicKeys)
+
+// 	for (let [eventId, keys] of Object.entries(keysArr)) {
+// 		if (!Array.isArray(keys)) keys = [keys]
+
+// 		for (const key of keys) {
+// 			hashes.push(createOffChainCollectionHash(key, eventId))
+// 		}
+// 	}
+
+// 	return hashes
+// }
+
+// export const createOffChainCollectionHash = (key: KeyPair, eventId: string) => {
+// 	const encoder = new TextEncoder()
+// 	return sha256(encoder.encode(key.getPublicKeyAsHexStr() + '-' + eventId))
+// }

@@ -103,11 +103,13 @@ export class SelectIssuers extends AbstractView {
 			return
 		}
 
-		this.populateIssuers()
-
 		let tokensListElem = this.tokensContainer.getElementsByClassName('token-list-container-tn')[0]
-
 		this.tokenListView = new TokenList(this.client, this.ui, tokensListElem, { ...this.params })
+
+		// This fixes a race condition where the token list is not yet populated.
+		setTimeout(() => {
+			this.populateIssuers()
+		}, 0)
 	}
 
 	protected afterRender() {
