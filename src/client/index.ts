@@ -733,7 +733,7 @@ export class Client {
 
 		if (!res) return // Site is redirecting
 
-		return res.data?.tokens ?? []
+		return res.data?.tokens ?? {}
 	}
 
 	private async loadLocalOutletTokens(issuer: OffChainTokenConfig) {
