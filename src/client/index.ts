@@ -524,7 +524,7 @@ export class Client {
 			logger(2, 'tokens:')
 			logger(2, tokens)
 
-			this.tokenStore.setTokens(issuer, tokens)
+			this.storeOutletTokenResponse(tokens)
 		}
 	}
 

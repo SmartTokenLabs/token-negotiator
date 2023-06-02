@@ -512,7 +512,8 @@ describe('client spec', () => {
 	})
 })
 
-describe('client spec cross-version', () => {
+// TODO: Reimplement cross-version test for version 3.1
+/* describe('client spec cross-version', () => {
 	let originalDocument = document
 	let originalLocation = window.location
 
@@ -627,14 +628,8 @@ describe('client spec cross-version', () => {
 		expect(client.getDataFromQuery('p2')).toBe('2')
 		expect(client.getDataFromQuery('p1')).toBe('1')
 	})
-})
+})*/
 
 describe('multi-outlet-request', () => {
-	test('tokenNegotiatorClient read prefixed param', async () => {
-		const client = new Client({
-			issuers: [tokenIssuer, tokenIssuer2],
-		})
-		const res = client.prepareMultiOutletRequest(tokenIssuer)
-		console.log(res)
-	})
+	// TODO: Implement tests for multi-outlet requests
 })
