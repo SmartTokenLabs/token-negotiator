@@ -103,11 +103,9 @@ export class SelectIssuers extends AbstractView {
 			return
 		}
 
-		setTimeout(() => {
-			this.populateIssuers()
-			let tokensListElem = this.tokensContainer.getElementsByClassName('token-list-container-tn')[0]
-			this.tokenListView = new TokenList(this.client, this.ui, tokensListElem, { ...this.params })
-		}, 0)
+		this.populateIssuers()
+		let tokensListElem = this.tokensContainer.getElementsByClassName('token-list-container-tn')[0]
+		this.tokenListView = new TokenList(this.client, this.ui, tokensListElem, { ...this.params })
 	}
 
 	protected afterRender() {
