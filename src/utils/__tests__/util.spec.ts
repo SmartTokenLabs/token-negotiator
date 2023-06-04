@@ -1,9 +1,23 @@
 // @ts-nocheck
 window.DISPLAY_DEBUG_LEVEL = 1
 
+import { TextEncoder, TextDecoder } from 'util'
+Object.assign(global, { TextDecoder, TextEncoder })
+
 import { hasUncaughtExceptionCaptureCallback } from 'process'
-import { logger, requiredParams, compareObjects, base64ToUint8array, waitForElementToExist, removeUrlSearchParams } from './../index'
+import {
+	createIssuerHashMap,
+	createIssuerHashArray,
+	createOffChainCollectionHash,
+	logger,
+	requiredParams,
+	compareObjects,
+	base64ToUint8array,
+	waitForElementToExist,
+	removeUrlSearchParams,
+} from './../index'
 import { errorHandler } from '../index'
+import { toExpression } from '@babel/types'
 
 // TODO: add unit tests for the following functions:
 // logger, requiredParams, asyncHandle, attachPostMessageListener.
@@ -105,7 +119,46 @@ describe('util Spec removeUrlSearchParams', () => {
 		params = removeUrlSearchParams(params, ['email'])
 		expect(params.toString()).toEqual('redirectMode=always')
 	})
-	test('Create mock base64 encoded issuer map', () => {
+
+	test('Create Issuer Hash Array', () => {
+		expect(
+			createIssuerHashArray({
+				collectionID: 'devcon',
+				onChain: false,
+				title: 'Devcon',
+				image: 'https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg',
+				tokenOrigin: 'https://stltesting.tk/token-outlet/',
+				attestationOrigin: 'https://attestation.id/',
+				unEndPoint: 'https://crypto-verify.herokuapp.com/use-devcon-ticket',
+				base64senderPublicKeys: {
+					6: 'MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABGMxHraqggr2keTXszIcchTjYjH5WXpDaBOYgXva82mKcGnKgGRORXSmcjWN2suUCMkLQj3UNlZCFWF10wIrrlw=',
+					55: 'MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEAGJAHCiHbrCNAY9fAMdom4dGD6v/KkTIgRCkwLCjXFTkXWGrCEXHaZ8kWwdqlu0oYCrNQ2vdlqOl0s26/LzO8A==',
+				},
+				base64attestorPubKey:
+					'MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ=',
+				ticketIssuesUrlWebsitePrivateKey:
+					'MIICSwIBADCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBBIIBVTCCAVECAQEEIM/T+SzcXcdtcNIqo6ck0nJTYzKL5ywYBFNSpI7R8AuBoIHjMIHgAgEBMCwGByqGSM49AQECIQD////////////////////////////////////+///8LzBEBCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcEQQR5vmZ++dy7rFWgYpXOhwsHApv82y3OKNlZ8oFbFvgXmEg62ncmo8RlXaT7/A4RCKj9F7RIpoVUGZxH0I/7ENS4AiEA/////////////////////rqu3OavSKA7v9JejNA2QUECAQGhRANCAARjMR62qoIK9pHk17MyHHIU42Ix+Vl6Q2gTmIF72vNpinBpyoBkTkV0pnI1jdrLlAjJC0I91DZWQhVhddMCK65c',
+			}),
+		).toEqual([
+			'0x0915bb6dcd508278764d9bfff6ba113c87c761ed78e84ed238811f2264a83a05',
+			'0x76d49eaf820fc5313a752214192a223511244124e188557fe84d88d8ff8c3a2f',
+		])
+	})
+
+	test('Create OffChain Collection Hash', () => {
+		expect(
+			createOffChainCollectionHash(
+				{
+					getPublicKeyAsHexStr: () => {
+						return '0x000000'
+					},
+				},
+				'devconnect',
+			),
+		).toEqual('0xc2bbce51b8fa0c9ab724b3553f58e496adbf44812295c8cc7376e145f0f8ed1c')
+	})
+
+	test('Create attestation request object with sha256 pub keys for outlet', () => {
 		const issuers = [
 			{
 				collectionID: 'devcon',
@@ -142,38 +195,15 @@ describe('util Spec removeUrlSearchParams', () => {
 					'MIICSwIBADCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBBIIBVTCCAVECAQEEIM/T+SzcXcdtcNIqo6ck0nJTYzKL5ywYBFNSpI7R8AuBoIHjMIHgAgEBMCwGByqGSM49AQECIQD////////////////////////////////////+///8LzBEBCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcEQQR5vmZ++dy7rFWgYpXOhwsHApv82y3OKNlZ8oFbFvgXmEg62ncmo8RlXaT7/A4RCKj9F7RIpoVUGZxH0I/7ENS4AiEA/////////////////////rqu3OavSKA7v9JejNA2QUECAQGhRANCAARjMR62qoIK9pHk17MyHHIU42Ix+Vl6Q2gTmIF72vNpinBpyoBkTkV0pnI1jdrLlAjJC0I91DZWQhVhddMCK65c',
 			},
 		]
-
-		expect(createIssuerHashMap(issuers)).toContain('eyJkZXZjb24iOnsi')
+		expect(createIssuerHashMap(issuers)).toEqual({
+			attestationDao: [
+				'0x0915bb6dcd508278764d9bfff6ba113c87c761ed78e84ed238811f2264a83a05',
+				'0x76d49eaf820fc5313a752214192a223511244124e188557fe84d88d8ff8c3a2f',
+			],
+			devcon: [
+				'0x0915bb6dcd508278764d9bfff6ba113c87c761ed78e84ed238811f2264a83a05',
+				'0x76d49eaf820fc5313a752214192a223511244124e188557fe84d88d8ff8c3a2f',
+			],
+		})
 	})
 })
-
-// export const createIssuerHashMap = (issuers: OffChainTokenConfig[]): IssuerHashMap => {
-// 	const hashObj = {}
-
-// 	for (const issuer of issuers) {
-// 		hashObj[issuer.collectionID] = createIssuerHashArray(issuer)
-// 	}
-
-// 	return hashObj
-// }
-
-// export const createIssuerHashArray = (issuer: OffChainTokenConfig | OutletIssuerInterface) => {
-// 	const hashes = []
-
-// 	const keysArr = KeyPair.parseKeyArrayStrings(issuer.base64senderPublicKeys)
-
-// 	for (let [eventId, keys] of Object.entries(keysArr)) {
-// 		if (!Array.isArray(keys)) keys = [keys]
-
-// 		for (const key of keys) {
-// 			hashes.push(createOffChainCollectionHash(key, eventId))
-// 		}
-// 	}
-
-// 	return hashes
-// }
-
-// export const createOffChainCollectionHash = (key: KeyPair, eventId: string) => {
-// 	const encoder = new TextEncoder()
-// 	return sha256(encoder.encode(key.getPublicKeyAsHexStr() + '-' + eventId))
-// }
