@@ -448,10 +448,15 @@ export class Client {
 
 		let count = 1
 
+		if (refresh) this.tokenStore.clearCachedTokens()
+
 		for (let issuerKey in this.tokenStore.getCurrentIssuers()) {
 			let tokens = this.tokenStore.getIssuerTokens(issuerKey)
 
-			if (!refresh && tokens != null) continue
+			if (tokens != null) {
+				onComplete(issuerKey, tokens)
+				continue
+			}
 
 			onLoading(issuerKey)
 
