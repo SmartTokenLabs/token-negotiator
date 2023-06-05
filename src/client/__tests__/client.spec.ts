@@ -629,7 +629,3 @@ describe('client spec', () => {
 		expect(client.getDataFromQuery('p1')).toBe('1')
 	})
 })*/
-
-describe('multi-outlet-request', () => {
-	// TODO: Implement tests for multi-outlet requests
-})
