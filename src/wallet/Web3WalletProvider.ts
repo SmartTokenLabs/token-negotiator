@@ -23,6 +23,7 @@ export enum SupportedWalletProviders {
 	WalletConnectV2 = 'WalletConnectV2',
 	Torus = 'Torus',
 	Phantom = 'Phantom',
+	Phantom_Brave = 'Phantom_Brave',
 	Flow = 'Flow',
 	SafeConnect = 'SafeConnect',
 }
