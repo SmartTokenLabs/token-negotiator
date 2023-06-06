@@ -104,9 +104,7 @@ export class SelectIssuers extends AbstractView {
 		}
 
 		this.populateIssuers()
-
 		let tokensListElem = this.tokensContainer.getElementsByClassName('token-list-container-tn')[0]
-
 		this.tokenListView = new TokenList(this.client, this.ui, tokensListElem, { ...this.params })
 	}
 

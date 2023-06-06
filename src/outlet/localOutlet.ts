@@ -1,30 +1,44 @@
-import { defaultConfig, OutletInterface, readSignedTicket } from './index'
 import { AuthHandler } from './auth-handler'
+import { DecodedToken, FilterInterface, TicketStorage } from './ticketStorage'
+import { IssuerHashMap, logger } from '../utils'
+import { OutletIssuerInterface } from './index'
+import { URLSearchParams } from 'url'
 import { OffChainTokenConfig } from '../client/interface'
-import { DecodedToken, TicketStorage } from './ticketStorage'
 
 export class LocalOutlet {
-	private tokenConfig
 	private ticketStorage: TicketStorage
 
-	constructor(config: OutletInterface & OffChainTokenConfig) {
-		this.tokenConfig = Object.assign(defaultConfig, config)
+	constructor(issuers: OffChainTokenConfig[]) {
+		this.ticketStorage = new TicketStorage(issuers)
+	}
 
-		if (!this.tokenConfig.tokenParser) {
-			this.tokenConfig.tokenParser = readSignedTicket
+	public async readMagicLink(urlParams: URLSearchParams) {
+		try {
+			await this.ticketStorage.importTicketFromMagicLink(urlParams)
+
+			const event = new Event('tokensupdated')
+
+			document.body.dispatchEvent(event)
+		} catch (e) {
+			logger(2, e)
 		}
-
-		this.ticketStorage = new TicketStorage(this.tokenConfig)
 	}
 
-	async getTokens() {
-		return this.ticketStorage.getDecodedTokens(this.tokenConfig.filter)
+	async getTokens(request: IssuerHashMap) {
+		return this.ticketStorage.getDecodedTokens(request)
 	}
 
-	async authenticate(decodedToken: DecodedToken, address: string, wallet: string, redirectMode: false | string = false) {
-		const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(decodedToken)
+	async authenticate(
+		tokenConfig: OutletIssuerInterface,
+		issuerHashes: string[],
+		decodedToken: DecodedToken,
+		address: string,
+		wallet: string,
+		redirectMode: false | string = false,
+	) {
+		const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(issuerHashes, decodedToken)
 
-		let authHandler = new AuthHandler(this.tokenConfig, ticketRecord, decodedToken, address, wallet, redirectMode)
+		let authHandler = new AuthHandler(tokenConfig, ticketRecord, decodedToken, address, wallet, redirectMode)
 
 		return await authHandler.authenticate()
 	}
