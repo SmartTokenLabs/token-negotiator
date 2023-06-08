@@ -317,6 +317,16 @@ export class Ui implements UiInterface {
 		return !this.isStartView
 	}
 
+	// TODO to support mulitple languages and custom UX directions, this should be part of the library configuration
+	// allowing for the end developer to override key error types. Such as; user abort, network error, etc.
+	getCustomUserError(error) {
+		let output = error
+		if (error.contains(`Failed to read the 'localStorage' property from 'Window'`)) {
+			output = 'Please enable cookies in your browser to use this feature or try a different browser.'
+		}
+		return output
+	}
+
 	showError(error: string | Error, canDismiss = true) {
 		this.cancelDelayedLoader()
 
@@ -334,7 +344,9 @@ export class Ui implements UiInterface {
 
 		this.retryButton.style.display = 'block'
 
-		this.loadContainer.querySelector('.loader-msg-tn').innerHTML = error
+		const errorOutput = this.getCustomUserError(error)
+
+		this.loadContainer.querySelector('.loader-msg-tn').innerHTML = `<p style="padding: 9px">${errorOutput}</p>`
 
 		this.loadContainer.style.display = 'flex'
 

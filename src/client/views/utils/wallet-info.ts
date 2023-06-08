@@ -210,8 +210,8 @@ function getEvmInjectedProviderInfo() {
 function getSolanaInjectedProviderInfo() {
 	return window.solana?.isBraveWallet
 		? {
-				name: SupportedWalletProviders.Phantom,
-				label: 'Brave (Solana)',
+				name: SupportedWalletProviders.Phantom_Brave,
+				label: 'Phantom (Brave)',
 				imgBig: braveWallet.imgBig,
 		  }
 		: {

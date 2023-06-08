@@ -5,11 +5,12 @@ import { Authenticator } from '@tokenscript/attestation'
 import { SignedUNChallenge } from './signedUNChallenge'
 import { UNInterface } from './util/UN'
 import { LocalOutlet } from '../../outlet/localOutlet'
-import { defaultConfig, OutletInterface } from '../../outlet'
-import { logger } from '../../utils'
+import { OutletIssuerInterface } from '../../outlet'
+import { createIssuerHashArray, logger } from '../../utils'
 import { shouldUseRedirectMode } from '../../utils/support/getBrowserData'
 import { EasZkProof } from '@tokenscript/attestation/dist/eas/EasZkProof'
 import { DEFAULT_EAS_SCHEMA, TokenType } from '../../outlet/ticketStorage'
+import { EAS_RPC_CONFIG } from '../../core/eas'
 
 export class TicketZKProof extends AbstractAuthentication implements AuthenticationMethod {
 	TYPE = 'ticketZKProof'
@@ -49,9 +50,18 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 		let data
 
 		if (new URL(issuerConfig.tokenOrigin).origin === window.location.origin) {
-			const localOutlet = new LocalOutlet(issuerConfig as OffChainTokenConfig & OutletInterface)
+			const localOutlet = new LocalOutlet(Object.values(this.client.getTokenStore().getCurrentIssuers(false)) as OffChainTokenConfig[])
 
-			data = await localOutlet.authenticate(tokens[0], address, wallet, redirectMode)
+			const issuerHashes = createIssuerHashArray(issuerConfig)
+
+			data = await localOutlet.authenticate(
+				issuerConfig as OffChainTokenConfig & OutletIssuerInterface,
+				issuerHashes,
+				tokens[0],
+				address,
+				wallet,
+				redirectMode,
+			)
 		} else {
 			logger(2, 'run OutletAction.GET_PROOF at ', window.location.href)
 			let res = await this.messaging.sendMessage(
@@ -101,10 +111,7 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 
 	public static async validateProof(issuerConfig: OffChainTokenConfig, proof: string, type: TokenType, ethAddress = '') {
 		if (type === 'eas') {
-			// TODO: Move this to Client OffChainTokenConfig interface
-			const easConfig = defaultConfig.eas
-
-			const easZkProof = new EasZkProof(DEFAULT_EAS_SCHEMA, easConfig.config, easConfig.provider)
+			const easZkProof = new EasZkProof(DEFAULT_EAS_SCHEMA, EAS_RPC_CONFIG)
 
 			await easZkProof.validateUseTicket(proof, issuerConfig.base64attestorPubKey, issuerConfig.base64senderPublicKeys, ethAddress)
 		} else {

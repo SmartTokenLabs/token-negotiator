@@ -1,6 +1,6 @@
 import { OutletAction, OutletResponseAction, Messaging } from './messaging'
 import { Ui, UiInterface, UItheme } from './ui'
-import { logger, requiredParams, waitForElementToExist, errorHandler, removeUrlSearchParams } from '../utils'
+import { logger, requiredParams, waitForElementToExist, errorHandler, removeUrlSearchParams, createIssuerHashMap } from '../utils'
 import { getNftCollection, getNftTokens } from '../utils/token/nftProvider'
 import { Authenticator } from '@tokenscript/attestation'
 import { TokenStore } from './tokenStore'
@@ -22,6 +22,7 @@ import {
 	EventSenderClosedOverlay,
 	EventSenderTokensRefreshed,
 	EventSenderTokensLoaded,
+	OutletTokenResult,
 } from './interface'
 import { SignedUNChallenge } from './auth/signedUNChallenge'
 import { TicketZKProof } from './auth/ticketZKProof'
@@ -29,12 +30,12 @@ import { AuthenticationMethod } from './auth/abstractAuthentication'
 import { isUserAgentSupported, validateBlockchain } from '../utils/support/isSupported'
 import Web3WalletProvider from '../wallet/Web3WalletProvider'
 import { LocalOutlet } from '../outlet/localOutlet'
-import { Outlet, OutletInterface } from '../outlet'
+import { Outlet, OutletInterface, OutletIssuerInterface } from '../outlet'
 import { shouldUseRedirectMode } from '../utils/support/getBrowserData'
 import { VERSION } from '../version'
 import { getFungibleTokenBalances, getFungibleTokensMeta } from '../utils/token/fungibleTokenProvider'
 import { URLNS } from '../core/messaging'
-import { TokenType } from '../outlet/ticketStorage'
+import { DecodedToken, TokenType } from '../outlet/ticketStorage'
 import { ProofResult } from '../outlet/auth-handler'
 
 if (typeof window !== 'undefined') window.tn = { VERSION }
@@ -162,9 +163,7 @@ export class Client {
 
 	getDataFromQuery(itemKey: any): string {
 		if (this.urlParams) {
-			if (this.urlParams.has(URLNS + itemKey)) return this.urlParams.get(URLNS + itemKey)
-
-			return this.urlParams.get(itemKey) // Fallback to non-namespaced version for backward compatibility
+			return this.urlParams.get(URLNS + itemKey)
 		}
 
 		return null
@@ -385,8 +384,8 @@ export class Client {
 
 		if (currentIssuer) {
 			logger(2, 'Sync Outlet fired in Client to read MagicLink before negotiate().')
-			let outlet = new Outlet(currentIssuer, true)
-			await outlet.readMagicLink()
+			let outlet = new LocalOutlet(Object.values(this.tokenStore.getCurrentIssuers(false)) as OffChainTokenConfig[])
+			await outlet.readMagicLink(this.urlParams)
 			outlet = null
 		}
 
@@ -449,10 +448,15 @@ export class Client {
 
 		let count = 1
 
+		if (refresh) this.tokenStore.clearCachedTokens()
+
 		for (let issuerKey in this.tokenStore.getCurrentIssuers()) {
 			let tokens = this.tokenStore.getIssuerTokens(issuerKey)
 
-			if (!refresh && tokens != null) continue
+			if (tokens != null) {
+				onComplete(issuerKey, tokens)
+				continue
+			}
 
 			onLoading(issuerKey)
 
@@ -464,7 +468,7 @@ export class Client {
 				onComplete(issuerKey, tokens)
 			} catch (e) {
 				e.message = 'Failed to load ' + issuerKey + ': ' + e.message
-				logger(2, e.message)
+				logger(2, e)
 				errorHandler('autoload tokens error', 'error', () => this.eventSender('error', { issuer: issuerKey, error: e }), null, true, false)
 				onComplete(issuerKey, null)
 			}
@@ -494,6 +498,7 @@ export class Client {
 			const issuerConfig = this.tokenStore.getCurrentIssuers()[issuer] as OffChainTokenConfig
 
 			try {
+				// TODO: Consolidate this with the logic in readTokensFromUrl (probably best to run this in the Client constructor)
 				if (new URL(issuerConfig.tokenOrigin).origin === window.location.origin) {
 					tokens = await this.loadLocalOutletTokens(issuerConfig)
 				} else {
@@ -524,13 +529,11 @@ export class Client {
 			logger(2, 'tokens:')
 			logger(2, tokens)
 
-			this.tokenStore.setTokens(issuer, tokens)
+			this.storeOutletTokenResponse(tokens)
 		}
 	}
 
 	readTokensFromUrl() {
-		let issuers = this.tokenStore.getCurrentIssuers(false)
-
 		let action = this.getDataFromQuery('action')
 
 		if (action === 'error') {
@@ -541,48 +544,29 @@ export class Client {
 
 		if (action !== OutletAction.GET_ISSUER_TOKENS + '-response') return
 
-		let issuer = this.getDataFromQuery('issuer')
-
-		if (!issuer) {
+		if (!this.getDataFromQuery('tokens')) {
 			logger(3, 'No issuer in URL.')
-			return
-		}
-
-		const issuerConfig = issuers[issuer] as OffChainTokenConfig
-		if (!issuerConfig) {
-			logger(3, `No issuer config for "${issuer}" in URL.`)
 			return
 		}
 
 		let tokens
 
 		try {
-			if (new URL(issuerConfig.tokenOrigin).origin !== window.location.origin) {
-				// TODO make solution:
-				// in case if we have multiple tokens then redirect flow will not work
-				// because page will reload on first remote token
-
-				let resposeTokensEncoded = this.getDataFromQuery('tokens')
-				try {
-					tokens = JSON.parse(resposeTokensEncoded)
-				} catch (e) {
-					logger(2, 'Error parse tokens from Response. ', e)
-				}
+			let resposeTokensEncoded = this.getDataFromQuery('tokens')
+			try {
+				tokens = JSON.parse(resposeTokensEncoded) as OutletTokenResult
+			} catch (e) {
+				logger(2, 'Error parse tokens from Response. ', e)
 			}
 		} catch (err) {
 			logger(1, 'Error read tokens from URL')
 			return
 		}
 
-		if (!tokens) {
-			logger(2, `No tokens for "${issuer}" in URL.`)
-			return
-		}
-
 		logger(2, 'readTokensFromUrl tokens:')
 		logger(2, tokens)
 
-		this.tokenStore.setTokens(issuer, tokens)
+		this.storeOutletTokenResponse(tokens)
 	}
 
 	private async handleRedirectTokensError() {
@@ -663,16 +647,8 @@ export class Client {
 		if (config.onChain === true) {
 			tokens = await this.loadOnChainTokens(config)
 		} else {
-			if (new URL(config.tokenOrigin).origin === window.location.origin) {
-				tokens = await this.loadLocalOutletTokens(config)
-			} else {
-				tokens = await this.loadRemoteOutletTokens(config)
-
-				if (!tokens) return // Site is redirecting
-			}
+			tokens = await this.loadOutletTokens(config)
 		}
-
-		this.tokenStore.setTokens(issuer, tokens)
 
 		if (this.config.autoEnableTokens) {
 			this.eventSender('tokens-selected', {
@@ -705,21 +681,44 @@ export class Client {
 			return token
 		})
 
+		this.tokenStore.setTokens(issuer.collectionID, tokens)
+
 		return tokens
 	}
 
-	private async loadRemoteOutletTokens(issuer: OffChainTokenConfig): Promise<unknown[] | void> {
-		const data: {
-			issuer: OffChainTokenConfig
-			filter?: {}
-			access?: string
-		} = {
-			issuer: issuer,
-			filter: issuer.filters,
+	public prepareMultiOutletRequest(initialIssuer: OffChainTokenConfig) {
+		const requestBatchOfSameOutletIssuers = [initialIssuer]
+		for (const issuer of Object.values(this.tokenStore.getCurrentIssuers(false)) as OffChainTokenConfig[]) {
+			if (issuer.tokenOrigin === initialIssuer.tokenOrigin) requestBatchOfSameOutletIssuers.push(issuer)
+		}
+		return createIssuerHashMap(requestBatchOfSameOutletIssuers)
+	}
+
+	private async loadOutletTokens(config: OffChainTokenConfig) {
+		let tokens
+
+		if (new URL(config.tokenOrigin).origin === window.location.origin) {
+			tokens = await this.loadLocalOutletTokens(config)
+		} else {
+			tokens = await this.loadRemoteOutletTokens(config)
+
+			if (!tokens) return // Site is redirecting
 		}
 
-		if (issuer.accessRequestType) data.access = issuer.accessRequestType
+		console.log(tokens)
 
+		this.storeOutletTokenResponse(tokens)
+
+		return tokens[config.collectionID]
+	}
+
+	private storeOutletTokenResponse(tokens: OutletTokenResult) {
+		for (const issuer in tokens) {
+			this.tokenStore.setTokens(issuer, tokens[issuer])
+		}
+	}
+
+	private async loadRemoteOutletTokens(issuer: OffChainTokenConfig): Promise<OutletTokenResult | void> {
 		const redirectRequired = shouldUseRedirectMode(this.config.offChainRedirectMode)
 
 		if (redirectRequired) this.tokenStore.setTokens(issuer.collectionID, [])
@@ -728,7 +727,9 @@ export class Client {
 			{
 				action: OutletAction.GET_ISSUER_TOKENS,
 				origin: issuer.tokenOrigin,
-				data: data,
+				data: {
+					request: this.prepareMultiOutletRequest(issuer),
+				},
 			},
 			this.config.messagingForceTab,
 			this.config.type === 'active' ? this.ui : null,
@@ -737,12 +738,12 @@ export class Client {
 
 		if (!res) return // Site is redirecting
 
-		return res.data?.tokens ?? []
+		return res.data?.tokens ?? {}
 	}
 
 	private async loadLocalOutletTokens(issuer: OffChainTokenConfig) {
-		const localOutlet = new LocalOutlet(issuer as OutletInterface & OffChainTokenConfig)
-		return await localOutlet.getTokens()
+		const localOutlet = new LocalOutlet(Object.values(this.tokenStore.getCurrentIssuers(false)) as OffChainTokenConfig[])
+		return await localOutlet.getTokens(this.prepareMultiOutletRequest(issuer))
 	}
 
 	updateSelectedTokens(selectedTokens) {
@@ -947,12 +948,15 @@ export class Client {
 
 		const redirectRequired = shouldUseRedirectMode(this.config.offChainRedirectMode)
 
+		const request = createIssuerHashMap(Object.values(this.tokenStore.getCurrentIssuers(false)) as OffChainTokenConfig[])
+
 		try {
 			let res = await this.messaging.sendMessage(
 				{
 					action: OutletAction.MAGIC_URL,
 					origin: url.origin + url.pathname,
 					data: {
+						request,
 						urlParams: params,
 					},
 				},
@@ -997,7 +1001,8 @@ export class Client {
 				if (currentIssuer) {
 					logger(2, 'Outlet fired to parse URL hash params.')
 
-					let outlet = new Outlet(currentIssuer, true, this.urlParams)
+					// TODO: fix to use local outlet or utility function
+					/* let outlet = new LocalOutlet(currentIssuer, true, this.urlParams)
 					outlet
 						.pageOnLoadEventHandler()
 						.then(() => {
@@ -1005,7 +1010,7 @@ export class Client {
 						})
 						.catch((err) => {
 							logger(2, err)
-						})
+						})*/
 				}
 			}
 		}
