@@ -228,11 +228,10 @@ export class Outlet {
 
 	public async readMagicLink() {
 		try {
-			await this.ticketStorage.importTicketFromMagicLink(this.urlParams)
-
-			const event = new Event('tokensupdated')
-
-			document.body.dispatchEvent(event)
+			if (await this.ticketStorage.importTicketFromMagicLink(this.urlParams)) {
+				const event = new Event('tokensupdated')
+				document.body.dispatchEvent(event)
+			}
 		} catch (e) {
 			logger(2, e)
 		}
