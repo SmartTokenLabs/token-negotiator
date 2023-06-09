@@ -502,10 +502,12 @@ negotiator.switchTheme("dark");
 Changing the theme.
 
 ```javascript
-	// Note this is a temporary solution likely to change in the next major version.
-	document.body.addEventListener("tokensupdated", () => {
-    console.log("Tokens updated event fired!!");
-  });
+
+// temporary solution likely to change in the next major release version.
+document.body.addEventListener("tokensupdated", () => {
+	console.log("Tokens updated event fired!!");
+});
+
 ```
 
 ### When working without NPM
