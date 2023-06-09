@@ -499,7 +499,7 @@ negotiator.switchTheme("dark");
 
 ### Tokens Updated Hook
 
-Changing the theme.
+Detect when new tokens have been added to the Token Negotiator during an applications lifecycle (for off chain tokens at this time).
 
 ```javascript
 
