@@ -497,6 +497,17 @@ Changing the theme.
 negotiator.switchTheme("dark");
 ```
 
+### Tokens Updated Hook
+
+Changing the theme.
+
+```javascript
+	// Note this is a temporary solution likely to change in the next major version.
+	document.body.addEventListener("tokensupdated", () => {
+    console.log("Tokens updated event fired!!");
+  });
+```
+
 ### When working without NPM
 
 For projects where you are not using a Node.js work flow. Or would prefer to inject the library into the html (polyfills included).
