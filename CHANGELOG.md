@@ -29,4 +29,4 @@ This patch release addresses an off chain token management scenario.
 
 **Full Change log**:
 
-https://github.com/TokenScript/token-negotiator/compare/v2.6.0...v2.7.0
+https://github.com/TokenScript/token-negotiator/compare/v2.7.0...v2.7.1
