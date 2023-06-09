@@ -1,10 +1,10 @@
 > Description
 
-This feature release adds support for Ethereum Attestation Service (EAS) off chain attestations. 
+This patch release addresses an off chain token management scenario.
 
 ### Upgrade Steps
 
-* Update NPM package to version 2.7.0
+* Update NPM package to version 2.7.1
 
 ### Breaking Changes
 
@@ -12,14 +12,12 @@ This feature release adds support for Ethereum Attestation Service (EAS) off cha
 
 ### New Features
 
-* EAS off chain attestation support
-* Opening Start Screen default copy change
-* User controlled off chain signed token support / enhanced user control of token 
+[none]
 
 ### Bug Fixes
 
-* Added attestation backwards compatability
-* CSS alignment correction for Wallect Connect Version 2 icon
+* When off chain tokens are added to the application a fix has been added to stop the 'tokensupdated' event hook from triggering when these tokens already existed. 
+* Addition of this hook to the README documentation. 
 
 ### Performance Improvements
 

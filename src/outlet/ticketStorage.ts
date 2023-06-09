@@ -66,7 +66,7 @@ export class TicketStorage {
 		this.loadTickets()
 	}
 
-	public async importTicketFromMagicLink(urlParams: URLSearchParams) {
+	public async importTicketFromMagicLink(urlParams: URLSearchParams): Promise<boolean> {
 		const tokenFromQuery = decodeURIComponent(urlParams.get(this.config.tokenUrlName))
 		const secretFromQuery = urlParams.get(this.config.tokenSecretName)
 		const idFromQuery = urlParams.has(this.config.tokenIdName) ? urlParams.get(this.config.tokenIdName) : ''
@@ -76,7 +76,7 @@ export class TicketStorage {
 
 		const tokenData = await this.decodeTokenData(typeFromQuery, tokenFromQuery, true)
 
-		await this.updateOrInsertTicket({
+		return await this.updateOrInsertTicket({
 			type: typeFromQuery,
 			token: tokenFromQuery,
 			id: idFromQuery,
@@ -181,7 +181,7 @@ export class TicketStorage {
 		return obj
 	}
 
-	private async updateOrInsertTicket(tokenRecord: StoredTicketRecord) {
+	private async updateOrInsertTicket(tokenRecord: StoredTicketRecord): Promise<boolean> {
 		for (const [index, ticket] of this.tickets.entries()) {
 			// Backward compatibility with old data
 			if (!ticket.tokenId || !ticket.type) {
@@ -190,13 +190,17 @@ export class TicketStorage {
 			}
 
 			if (ticket.tokenId === tokenRecord.tokenId) {
+				if (JSON.stringify(tokenRecord) === JSON.stringify(this.tickets[index])) {
+					return false
+				}
 				this.tickets[index] = tokenRecord
 				this.storeTickets()
-				return
+				return true
 			}
 		}
 
 		this.addTicket(tokenRecord)
+		return true
 	}
 
 	/**
