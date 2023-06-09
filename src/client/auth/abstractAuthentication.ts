@@ -33,11 +33,11 @@ export abstract class AbstractAuthentication {
 	public saveProof(key: string, proof: AuthenticationResult) {
 		const challenges = this.getProofs()
 
-		if (!proof){
+		if (!proof) {
 			this.deleteProof(key)
 			return
 		}
-		
+
 		challenges[this.getFullKey(key)] = proof
 
 		localStorage.setItem(AbstractAuthentication.STORAGE_KEY, JSON.stringify(challenges))

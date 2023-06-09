@@ -1,9 +1,13 @@
 import { URLSearchParams } from 'url'
 import { EasTicketAttestation } from '@tokenscript/attestation/dist/eas/EasTicketAttestation'
-import { OutletInterface } from './index'
-import { KeyPair, KeysArray } from '@tokenscript/attestation/dist/libs/KeyPair'
-import { base64ToUint8array } from '../utils'
+import { OutletIssuerInterface, readSignedTicket } from './index'
+import { KeyPair } from '@tokenscript/attestation/dist/libs/KeyPair'
+import { base64ToUint8array, createOffChainCollectionHash, IssuerHashMap } from '../utils'
 import { uint8tohex } from '@tokenscript/attestation/dist/libs/utils'
+import { Ticket } from '@tokenscript/attestation/dist/Ticket'
+import { OutletInterface } from './index'
+import { EAS_RPC_CONFIG } from '../core/eas'
+import { OffChainTokenConfig } from '../client/interface'
 
 export type TokenType = 'asn' | 'eas'
 
@@ -39,6 +43,10 @@ export interface DecodedToken {
 	commitment: Uint8Array
 }
 
+interface TicketStorageSchema {
+	[collectionHash: string]: StoredTicketRecord[]
+}
+
 export interface FilterInterface {
 	[key: string]: any
 }
@@ -51,32 +59,65 @@ export const DEFAULT_EAS_SCHEMA = {
 		{ name: 'commitment', type: 'bytes', isCommitment: true },
 	],
 }
-
+    
 export class TicketStorage {
-	private keysArray: KeysArray
 	private easManager: EasTicketAttestation
 
-	private tickets: StoredTicketRecord[] = []
+	private ticketCollections: TicketStorageSchema = {}
 
-	constructor(private config: OutletInterface) {
-		this.keysArray = KeyPair.parseKeyArrayStrings(this.config.base64senderPublicKeys)
+	private static LOCAL_STORAGE_KEY = 'tn-tokens'
 
-		this.easManager = new EasTicketAttestation(DEFAULT_EAS_SCHEMA, this.config.eas.config, this.config.eas.provider, this.keysArray)
+	private signingKeys: { [eventId: string]: KeyPair[] } = {}
+
+	constructor(private issuers: OutletIssuerInterface[] | OffChainTokenConfig[]) {
+		this.processSigningKeys()
+
+		this.easManager = new EasTicketAttestation(DEFAULT_EAS_SCHEMA, undefined, EAS_RPC_CONFIG, this.signingKeys)
 
 		this.loadTickets()
 	}
 
-	public async importTicketFromMagicLink(urlParams: URLSearchParams): Promise<boolean> {
-		const tokenFromQuery = decodeURIComponent(urlParams.get(this.config.tokenUrlName))
-		const secretFromQuery = urlParams.get(this.config.tokenSecretName)
-		const idFromQuery = urlParams.has(this.config.tokenIdName) ? urlParams.get(this.config.tokenIdName) : ''
-		const typeFromQuery = (urlParams.has('type') ? urlParams.get('type') : 'asn') as TokenType
+	/**
+	 * Combine issuer signing keys into a single array for validation
+	 * @private
+	 */
+	private processSigningKeys() {
+		if (!this.issuers) return
 
+		for (const issuer of this.issuers) {
+			const keys = KeyPair.parseKeyArrayStrings(issuer.base64senderPublicKeys)
+
+			for (const eventId in keys) {
+				if (!this.signingKeys[eventId]) this.signingKeys[eventId] = []
+
+				const eventKeys = keys[eventId]
+
+				if (Array.isArray(eventKeys)) {
+					this.signingKeys[eventId].push(...eventKeys)
+				} else {
+					this.signingKeys[eventId].push(eventKeys)
+				}
+			}
+		}
+	}
+  
+	public async importTicketFromMagicLink(urlParams: URLSearchParams): Promise<boolean> {
+		const tokenFromQuery = decodeURIComponent(urlParams.get('ticket'))
+		const secretFromQuery = urlParams.get('secret')
+		const idFromQuery = urlParams.has('id') ? urlParams.get('id') : urlParams.get('mail') ?? ''
+		const typeFromQuery = (urlParams.has('type') ? urlParams.get('type') : 'asn') as TokenType
+    
 		if (!(tokenFromQuery && secretFromQuery)) throw new Error('Incomplete token params in URL.')
 
-		const tokenData = await this.decodeTokenData(typeFromQuery, tokenFromQuery, true)
+		const tokenData = await this.decodeTokenData(typeFromQuery, tokenFromQuery)
 
-		return await this.updateOrInsertTicket({
+		// Check the result for the signing key
+		const signingKey = await this.validateTokenData(typeFromQuery, tokenFromQuery)
+
+		const collectionHash = createOffChainCollectionHash(signingKey, tokenData.devconId ?? '')
+
+		return await this.updateOrInsertTicket(collectionHash, {
+
 			type: typeFromQuery,
 			token: tokenFromQuery,
 			id: idFromQuery,
@@ -85,91 +126,96 @@ export class TicketStorage {
 		})
 	}
 
-	public async getDecodedTokens(filter?: FilterInterface) {
-		const tokens = await Promise.all(
-			this.tickets.map(async (ticket) => {
-				const tokenData = await this.decodeTokenData(ticket.type, ticket.token)
-				return { type: ticket.type, signedToken: ticket.token, ...tokenData }
-			}),
-		)
+	/**
+	 * Take in a request of collection hashes and return the returns, keyed by client provided ID
+	 * @param request
+	 * @param filter
+	 */
+	public async getDecodedTokens(request: IssuerHashMap) {
+		const result: { [collectionId: string]: DecodedToken[] } = {}
 
-		if (filter) return TicketStorage.filterTokens(tokens, filter)
+		for (const collectionId in request) {
+			result[collectionId] = []
 
-		return tokens
-	}
+			const collectionHashes = request[collectionId]
 
-	private static filterTokens(decodedTokens: DecodedToken[], filter: FilterInterface = {}) {
-		let res: DecodedToken[] = []
+			for (const hash of collectionHashes) {
+				if (!this.ticketCollections[hash]) continue
 
-		if (decodedTokens.length && typeof filter === 'object' && Object.keys(filter).length) {
-			let filterKeys = Object.keys(filter)
+				let tokens = await Promise.all(
+					this.ticketCollections[hash].map(async (ticket) => {
+						const tokenData = await this.decodeTokenData(ticket.type, ticket.token)
+						return <DecodedToken>{ type: ticket.type, signedToken: ticket.token, ...tokenData }
+					}),
+				)
 
-			decodedTokens.forEach((token: DecodedToken) => {
-				let fitFilter = 1
-
-				filterKeys.forEach((key) => {
-					if (token[key] && token[key].toString() !== filter[key].toString()) fitFilter = 0
-				})
-
-				if (fitFilter) res.push(token)
-			})
-
-			return res
-		} else {
-			return decodedTokens
+				result[collectionId].push(...tokens)
+			}
 		}
+
+		return result
 	}
 
-	public async getStoredTicketFromDecodedToken(decodedToken: DecodedToken) {
+	// TODO: This is for authentication and needs to be reworked to support multiple issuers at a time
+	public async getStoredTicketFromDecodedToken(issuerHashes: string[], decodedToken: DecodedToken) {
 		const tokenId = this.getUniqueTokenId(decodedToken)
 
-		for (const ticket of this.tickets) {
-			// Backward compatibility with old data
-			if (!ticket.tokenId || !ticket.type) {
-				ticket.type = ticket.type ?? 'asn'
-				ticket.tokenId = this.getUniqueTokenId(await this.decodeTokenData(ticket.type, ticket.token))
-				this.storeTickets()
-			}
+		for (const hash of issuerHashes) {
+			for (const ticket of this.ticketCollections[hash]) {
+				// TODO: Can be removed with multi-outlet
+				// Backward compatibility with old data
+				if (!ticket.tokenId || !ticket.type) {
+					ticket.type = ticket.type ?? 'asn'
+					ticket.tokenId = this.getUniqueTokenId(await this.decodeTokenData(ticket.type, ticket.token))
+					this.storeTickets()
+				}
 
-			if (ticket.tokenId === tokenId) return ticket
+				if (ticket.tokenId === tokenId) return ticket
+			}
 		}
 
 		throw new Error('Could not find stored ticket for decoded token.')
 	}
 
-	private async decodeTokenData(type: 'eas' | 'asn', token: string, validate = false) {
+	/**
+	 * Validate token against all possible public keys
+	 * @param type
+	 * @param token
+	 * @return The keypair used to sign the token
+	 * @private
+	 */
+	private async validateTokenData(type: TokenType, token: string) {
+		if (type === 'eas') {
+			this.easManager.loadFromEncoded(token)
+
+			await this.easManager.validateEasAttestation()
+
+			return this.easManager.getSignerKeyPair()
+		} else {
+			const ticket = Ticket.fromBase64(token, this.signingKeys)
+
+			return ticket.getKey()
+		}
+	}
+
+	private async decodeTokenData(type: TokenType, token: string) {
 		let tokenData: DecodedToken
 
 		if (type === 'eas') {
-			tokenData = await this.decodeEasToken(token, validate)
+			this.easManager.loadFromEncoded(token)
+
+			tokenData = this.easManager.getAttestationData() as DecodedToken
 		} else {
-			tokenData = this.decodeAsnToken(token, validate)
+			// TODO: Use ticket class instead?
+			let decodedToken = new readSignedTicket(base64ToUint8array(token))
+
+			// TODO: Validate ASN.1 tokens when they are imported
+			if (!decodedToken || !decodedToken['ticket']) throw new Error('Failed to decode token.')
+
+			tokenData = this.propsArrayBufferToHex(decodedToken['ticket'])
 		}
 
 		return tokenData
-	}
-
-	private async decodeEasToken(token: string, validate = false) {
-		this.easManager.loadFromEncoded(token)
-
-		if (validate) await this.easManager.validateEasAttestation()
-
-		return this.easManager.getAttestationData() as DecodedToken
-	}
-
-	private decodeAsnToken(encodedToken: string, validate = false) {
-		let decodedToken = new this.config.tokenParser(base64ToUint8array(encodedToken).buffer)
-
-		// TODO: Validate ASN.1 tokens when they are imported
-		if (decodedToken && decodedToken[this.config.unsignedTokenDataName]) {
-			let token = decodedToken[this.config.unsignedTokenDataName]
-
-			token = this.propsArrayBufferToHex(token)
-
-			return token
-		}
-
-		throw new Error('Failed to decode token.')
 	}
 
 	private propsArrayBufferToHex(obj: DecodedToken) {
@@ -181,8 +227,12 @@ export class TicketStorage {
 		return obj
 	}
 
-	private async updateOrInsertTicket(tokenRecord: StoredTicketRecord): Promise<boolean> {
-		for (const [index, ticket] of this.tickets.entries()) {
+
+	private async updateOrInsertTicket(collectionHash: string, tokenRecord: StoredTicketRecord): Promise<boolean> {
+		const collectionTickets = this.ticketCollections[collectionHash] ?? []
+
+		for (const [index, ticket] of Object.entries(collectionTickets)) {
+			// TODO: Can be removed with multi-outlet
 			// Backward compatibility with old data
 			if (!ticket.tokenId || !ticket.type) {
 				ticket.type = ticket.type ?? 'asn'
@@ -190,10 +240,15 @@ export class TicketStorage {
 			}
 
 			if (ticket.tokenId === tokenRecord.tokenId) {
+
 				if (JSON.stringify(tokenRecord) === JSON.stringify(this.tickets[index])) {
 					return false
 				}
 				this.tickets[index] = tokenRecord
+
+				collectionTickets[index] = tokenRecord
+				this.ticketCollections[collectionHash] = collectionTickets
+
 				this.storeTickets()
 				return true
 			}
@@ -201,6 +256,11 @@ export class TicketStorage {
 
 		this.addTicket(tokenRecord)
 		return true
+
+		collectionTickets.push(tokenRecord)
+		this.ticketCollections[collectionHash] = collectionTickets
+		this.storeTickets()
+
 	}
 
 	/**
@@ -213,20 +273,15 @@ export class TicketStorage {
 
 	private loadTickets() {
 		try {
-			if (!localStorage.getItem(this.config.itemStorageKey)) return
+			if (!localStorage.getItem(TicketStorage.LOCAL_STORAGE_KEY)) return
 
-			this.tickets = JSON.parse(localStorage.getItem(this.config.itemStorageKey)) as unknown as StoredTicketRecord[]
+			this.ticketCollections = JSON.parse(localStorage.getItem(TicketStorage.LOCAL_STORAGE_KEY)) as unknown as TicketStorageSchema
 		} catch (e) {
-			this.tickets = []
+			this.ticketCollections = {}
 		}
 	}
 
 	private storeTickets() {
-		localStorage.setItem(this.config.itemStorageKey, JSON.stringify(this.tickets))
-	}
-
-	private addTicket(ticket: StoredTicketRecord) {
-		this.tickets.push(ticket)
-		this.storeTickets()
+		localStorage.setItem(TicketStorage.LOCAL_STORAGE_KEY, JSON.stringify(this.ticketCollections))
 	}
 }
