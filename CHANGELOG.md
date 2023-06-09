@@ -17,7 +17,6 @@ This patch release addresses an off chain token management scenario.
 ### Bug Fixes
 
 * When off chain tokens are added to the application a fix has been added to stop the 'tokensupdated' event hook from triggering when these tokens already existed. 
-
 * Addition of this hook to the README documentation. 
 
 ### Performance Improvements
