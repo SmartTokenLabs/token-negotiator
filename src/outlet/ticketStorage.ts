@@ -72,7 +72,8 @@ export class TicketStorage {
 	constructor(private issuers: OutletIssuerInterface[] | OffChainTokenConfig[]) {
 		this.processSigningKeys()
 
-		this.easManager = new EasTicketAttestation(DEFAULT_EAS_SCHEMA, undefined, EAS_RPC_CONFIG, this.signingKeys)
+		// TODO: Implementation in progress towards EAS authentication.
+		// this.easManager = new EasTicketAttestation(DEFAULT_EAS_SCHEMA, undefined, EAS_RPC_CONFIG, this.signingKeys)
 
 		this.loadTickets()
 	}
@@ -189,7 +190,8 @@ export class TicketStorage {
 
 			await this.easManager.validateEasAttestation()
 
-			return this.easManager.getSignerKeyPair()
+			// TODO: Implementation in progress towards EAS authentication.
+			// return this.easManager.getSignerKeyPair()
 		} else {
 			const ticket = Ticket.fromBase64(token, this.signingKeys)
 
