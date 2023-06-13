@@ -77,9 +77,10 @@ jobs:
           name: test-report
           path: reports/
 
-      - uses: actions/upload-pages-artifact@v1
+      - uses: actions/upload-artifact@v3
         if: github.event_name == 'push'
         with:
+          name: token-negotiator-dist
           path: token-negotiator-dist/
 
       - name: "Setup registry"
