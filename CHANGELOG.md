@@ -1,32 +1,31 @@
 > Description
 
-This patch release addresses an off chain token management scenario.
+- tbc -
 
 ### Upgrade Steps
 
-* Update NPM package to version 2.7.1
+- tbc -
 
 ### Breaking Changes
 
-[none]
+- tbc -
 
 ### New Features
 
-[none]
+- tbc -
 
 ### Bug Fixes
 
-* When off chain tokens are added to the application a fix has been added to stop the 'tokensupdated' event hook from triggering when these tokens already existed. 
-* Addition of this hook to the README documentation. 
+- tbc -
 
 ### Performance Improvements
 
-[none]
+- tbc -
  
 ### Other Changes
 
-[none]
+- tbc -
 
 **Full Change log**:
 
-https://github.com/TokenScript/token-negotiator/compare/v2.7.0...v2.7.1
+https://github.com/TokenScript/token-negotiator/compare/v2.7.1...v2.8.0
