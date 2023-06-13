@@ -227,29 +227,27 @@ export class TicketStorage {
 	}
 
 	private async updateOrInsertTicket(collectionHash: string, tokenRecord: StoredTicketRecord): Promise<boolean> {
-		{
-			const collectionTickets = this.ticketCollections[collectionHash] ?? []
-			for (const [index, ticket] of Object.entries(collectionTickets)) {
-				// TODO: Can be removed with multi-outlet
-				// Backward compatibility with old data
-				if (!ticket.tokenId || !ticket.type) {
-					ticket.type = ticket.type ?? 'asn'
-					ticket.tokenId = this.getUniqueTokenId(await this.decodeTokenData(ticket.type, ticket.token))
-				}
-				if (ticket.tokenId === tokenRecord.tokenId) {
-					if (JSON.stringify(tokenRecord) === JSON.stringify(ticket[index])) {
-						return false
-					}
-					collectionTickets[index] = tokenRecord
-					this.ticketCollections[collectionHash] = collectionTickets
-					this.storeTickets()
-					return true
-				}
+		const collectionTickets = this.ticketCollections[collectionHash] ?? []
+		for (const [index, ticket] of Object.entries(collectionTickets)) {
+			// TODO: Can be removed with multi-outlet
+			// Backward compatibility with old data
+			if (!ticket.tokenId || !ticket.type) {
+				ticket.type = ticket.type ?? 'asn'
+				ticket.tokenId = this.getUniqueTokenId(await this.decodeTokenData(ticket.type, ticket.token))
 			}
-			collectionTickets.push(tokenRecord)
-			this.ticketCollections[collectionHash] = collectionTickets
-			this.storeTickets()
+			if (ticket.tokenId === tokenRecord.tokenId) {
+				if (JSON.stringify(tokenRecord) === JSON.stringify(ticket[index])) {
+					return false
+				}
+				collectionTickets[index] = tokenRecord
+				this.ticketCollections[collectionHash] = collectionTickets
+				this.storeTickets()
+				return true
+			}
 		}
+		collectionTickets.push(tokenRecord)
+		this.ticketCollections[collectionHash] = collectionTickets
+		this.storeTickets()
 	}
 
 	/**
