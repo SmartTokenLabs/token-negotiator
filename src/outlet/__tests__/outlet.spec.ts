@@ -85,49 +85,49 @@ const EAS_TICKET_SCHEMA = {
 	],
 }
 
-async function createTestMagicLink(ticketType, ticketId, ticketClass) {
-	let ticketInUrl, secret
+// async function createTestMagicLink(ticketType, ticketId, ticketClass) {
+// 	let ticketInUrl, secret
 
-	const email = 'test@test.com'
-	const issuerPrivKey =
-		'MIICSwIBADCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBBIIBVTCCAVECAQEEIM/T+SzcXcdtcNIqo6ck0nJTYzKL5ywYBFNSpI7R8AuBoIHjMIHgAgEBMCwGByqGSM49AQECIQD////////////////////////////////////+///8LzBEBCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcEQQR5vmZ++dy7rFWgYpXOhwsHApv82y3OKNlZ8oFbFvgXmEg62ncmo8RlXaT7/A4RCKj9F7RIpoVUGZxH0I/7ENS4AiEA/////////////////////rqu3OavSKA7v9JejNA2QUECAQGhRANCAARjMR62qoIK9pHk17MyHHIU42Ix+Vl6Q2gTmIF72vNpinBpyoBkTkV0pnI1jdrLlAjJC0I91DZWQhVhddMCK65c'
+// 	const email = 'test@test.com'
+// 	const issuerPrivKey =
+// 		'MIICSwIBADCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBBIIBVTCCAVECAQEEIM/T+SzcXcdtcNIqo6ck0nJTYzKL5ywYBFNSpI7R8AuBoIHjMIHgAgEBMCwGByqGSM49AQECIQD////////////////////////////////////+///8LzBEBCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcEQQR5vmZ++dy7rFWgYpXOhwsHApv82y3OKNlZ8oFbFvgXmEg62ncmo8RlXaT7/A4RCKj9F7RIpoVUGZxH0I/7ENS4AiEA/////////////////////rqu3OavSKA7v9JejNA2QUECAQGhRANCAARjMR62qoIK9pHk17MyHHIU42Ix+Vl6Q2gTmIF72vNpinBpyoBkTkV0pnI1jdrLlAjJC0I91DZWQhVhddMCK65c'
 
-	if (ticketType === 'eas') {
-		const provider = new ethers.providers.JsonRpcProvider(SEPOLIA_RPC)
-		const wallet = new ethers.Wallet(KeyPair.privateFromPEM(issuerPrivKey).getPrivateAsHexString(), provider)
+// 	if (ticketType === 'eas') {
+// 		const provider = new ethers.providers.JsonRpcProvider(SEPOLIA_RPC)
+// 		const wallet = new ethers.Wallet(KeyPair.privateFromPEM(issuerPrivKey).getPrivateAsHexString(), provider)
 
-		const attestationManager = new EasTicketAttestation(EAS_TICKET_SCHEMA, {
-			EASconfig: EAS_CONFIG,
-			signer: wallet,
-		})
+// 		const attestationManager = new EasTicketAttestation(EAS_TICKET_SCHEMA, {
+// 			EASconfig: EAS_CONFIG,
+// 			signer: wallet,
+// 		})
 
-		await attestationManager.createEasAttestation({
-			devconId: '6',
-			ticketIdString: ticketId,
-			ticketClass: ticketClass,
-			commitment: email,
-		})
+// 		await attestationManager.createEasAttestation({
+// 			devconId: '6',
+// 			ticketIdString: ticketId,
+// 			ticketClass: ticketClass,
+// 			commitment: email,
+// 		})
 
-		ticketInUrl = base64toBase64Url(attestationManager.getEncoded())
-		secret = attestationManager.getEasJson().secret
-	} else {
-		secret = BigInt(45845870684)
+// 		ticketInUrl = base64toBase64Url(attestationManager.getEncoded())
+// 		secret = attestationManager.getEasJson().secret
+// 	} else {
+// 		secret = BigInt(45845870684)
 
-		let ticket = Ticket.createWithMail(email, '6', ticketId, ticketClass, { '6': KeyPair.privateFromPEM(issuerPrivKey) }, secret)
+// 		let ticket = Ticket.createWithMail(email, '6', ticketId, ticketClass, { '6': KeyPair.privateFromPEM(issuerPrivKey) }, secret)
 
-		if (!ticket.checkValidity()) {
-			throw new Error('Ticket validity check failed')
-		}
+// 		if (!ticket.checkValidity()) {
+// 			throw new Error('Ticket validity check failed')
+// 		}
 
-		if (!ticket.verify()) {
-			throw new Error('Ticket verify failed')
-		}
+// 		if (!ticket.verify()) {
+// 			throw new Error('Ticket verify failed')
+// 		}
 
-		ticketInUrl = hexStringToBase64Url(ticket.getDerEncoding())
-	}
+// 		ticketInUrl = hexStringToBase64Url(ticket.getDerEncoding())
+// 	}
 
-	return new URLSearchParams(new URL(`http://127.0.0.1?type=${ticketType}&ticket=${ticketInUrl}&secret=${secret}&mail=${email}`).search)
-}
+// 	return new URLSearchParams(new URL(`http://127.0.0.1?type=${ticketType}&ticket=${ticketInUrl}&secret=${secret}&mail=${email}`).search)
+// }
 
 describe('Test TicketStorage', () => {
 	// @ts-ignore
