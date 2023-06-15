@@ -37,6 +37,7 @@ import { getFungibleTokenBalances, getFungibleTokensMeta } from '../utils/token/
 import { URLNS } from '../core/messaging'
 import { DecodedToken, TokenType } from '../outlet/ticketStorage'
 import { ProofResult } from '../outlet/auth-handler'
+import { sha256 } from 'ethers/lib/utils'
 
 if (typeof window !== 'undefined') window.tn = { VERSION }
 
@@ -751,7 +752,37 @@ export class Client {
 		this.eventSender('tokens-selected', { selectedTokens })
 	}
 
+	async athenticateMutilple(authRequests: AuthenticateInterface[]) {
+		try {
+			let issuersValidated = 0
+			let output = await Promise.all(
+				authRequests.map(async (authRequest, index) => {
+					let issuerAuthenticated
+					if (index === 0) issuerAuthenticated = await this.authenticateToken(authRequest, true, false)
+					else issuerAuthenticated = await this.authenticateToken(authRequest, false, false)
+					if (issuerAuthenticated.proof) issuersValidated++
+					return issuerAuthenticated
+				}),
+			)
+			// @ts-ignore
+			this.eventSender('token-proof', {
+				issuer: null,
+				issuers: output,
+				issuersValidated,
+				proof: null,
+			})
+			return { issuer: null, issuers: output, issuersValidated }
+		} catch (err) {
+			errorHandler(err, 'error', null, false, true, false)
+		}
+	}
+
 	async authenticate(authRequest: AuthenticateInterface) {
+		if (Array.isArray(authRequest)) return this.athenticateMutilple(authRequest)
+		else return this.authenticateToken(authRequest)
+	}
+
+	async authenticateToken(authRequest: AuthenticateInterface, applyLoadingMsg = true, emitProof = true) {
 		await this.checkUserAgentSupport('authentication')
 
 		const { issuer, unsignedToken } = authRequest
@@ -768,7 +799,7 @@ export class Client {
 
 		// TODO: How to handle error display in passive negotiation? Use optional UI or emit errors to listener?
 
-		if (this.ui) {
+		if (this.ui && applyLoadingMsg) {
 			this.ui.showLoaderDelayed(
 				[
 					'<h4>Authenticating...</h4>',
@@ -809,7 +840,7 @@ export class Client {
 
 			logger(2, 'Ticket proof successfully validated.')
 
-			this.eventSender('token-proof', { data: res.data, error: null, issuer })
+			if (emitProof) this.eventSender('token-proof', { data: res.data, error: null, issuer })
 		} catch (err) {
 			logger(2, err)
 
