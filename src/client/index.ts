@@ -37,7 +37,6 @@ import { getFungibleTokenBalances, getFungibleTokensMeta } from '../utils/token/
 import { URLNS } from '../core/messaging'
 import { DecodedToken, TokenType } from '../outlet/ticketStorage'
 import { ProofResult } from '../outlet/auth-handler'
-import { sha256 } from 'ethers/lib/utils'
 
 if (typeof window !== 'undefined') window.tn = { VERSION }
 
