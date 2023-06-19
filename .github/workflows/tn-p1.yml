@@ -3,16 +3,16 @@ name: "tn-p1"
 on:
   workflow_call:
   workflow_dispatch:
-    inputs:
-      attestation_ver:
-        description: "Specific org.tokenscript:attestation version"
-        required: false
-        type: string
-      use_github_packages:
-        description: "Whether to use github packages for building"
-        required: false
-        default: false
-        type: boolean
+#    inputs:
+#      attestation_ver:
+#        description: "Specific org.tokenscript:attestation version"
+#        required: false
+#        type: string
+#      use_github_packages:
+#        description: "Whether to use github packages for building"
+#        required: false
+#        default: false
+#        type: boolean
 
 jobs:
   tn-p1:
@@ -34,23 +34,23 @@ jobs:
       - name: install dependencies
         run: |
           npm ci
-          if [ "${USE_GITHUB_PACKAGES}" = "true" ]; then
-            echo "//npm.pkg.github.com/:_authToken=${GPR_KEY}" >> .npmrc
-            echo "@tokenscript:registry=https://npm.pkg.github.com" >> .npmrc
-            cat .npmrc
-          fi
-          if [ -n "${ATTESTATION_VER}" ]; then
-            npm i -E "@tokenscript/attestation@${ATTESTATION_VER}"
-            cat package.json
-          fi
-          # make SNAPSHOT-staging package to use @tokenscript/attestation:SNAPSHOT-staging
-          if [ "${GITHUB_EVENT_NAME}" = "push" -a "${GITHUB_REF_NAME}" = "staging" ]; then
-            echo "//npm.pkg.github.com/:_authToken=${GPR_KEY}" >> .npmrc
-            echo "@tokenscript:registry=https://npm.pkg.github.com" >> .npmrc
-            cat .npmrc
-            npm i "@tokenscript/attestation@SNAPSHOT-staging"
-          fi
-          rm -f .npmrc
+#          if [ "${USE_GITHUB_PACKAGES}" = "true" ]; then
+#            echo "//npm.pkg.github.com/:_authToken=${GPR_KEY}" >> .npmrc
+#            echo "@tokenscript:registry=https://npm.pkg.github.com" >> .npmrc
+#            cat .npmrc
+#          fi
+#          if [ -n "${ATTESTATION_VER}" ]; then
+#            npm i -E "@tokenscript/attestation@${ATTESTATION_VER}"
+#            cat package.json
+#          fi
+#          # make SNAPSHOT-staging package to use @tokenscript/attestation:SNAPSHOT-staging
+#          if [ "${GITHUB_EVENT_NAME}" = "push" -a "${GITHUB_REF_NAME}" = "staging" ]; then
+#            echo "//npm.pkg.github.com/:_authToken=${GPR_KEY}" >> .npmrc
+#            echo "@tokenscript:registry=https://npm.pkg.github.com" >> .npmrc
+#            cat .npmrc
+#            npm i "@tokenscript/attestation@SNAPSHOT-staging"
+#          fi
+#          rm -f .npmrc
         env:
           ATTESTATION_VER: ${{ inputs.attestation_ver }}
           USE_GITHUB_PACKAGES: ${{ inputs.use_github_packages }}
