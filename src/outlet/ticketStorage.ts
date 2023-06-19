@@ -190,8 +190,7 @@ export class TicketStorage {
 
 			await this.easManager.validateEasAttestation()
 
-			// TODO: Implementation in progress towards EAS authentication.
-			// return this.easManager.getSignerKeyPair()
+			return this.easManager.getSignerKeyPair()
 		} else {
 			const ticket = Ticket.fromBase64(token, this.signingKeys)
 
