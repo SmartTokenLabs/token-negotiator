@@ -751,16 +751,128 @@ export class Client {
 		this.eventSender('tokens-selected', { selectedTokens })
 	}
 
+	async prepareToAuthenticateTokens(authRequest: AuthenticateInterface) {
+		await this.checkUserAgentSupport('authentication')
+
+		const { issuer, unsignedToken } = authRequest
+
+		requiredParams(issuer && unsignedToken, 'Issuer and unsigned token required.')
+
+		if (unsignedToken.signedToken) {
+			delete unsignedToken.signedToken
+		}
+
+		const config = this.tokenStore.getCurrentIssuers()[issuer]
+
+		if (!config) errorHandler('Provided issuer was not found.', 'error', null, null, true, true)
+
+		let AuthType
+
+		if (authRequest.type) {
+			AuthType = authRequest.type
+		} else {
+			AuthType = config.onChain ? SignedUNChallenge : TicketZKProof
+		}
+
+		if (this.ui) {
+			this.ui.dismissLoader()
+			this.ui.closeOverlay()
+		}
+
+		return {
+			config,
+			authRequest,
+			authType: AuthType,
+		}
+	}
+
 	async athenticateMutilple(authRequests: AuthenticateInterface[]) {
 		try {
 			let issuersValidated = 0
 			let output = await Promise.all(
 				authRequests.map(async (authRequest, index) => {
-					let issuerAuthenticated
-					if (index === 0) issuerAuthenticated = await this.authenticateToken(authRequest, true, false)
-					else issuerAuthenticated = await this.authenticateToken(authRequest, false, false)
-					if (issuerAuthenticated.proof) issuersValidated++
-					return issuerAuthenticated
+					if (this.ui && index === 0) {
+						this.ui.showLoaderDelayed(
+							[
+								'<h4>Authenticating...</h4>',
+								'<small>You may need to sign a new challenge in your wallet</small>',
+								"<button class='cancel-auth-btn btn-tn' aria-label='Cancel authentication'>Cancel</button>",
+							],
+							600,
+							true,
+						)
+						this.enableAuthCancel(authRequest.issuer)
+					}
+
+					const out = await this.prepareToAuthenticateTokens(authRequest)
+
+					// let authenticator: AuthenticationMethod = new AuthType(this)
+
+					// let res
+
+					// try {
+					// 	if (!authRequest.options) authRequest.options = {}
+
+					// 	authRequest.options.messagingForceTab = this.config.messagingForceTab
+
+					// 	logger(2, 'authRequest', authRequest)
+					// 	logger(2, 'get proof at ', window.location.href)
+
+					// 	res = await authenticator.getTokenProof(config, [authRequest.unsignedToken], authRequest)
+
+					// 	if (!res) return // Site is redirecting
+
+					// 	logger(2, 'proof received at ', window.location.href)
+
+					// 	logger(2, 'Ticket proof successfully validated.')
+					// } catch (err) {
+					// 	logger(2, err)
+
+					// 	if (err.message === 'WALLET_REQUIRED') {
+					// 		return this.handleWalletRequired(authRequest)
+					// 	}
+
+					// 	errorHandler(err, 'error', () => this.handleProofError(err, issuer), null, false, true)
+					// }
+
+					// return res.data
+
+					// let authenticator: AuthenticationMethod = new AuthType(this)
+
+					// let res
+
+					// try {
+					// 	if (!authRequest.options) authRequest.options = {}
+
+					// 	authRequest.options.messagingForceTab = this.config.messagingForceTab
+
+					// 	logger(2, 'authRequest', authRequest)
+					// 	logger(2, 'get proof at ', window.location.href)
+
+					// 	res = await authenticator.getTokenProof(config, [authRequest.unsignedToken], authRequest)
+
+					// 	if (!res) return // Site is redirecting
+
+					// 	logger(2, 'proof received at ', window.location.href)
+
+					// 	logger(2, 'Ticket proof successfully validated.')
+					// } catch (err) {
+					// 	logger(2, err)
+
+					// 	if (err.message === 'WALLET_REQUIRED') {
+					// 		return this.handleWalletRequired(authRequest)
+					// 	}
+
+					// 	errorHandler(err, 'error', () => this.handleProofError(err, issuer), null, false, true)
+					// }
+
+					// return res.data
+
+					// let issuerAuthenticated
+					// if (index === 0) issuerAuthenticated = await this.authenticateToken(authRequest, true, false)
+					// else issuerAuthenticated = await this.authenticateToken(authRequest, false, false)
+					// if (issuerAuthenticated.proof) issuersValidated++
+					// return issuerAuthenticated
 				}),
 			)
 			// @ts-ignore
