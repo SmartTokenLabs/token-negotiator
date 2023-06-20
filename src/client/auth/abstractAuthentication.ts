@@ -19,6 +19,16 @@ export interface AuthenticationMethod {
 	): Promise<AuthenticationResult>
 }
 
+export interface AuthenticationMethodUN {
+	TYPE: string
+	getTokenProof(request: AuthenticateInterface): Promise<AuthenticationResult>
+}
+
+export interface AuthenticationMethodMulti {
+	TYPE: string
+	getTokenProofMulti(userTokens: any, request: any): Promise<AuthenticationResult>
+}
+
 export abstract class AbstractAuthentication {
 	public abstract TYPE: string
 

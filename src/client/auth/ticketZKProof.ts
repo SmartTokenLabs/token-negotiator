@@ -39,7 +39,7 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 				...request.options,
 				unEndPoint: issuerConfig.unEndPoint,
 			}
-			let unRes = await unChallenge.getTokenProof(issuerConfig, tokens, request)
+			let unRes = await unChallenge.getTokenProof(request)
 			useEthKey = unRes.data as UNInterface
 		}
 
@@ -111,9 +111,8 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 
 	public static async validateProof(issuerConfig: OffChainTokenConfig, proof: string, type: TokenType, ethAddress = '') {
 		if (type === 'eas') {
-			// TODO: Implementation in progress towards EAS authentication.
-			// const easZkProof = new EasZkProof(DEFAULT_EAS_SCHEMA, EAS_RPC_CONFIG)
-			// await easZkProof.validateUseTicket(proof, issuerConfig.base64attestorPubKey, issuerConfig.base64senderPublicKeys, ethAddress)
+			const easZkProof = new EasZkProof(DEFAULT_EAS_SCHEMA, EAS_RPC_CONFIG)
+			await easZkProof.validateUseTicket(proof, issuerConfig.base64attestorPubKey, issuerConfig.base64senderPublicKeys, ethAddress)
 		} else {
 			Authenticator.validateUseTicket(proof, issuerConfig.base64attestorPubKey, issuerConfig.base64senderPublicKeys, ethAddress)
 		}

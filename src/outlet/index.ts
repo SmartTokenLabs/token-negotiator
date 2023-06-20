@@ -166,6 +166,17 @@ export class Outlet {
 
 					break
 				}
+				case OutletAction.GET_MUTLI_PROOF: {
+					// TODO: Replace with new request to handle multiple issuers & tokens
+					const issuer: string = this.getDataFromQuery('issuer')
+					const tokens: string = this.getDataFromQuery('token')
+					const wallet: string = this.getDataFromQuery('wallet')
+					const address: string = this.getDataFromQuery('address')
+					//
+					// requiredParams(token, 'unsigned token is missing')
+					// await this.sendTokenProof(evtid, issuer, token, address, wallet)
+					break
+				}
 				default: {
 					if (this.getDataFromQuery('ticket')) {
 						await this.readMagicLink()
