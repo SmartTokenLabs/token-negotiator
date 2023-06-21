@@ -5,7 +5,6 @@ import { KeyPair } from '@tokenscript/attestation/dist/libs/KeyPair'
 import { base64ToUint8array, createOffChainCollectionHash, IssuerHashMap } from '../utils'
 import { uint8tohex } from '@tokenscript/attestation/dist/libs/utils'
 import { Ticket } from '@tokenscript/attestation/dist/Ticket'
-import { OutletInterface } from './index'
 import { EAS_RPC_CONFIG } from '../core/eas'
 import { OffChainTokenConfig } from '../client/interface'
 
@@ -72,8 +71,7 @@ export class TicketStorage {
 	constructor(private issuers: OutletIssuerInterface[] | OffChainTokenConfig[]) {
 		this.processSigningKeys()
 
-		// TODO: Implementation in progress towards EAS authentication.
-		// this.easManager = new EasTicketAttestation(DEFAULT_EAS_SCHEMA, undefined, EAS_RPC_CONFIG, this.signingKeys)
+		this.easManager = new EasTicketAttestation(DEFAULT_EAS_SCHEMA, undefined, EAS_RPC_CONFIG, this.signingKeys)
 
 		this.loadTickets()
 	}

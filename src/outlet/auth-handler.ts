@@ -1,6 +1,6 @@
 import { ResponseActionBase, URLNS } from '../core/messaging'
 import { OutletAction } from '../client/messaging'
-import { Outlet, OutletInterface, OutletIssuerInterface } from './index'
+import { Outlet, OutletIssuerInterface } from './index'
 import { Authenticator } from '@tokenscript/attestation'
 import { logger, removeUrlSearchParams } from '../utils'
 import { isBrave } from '../utils/support/getBrowserData'

@@ -8,6 +8,9 @@ import { AsnParser } from '@peculiar/asn1-schema'
 import { IssuerConfigInterface, OffChainTokenConfig } from '../client/interface'
 import { Whitelist } from './whitelist'
 
+// TS2322: Type '{ issuers: any[]; whitelistDialogRenderer: (permissionTxt: string, acceptBtn: string, denyBtn: string) => string; }' is not assignable to type 'OutletInterface'.
+// Object literal may only specify known properties, and 'issuers' does not exist in type 'OutletInterface'.
+
 export interface OutletIssuerInterface {
 	collectionID: string
 	title?: string
@@ -167,6 +170,7 @@ export class Outlet {
 					break
 				}
 				case OutletAction.GET_MUTLI_PROOF: {
+					logger(2, 'Outlet received event ID GET_MUTLI_PROOF ' + evtid + ' action ' + action + ' at ' + window.location.href)
 					// TODO: Replace with new request to handle multiple issuers & tokens
 					const issuer: string = this.getDataFromQuery('issuer')
 					const tokens: string = this.getDataFromQuery('token')

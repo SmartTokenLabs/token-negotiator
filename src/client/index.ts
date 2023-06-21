@@ -31,7 +31,7 @@ import { AuthenticationMethod, AuthenticationMethodMulti } from './auth/abstract
 import { isUserAgentSupported, validateBlockchain } from '../utils/support/isSupported'
 import Web3WalletProvider from '../wallet/Web3WalletProvider'
 import { LocalOutlet } from '../outlet/localOutlet'
-import { Outlet, OutletInterface, OutletIssuerInterface } from '../outlet'
+// import { Outlet, OutletInterface, OutletIssuerInterface } from '../outlet'
 import { shouldUseRedirectMode } from '../utils/support/getBrowserData'
 import { VERSION } from '../version'
 import { getFungibleTokenBalances, getFungibleTokensMeta } from '../utils/token/fungibleTokenProvider'
@@ -753,6 +753,7 @@ export class Client {
 	}
 
 	async prepareToAuthenticateToken(authRequest: AuthenticateInterface) {
+		logger(2, 'Preparing to authenticate token', authRequest)
 		await this.checkUserAgentSupport('authentication')
 		const { issuer, unsignedToken } = authRequest
 		requiredParams(issuer && unsignedToken, 'Issuer and unsigned token required.')
@@ -763,6 +764,7 @@ export class Client {
 	}
 
 	async athenticateMutilple(authRequests: AuthenticateInterface[]) {
+		logger(2, 'Preparing to authenticate multi token', authRequests)
 		try {
 			let authRequestBatch = { onChain: {}, offChain: {} }
 			let issuersValidated = 0
@@ -786,6 +788,7 @@ export class Client {
 				// Off Chain
 				// Setup for Token Collection. e.g. authRequestBatch.offChain['https://mywebsite.com']['devcon']
 				if (offChain) {
+					logger(2, 'athenticateMutilple', authRequestItem)
 					if (reqItem.options?.useRedirect) messagingForceTab = true
 					// TODO manage from options, request?.options?.useRedirect
 					// this is usually managed at token level - but a rule must be added to address this for the batch
@@ -808,6 +811,7 @@ export class Client {
 			// Send the request batches to each token origin
 			// Off Chain: // ['https://devcon.com']['issuer'][list of tokens]
 			for (const key in authRequestBatch.offChain) {
+				logger(2, 'authRequestBatch.offChain', authRequestBatch.offChain)
 				let AuthType = TicketZKProofMulti
 				let authenticator: AuthenticationMethodMulti = new AuthType(this)
 				const authRequest = {
@@ -848,12 +852,12 @@ export class Client {
 		}
 	}
 
-	async authenticate(authRequest: AuthenticateInterface) {
-		if (Array.isArray(authRequest)) return this.athenticateMutilple(authRequest)
-		else return this.authenticateToken(authRequest)
+	async authenticate(authRequest: any) {
+		if (Array.isArray(authRequest)) return this.athenticateMutilple(authRequest as AuthenticateInterface[])
+		else return this.authenticateToken(authRequest as AuthenticateInterface)
 	}
 
-	async authenticateToken(authRequest: AuthenticateInterface, applyLoadingMsg = true, emitProof = true) {
+	async authenticateToken(authRequest: AuthenticateInterface) {
 		await this.checkUserAgentSupport('authentication')
 
 		const { issuer, unsignedToken } = authRequest
@@ -870,7 +874,7 @@ export class Client {
 
 		// TODO: How to handle error display in passive negotiation? Use optional UI or emit errors to listener?
 
-		if (this.ui && applyLoadingMsg) {
+		if (this.ui) {
 			this.ui.showLoaderDelayed(
 				[
 					'<h4>Authenticating...</h4>',
@@ -911,7 +915,7 @@ export class Client {
 
 			logger(2, 'Ticket proof successfully validated.')
 
-			if (emitProof) this.eventSender('token-proof', { data: res.data, error: null, issuer })
+			this.eventSender('token-proof', { data: res.data, error: null, issuer })
 		} catch (err) {
 			logger(2, err)
 

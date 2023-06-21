@@ -28,6 +28,7 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 		userTokens: any, // { devcon: { requestTokens: [], issuerConfig: {} }, edcon: { ... }
 		request: any, //
 	): Promise<any> {
+		logger(2, 'getTokenProofMulti', userTokens, request)
 		// as per limitations described above. We will use the config from this first object.
 		const firstCollectionFound = Object.keys(userTokens)[0]
 		let redirectMode: false | string =
@@ -56,6 +57,7 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 				authInput.issuerHashes.push(createIssuerHashArray(userTokens[key].issuerConfig))
 				authInput.tokens.push(userTokens[key].requestTokens)
 			}
+			logger(2, 'this will break the config is inside each user token key.')
 			data = await localOutlet.authenticateMany(
 				userTokens.issuerConfig as OffChainTokenConfig & OutletIssuerInterface,
 				authInput.issuerHashes,
@@ -100,20 +102,20 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 			},
 		}
 		// TODO update this logic to handle multi-proof
-		// await TicketZKProofMulti.validateProof(issuerConfig, data.proof, data.type, useEthKey?.address ?? '')
-		// if (useEthKey) proof.data.useEthKey = useEthKey
-		// return proof
-		// return {
-		// 	data: '',
-		// }
+		await TicketZKProofMulti.validateProof(userTokens, data.proof, data.type, useEthKey?.address ?? '')
+		if (useEthKey) proof.data.useEthKey = useEthKey
+		return proof
+		return {
+			data: '',
+		}
 	}
 
-	// public static async validateProof(issuerConfig: OffChainTokenConfig, proof: string, type: TokenType, ethAddress = '') {
-	// 	if (type === 'eas') {
-	// 		const easZkProof = new EasZkProof(DEFAULT_EAS_SCHEMA, EAS_RPC_CONFIG)
-	// 		await easZkProof.validateUseTicket(proof, issuerConfig.base64attestorPubKey, issuerConfig.base64senderPublicKeys, ethAddress)
-	// 	} else {
-	// 		Authenticator.validateUseTicket(proof, issuerConfig.base64attestorPubKey, issuerConfig.base64senderPublicKeys, ethAddress)
-	// 	}
-	// }
+	public static async validateProof(issuerConfig: OffChainTokenConfig, proof: string, type: TokenType, ethAddress = '') {
+		if (type === 'eas') {
+			const easZkProof = new EasZkProof(DEFAULT_EAS_SCHEMA, EAS_RPC_CONFIG)
+			await easZkProof.validateUseTicket(proof, issuerConfig.base64attestorPubKey, issuerConfig.base64senderPublicKeys, ethAddress)
+		} else {
+			Authenticator.validateUseTicket(proof, issuerConfig.base64attestorPubKey, issuerConfig.base64senderPublicKeys, ethAddress)
+		}
+	}
 }
