@@ -102,7 +102,7 @@ export class TicketStorage {
 		}
 	}
 
-	public async importTicketFromMagicLink(urlParams: URLSearchParams) {
+	public async importTicketFromMagicLink(urlParams: URLSearchParams): Promise<boolean> {
 		const tokenFromQuery = decodeURIComponent(urlParams.get('ticket'))
 		const secretFromQuery = urlParams.get('secret')
 		const idFromQuery = urlParams.has('id') ? urlParams.get('id') : urlParams.get('mail') ?? ''
@@ -117,7 +117,7 @@ export class TicketStorage {
 
 		const collectionHash = createOffChainCollectionHash(signingKey, tokenData.devconId ?? '')
 
-		await this.updateOrInsertTicket(collectionHash, {
+		return await this.updateOrInsertTicket(collectionHash, {
 			type: typeFromQuery,
 			token: tokenFromQuery,
 			id: idFromQuery,
@@ -227,9 +227,8 @@ export class TicketStorage {
 		return obj
 	}
 
-	private async updateOrInsertTicket(collectionHash: string, tokenRecord: StoredTicketRecord) {
+	private async updateOrInsertTicket(collectionHash: string, tokenRecord: StoredTicketRecord): Promise<boolean> {
 		const collectionTickets = this.ticketCollections[collectionHash] ?? []
-
 		for (const [index, ticket] of Object.entries(collectionTickets)) {
 			// TODO: Can be removed with multi-outlet
 			// Backward compatibility with old data
@@ -237,15 +236,16 @@ export class TicketStorage {
 				ticket.type = ticket.type ?? 'asn'
 				ticket.tokenId = this.getUniqueTokenId(await this.decodeTokenData(ticket.type, ticket.token))
 			}
-
 			if (ticket.tokenId === tokenRecord.tokenId) {
+				if (JSON.stringify(tokenRecord) === JSON.stringify(ticket[index])) {
+					return false
+				}
 				collectionTickets[index] = tokenRecord
 				this.ticketCollections[collectionHash] = collectionTickets
 				this.storeTickets()
-				return
+				return true
 			}
 		}
-
 		collectionTickets.push(tokenRecord)
 		this.ticketCollections[collectionHash] = collectionTickets
 		this.storeTickets()

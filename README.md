@@ -497,6 +497,19 @@ Changing the theme.
 negotiator.switchTheme("dark");
 ```
 
+### Tokens Updated Hook
+
+Detect when new tokens have been added to the Token Negotiator during an applications lifecycle (for off chain tokens at this time).
+
+```javascript
+
+// temporary solution likely to change in the next major release version.
+document.body.addEventListener("tokensupdated", () => {
+	console.log("Tokens updated event fired!!");
+});
+
+```
+
 ### When working without NPM
 
 For projects where you are not using a Node.js work flow. Or would prefer to inject the library into the html (polyfills included).
