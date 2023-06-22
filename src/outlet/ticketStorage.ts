@@ -157,7 +157,6 @@ export class TicketStorage {
 	// TODO: This is for authentication and needs to be reworked to support multiple issuers at a time
 	public async getStoredTicketFromDecodedToken(issuerHashes: string[], decodedToken: DecodedToken) {
 		const tokenId = this.getUniqueTokenId(decodedToken)
-
 		for (const hash of issuerHashes) {
 			for (const ticket of this.ticketCollections[hash]) {
 				// TODO: Can be removed with multi-outlet
@@ -167,11 +166,12 @@ export class TicketStorage {
 					ticket.tokenId = this.getUniqueTokenId(await this.decodeTokenData(ticket.type, ticket.token))
 					this.storeTickets()
 				}
-
-				if (ticket.tokenId === tokenId) return ticket
+				if (ticket.tokenId === tokenId) {
+					return ticket
+				}
 			}
 		}
-
+		console.log('throw errror, Could not find stored ticket for decoded token.')
 		throw new Error('Could not find stored ticket for decoded token.')
 	}
 
@@ -258,6 +258,8 @@ export class TicketStorage {
 	}
 
 	private loadTickets() {
+		console.log('BEFORE: loading tickets.... is this where ticket collections is defined: ', this.ticketCollections)
+
 		try {
 			if (!localStorage.getItem(TicketStorage.LOCAL_STORAGE_KEY)) return
 
@@ -265,6 +267,8 @@ export class TicketStorage {
 		} catch (e) {
 			this.ticketCollections = {}
 		}
+
+		console.log('AFTER: loading tickets.... is this where ticket collections is defined: ', this.ticketCollections)
 	}
 
 	private storeTickets() {

@@ -170,7 +170,7 @@ export class Outlet {
 					break
 				}
 				case OutletAction.GET_MUTLI_PROOF: {
-					logger(2, 'Outlet received event ID GET_MUTLI_PROOF ' + evtid + ' action ' + action + ' at ' + window.location.href)
+					console.log('Outlet received event ID GET_MUTLI_PROOF ' + evtid + ' action ' + action + ' at ' + window.location.href)
 					// TODO: Replace with new request to handle multiple issuers & tokens
 					const issuer: string = this.getDataFromQuery('issuer')
 					const tokens: string = this.getDataFromQuery('token')

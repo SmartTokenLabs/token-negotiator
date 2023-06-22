@@ -24,23 +24,22 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 	// validation method, origin and UN EndPoint.
 	// but user cannot validate 2 tokens, from different tokens origing in this single process.
 
-	async getTokenProofMulti(
-		userTokens: any, // { devcon: { requestTokens: [], issuerConfig: {} }, edcon: { ... }
-		request: any, //
-	): Promise<any> {
-		logger(2, 'getTokenProofMulti', userTokens, request)
-		// as per limitations described above. We will use the config from this first object.
+	// method getTokenProofMulti
+	// param userTokens { issuer: { requestTokens: [], issuerConfig: {} }, issuer2: { ... }
+	// param request { options, ... }
+	async getTokenProofMulti(userTokens: any, request: any): Promise<any> {
 		const firstCollectionFound = Object.keys(userTokens)[0]
+		const tokenCollectionConfig = userTokens[firstCollectionFound].requestTokens[0]
+		const issuerCollectionConfig = userTokens[firstCollectionFound].issuerConfig
 		let redirectMode: false | string =
-			request?.options?.useRedirect || shouldUseRedirectMode(this.client.config.offChainRedirectMode) || false
+			tokenCollectionConfig?.options.useRedirect || shouldUseRedirectMode(this.client.config.offChainRedirectMode) || false
 		if (redirectMode) redirectMode = request?.options?.redirectUrl || window.location.href
 		let useEthKey: UNInterface | null = null
-		if (request.unEndPoint) {
+		if (issuerCollectionConfig?.unEndPoint) {
 			let unChallenge = new SignedUNChallenge(this.client)
-			console.log('...', firstCollectionFound)
 			request.options = {
 				...request.options,
-				unEndPoint: '', // firstCollectionFound.issuerConfig.unEndPoint,
+				unEndPoint: issuerCollectionConfig?.unEndPoint,
 			}
 			let unRes = await unChallenge.getTokenProof(request)
 			useEthKey = unRes.data as UNInterface
@@ -49,49 +48,59 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 		const address = request.address ? request.address : useEthKeyAddress
 		const wallet = request.wallet ? request.wallet : ''
 		let data
-		if (new URL(request.issuerOrigin).origin === window.location.origin) {
-			// userTokens: any, // { devcon: { requestTokens: [], issuerConfig: {} }, edcon: { ... }
+		if (new URL(issuerCollectionConfig.tokenOrigin).origin === window.location.origin) {
 			const localOutlet = new LocalOutlet(Object.values(this.client.getTokenStore().getCurrentIssuers(false)) as OffChainTokenConfig[])
-			let authInput = { issuerHashes: [], tokens: [] }
+			let issuerKeyHashesAndRequestTokens = {}
+			// e.g. devcon, edcon (when sent from different tokens with the same issuer origin.
 			for (const key in userTokens) {
-				authInput.issuerHashes.push(createIssuerHashArray(userTokens[key].issuerConfig))
-				authInput.tokens.push(userTokens[key].requestTokens)
+				if (!issuerKeyHashesAndRequestTokens[key]) {
+					issuerKeyHashesAndRequestTokens[key] = {
+						issuerHashes: createIssuerHashArray(userTokens[key].issuerConfig),
+						requestTokens: userTokens[key].requestTokens,
+					}
+				}
 			}
-			logger(2, 'this will break the config is inside each user token key.')
+			// TODO Review the implementation above/below - to make sure we send all public keys issuer hashes to the outlet.
+			// for (const key in userTokens) {
+			// 	if (!issuerKeyHashesAndRequestTokens[key]) {
+			// 		issuerKeyHashesAndRequestTokens[key] = { issuerHashes: [], requestTokens: userTokens[key].requestTokens }
+			// 	}
+			// 	issuerKeyHashesAndRequestTokens[key].issuerHashes.push(createIssuerHashArray(userTokens[key].issuerConfig))
+			// }
 			data = await localOutlet.authenticateMany(
-				userTokens.issuerConfig as OffChainTokenConfig & OutletIssuerInterface,
-				authInput.issuerHashes,
-				authInput.tokens[0], // TODO update to many tokens.
+				issuerCollectionConfig as OffChainTokenConfig & OutletIssuerInterface,
+				issuerKeyHashesAndRequestTokens,
 				address,
 				wallet,
 				redirectMode,
 			)
 		} else {
-			logger(2, 'run OutletAction.GET_PROOF at ', window.location.href)
-			console.log('...', firstCollectionFound)
-			let res = await this.messaging.sendMessage(
-				{
-					action: OutletAction.GET_MUTLI_PROOF,
-					origin: '', // firstCollectionFound.issuerConfig.tokenOrigin,
-					timeout: 0, // Don't time out on this event as it needs active input from the user
-					data: {
-						tokens: userTokens,
-						address: address,
-						wallet: wallet,
-					},
-				},
-				request.options.messagingForceTab,
-				this.client.getUi(),
-				redirectMode,
-			)
-			if (!res) {
-				return new Promise((resolve, reject) => {
-					setTimeout(() => {
-						reject(new Error('The outlet failed to load.'))
-					}, 30000)
-				})
-			}
-			data = res.data
+			// TODO handle the cross origin version of this.
+			// logger(2, 'run OutletAction.GET_PROOF at ', window.location.href)
+			// console.log('...', firstCollectionFound)
+			// let res = await this.messaging.sendMessage(
+			// 	{
+			// 		action: OutletAction.GET_MUTLI_PROOF,
+			// 		origin: '', // firstCollectionFound.issuerConfig.tokenOrigin,
+			// 		timeout: 0, // Don't time out on this event as it needs active input from the user
+			// 		data: {
+			// 			tokens: userTokens,
+			// 			address: address,
+			// 			wallet: wallet,
+			// 		},
+			// 	},
+			// 	request.options.messagingForceTab,
+			// 	this.client.getUi(),
+			// 	redirectMode,
+			// )
+			// if (!res) {
+			// 	return new Promise((resolve, reject) => {
+			// 		setTimeout(() => {
+			// 			reject(new Error('The outlet failed to load.'))
+			// 		}, 30000)
+			// 	})
+			// }
+			// data = res.data
 		}
 		if (!data.proof) throw new Error('Failed to get proof from the outlet.')
 		let proof: AuthenticationResult = {
@@ -105,9 +114,6 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 		await TicketZKProofMulti.validateProof(userTokens, data.proof, data.type, useEthKey?.address ?? '')
 		if (useEthKey) proof.data.useEthKey = useEthKey
 		return proof
-		return {
-			data: '',
-		}
 	}
 
 	public static async validateProof(issuerConfig: OffChainTokenConfig, proof: string, type: TokenType, ethAddress = '') {

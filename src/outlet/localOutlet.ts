@@ -37,23 +37,32 @@ export class LocalOutlet {
 		redirectMode: false | string = false,
 	) {
 		const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(issuerHashes, decodedToken)
-
 		let authHandler = new AuthHandler(tokenConfig, ticketRecord, decodedToken, address, wallet, redirectMode)
-
 		return await authHandler.authenticate()
 	}
 
 	async authenticateMany(
 		tokenConfig: OutletIssuerInterface,
-		issuerHashes: string[],
-		decodedToken: DecodedToken[],
+		issuerKeyHashesAndRequestTokens: any,
 		address: string,
 		wallet: string,
 		redirectMode: false | string = false,
 	) {
-		console.log('todo, authenticateMany')
-		// const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(issuerHashes, decodedToken)
-		// let authHandler = new AuthHandler(tokenConfig, ticketRecord, decodedToken, address, wallet, redirectMode)
-		// return await authHandler.authenticate()
+		const output = []
+		for (const key in issuerKeyHashesAndRequestTokens) {
+			issuerKeyHashesAndRequestTokens[key].requestTokens.forEach(async (token: any) => {
+				output.push(
+					await this.authenticate(
+						tokenConfig,
+						issuerKeyHashesAndRequestTokens[key].issuerHashes,
+						token.unsignedToken,
+						address,
+						wallet,
+						redirectMode,
+					),
+				)
+			})
+		}
+		return output
 	}
 }

@@ -26,21 +26,64 @@
               collectionID: "devcon",
               onChain: false,
               title: "Devcon",
+              tokenIdName: "id",
               image:
                 "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
-              tokenOrigin: "https://stltesting.tk/token-outlet/",
-              attestationOrigin: "https://attestation.id/",
-              unEndPoint:
-                "https://crypto-verify.herokuapp.com/use-devcon-ticket",
+              tokenOrigin: "http://localhost:3002/",
+              attestationOrigin: "https://test.attestation.id/",
               base64senderPublicKeys: {
                 6: "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABGMxHraqggr2keTXszIcchTjYjH5WXpDaBOYgXva82mKcGnKgGRORXSmcjWN2suUCMkLQj3UNlZCFWF10wIrrlw=",
-                55: "MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEAGJAHCiHbrCNAY9fAMdom4dGD6v/KkTIgRCkwLCjXFTkXWGrCEXHaZ8kWwdqlu0oYCrNQ2vdlqOl0s26/LzO8A==",
+                55: "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABGMxHraqggr2keTXszIcchTjYjH5WXpDaBOYgXva82mKcGnKgGRORXSmcjWN2suUCMkLQj3UNlZCFWF10wIrrlw=",
               },
               base64attestorPubKey:
                 "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ=",
               ticketIssuesUrlWebsitePrivateKey:
                 "MIICSwIBADCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBBIIBVTCCAVECAQEEIM/T+SzcXcdtcNIqo6ck0nJTYzKL5ywYBFNSpI7R8AuBoIHjMIHgAgEBMCwGByqGSM49AQECIQD////////////////////////////////////+///8LzBEBCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcEQQR5vmZ++dy7rFWgYpXOhwsHApv82y3OKNlZ8oFbFvgXmEg62ncmo8RlXaT7/A4RCKj9F7RIpoVUGZxH0I/7ENS4AiEA/////////////////////rqu3OavSKA7v9JejNA2QUECAQGhRANCAARjMR62qoIK9pHk17MyHHIU42Ix+Vl6Q2gTmIF72vNpinBpyoBkTkV0pnI1jdrLlAjJC0I91DZWQhVhddMCK65c",
             },
+            // {
+            //   collectionID: "devcon",
+            //   onChain: false,
+            //   title: "Devcon",
+            //   image:
+            //     "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
+            //   tokenOrigin: "http://localhost:3002/",
+            //   attestationOrigin: "https://test.attestation.id/",
+            //   base64senderPublicKeys: {
+            //     6: "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABGMxHraqggr2keTXszIcchTjYjH5WXpDaBOYgXva82mKcGnKgGRORXSmcjWN2suUCMkLQj3UNlZCFWF10wIrrlw=",
+            //   },
+            //   base64attestorPubKey:
+            //     "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ=",
+            //   ticketIssuesUrlWebsitePrivateKey:
+            //     "MIICSwIBADCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBBIIBVTCCAVECAQEEIM/T+SzcXcdtcNIqo6ck0nJTYzKL5ywYBFNSpI7R8AuBoIHjMIHgAgEBMCwGByqGSM49AQECIQD////////////////////////////////////+///8LzBEBCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcEQQR5vmZ++dy7rFWgYpXOhwsHApv82y3OKNlZ8oFbFvgXmEg62ncmo8RlXaT7/A4RCKj9F7RIpoVUGZxH0I/7ENS4AiEA/////////////////////rqu3OavSKA7v9JejNA2QUECAQGhRANCAARjMR62qoIK9pHk17MyHHIU42Ix+Vl6Q2gTmIF72vNpinBpyoBkTkV0pnI1jdrLlAjJC0I91DZWQhVhddMCK65c",
+            // },
+            // {
+            //   collectionID: "edcon",
+            //   onChain: false,
+            //   title: "Edcon",
+            //   image:
+            //     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMSMZD26jgBM_da7b_0NfT7JZgyDk7rdk6o4iAVh4E12dV9LK-h0thJ_SdRWWptz1EYlk&usqp=CAU",
+            //   tokenOrigin: "http://localhost:3002/",
+            //   attestationOrigin: "https://test.attestation.id/",
+            //   base64senderPublicKeys: {
+            //     6: "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABAjUvEi8UYyC+0rSFu+IwRBos/DEC6YMJV+eCnoYOC4nZU7uayKDJmBxVnmTOSwaM4+gufLbeqqxuovyF5gI3TQ=",
+            //   },
+            //   base64attestorPubKey:
+            //     "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ=",
+            // },
+            // {
+            //   collectionID: "devconnect",
+            //   onChain: false,
+            //   title: "Devconnect",
+            //   image:
+            //     "https://pbs.twimg.com/profile_images/1653427962350370816/GiJ0Wh-h_400x400.jpg",
+            //   tokenOrigin: "http://localhost:3002/",
+            //   attestationOrigin: "https://test.attestation.id/",
+            //   base64senderPublicKeys: {
+            //     7: "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABAjUvEi8UYyC+0rSFu+IwRBos/DEC6YMJV+eCnoYOC4nZU7uayKDJmBxVnmTOSwaM4+gufLbeqqxuovyF5gI3TQ=",
+            //   },
+            //   base64attestorPubKey:
+            //     "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ=",
+            // },
             // {
             // hideToggle : false,
             // noTokenMsg: "<p>If you have a token please:</p><p>1. Open your magic link inside this browser.<br/>2. Refresh this page.</p>",
@@ -57,17 +100,17 @@
             //     },
             // base64attestorPubKey: "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ="
             // },
-            {
-              collectionID: "crypto-cowboy-country",
-              tokenProgram: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
-              collectionAddress:
-                "bf0aae3dd0078a9feb975f1e3242ddcb7774d551c7fd2a3f07a89c827ed606b2",
-              updateAuthority: "CCCUzWanUNegjGby11DjujDvPaNN68jd9Rimwk2MZzqZ",
-              onChain: true,
-              symbol: "CCC",
-              chain: "mainnet",
-              blockchain: "solana",
-            },
+            // {
+            //   collectionID: "crypto-cowboy-country",
+            //   tokenProgram: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+            //   collectionAddress:
+            //     "bf0aae3dd0078a9feb975f1e3242ddcb7774d551c7fd2a3f07a89c827ed606b2",
+            //   updateAuthority: "CCCUzWanUNegjGby11DjujDvPaNN68jd9Rimwk2MZzqZ",
+            //   onChain: true,
+            //   symbol: "CCC",
+            //   chain: "mainnet",
+            //   blockchain: "solana",
+            // },
             // {
             //   collectionID: "penthouse-panther-club",
             //   collectionAddress: "ff846ef2eed57e5367cf8826e63f4d53fe28d28aa67417accb6e4b48cbd19136",
@@ -120,18 +163,18 @@
             // { onChain: true, collectionID: "Perion", contract: '0x96af92ae2d822a0f191455ceca4d4e7ee227668e', chain: 'mumbai', blockchain: "evm" },
             // { collectionID: 'COOLCATS-#2426-14', onChain: true, contract: '0x3C7e352481F4b2fdEc1e642a3f0018661c77513D', chain: 'eth', openSeaSlug: 'devcon-vi-suit-up-collection' },
             // { collectionID: 'Town-Hall', onChain: true, contract: '0x81b30ff521D1fEB67EDE32db726D95714eb00637', chain: 'Optimism' },
-            {
-              collectionID: "Blusteak Kangaroo #64",
-              onChain: true,
-              contract: "0xa996F7F3BC647EebC98C684aB0A302c9b85d2FA1",
-              chain: "Avalanche",
-            },
-            {
-              collectionID: "Alone Pirate",
-              onChain: true,
-              contract: "0x36535ec384B94342558e37282527b5052587af6A",
-              chain: "Arbitrum",
-            },
+            // {
+            //   collectionID: "Blusteak Kangaroo #64",
+            //   onChain: true,
+            //   contract: "0xa996F7F3BC647EebC98C684aB0A302c9b85d2FA1",
+            //   chain: "Avalanche",
+            // },
+            // {
+            //   collectionID: "Alone Pirate",
+            //   onChain: true,
+            //   contract: "0x36535ec384B94342558e37282527b5052587af6A",
+            //   chain: "Arbitrum",
+            // },
             // {
             // 	collectionID: "NBA",
             // 	onChain: true,
@@ -150,27 +193,27 @@
             //   // Add fungible as a boolean
             //   // symbol: 'USX'
             // },
-            {
-              contract: "0x107065a122f92636a1358a70a0efe0f1a080a7e5",
-              onChain: true,
-              fungible: true,
-              collectionID: "USX",
-              chain: "matic",
-            },
-            {
-              contract: "0x429f49faec3d568ef83ec803e02df78e25d5ee7d",
-              onChain: true,
-              fungible: true,
-              collectionID: "Ella",
-              chain: "matic",
-            },
-            {
-              contract: "0xaaa5b9e6c589642f98a1cda99b9d024b8407285a",
-              onChain: true,
-              fungible: true,
-              collectionID: "TITAN",
-              chain: "matic",
-            },
+            // {
+            //   contract: "0x107065a122f92636a1358a70a0efe0f1a080a7e5",
+            //   onChain: true,
+            //   fungible: true,
+            //   collectionID: "USX",
+            //   chain: "matic",
+            // },
+            // {
+            //   contract: "0x429f49faec3d568ef83ec803e02df78e25d5ee7d",
+            //   onChain: true,
+            //   fungible: true,
+            //   collectionID: "Ella",
+            //   chain: "matic",
+            // },
+            // {
+            //   contract: "0xaaa5b9e6c589642f98a1cda99b9d024b8407285a",
+            //   onChain: true,
+            //   fungible: true,
+            //   collectionID: "TITAN",
+            //   chain: "matic",
+            // },
           ],
           uiOptions: {
             openingHeading:

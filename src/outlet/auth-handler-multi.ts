@@ -215,14 +215,10 @@ export class AuthHandler {
 			if (this.redirectUrl) {
 				const curParams = new URLSearchParams(window.location.hash.substring(1))
 
-				console.log('curParams, ', curParams)
-
 				const params = new URLSearchParams()
 				params.set('email', this.ticketRecord.id)
 				params.set('address', this.address)
 				params.set('wallet', this.wallet)
-
-				console.log('params, ', params)
 
 				const callbackUrl = new URL(this.redirectUrl)
 				const callbackParams = removeUrlSearchParams(new URLSearchParams(callbackUrl.hash.substring(1)))
@@ -238,8 +234,6 @@ export class AuthHandler {
 				callbackUrl.hash = callbackParams.toString()
 
 				params.set('email-attestation-callback', callbackUrl.href)
-
-				console.log('lets go and attest via the origin, ', this.attestationOrigin)
 
 				const goto = `${this.attestationOrigin}#${params.toString()}`
 				logger(2, 'authenticate. go to: ', goto)
@@ -257,8 +251,6 @@ export class AuthHandler {
 
 			window.addEventListener('message', (e) => {
 				if (!this.attestationOrigin) return
-
-				console.log('lets listen for the data being returned')
 
 				let attestURL = new URL(this.attestationOrigin)
 
