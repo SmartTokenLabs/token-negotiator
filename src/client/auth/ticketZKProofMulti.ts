@@ -17,12 +17,8 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 
 	private messaging = new Messaging()
 
-	// This is a work in progress to fully support multi-token authentication.
-	// For now a user can only validate tokens that use the same key configuration
-	// including; UN EndPoint, Token Issuer Origin in a single authentication request.
-	// e.g. a user can authenticate 3 tokens from the config that use the same
-	// validation method, origin and UN EndPoint.
-	// but user cannot validate 2 tokens, from different tokens origing in this single process.
+	// NOTE: A intended limitation at this time, is that the user can only authenticate tokens
+	// that use the same issuer origin and it's underlying config (see: firstCollectionFound via getTokenProofMulti).
 
 	// method getTokenProofMulti
 	// param userTokens { issuer: { requestTokens: [], issuerConfig: {} }, issuer2: { ... }
@@ -51,6 +47,7 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 		if (new URL(issuerCollectionConfig.tokenOrigin).origin === window.location.origin) {
 			const localOutlet = new LocalOutlet(Object.values(this.client.getTokenStore().getCurrentIssuers(false)) as OffChainTokenConfig[])
 			let issuerKeyHashesAndRequestTokens = {}
+			let test = {}
 			// e.g. devcon, edcon (when sent from different tokens with the same issuer origin.
 			for (const key in userTokens) {
 				if (!issuerKeyHashesAndRequestTokens[key]) {
@@ -60,13 +57,6 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 					}
 				}
 			}
-			// TODO Review the implementation above/below - to make sure we send all public keys issuer hashes to the outlet.
-			// for (const key in userTokens) {
-			// 	if (!issuerKeyHashesAndRequestTokens[key]) {
-			// 		issuerKeyHashesAndRequestTokens[key] = { issuerHashes: [], requestTokens: userTokens[key].requestTokens }
-			// 	}
-			// 	issuerKeyHashesAndRequestTokens[key].issuerHashes.push(createIssuerHashArray(userTokens[key].issuerConfig))
-			// }
 			data = await localOutlet.authenticateMany(
 				issuerCollectionConfig as OffChainTokenConfig & OutletIssuerInterface,
 				issuerKeyHashesAndRequestTokens,
@@ -75,32 +65,31 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 				redirectMode,
 			)
 		} else {
-			// TODO handle the cross origin version of this.
-			// logger(2, 'run OutletAction.GET_PROOF at ', window.location.href)
-			// console.log('...', firstCollectionFound)
-			// let res = await this.messaging.sendMessage(
-			// 	{
-			// 		action: OutletAction.GET_MUTLI_PROOF,
-			// 		origin: '', // firstCollectionFound.issuerConfig.tokenOrigin,
-			// 		timeout: 0, // Don't time out on this event as it needs active input from the user
-			// 		data: {
-			// 			tokens: userTokens,
-			// 			address: address,
-			// 			wallet: wallet,
-			// 		},
-			// 	},
-			// 	request.options.messagingForceTab,
-			// 	this.client.getUi(),
-			// 	redirectMode,
-			// )
-			// if (!res) {
-			// 	return new Promise((resolve, reject) => {
-			// 		setTimeout(() => {
-			// 			reject(new Error('The outlet failed to load.'))
-			// 		}, 30000)
-			// 	})
-			// }
-			// data = res.data
+			// TODO: this is a work in progress to support multi-token authentication.
+			logger(2, 'run OutletAction.GET_PROOF at ', window.location.href)
+			let res = await this.messaging.sendMessage(
+				{
+					action: OutletAction.GET_MUTLI_PROOF,
+					origin: issuerCollectionConfig.tokenOrigin,
+					timeout: 0, // Don't time out on this event as it needs active input from the user
+					data: {
+						tokens: userTokens,
+						address: address,
+						wallet: wallet,
+					},
+				},
+				request.options.messagingForceTab,
+				this.client.getUi(),
+				redirectMode,
+			)
+			if (!res) {
+				return new Promise((resolve, reject) => {
+					setTimeout(() => {
+						reject(new Error('The outlet failed to load.'))
+					}, 30000)
+				})
+			}
+			data = res.data
 		}
 		if (!data.proof) throw new Error('Failed to get proof from the outlet.')
 		let proof: AuthenticationResult = {

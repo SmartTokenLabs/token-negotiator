@@ -258,8 +258,6 @@ export class TicketStorage {
 	}
 
 	private loadTickets() {
-		console.log('BEFORE: loading tickets.... is this where ticket collections is defined: ', this.ticketCollections)
-
 		try {
 			if (!localStorage.getItem(TicketStorage.LOCAL_STORAGE_KEY)) return
 
@@ -267,8 +265,6 @@ export class TicketStorage {
 		} catch (e) {
 			this.ticketCollections = {}
 		}
-
-		console.log('AFTER: loading tickets.... is this where ticket collections is defined: ', this.ticketCollections)
 	}
 
 	private storeTickets() {

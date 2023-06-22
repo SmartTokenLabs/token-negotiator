@@ -327,16 +327,15 @@ export class AuthHandler {
 			let useToken
 
 			if (ticketRecord.type === 'eas') {
-				// TODO: Implementation in progress towards EAS authentication.
-				// const easZkProof = new EasZkProof(DEFAULT_EAS_SCHEMA, EAS_RPC_CONFIG)
-				// useToken = easZkProof.getUseTicket(
-				// 	BigInt(ticketRecord.secret),
-				// 	BigInt(attestationSecret),
-				// 	ticketRecord.token,
-				// 	attestationBlob,
-				// 	issuerConfig.base64attestorPubKey,
-				// 	issuerConfig.base64senderPublicKeys,
-				// )
+				const easZkProof = new EasZkProof(DEFAULT_EAS_SCHEMA, EAS_RPC_CONFIG)
+				useToken = easZkProof.getUseTicket(
+					BigInt(ticketRecord.secret),
+					BigInt(attestationSecret),
+					ticketRecord.token,
+					attestationBlob,
+					issuerConfig.base64attestorPubKey,
+					issuerConfig.base64senderPublicKeys,
+				)
 			} else {
 				useToken = await Authenticator.getUseTicket(
 					BigInt(ticketRecord.secret),
@@ -347,9 +346,7 @@ export class AuthHandler {
 					issuerConfig.base64senderPublicKeys,
 				)
 			}
-
 			if (useToken) {
-				logger(2, 'this.authResultCallback( useToken ): ')
 				return <ProofResult>{ proof: useToken, type: ticketRecord.type }
 			} else {
 				logger(2, 'this.authResultCallback( empty ): ')
