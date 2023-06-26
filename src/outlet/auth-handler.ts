@@ -8,6 +8,7 @@ import { DecodedToken, DEFAULT_EAS_SCHEMA, StoredTicketRecord, TokenType } from 
 import { EasZkProof } from '@tokenscript/attestation/dist/eas/EasZkProof'
 import { EAS_RPC_CONFIG } from '../core/eas'
 import { OffChainTokenConfig } from '../client/interface'
+import { Proof } from '@tokenscript/attestation/dist/asn1/shemas/ProofOfExponentASN'
 
 interface PostMessageData {
 	force?: boolean
@@ -215,14 +216,10 @@ export class AuthHandler {
 			if (this.redirectUrl) {
 				const curParams = new URLSearchParams(window.location.hash.substring(1))
 
-				console.log('curParams, ', curParams)
-
 				const params = new URLSearchParams()
 				params.set('email', this.ticketRecord.id)
 				params.set('address', this.address)
 				params.set('wallet', this.wallet)
-
-				console.log('params, ', params)
 
 				const callbackUrl = new URL(this.redirectUrl)
 				const callbackParams = removeUrlSearchParams(new URLSearchParams(callbackUrl.hash.substring(1)))
@@ -238,8 +235,6 @@ export class AuthHandler {
 				callbackUrl.hash = callbackParams.toString()
 
 				params.set('email-attestation-callback', callbackUrl.href)
-
-				console.log('lets go and attest via the origin, ', this.attestationOrigin)
 
 				const goto = `${this.attestationOrigin}#${params.toString()}`
 				logger(2, 'authenticate. go to: ', goto)
@@ -258,8 +253,6 @@ export class AuthHandler {
 			window.addEventListener('message', (e) => {
 				if (!this.attestationOrigin) return
 
-				console.log('lets listen for the data being returned')
-
 				let attestURL = new URL(this.attestationOrigin)
 
 				if (e.origin !== attestURL.origin) {
@@ -270,7 +263,6 @@ export class AuthHandler {
 					this.postMessageAttestationListener(e, resolve, reject)
 				}
 			})
-
 			this.openAttestationApp()
 		})
 	}
@@ -359,6 +351,7 @@ export class AuthHandler {
 		}
 	}
 
+	// TODO review this logic to map out the behaviour
 	async postMessageAttestationListener(event: MessageEvent, resolve: (res: ProofResult) => void, reject: Function) {
 		logger(2, 'postMessageAttestationListener event (auth-handler)', event.data)
 
@@ -372,6 +365,7 @@ export class AuthHandler {
 			if (this.address) sendData.address = this.address
 
 			attestationHandler.postMessage(sendData, this.attestationOrigin)
+
 			return
 		}
 

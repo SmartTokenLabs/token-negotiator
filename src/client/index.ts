@@ -823,10 +823,14 @@ export class Client {
 				try {
 					const result = await authenticator.getTokenProofMulti(authRequestBatch.offChain[key], authRequest)
 					if (!result) return // Site is redirecting
-					for (const issuer in result) {
-						issuerProofs[issuer] = result[issuer]
-					}
-					issuersValidated++
+					console.log('..PROOF Data found', result)
+					issuerProofs = result.data
+					// for (const issuer in result.data) {
+					// 	// { devcon: [], edcon: [], ... }
+					// 	// issuerProofs[issuer] = result[issuer]
+					// 	issuerProofs = result.data
+					// 	issuersValidated++
+					// }
 				} catch (err) {
 					console.log(2, err)
 					if (err.message === 'WALLET_REQUIRED') {

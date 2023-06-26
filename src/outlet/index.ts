@@ -112,6 +112,12 @@ export class Outlet {
 					await this.sendTokens(evtid)
 					break
 				}
+				// NOTES: DEBUGGING,
+				// issuerConfig - is not defined
+				// ticketRecord - is not defined, because of the issuer config issue.
+				// issuer is defined, should this be used instead to identify the correct config.
+				// is the CAUSE OF THE ERROR - const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(createIssuerHashArray(issuerConfig), token)
+				// Uncaught TypeError: undefined is not iterable (cannot read property Symbol(Symbol.iterator))
 				case OutletAction.EMAIL_ATTEST_CALLBACK: {
 					const requesterURL = this.redirectCallbackUrl
 					const issuer = this.getDataFromQuery('issuer')
@@ -124,10 +130,13 @@ export class Outlet {
 						const attestationBlob = this.getDataFromQuery('attestation')
 						const attestationSecret = '0x' + this.getDataFromQuery('requestSecret')
 
-						const issuerConfig = this.getIssuerConfigById(issuer)
+						// TODO Nick to add the logic to navigate this flow.
+						const issuerConfig = this.getIssuerConfigById(issuer) ?? this.tokenConfig
 
+						// @ts-ignore
 						const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(createIssuerHashArray(issuerConfig), token)
 
+						// @ts-ignore
 						const useToken = await AuthHandler.getUseToken(issuerConfig, attestationBlob, attestationSecret, ticketRecord)
 
 						if (requesterURL) {
@@ -196,11 +205,12 @@ export class Outlet {
 	}
 
 	private getIssuerConfigById(collectionId: string) {
-		for (const issuer of this.tokenConfig.issuers) {
-			if (issuer.collectionID === collectionId) return issuer
+		if (this.tokenConfig.issuers) {
+			for (const issuer of this.tokenConfig.issuers) {
+				if (issuer.collectionID === collectionId) return issuer
+			}
+			throw new Error('Issuer ' + collectionId + ' not found')
 		}
-
-		throw new Error('Issuer ' + collectionId + ' not found')
 	}
 
 	public async readMagicLink() {

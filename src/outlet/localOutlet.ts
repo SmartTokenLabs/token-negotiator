@@ -38,7 +38,10 @@ export class LocalOutlet {
 	) {
 		const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(issuerHashes, decodedToken)
 		let authHandler = new AuthHandler(tokenConfig, ticketRecord, decodedToken, address, wallet, redirectMode)
-		return await authHandler.authenticate()
+		// goes to outlet at this point > then to attestation origin.
+		// TODO consider instead having a multi-authenticate function? Sending all tokens etc.
+		const output = await authHandler.authenticate()
+		return output
 	}
 
 	async authenticateMany(
@@ -48,21 +51,21 @@ export class LocalOutlet {
 		wallet: string,
 		redirectMode: false | string = false,
 	) {
-		const output = []
-		for (const key in issuerKeyHashesAndRequestTokens) {
-			issuerKeyHashesAndRequestTokens[key].requestTokens.forEach(async (token: any) => {
-				output.push(
-					await this.authenticate(
-						tokenConfig,
-						issuerKeyHashesAndRequestTokens[key].issuerHashes,
-						token.unsignedToken,
-						address,
-						wallet,
-						redirectMode,
-					),
+		let output = {}
+		await Object.keys(issuerKeyHashesAndRequestTokens).forEach(async (collectionKey: any) => {
+			await issuerKeyHashesAndRequestTokens[collectionKey].requestTokens.forEach(async (token: any) => {
+				if (!output[collectionKey]) output[collectionKey] = []
+				const auth = await this.authenticate(
+					tokenConfig,
+					issuerKeyHashesAndRequestTokens[collectionKey].issuerHashes,
+					token.unsignedToken,
+					address,
+					wallet,
+					redirectMode,
 				)
+				output[collectionKey].push(auth)
 			})
-		}
-		return output
+		})
+		return await output
 	}
 }

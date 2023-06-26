@@ -16,7 +16,7 @@ declare global {
 
 export function logger(level: number, ...args: any[]) {
 	// if (!window.DISPLAY_DEBUG_LEVEL || level > parseInt(window.DISPLAY_DEBUG_LEVEL)) return
-	console.log(...args)
+	if (args) console.log(...args)
 }
 
 export const requiredParams = (item: any, msg: string) => {

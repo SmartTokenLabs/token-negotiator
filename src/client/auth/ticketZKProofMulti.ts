@@ -47,7 +47,6 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 		if (new URL(issuerCollectionConfig.tokenOrigin).origin === window.location.origin) {
 			const localOutlet = new LocalOutlet(Object.values(this.client.getTokenStore().getCurrentIssuers(false)) as OffChainTokenConfig[])
 			let issuerKeyHashesAndRequestTokens = {}
-			let test = {}
 			// e.g. devcon, edcon (when sent from different tokens with the same issuer origin.
 			for (const key in userTokens) {
 				if (!issuerKeyHashesAndRequestTokens[key]) {
@@ -91,7 +90,12 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 			}
 			data = res.data
 		}
-		if (!data.proof) throw new Error('Failed to get proof from the outlet.')
+
+		// TODO add checks needed to validate the proofs
+		if (!data) throw new Error('Failed to get proof from the outlet.')
+
+		// TODO confirm what this data structure is needed for and what parts should
+		// be used if this is returned to the client.
 		let proof: AuthenticationResult = {
 			type: this.TYPE,
 			data: data,
@@ -99,9 +103,14 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 				tokens: [],
 			},
 		}
-		// TODO update this logic to handle multi-proof
-		await TicketZKProofMulti.validateProof(userTokens, data.proof, data.type, useEthKey?.address ?? '')
-		if (useEthKey) proof.data.useEthKey = useEthKey
+		await Promise.all(
+			await Object.keys(data).map(async (collectionKey: any) => {
+				await data[collectionKey].map(async (tokenProof: any, index: number) => {
+					await TicketZKProofMulti.validateProof(issuerCollectionConfig, tokenProof.proof, tokenProof.type, useEthKey?.address ?? '')
+					if (useEthKey) proof.data[collectionKey][index].useEthKey = useEthKey
+				})
+			}),
+		)
 		return proof
 	}
 
