@@ -49,7 +49,7 @@
     "@walletconnect/types": "^2.1.5",
     "@walletconnect/universal-provider": "^2.4.5",
     "@walletconnect/web3-provider": "^1.7.1",
-    "ethers": "^5.4.0",
+    "ethers": "^6.6.1",
     "pvutils": "^1.0.17",
     "text-encoding": "^0.7.0",
     "tweetnacl": "^1.0.3",
