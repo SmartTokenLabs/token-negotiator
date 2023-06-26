@@ -765,7 +765,7 @@ export class Client {
 	async athenticateMutilple(authRequests: AuthenticateInterface[]) {
 		try {
 			let authRequestBatch = { onChain: {}, offChain: {} }
-			let issuersValidated = 0
+			let issuersValidated = []
 			let issuerProofs = {}
 			let messagingForceTab = false
 			this.ui.showLoaderDelayed(
@@ -823,14 +823,8 @@ export class Client {
 				try {
 					const result = await authenticator.getTokenProofMulti(authRequestBatch.offChain[key], authRequest)
 					if (!result) return // Site is redirecting
-					console.log('..PROOF Data found', result)
 					issuerProofs = result.data
-					// for (const issuer in result.data) {
-					// 	// { devcon: [], edcon: [], ... }
-					// 	// issuerProofs[issuer] = result[issuer]
-					// 	issuerProofs = result.data
-					// 	issuersValidated++
-					// }
+					issuersValidated = Object.keys(result.data)
 				} catch (err) {
 					console.log(2, err)
 					if (err.message === 'WALLET_REQUIRED') {
