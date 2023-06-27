@@ -112,12 +112,6 @@ export class Outlet {
 					await this.sendTokens(evtid)
 					break
 				}
-				// NOTES: DEBUGGING,
-				// issuerConfig - is not defined
-				// ticketRecord - is not defined, because of the issuer config issue.
-				// issuer is defined, should this be used instead to identify the correct config.
-				// is the CAUSE OF THE ERROR - const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(createIssuerHashArray(issuerConfig), token)
-				// Uncaught TypeError: undefined is not iterable (cannot read property Symbol(Symbol.iterator))
 				case OutletAction.EMAIL_ATTEST_CALLBACK: {
 					const requesterURL = this.redirectCallbackUrl
 					const issuer = this.getDataFromQuery('issuer')
@@ -130,28 +124,71 @@ export class Outlet {
 						const attestationBlob = this.getDataFromQuery('attestation')
 						const attestationSecret = '0x' + this.getDataFromQuery('requestSecret')
 
-						// TODO Nick to add the logic to navigate this flow.
-						const issuerConfig = this.getIssuerConfigById(issuer) ?? this.tokenConfig
+						let issuerConfig = this.getIssuerConfigById(issuer) ?? this.tokenConfig
 
-						// @ts-ignore
-						const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(createIssuerHashArray(issuerConfig), token)
+						let useToken
+						let issuers = []
 
-						// @ts-ignore
-						const useToken = await AuthHandler.getUseToken(issuerConfig, attestationBlob, attestationSecret, ticketRecord)
-
-						if (requesterURL) {
-							const params = new URLSearchParams(requesterURL.hash.substring(1))
-							params.set(this.getCallbackUrlKey('action'), 'proof-callback')
-							params.set(this.getCallbackUrlKey('issuer'), issuer)
-							params.set(this.getCallbackUrlKey('attestation'), useToken.proof as string)
-							params.set(this.getCallbackUrlKey('type'), ticketRecord.type)
-							params.set(this.getCallbackUrlKey('token'), tokenString)
-
-							requesterURL.hash = params.toString()
-
-							window.location.href = requesterURL.href
-
-							return
+						let localStorageAuthRequest = JSON.parse(localStorage.getItem('token-auth-request'))
+						if (localStorageAuthRequest !== null) {
+							for (const key in localStorageAuthRequest) {
+								await localStorageAuthRequest[key].requestTokens.forEach(async (token) => {
+									if (!useToken) useToken = { issuers: {}, issuersValidated: [], proof: null }
+									if (!useToken.issuers[token.issuer]) {
+										useToken.issuers[token.issuer] = []
+										useToken.issuersValidated.push(token.issuer)
+									}
+									// @ts-ignore
+									const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(
+										// @ts-ignore
+										createIssuerHashArray(issuerConfig),
+										token.unsignedToken,
+									)
+									// @ts-ignore
+									const singleUseToken = await AuthHandler.getUseToken(issuerConfig, attestationBlob, attestationSecret, ticketRecord)
+									// Create a list of tokens to return to the callback
+									useToken.issuers[token.issuer].push(singleUseToken)
+								})
+							}
+							// multi token version
+							if (requesterURL) {
+								const params = new URLSearchParams(requesterURL.hash.substring(1))
+								params.set(this.getCallbackUrlKey('action'), 'proof-callback')
+								params.set(this.getCallbackUrlKey('issuer'), issuer)
+								params.set(this.getCallbackUrlKey('issuers'), issuers.toString())
+								params.set(this.getCallbackUrlKey('attestation'), '')
+								params.set(this.getCallbackUrlKey('type'), 'many')
+								params.set(this.getCallbackUrlKey('token'), '')
+								// TODO review the other params if they should be kept.
+								// use the same object structure as with the iframe flow.
+								// issuer: null
+								// issuers: { devcon: [] },
+								// issuersValidated: ["devcon"],
+								// proof: null
+								// useToken[devcon]
+								params.set(this.getCallbackUrlKey('tokens'), JSON.stringify(useToken))
+								requesterURL.hash = params.toString()
+								window.location.href = requesterURL.href
+								localStorage.removeItem('token-auth-request') // remove now used.
+								return
+							}
+						} else {
+							// Single token Flow (legacy)
+							// @ts-ignore
+							const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(createIssuerHashArray(issuerConfig), token)
+							// @ts-ignore
+							useToken = await AuthHandler.getUseToken(issuerConfig, attestationBlob, attestationSecret, ticketRecord)
+							if (requesterURL) {
+								const params = new URLSearchParams(requesterURL.hash.substring(1))
+								params.set(this.getCallbackUrlKey('action'), 'proof-callback')
+								params.set(this.getCallbackUrlKey('issuer'), issuer)
+								params.set(this.getCallbackUrlKey('attestation'), useToken.proof as string)
+								params.set(this.getCallbackUrlKey('type'), ticketRecord.type)
+								params.set(this.getCallbackUrlKey('token'), tokenString)
+								requesterURL.hash = params.toString()
+								window.location.href = requesterURL.href
+								return
+							}
 						}
 
 						this.dispatchAuthCallbackEvent(issuer, useToken, null)
@@ -180,14 +217,12 @@ export class Outlet {
 				}
 				case OutletAction.GET_MUTLI_PROOF: {
 					console.log('Outlet received event ID GET_MUTLI_PROOF ' + evtid + ' action ' + action + ' at ' + window.location.href)
-					// TODO: Replace with new request to handle multiple issuers & tokens
 					const issuer: string = this.getDataFromQuery('issuer')
-					const tokens: string = this.getDataFromQuery('token')
+					const tokens: string = this.getDataFromQuery('tokens')
 					const wallet: string = this.getDataFromQuery('wallet')
 					const address: string = this.getDataFromQuery('address')
-					//
-					// requiredParams(token, 'unsigned token is missing')
-					// await this.sendTokenProof(evtid, issuer, token, address, wallet)
+					requiredParams(tokens, 'unsigned tokens are missing')
+					await this.sendTokenProof(evtid, issuer, tokens, address, wallet)
 					break
 				}
 				default: {

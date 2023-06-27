@@ -762,9 +762,44 @@ export class Client {
 		return authRequest
 	}
 
+	async getMultiRequestBatch(authRequests: AuthenticateInterface[], messagingForceTab: boolean) {
+		let authRequestBatch = { onChain: {}, offChain: {} }
+		// build a list of the batches for each token origin. At this point when this loop is complete
+		// we will have a list of all the tokens that need to be authenticated and the origin they need to be authenticated against.
+		await Promise.all(
+			authRequests.map(async (authRequestItem) => {
+				const reqItem = await this.prepareToAuthenticateToken(authRequestItem)
+				const issuerConfig = this.tokenStore.getCurrentIssuers()[reqItem.issuer] as any
+				const offChain = issuerConfig.tokenOrigin ? true : false
+				// Off Chain
+				// Setup for Token Collection. e.g. authRequestBatch.offChain['https://mywebsite.com']['devcon']
+				if (offChain) {
+					if (reqItem.options?.useRedirect) messagingForceTab = true
+					// TODO manage from options, request?.options?.useRedirect
+					// this is usually managed at token level - but a rule must be added to address this for the batch
+					// as a whole. E.g. if one is useRedirect, then all must be useRedirect!
+					if (!authRequestBatch.offChain[issuerConfig.tokenOrigin]) authRequestBatch.offChain[issuerConfig.tokenOrigin] = {}
+					if (!authRequestBatch.offChain[issuerConfig.tokenOrigin][reqItem.issuer]) {
+						authRequestBatch.offChain[issuerConfig.tokenOrigin][reqItem.issuer] = {
+							requestTokens: [],
+							issuerConfig: issuerConfig,
+						}
+					}
+					// Push token into the request batch
+					authRequestBatch.offChain[issuerConfig.tokenOrigin][reqItem.issuer].requestTokens.push(reqItem)
+					return
+				}
+				// On Chain
+				// TODO
+				// if (!offChain) requestBatches[issuerConfig.collectionID] = []
+				// e.g. requestBatches['https://mywebsite.com'] = [{issuer, unsignedToken, ...}]
+			}),
+		)
+		return authRequestBatch
+	}
+
 	async athenticateMutilple(authRequests: AuthenticateInterface[]) {
 		try {
-			let authRequestBatch = { onChain: {}, offChain: {} }
 			let issuersValidated = []
 			let issuerProofs = {}
 			let messagingForceTab = false
@@ -778,39 +813,9 @@ export class Client {
 				true,
 			)
 
-			// build a list of the batches for each token origin. At this point when this loop is complete
-			// we will have a list of all the tokens that need to be authenticated and the origin they need to be authenticated against.
-			await Promise.all(
-				authRequests.map(async (authRequestItem) => {
-					const reqItem = await this.prepareToAuthenticateToken(authRequestItem)
-					const issuerConfig = this.tokenStore.getCurrentIssuers()[reqItem.issuer] as any
-					const offChain = issuerConfig.tokenOrigin ? true : false
-					// Off Chain
-					// Setup for Token Collection. e.g. authRequestBatch.offChain['https://mywebsite.com']['devcon']
-					if (offChain) {
-						if (reqItem.options?.useRedirect) messagingForceTab = true
-						// TODO manage from options, request?.options?.useRedirect
-						// this is usually managed at token level - but a rule must be added to address this for the batch
-						// as a whole. E.g. if one is useRedirect, then all must be useRedirect!
-						if (!authRequestBatch.offChain[issuerConfig.tokenOrigin]) authRequestBatch.offChain[issuerConfig.tokenOrigin] = {}
-						if (!authRequestBatch.offChain[issuerConfig.tokenOrigin][reqItem.issuer]) {
-							authRequestBatch.offChain[issuerConfig.tokenOrigin][reqItem.issuer] = {
-								requestTokens: [],
-								issuerConfig: issuerConfig,
-							}
-						}
-						// Push token into the request batch
-						authRequestBatch.offChain[issuerConfig.tokenOrigin][reqItem.issuer].requestTokens.push(reqItem)
-						return
-					}
-					// On Chain
-					// TODO
-					// if (!offChain) requestBatches[issuerConfig.collectionID] = []
-					// e.g. requestBatches['https://mywebsite.com'] = [{issuer, unsignedToken, ...}]
-				}),
-			)
+			const authRequestBatch = await this.getMultiRequestBatch(authRequests, messagingForceTab)
 
-			// Send the request batches to each token origin
+			// Send the request batches to each token origin:
 			// Off Chain: // ['https://devcon.com']['issuer'][list of tokens]
 			for (const key in authRequestBatch.offChain) {
 				let AuthType = TicketZKProofMulti
@@ -826,7 +831,6 @@ export class Client {
 					issuerProofs = result.data
 					issuersValidated = Object.keys(result.data)
 				} catch (err) {
-					console.log(2, err)
 					if (err.message === 'WALLET_REQUIRED') {
 						return this.handleWalletRequired(authRequest)
 					}

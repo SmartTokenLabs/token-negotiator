@@ -7,8 +7,6 @@ import { isBrave } from '../utils/support/getBrowserData'
 import { DecodedToken, DEFAULT_EAS_SCHEMA, StoredTicketRecord, TokenType } from './ticketStorage'
 import { EasZkProof } from '@tokenscript/attestation/dist/eas/EasZkProof'
 import { EAS_RPC_CONFIG } from '../core/eas'
-import { OffChainTokenConfig } from '../client/interface'
-import { Proof } from '@tokenscript/attestation/dist/asn1/shemas/ProofOfExponentASN'
 
 interface PostMessageData {
 	force?: boolean
@@ -21,43 +19,6 @@ export interface ProofResult {
 	proof: string
 	type: TokenType
 }
-
-// TODO: Is this needed? Can it be removed?
-/* function preparePopupCenter(w, h) {
-	let win = window
-	if (window.parent !== window) {
-		win = window.parent
-	}
-
-	w = Math.min(w, 800)
-
-	// Fixes dual-screen position                             Most browsers      Firefox
-	const dualScreenLeft = win.screenLeft !== undefined ? win.screenLeft : win.screenX
-	const dualScreenTop = win.screenTop !== undefined ? win.screenTop : win.screenY
-
-	const clientWidth = document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width
-	const clientHeight = document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height
-	let width = win.innerWidth ? win.innerWidth : clientWidth
-	let height = win.innerHeight ? win.innerHeight : clientHeight
-
-	const left = (width - w) / 2 + dualScreenLeft
-	const top = (height - h) / 2 + dualScreenTop
-
-	return `
-		toolbar=no, 
-		location=no, 
-		directories=no, 
-		status=no, 
-		menubar=no, 
-		scrollbars=yes, 
-		resizable=yes, 
-		copyhistory=yes, 
-		width=${w}, 
-		height=${h},
-		top=${top}, 
-		left=${left}
-	`
-}*/
 
 export class AuthHandler {
 	private attestationOrigin: string | undefined
@@ -263,9 +224,54 @@ export class AuthHandler {
 					this.postMessageAttestationListener(e, resolve, reject)
 				}
 			})
+			// opens the attestation app in Iframe, supported iframe and tab modes.
 			this.openAttestationApp()
 		})
 	}
+
+	// public authenticateMulti(): Promise<{ proof: string; type: TokenType }> {
+	// 	return new Promise((resolve, reject) => {
+	// 		this.rejectHandler = reject
+	// 		if (this.redirectUrl) {
+	// 			const curParams = new URLSearchParams(window.location.hash.substring(1))
+	// 			const params = new URLSearchParams()
+	// 			params.set('email', this.ticketRecord.id)
+	// 			params.set('address', this.address)
+	// 			params.set('wallet', this.wallet)
+	// 			const callbackUrl = new URL(this.redirectUrl)
+	// 			const callbackParams = removeUrlSearchParams(new URLSearchParams(callbackUrl.hash.substring(1)))
+	// 			callbackParams.set(URLNS + 'action', OutletAction.EMAIL_ATTEST_CALLBACK)
+	// 			callbackParams.set(URLNS + 'issuer', this.tokenConfig.collectionID)
+	// 			callbackParams.set(URLNS + 'tokens', JSON.stringify(this.decodedTokens))
+	// 			const requestor = curParams.get(URLNS + 'requestor')
+	// 			if (requestor) {
+	// 				callbackParams.set(URLNS + 'requestor', requestor)
+	// 			}
+	// 			callbackUrl.hash = callbackParams.toString()
+	// 			params.set('email-attestation-callback', callbackUrl.href)
+	// 			const goto = `${this.attestationOrigin}#${params.toString()}`
+	// 			logger(2, 'authenticate. go to: ', goto)
+	// 			window.location.href = goto
+	// 			return
+	// 		}
+	// 		if (this.attestationInTab && !isBrave()) {
+	// 			this.tryingToGetAttestationInBackground = true
+	// 		}
+	// 		if (!this.attestationOrigin) return reject(new Error('Attestation origin is null'))
+	// 		window.addEventListener('message', (e) => {
+	// 			if (!this.attestationOrigin) return
+	// 			let attestURL = new URL(this.attestationOrigin)
+	// 			if (e.origin !== attestURL.origin) {
+	// 				return
+	// 			}
+	// 			if ((this.iframe && this.iframeWrap && this.iframe.contentWindow) || this.attestationTabHandler) {
+	// 				this.postMessageAttestationListener(e, resolve, reject)
+	// 			}
+	// 		})
+	// 		// opens the attestation app in Iframe, supported iframe and tab modes.
+	// 		this.openAttestationApp()
+	// 	})
+	// }
 
 	private createIframe() {
 		const iframe = document.createElement('iframe')

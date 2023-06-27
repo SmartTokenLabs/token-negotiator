@@ -17,12 +17,12 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 
 	private messaging = new Messaging()
 
-	// NOTE: A intended limitation at this time, is that the user can only authenticate tokens
-	// that use the same issuer origin and it's underlying config (see: firstCollectionFound via getTokenProofMulti).
+	// NOTE: A limitation at this time is that the user can only authenticate tokens
+	// that use the same issuer origin, email and it's underlying config (see: firstCollectionFound via getTokenProofMulti).
 
-	// method getTokenProofMulti
-	// param userTokens { issuer: { requestTokens: [], issuerConfig: {} }, issuer2: { ... }
-	// param request { options, ... }
+	// method() getTokenProofMulti
+	// param: userTokens { issuer: { requestTokens: [], issuerConfig: {} }, issuer2: { ... }
+	// param: request { options, ... }
 	async getTokenProofMulti(userTokens: any, request: any): Promise<any> {
 		const firstCollectionFound = Object.keys(userTokens)[0]
 		const tokenCollectionConfig = userTokens[firstCollectionFound].requestTokens[0]
@@ -47,7 +47,6 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 		if (new URL(issuerCollectionConfig.tokenOrigin).origin === window.location.origin) {
 			const localOutlet = new LocalOutlet(Object.values(this.client.getTokenStore().getCurrentIssuers(false)) as OffChainTokenConfig[])
 			let issuerKeyHashesAndRequestTokens = {}
-			// e.g. devcon, edcon (when sent from different tokens with the same issuer origin.
 			for (const key in userTokens) {
 				if (!issuerKeyHashesAndRequestTokens[key]) {
 					issuerKeyHashesAndRequestTokens[key] = {
@@ -64,8 +63,6 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 				redirectMode,
 			)
 		} else {
-			// TODO: this is a work in progress to support multi-token authentication.
-			logger(2, 'run OutletAction.GET_PROOF at ', window.location.href)
 			let res = await this.messaging.sendMessage(
 				{
 					action: OutletAction.GET_MUTLI_PROOF,
@@ -91,11 +88,8 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 			data = res.data
 		}
 
-		// TODO add checks needed to validate the proofs
 		if (!data) throw new Error('Failed to get proof from the outlet.')
 
-		// TODO confirm what this data structure is needed for and what parts should
-		// be used if this is returned to the client.
 		let proof: AuthenticationResult = {
 			type: this.TYPE,
 			data: data,
