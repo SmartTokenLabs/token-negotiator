@@ -35,6 +35,7 @@ export interface StoredTicketRecord {
 
 export interface DecodedToken {
 	type: TokenType
+	record: StoredTicketRecord
 	devconId: string
 	ticketIdNumber?: number
 	ticketIdString?: string
@@ -143,7 +144,7 @@ export class TicketStorage {
 				let tokens = await Promise.all(
 					this.ticketCollections[hash].map(async (ticket) => {
 						const tokenData = await this.decodeTokenData(ticket.type, ticket.token)
-						return <DecodedToken>{ type: ticket.type, signedToken: ticket.token, ...tokenData }
+						return <DecodedToken>{ type: ticket.type, signedToken: ticket.token, record: ticket, ...tokenData }
 					}),
 				)
 
