@@ -171,12 +171,35 @@ export class Client {
 	}
 
 	public async readProofCallback() {
+		console.log('..readProofCallback')
 		if (!this.getDataFromQuery) return false
-
 		let action = this.getDataFromQuery('action')
-
+		let multiToken = this.getDataFromQuery('multi-token')
 		if (action !== 'proof-callback') return false
+		// single or multi token flow
+		if (multiToken !== 'true') this.readProofCallbackLegacy()
+		else this.readProofCallbackMultiToken()
+	}
 
+	private async readProofCallbackMultiToken() {
+		console.log('..readProofCallbackMultiToken')
+		// { issuers: { devcon: [{ proof, type, token data }] }, issuersValidated: ['devcon', 'edcon'] }
+		const token = JSON.parse(this.getDataFromQuery('token'))
+		const error = this.getDataFromQuery('error')
+
+		// for each issuer
+		for (const key in token.issuers) {
+			// validate proof
+			const issuerConfig = this.tokenStore.getCurrentIssuers(false)[key] as OffChainTokenConfig
+			for (let issuerToken of token.issuers[key]) {
+				await TicketZKProof.validateProof(issuerConfig, issuerToken.proof, issuerToken.type as TokenType)
+			}
+		}
+		this.emitMultiRedirectProofEvent({ tokens: token }, error)
+	}
+
+	private async readProofCallbackLegacy() {
+		console.log('..readProofCallbackLegacy')
 		const issuer = this.getDataFromQuery('issuer')
 		const attest = this.getDataFromQuery('attestation')
 		const type = this.getDataFromQuery('type') as TokenType
@@ -211,6 +234,23 @@ export class Client {
 					issuer,
 					error: null,
 					data: proof,
+				})
+			}
+		}, 500)
+	}
+
+	private emitMultiRedirectProofEvent(token: any, error?: string) {
+		// Wait to ensure UI is initialized
+		setTimeout(() => {
+			if (error) {
+				this.handleProofError(new Error(error), 'multi token authentication error')
+			} else {
+				// @ts-ignore
+				this.eventSender('token-proof', {
+					issuer: null,
+					issuers: token.issuers,
+					issuersValidated: token.issuersValidated,
+					proof: null,
 				})
 			}
 		}, 500)

@@ -133,7 +133,8 @@ export class Outlet {
 						if (localStorageAuthRequest !== null) {
 							for (const key in localStorageAuthRequest) {
 								await localStorageAuthRequest[key].requestTokens.forEach(async (token) => {
-									if (!useToken) useToken = { issuers: {}, issuersValidated: [], proof: null }
+									// { issuers: { devcon: [{ proof, type, token data }] }, issuersValidated: ['devcon', 'edcon'] }
+									if (!useToken) useToken = { issuers: {}, issuersValidated: [] }
 									if (!useToken.issuers[token.issuer]) {
 										useToken.issuers[token.issuer] = []
 										useToken.issuersValidated.push(token.issuer)
@@ -154,19 +155,8 @@ export class Outlet {
 							if (requesterURL) {
 								const params = new URLSearchParams(requesterURL.hash.substring(1))
 								params.set(this.getCallbackUrlKey('action'), 'proof-callback')
-								params.set(this.getCallbackUrlKey('issuer'), issuer)
-								params.set(this.getCallbackUrlKey('issuers'), issuers.toString())
-								params.set(this.getCallbackUrlKey('attestation'), '')
-								params.set(this.getCallbackUrlKey('type'), 'many')
-								params.set(this.getCallbackUrlKey('token'), '')
-								// TODO review the other params if they should be kept.
-								// use the same object structure as with the iframe flow.
-								// issuer: null
-								// issuers: { devcon: [] },
-								// issuersValidated: ["devcon"],
-								// proof: null
-								// useToken[devcon]
-								params.set(this.getCallbackUrlKey('tokens'), JSON.stringify(useToken))
+								params.set(this.getCallbackUrlKey('multi-token'), 'true')
+								params.set(this.getCallbackUrlKey('token'), JSON.stringify(useToken))
 								requesterURL.hash = params.toString()
 								window.location.href = requesterURL.href
 								localStorage.removeItem('token-auth-request') // remove now used.
@@ -217,10 +207,11 @@ export class Outlet {
 				}
 				case OutletAction.GET_MUTLI_PROOF: {
 					console.log('Outlet received event ID GET_MUTLI_PROOF ' + evtid + ' action ' + action + ' at ' + window.location.href)
-					const issuer: string = this.getDataFromQuery('issuer')
-					const tokens: string = this.getDataFromQuery('tokens')
+					const tokens: string = this.getDataFromQuery('token') // list of tokens inside object
 					const wallet: string = this.getDataFromQuery('wallet')
 					const address: string = this.getDataFromQuery('address')
+					requiredParams(tokens, 'unsigned token is missing')
+					await this.sendTokenProof(evtid, 'multi-issuer', tokens, address, wallet)
 
 					// TODO: Check if there's an existing attestation in the callback parameters, if so save to local storage
 					/* const attestationBlob = this.getDataFromQuery('attestation')
@@ -287,8 +278,8 @@ export class Outlet {
 
 					// Loop through all requested tokens, and create useTicket attestation for each
 
-					requiredParams(tokens, 'unsigned tokens are missing')
-					await this.sendTokenProof(evtid, issuer, tokens, address, wallet)
+					// requiredParams(tokens, 'unsigned tokens are missing')
+					// await this.sendTokenProof(evtid, issuer, tokens, address, wallet)
 					break
 				}
 				default: {
