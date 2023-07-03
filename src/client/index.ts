@@ -171,7 +171,6 @@ export class Client {
 	}
 
 	public async readProofCallback() {
-		console.log('..readProofCallback')
 		if (!this.getDataFromQuery) return false
 		let action = this.getDataFromQuery('action')
 		let multiToken = this.getDataFromQuery('multi-token')
@@ -182,7 +181,6 @@ export class Client {
 	}
 
 	private async readProofCallbackMultiToken() {
-		console.log('..readProofCallbackMultiToken')
 		// { issuers: { devcon: [{ proof, type, token data }] }, issuersValidated: ['devcon', 'edcon'] }
 		const token = JSON.parse(this.getDataFromQuery('token'))
 		const error = this.getDataFromQuery('error')
@@ -199,7 +197,6 @@ export class Client {
 	}
 
 	private async readProofCallbackLegacy() {
-		console.log('..readProofCallbackLegacy')
 		const issuer = this.getDataFromQuery('issuer')
 		const attest = this.getDataFromQuery('attestation')
 		const type = this.getDataFromQuery('type') as TokenType
@@ -380,7 +377,7 @@ export class Client {
 					this.tokenStore.updateTokenLookupStore(issuer, lookupData)
 				}
 			} catch (e) {
-				logger(2, 'Failed to load contract data for ' + issuer + ': ' + e.message)
+				logger(2, 'Failed to load contract data for ' + issuer + ': ' + e.message, e)
 			}
 		}
 
@@ -746,8 +743,6 @@ export class Client {
 			if (!tokens) return // Site is redirecting
 		}
 
-		console.log(tokens)
-
 		this.storeOutletTokenResponse(tokens)
 
 		return tokens[config.collectionID]
@@ -1033,7 +1028,7 @@ export class Client {
 	async eventSender(eventName: 'opened-overlay', data: EventSenderOpenedOverlay)
 	async eventSender(eventName: 'view-changed', data: EventSenderViewChanged)
 	async eventSender(eventName: 'tokens', data: EventSenderTokens)
-	async eventSender(eventName: 'token-proof', data: EventSenderTokenProof)
+	async eventSender(eventName: 'token-proof', data: any)
 	async eventSender(eventName: 'tokens-selected', data: EventSenderTokensSelected)
 	async eventSender(eventName: 'tokens-loaded', data: EventSenderTokensLoaded)
 	async eventSender(eventName: 'connected-wallet', data: EventSenderConnectedWallet)

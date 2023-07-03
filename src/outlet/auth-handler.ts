@@ -60,7 +60,6 @@ export class AuthHandler {
 		if (this.attestationInTab && !this.tryingToGetAttestationInBackground) {
 			// TODO check if its an iframe, if TAB then no need to request to display
 			logger(2, 'display new TAB to attest, ask parent to show current iframe')
-
 			if (this.outlet)
 				this.outlet.sendMessageResponse({
 					evtid: this.evtid,
@@ -68,13 +67,11 @@ export class AuthHandler {
 					max_width: '500px',
 					min_height: '300px',
 				})
-
 			let button: HTMLDivElement
 
 			button = document.createElement('div')
 			button.classList.add(this.wrapperBase + '_btn')
 			button.innerHTML = 'Click to get Email Attestation'
-
 			button.addEventListener('click', () => {
 				this.attestationTabHandler = window.open(this.attestationOrigin, 'Attestation')
 
@@ -96,7 +93,6 @@ export class AuthHandler {
 					}
 				}, 2000)
 			})
-
 			let wrapperID = this.wrapperBase + '_wrap_' + Date.now()
 			const styles = document.createElement('style')
 			styles.innerHTML = `
@@ -173,7 +169,6 @@ export class AuthHandler {
 	public authenticate(): Promise<{ proof: string; type: TokenType }> {
 		return new Promise((resolve, reject) => {
 			this.rejectHandler = reject
-
 			if (this.redirectUrl) {
 				const curParams = new URLSearchParams(window.location.hash.substring(1))
 
@@ -181,45 +176,32 @@ export class AuthHandler {
 				params.set('email', this.ticketRecord.id)
 				params.set('address', this.address)
 				params.set('wallet', this.wallet)
-
 				const callbackUrl = new URL(this.redirectUrl)
 				const callbackParams = removeUrlSearchParams(new URLSearchParams(callbackUrl.hash.substring(1)))
 				callbackParams.set(URLNS + 'action', OutletAction.EMAIL_ATTEST_CALLBACK)
 				callbackParams.set(URLNS + 'issuer', this.tokenConfig.collectionID)
 				callbackParams.set(URLNS + 'token', JSON.stringify(this.decodedToken))
-
 				const requestor = curParams.get(URLNS + 'requestor')
 				if (requestor) {
 					callbackParams.set(URLNS + 'requestor', requestor)
 				}
-
 				callbackUrl.hash = callbackParams.toString()
-
 				params.set('email-attestation-callback', callbackUrl.href)
-
 				const goto = `${this.attestationOrigin}#${params.toString()}`
 				logger(2, 'authenticate. go to: ', goto)
-
 				window.location.href = goto
-
 				return
 			}
-
 			if (this.attestationInTab && !isBrave()) {
 				this.tryingToGetAttestationInBackground = true
 			}
-
 			if (!this.attestationOrigin) return reject(new Error('Attestation origin is null'))
-
 			window.addEventListener('message', (e) => {
 				if (!this.attestationOrigin) return
-
 				let attestURL = new URL(this.attestationOrigin)
-
 				if (e.origin !== attestURL.origin) {
 					return
 				}
-
 				if ((this.iframe && this.iframeWrap && this.iframe.contentWindow) || this.attestationTabHandler) {
 					this.postMessageAttestationListener(e, resolve, reject)
 				}

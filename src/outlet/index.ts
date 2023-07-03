@@ -127,9 +127,9 @@ export class Outlet {
 						let issuerConfig = this.getIssuerConfigById(issuer) ?? this.tokenConfig
 
 						let useToken
-						let issuers = []
 
 						let localStorageAuthRequest = JSON.parse(localStorage.getItem('token-auth-request'))
+						// multi token version
 						if (localStorageAuthRequest !== null) {
 							for (const key in localStorageAuthRequest) {
 								await localStorageAuthRequest[key].requestTokens.forEach(async (token) => {
@@ -151,7 +151,6 @@ export class Outlet {
 									useToken.issuers[token.issuer].push(singleUseToken)
 								})
 							}
-							// multi token version
 							if (requesterURL) {
 								const params = new URLSearchParams(requesterURL.hash.substring(1))
 								params.set(this.getCallbackUrlKey('action'), 'proof-callback')
@@ -206,12 +205,13 @@ export class Outlet {
 					break
 				}
 				case OutletAction.GET_MUTLI_PROOF: {
-					console.log('Outlet received event ID GET_MUTLI_PROOF ' + evtid + ' action ' + action + ' at ' + window.location.href)
-					const tokens: string = this.getDataFromQuery('token') // list of tokens inside object
+					const tokens: string = this.getDataFromQuery('tokens')
 					const wallet: string = this.getDataFromQuery('wallet')
 					const address: string = this.getDataFromQuery('address')
 					requiredParams(tokens, 'unsigned token is missing')
-					await this.sendTokenProof(evtid, 'multi-issuer', tokens, address, wallet)
+					await this.sendMultiTokenProof(evtid, tokens, address, wallet)
+
+					// TODO - Next Steps.
 
 					// TODO: Check if there's an existing attestation in the callback parameters, if so save to local storage
 					/* const attestationBlob = this.getDataFromQuery('attestation')
@@ -331,6 +331,51 @@ export class Outlet {
 		window.dispatchEvent(event)
 	}
 
+	async sendMultiTokenProof(evtid: string, tokens: string, address: string, wallet: string) {
+		if (!tokens) return 'error'
+
+		const redirect = this.getDataFromQuery('redirect') === 'true' ? window.location.href : false
+
+		try {
+			const tokensObj = JSON.parse(tokens)
+
+			let output = { issuers: {}, issuersValidated: [] }
+
+			await Promise.all(
+				Object.keys(tokensObj).map(async (key) => {
+					if (!output.issuers[key]) {
+						output.issuers[key] = []
+						output.issuersValidated.push(key)
+					}
+					for (const token of tokensObj[key].requestTokens) {
+						const issuer = this.getIssuerConfigById(key)
+						const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(
+							createIssuerHashArray(issuer),
+							token.unsignedToken,
+						)
+						let authHandler = new AuthHandler(issuer, ticketRecord, tokensObj[key].unsignedToken, address, wallet, redirect, this, evtid)
+						let tokenProof = await authHandler.authenticate()
+						output.issuers[key].push(tokenProof)
+					}
+				}),
+			)
+
+			this.sendMessageResponse({
+				evtid: evtid,
+				evt: OutletResponseAction.PROOF,
+				data: {
+					...output.issuers,
+				},
+			})
+		} catch (e) {
+			logger(2, e)
+
+			if (redirect) return this.proofRedirectError(this.getDataFromQuery('issuer'), e.message)
+
+			this.sendErrorResponse(evtid, e.message)
+		}
+	}
+
 	async sendTokenProof(evtid: string, collectionId: string, token: string, address: string, wallet: string) {
 		if (!token) return 'error'
 
@@ -339,7 +384,6 @@ export class Outlet {
 		const redirect = this.getDataFromQuery('redirect') === 'true' ? window.location.href : false
 
 		try {
-			// TODO: Add support for multiple issuers and multiple tokens
 			const issuer = this.getIssuerConfigById(collectionId)
 
 			const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(createIssuerHashArray(issuer), decodedToken)

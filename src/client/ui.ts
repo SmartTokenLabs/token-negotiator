@@ -321,7 +321,7 @@ export class Ui implements UiInterface {
 	// allowing for the end developer to override key error types. Such as; user abort, network error, etc.
 	getCustomUserError(error) {
 		let output = error
-		if (error.contains(`Failed to read the 'localStorage' property from 'Window'`)) {
+		if (error && error.contains && error.contains(`Failed to read the 'localStorage' property from 'Window'`)) {
 			output = 'Please enable cookies in your browser to use this feature or try a different browser.'
 		}
 		return output

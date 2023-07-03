@@ -28,7 +28,7 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 		const tokenCollectionConfig = userTokens[firstCollectionFound].requestTokens[0]
 		const issuerCollectionConfig = userTokens[firstCollectionFound].issuerConfig
 		let redirectMode: false | string =
-			tokenCollectionConfig?.options.useRedirect || shouldUseRedirectMode(this.client.config.offChainRedirectMode) || false
+			tokenCollectionConfig?.options?.useRedirect || shouldUseRedirectMode(this.client.config.offChainRedirectMode) || false
 		if (redirectMode) redirectMode = request?.options?.redirectUrl || window.location.href
 		let useEthKey: UNInterface | null = null
 		if (issuerCollectionConfig?.unEndPoint) {
@@ -63,6 +63,7 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 				redirectMode,
 			)
 		} else {
+			// TODO - this is what needs fixing... the issuer is not known
 			let res = await this.messaging.sendMessage(
 				{
 					action: OutletAction.GET_MUTLI_PROOF,
@@ -88,7 +89,7 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 			data = res.data
 		}
 
-		if (!data) throw new Error('Failed to get proof from the outlet.')
+		if (!data || !Object.keys(data)) throw new Error('Failed to get proof from the outlet.')
 
 		let proof: AuthenticationResult = {
 			type: this.TYPE,
@@ -97,15 +98,18 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 				tokens: [],
 			},
 		}
-		await Promise.all(
-			await Object.keys(data).map(async (collectionKey: any) => {
-				await data[collectionKey].map(async (tokenProof: any, index: number) => {
-					await TicketZKProofMulti.validateProof(issuerCollectionConfig, tokenProof.proof, tokenProof.type, useEthKey?.address ?? '')
-					if (useEthKey) proof.data[collectionKey][index].useEthKey = useEthKey
-				})
-			}),
-		)
-		return proof
+
+		if (Object.keys(data)) {
+			await Promise.all(
+				await Object.keys(data).map(async (collectionKey: any) => {
+					await data[collectionKey].map(async (tokenProof: any, index: number) => {
+						await TicketZKProofMulti.validateProof(issuerCollectionConfig, tokenProof.proof, tokenProof.type, useEthKey?.address ?? '')
+						if (useEthKey) proof.data[collectionKey][index].useEthKey = useEthKey
+					})
+				}),
+			)
+			return proof
+		}
 	}
 
 	public static async validateProof(issuerConfig: OffChainTokenConfig, proof: string, type: TokenType, ethAddress = '') {
