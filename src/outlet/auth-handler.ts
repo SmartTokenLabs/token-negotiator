@@ -211,50 +211,6 @@ export class AuthHandler {
 		})
 	}
 
-	// public authenticateMulti(): Promise<{ proof: string; type: TokenType }> {
-	// 	return new Promise((resolve, reject) => {
-	// 		this.rejectHandler = reject
-	// 		if (this.redirectUrl) {
-	// 			const curParams = new URLSearchParams(window.location.hash.substring(1))
-	// 			const params = new URLSearchParams()
-	// 			params.set('email', this.ticketRecord.id)
-	// 			params.set('address', this.address)
-	// 			params.set('wallet', this.wallet)
-	// 			const callbackUrl = new URL(this.redirectUrl)
-	// 			const callbackParams = removeUrlSearchParams(new URLSearchParams(callbackUrl.hash.substring(1)))
-	// 			callbackParams.set(URLNS + 'action', OutletAction.EMAIL_ATTEST_CALLBACK)
-	// 			callbackParams.set(URLNS + 'issuer', this.tokenConfig.collectionID)
-	// 			callbackParams.set(URLNS + 'tokens', JSON.stringify(this.decodedTokens))
-	// 			const requestor = curParams.get(URLNS + 'requestor')
-	// 			if (requestor) {
-	// 				callbackParams.set(URLNS + 'requestor', requestor)
-	// 			}
-	// 			callbackUrl.hash = callbackParams.toString()
-	// 			params.set('email-attestation-callback', callbackUrl.href)
-	// 			const goto = `${this.attestationOrigin}#${params.toString()}`
-	// 			logger(2, 'authenticate. go to: ', goto)
-	// 			window.location.href = goto
-	// 			return
-	// 		}
-	// 		if (this.attestationInTab && !isBrave()) {
-	// 			this.tryingToGetAttestationInBackground = true
-	// 		}
-	// 		if (!this.attestationOrigin) return reject(new Error('Attestation origin is null'))
-	// 		window.addEventListener('message', (e) => {
-	// 			if (!this.attestationOrigin) return
-	// 			let attestURL = new URL(this.attestationOrigin)
-	// 			if (e.origin !== attestURL.origin) {
-	// 				return
-	// 			}
-	// 			if ((this.iframe && this.iframeWrap && this.iframe.contentWindow) || this.attestationTabHandler) {
-	// 				this.postMessageAttestationListener(e, resolve, reject)
-	// 			}
-	// 		})
-	// 		// opens the attestation app in Iframe, supported iframe and tab modes.
-	// 		this.openAttestationApp()
-	// 	})
-	// }
-
 	private createIframe() {
 		const iframe = document.createElement('iframe')
 		iframe.setAttribute('allow', 'clipboard-read')
@@ -327,7 +283,7 @@ export class AuthHandler {
 				)
 			}
 			if (useToken) {
-				return <ProofResult>{ proof: useToken, type: ticketRecord.type }
+				return <ProofResult>{ proof: useToken, type: ticketRecord.type, tokenId: ticketRecord.tokenId }
 			} else {
 				logger(2, 'this.authResultCallback( empty ): ')
 				throw new Error('Empty useToken')

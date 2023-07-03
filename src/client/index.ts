@@ -10,7 +10,6 @@ import {
 	AuthenticateInterface,
 	NegotiationInterface,
 	TokenNegotiatorEvents,
-	EventSenderTokenProof,
 	EventSenderTokensSelected,
 	EventSenderConnectedWallet,
 	EventSenderDisconnectedWallet,
