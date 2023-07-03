@@ -490,7 +490,7 @@ negotiator.on("proof", ({ proof, issuer, error }) => {
 
 ### Authenticate ownership of multiple off chain Tokens
 
-Authenticating ownership of the token will provide a list of proof data with a limited expiry.
+Authenticating ownership of the tokens will provide a list of proof data with a limited expiry.
 
 ```javascript
 /**
