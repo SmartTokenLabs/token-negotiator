@@ -101,15 +101,15 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 
 		if (Object.keys(data)) {
 			await Promise.all(
-				await Object.keys(data).map(async (collectionKey: any) => {
-					await data[collectionKey].map(async (tokenProof: any, index: number) => {
-						await TicketZKProofMulti.validateProof(issuerCollectionConfig, tokenProof.proof, tokenProof.type, useEthKey?.address ?? '')
-						if (useEthKey) proof.data[collectionKey][index].useEthKey = useEthKey
-					})
-				}),
-			)
-			return proof
+					Object.keys(data).map(async (collectionKey) => {
+							for (const [index, value] of data[collectionKey].entries()) {
+								await TicketZKProofMulti.validateProof(issuerCollectionConfig, value.proof, value.type, useEthKey?.address ?? '')	
+								if (useEthKey) proof.data[collectionKey][index].useEthKey = useEthKey
+							}
+					}),
+				)
 		}
+		return proof;
 	}
 
 	public static async validateProof(issuerConfig: OffChainTokenConfig, proof: string, type: TokenType, ethAddress = '') {

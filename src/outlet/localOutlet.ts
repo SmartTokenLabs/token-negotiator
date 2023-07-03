@@ -78,20 +78,37 @@ export class LocalOutlet {
 		// return output
 
 		let output = {}
-		Object.keys(issuerKeyHashesAndRequestTokens).forEach((collectionKey: any) => {
-			issuerKeyHashesAndRequestTokens[collectionKey].requestTokens.forEach(async (token: any) => {
-				if (!output[collectionKey]) output[collectionKey] = []
-				const auth = await this.authenticate(
-					tokenConfig,
-					issuerKeyHashesAndRequestTokens[collectionKey].issuerHashes,
-					token.unsignedToken,
-					address,
-					wallet,
-					redirectMode,
-				)
-				output[collectionKey].push(auth)
-			})
-		})
+
+		await Promise.all(
+			Object.keys(issuerKeyHashesAndRequestTokens).map(async (collectionKey: any) => {
+				for (const token of issuerKeyHashesAndRequestTokens[collectionKey].requestTokens) {
+					if (!output[collectionKey]) output[collectionKey] = []
+					const auth = await this.authenticate(
+						tokenConfig,
+						issuerKeyHashesAndRequestTokens[collectionKey].issuerHashes,
+						token.unsignedToken,
+						address,
+						wallet,
+						redirectMode,
+					)
+					output[collectionKey].push(auth)
+				}
+			}),
+		)
+
+		// 	issuerKeyHashesAndRequestTokens[collectionKey].requestTokens.forEach(async (token: any) => {
+		// 		if (!output[collectionKey]) output[collectionKey] = []
+		// 		const auth = await this.authenticate(
+		// 			tokenConfig,
+		// 			issuerKeyHashesAndRequestTokens[collectionKey].issuerHashes,
+		// 			token.unsignedToken,
+		// 			address,
+		// 			wallet,
+		// 			redirectMode,
+		// 		)
+		// 		output[collectionKey].push(auth)
+		// 	})
+
 		// todo see what it would be best to store the tokens. For local and normal modes.
 		// local first can be done for testing purposes.
 		localStorage.setItem('token-auth-request', JSON.stringify(issuerKeyHashesAndRequestTokens))

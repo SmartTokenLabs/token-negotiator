@@ -838,15 +838,18 @@ export class Client {
 			let issuersValidated = []
 			let issuerProofs = {}
 			let messagingForceTab = false
-			this.ui.showLoaderDelayed(
-				[
-					'<h4>Authenticating...</h4>',
-					'<small>You may need to sign a new challenge in your wallet</small>',
-					"<button class='cancel-auth-btn btn-tn' aria-label='Cancel authentication'>Cancel</button>",
-				],
-				600,
-				true,
-			)
+
+			if (this.ui) {
+				this.ui.showLoaderDelayed(
+					[
+						'<h4>Authenticating...</h4>',
+						'<small>You may need to sign a new challenge in your wallet</small>',
+						"<button class='cancel-auth-btn btn-tn' aria-label='Cancel authentication'>Cancel</button>",
+					],
+					600,
+					true,
+				)
+			}
 
 			const authRequestBatch = await this.getMultiRequestBatch(authRequests, messagingForceTab)
 
