@@ -5,11 +5,7 @@ import { AuthHandler, ProofResult } from './auth-handler'
 import { DecodedToken, TicketStorage } from './ticketStorage'
 import { SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
 import { AsnParser } from '@peculiar/asn1-schema'
-import { IssuerConfigInterface, OffChainTokenConfig } from '../client/interface'
 import { Whitelist } from './whitelist'
-
-// TS2322: Type '{ issuers: any[]; whitelistDialogRenderer: (permissionTxt: string, acceptBtn: string, denyBtn: string) => string; }' is not assignable to type 'OutletInterface'.
-// Object literal may only specify known properties, and 'issuers' does not exist in type 'OutletInterface'.
 
 export interface OutletIssuerInterface {
 	collectionID: string
@@ -359,7 +355,6 @@ export class Outlet {
 					}
 				}),
 			)
-
 			this.sendMessageResponse({
 				evtid: evtid,
 				evt: OutletResponseAction.PROOF,
@@ -369,9 +364,7 @@ export class Outlet {
 			})
 		} catch (e) {
 			logger(2, e)
-
 			if (redirect) return this.proofRedirectError(this.getDataFromQuery('issuer'), e.message)
-
 			this.sendErrorResponse(evtid, e.message)
 		}
 	}

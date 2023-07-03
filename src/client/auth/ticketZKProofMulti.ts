@@ -20,7 +20,7 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 	// NOTE: A limitation at this time is that the user can only authenticate tokens
 	// that use the same issuer origin, email and it's underlying config (see: firstCollectionFound via getTokenProofMulti).
 
-	// method() getTokenProofMulti
+	// method() getTokenProofMulti.
 	// param: userTokens { issuer: { requestTokens: [], issuerConfig: {} }, issuer2: { ... }
 	// param: request { options, ... }
 	async getTokenProofMulti(userTokens: any, request: any): Promise<any> {
@@ -63,7 +63,6 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 				redirectMode,
 			)
 		} else {
-			// TODO - this is what needs fixing... the issuer is not known
 			let res = await this.messaging.sendMessage(
 				{
 					action: OutletAction.GET_MUTLI_PROOF,
@@ -101,15 +100,15 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 
 		if (Object.keys(data)) {
 			await Promise.all(
-					Object.keys(data).map(async (collectionKey) => {
-							for (const [index, value] of data[collectionKey].entries()) {
-								await TicketZKProofMulti.validateProof(issuerCollectionConfig, value.proof, value.type, useEthKey?.address ?? '')	
-								if (useEthKey) proof.data[collectionKey][index].useEthKey = useEthKey
-							}
-					}),
-				)
+				Object.keys(data).map(async (collectionKey) => {
+					for (const [index, value] of data[collectionKey].entries()) {
+						await TicketZKProofMulti.validateProof(issuerCollectionConfig, value.proof, value.type, useEthKey?.address ?? '')
+						if (useEthKey) proof.data[collectionKey][index].useEthKey = useEthKey
+					}
+				}),
+			)
 		}
-		return proof;
+		return proof
 	}
 
 	public static async validateProof(issuerConfig: OffChainTokenConfig, proof: string, type: TokenType, ethAddress = '') {
