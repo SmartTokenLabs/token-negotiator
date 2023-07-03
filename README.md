@@ -467,7 +467,9 @@ negotiator.on("tokens-selected", callback);
   </tbody>
 </table>
 
-### Authenticate ownership of single off chain Token (legacy, proof callback object structure will change in version 3.0.0 to multiple call back data structure)
+### Authenticate ownership of single off chain Token
+
+Note: the proof callback object structure will change in version 3.0.0 to multiple call back data structure.
 
 Authenticating ownership of the token will provide a proof with a limited expiry.
 
