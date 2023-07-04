@@ -110,7 +110,7 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 		address: string,
 		wallet: string,
 		redirectMode: false | string,
-		request: any,
+		request?: any,
 	) {
 		const localOutlet = new LocalOutlet(Object.values(this.client.getTokenStore().getCurrentIssuers(false)) as OffChainTokenConfig[])
 		let issuerKeyHashesAndRequestTokens = {}
