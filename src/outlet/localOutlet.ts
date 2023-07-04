@@ -4,6 +4,7 @@ import { IssuerHashMap, logger } from '../utils'
 import { OutletIssuerInterface } from './index'
 import { URLSearchParams } from 'url'
 import { OffChainTokenConfig } from '../client/interface'
+import { LocalStorageMessaging } from './../client/messaging'
 
 export class LocalOutlet {
 	private ticketStorage: TicketStorage
@@ -64,7 +65,7 @@ export class LocalOutlet {
 				}
 			}),
 		)
-		localStorage.setItem('token-auth-request', JSON.stringify(issuerKeyHashesAndRequestTokens))
+		localStorage.setItem(LocalStorageMessaging.TOKEN_AUTH_REQUEST, JSON.stringify(issuerKeyHashesAndRequestTokens))
 		return output
 	}
 }

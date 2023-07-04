@@ -1,6 +1,6 @@
 import { createIssuerHashArray, createIssuerHashMap, IssuerHashMap, logger, removeUrlSearchParams, requiredParams } from '../utils'
 import { ResponseActionBase, ResponseInterfaceBase, URLNS } from '../core/messaging'
-import { OutletAction, OutletResponseAction } from '../client/messaging'
+import { OutletAction, OutletResponseAction, LocalStorageMessaging } from '../client/messaging'
 import { AuthHandler, ProofResult } from './auth-handler'
 import { DecodedToken, TicketStorage } from './ticketStorage'
 import { SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
@@ -124,16 +124,16 @@ export class Outlet {
 
 						let useToken
 
-						let localStorageAuthRequest = JSON.parse(localStorage.getItem('token-auth-request'))
+						let localStorageAuthRequest = JSON.parse(localStorage.getItem(LocalStorageMessaging.TOKEN_AUTH_REQUEST))
 						// multi token version
 						if (localStorageAuthRequest !== null) {
 							for (const key in localStorageAuthRequest) {
 								await localStorageAuthRequest[key].requestTokens.forEach(async (token) => {
-									// { issuers: { devcon: [{ proof, type, token data }] }, issuersValidated: ['devcon', 'edcon'] }
-									if (!useToken) useToken = { issuers: {}, issuersValidated: [] }
+									// { issuers: { devcon: [{ proof, type, token data }] }, issuersProcessed: ['devcon', 'edcon'] }
+									if (!useToken) useToken = { issuers: {}, issuersProcessed: [] }
 									if (!useToken.issuers[token.issuer]) {
 										useToken.issuers[token.issuer] = []
-										useToken.issuersValidated.push(token.issuer)
+										useToken.issuersProcessed.push(token.issuer)
 									}
 									// @ts-ignore
 									const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(
@@ -335,13 +335,13 @@ export class Outlet {
 		try {
 			const tokensObj = JSON.parse(tokens)
 
-			let output = { issuers: {}, issuersValidated: [] }
+			let output = { issuers: {}, issuersProcessed: [] }
 
 			await Promise.all(
 				Object.keys(tokensObj).map(async (key) => {
 					if (!output.issuers[key]) {
 						output.issuers[key] = []
-						output.issuersValidated.push(key)
+						output.issuersProcessed.push(key)
 					}
 					for (const token of tokensObj[key].requestTokens) {
 						const issuer = this.getIssuerConfigById(key)

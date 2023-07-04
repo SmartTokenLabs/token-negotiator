@@ -116,7 +116,7 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 		for (const key in userTokens) {
 			if (!issuerKeyHashesAndRequestTokens[key]) {
 				issuerKeyHashesAndRequestTokens[key] = {
-					issuerHashes: createIssuerHashArray(userTokens[key].issuerConfig),
+					issuerHashes: createIssuerHashArray(userTokens[key].issuerConfig as OffChainTokenConfig),
 					requestTokens: userTokens[key].requestTokens,
 				}
 			}

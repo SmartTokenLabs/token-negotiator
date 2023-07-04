@@ -180,7 +180,7 @@ export class Client {
 	}
 
 	private async readProofCallbackMultiToken() {
-		// { issuers: { devcon: [{ proof, type, token data }] }, issuersValidated: ['devcon', 'edcon'] }
+		// { issuers: { devcon: [{ proof, type, token data }] }, issuersProcessed: ['devcon', 'edcon'] }
 		const token = JSON.parse(this.getDataFromQuery('token'))
 		const error = this.getDataFromQuery('error')
 
@@ -245,7 +245,7 @@ export class Client {
 				this.eventSender('token-proof', {
 					issuer: null,
 					issuers: token.issuers,
-					issuersValidated: token.issuersValidated,
+					issuersProcessed: token.issuersProcessed,
 					proof: null,
 				})
 			}
@@ -834,7 +834,7 @@ export class Client {
 
 	async athenticateMutilple(authRequests: AuthenticateInterface[]) {
 		try {
-			let issuersValidated = []
+			let issuersProcessed = []
 			let issuerProofs = {}
 			let messagingForceTab = false
 
@@ -866,7 +866,7 @@ export class Client {
 					const result = await authenticator.getTokenProofMulti(authRequestBatch.offChain[key], authRequest)
 					if (!result) return // Site is redirecting
 					issuerProofs = result.data
-					issuersValidated = Object.keys(result.data)
+					issuersProcessed = Object.keys(result.data)
 				} catch (err) {
 					if (err.message === 'WALLET_REQUIRED') {
 						return this.handleWalletRequired(authRequest)
@@ -882,10 +882,10 @@ export class Client {
 			this.eventSender('token-proof', {
 				issuer: null,
 				issuers: issuerProofs, // { devcon: [], edcon: [], ... }
-				issuersValidated,
+				issuersProcessed,
 				proof: null,
 			})
-			return { issuer: null, issuers: issuerProofs, issuersValidated }
+			return { issuer: null, issuers: issuerProofs, issuersProcessed }
 		} catch (err) {
 			errorHandler(err, 'error', null, false, true, false)
 		}

@@ -501,10 +501,10 @@ negotiator.authenticate([{
 	unsignedToken,
 }]);
 
-negotiator.on("proof", ({ issuers, issuersValidated }) => {
+negotiator.on("proof", ({ issuers, issuersProcessed }) => {
 	// the proof will be received here (valid or failed)
 	// issuers: { issuerName: [ token, ... ] }
-	// issuersValidated: [ 'issuerName1', 'issuerName2', '...' ]
+	// issuersProcessed: [ 'issuerName1', 'issuerName2', '...' ]
 });
 ```
 
