@@ -40,9 +40,9 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 		const wallet = request.wallet ? request.wallet : ''
 		let output
 		if (new URL(issuerCollectionConfig.tokenOrigin).origin === window.location.origin) {
-			output = await this.authenticateLocally(userTokens, issuerCollectionConfig, address, wallet, redirectMode)
+			output = await this.authenticateLocally(issuerCollectionConfig, userTokens, address, wallet, redirectMode, request)
 		} else {
-			output = await this.authenticateCrossOrigin(issuerCollectionConfig, userTokens, address, wallet, request, redirectMode)
+			output = await this.authenticateCrossOrigin(issuerCollectionConfig, userTokens, address, wallet, redirectMode, request)
 		}
 		if (!output || !Object.keys(output)) throw new Error('Failed to get proof from the outlet.')
 		return this.validateMultiTokenProof(output, issuerCollectionConfig, useEthKey)
@@ -74,8 +74,8 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 		userTokens: MultiTokenInterface[],
 		address: string,
 		wallet: string,
-		request,
 		redirectMode: string | false,
+		request: any,
 	) {
 		let data = {}
 		let res = await this.messaging.sendMessage(
@@ -105,11 +105,12 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 	}
 
 	async authenticateLocally(
-		userTokens: MultiTokenInterface[],
 		issuerCollectionConfig: OffChainTokenConfig,
+		userTokens: MultiTokenInterface[],
 		address: string,
 		wallet: string,
 		redirectMode: false | string,
+		request: any,
 	) {
 		const localOutlet = new LocalOutlet(Object.values(this.client.getTokenStore().getCurrentIssuers(false)) as OffChainTokenConfig[])
 		let issuerKeyHashesAndRequestTokens = {}
