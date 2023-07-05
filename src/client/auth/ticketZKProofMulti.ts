@@ -45,10 +45,15 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 			output = await this.authenticateCrossOrigin(issuerCollectionConfig, userTokens, address, wallet, redirectMode, request)
 		}
 		if (!output || !Object.keys(output)) throw new Error('Failed to get proof from the outlet.')
-		return this.validateMultiTokenProof(output, issuerCollectionConfig, useEthKey)
+		return this.validateMultiTokenProof(output, userTokens, issuerCollectionConfig, useEthKey)
 	}
 
-	async validateMultiTokenProof(data: any, issuerCollectionConfig: OffChainTokenConfig, useEthKey: UNInterface | null = null) {
+	async validateMultiTokenProof(
+		data: any,
+		userTokens: MultiTokenInterface[],
+		issuerCollectionConfig: OffChainTokenConfig,
+		useEthKey: UNInterface | null = null,
+	) {
 		let proof: AuthenticationResult = {
 			type: this.TYPE,
 			data: data,
@@ -60,7 +65,12 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 			await Promise.all(
 				Object.keys(data).map(async (collectionKey) => {
 					for (const [index, value] of data[collectionKey].entries()) {
-						await TicketZKProofMulti.validateProof(issuerCollectionConfig, value.proof, value.type, useEthKey?.address ?? '')
+						await TicketZKProofMulti.validateProof(
+							userTokens[collectionKey].issuerConfig,
+							value.proof,
+							value.type,
+							useEthKey?.address ?? '',
+						)
 						if (useEthKey) proof.data[collectionKey][index].useEthKey = useEthKey
 					}
 				}),
@@ -119,6 +129,7 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 				issuerKeyHashesAndRequestTokens[key] = {
 					issuerHashes: createIssuerHashArray(userTokens[key].issuerConfig as OffChainTokenConfig),
 					requestTokens: userTokens[key].requestTokens,
+					issuerConfig: userTokens[key].issuerConfig,
 				}
 			}
 		}

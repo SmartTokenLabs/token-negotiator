@@ -54,7 +54,7 @@ export class LocalOutlet {
 				for (const token of issuerKeyHashesAndRequestTokens[collectionKey].requestTokens) {
 					if (!output[collectionKey]) output[collectionKey] = []
 					const auth = await this.authenticate(
-						tokenConfig,
+						issuerKeyHashesAndRequestTokens[collectionKey].issuerConfig,
 						issuerKeyHashesAndRequestTokens[collectionKey].issuerHashes,
 						token.unsignedToken,
 						address,

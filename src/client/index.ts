@@ -796,7 +796,7 @@ export class Client {
 		return authRequest
 	}
 
-	async getMultiRequestBatch(authRequests: AuthenticateInterface[], messagingForceTab: boolean) {
+	async getMultiRequestBatch(authRequests: AuthenticateInterface[]) {
 		let authRequestBatch = { onChain: {}, offChain: {} }
 		// build a list of the batches for each token origin. At this point when this loop is complete
 		// we will have a list of all the tokens that need to be authenticated and the origin they need to be authenticated against.
@@ -808,10 +808,6 @@ export class Client {
 				// Off Chain
 				// Setup for Token Collection. e.g. authRequestBatch.offChain['https://mywebsite.com']['devcon']
 				if (offChain) {
-					if (reqItem.options?.useRedirect) messagingForceTab = true
-					// TODO manage from options, request?.options?.useRedirect
-					// this is usually managed at token level - but a rule must be added to address this for the batch
-					// as a whole. E.g. if one is useRedirect, then all must be useRedirect!
 					if (!authRequestBatch.offChain[issuerConfig.tokenOrigin]) authRequestBatch.offChain[issuerConfig.tokenOrigin] = {}
 					if (!authRequestBatch.offChain[issuerConfig.tokenOrigin][reqItem.issuer]) {
 						authRequestBatch.offChain[issuerConfig.tokenOrigin][reqItem.issuer] = {
@@ -823,10 +819,7 @@ export class Client {
 					authRequestBatch.offChain[issuerConfig.tokenOrigin][reqItem.issuer].requestTokens.push(reqItem)
 					return
 				}
-				// On Chain
-				// TODO
-				// if (!offChain) requestBatches[issuerConfig.collectionID] = []
-				// e.g. requestBatches['https://mywebsite.com'] = [{issuer, unsignedToken, ...}]
+				// TODO on Chain
 			}),
 		)
 		return authRequestBatch
@@ -850,7 +843,7 @@ export class Client {
 				)
 			}
 
-			const authRequestBatch = await this.getMultiRequestBatch(authRequests, messagingForceTab)
+			const authRequestBatch = await this.getMultiRequestBatch(authRequests)
 
 			// Send the request batches to each token origin:
 			// Off Chain: // ['https://devcon.com']['issuer'][list of tokens]

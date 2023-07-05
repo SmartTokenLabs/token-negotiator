@@ -128,23 +128,28 @@ export class Outlet {
 						// multi token version
 						if (localStorageAuthRequest !== null) {
 							for (const key in localStorageAuthRequest) {
-								await localStorageAuthRequest[key].requestTokens.forEach(async (token) => {
+								await localStorageAuthRequest[key].requestTokens.forEach(async (singleToken) => {
 									// { issuers: { devcon: [{ proof, type, token data }] }, issuersProcessed: ['devcon', 'edcon'] }
 									if (!useToken) useToken = { issuers: {}, issuersProcessed: [] }
-									if (!useToken.issuers[token.issuer]) {
-										useToken.issuers[token.issuer] = []
-										useToken.issuersProcessed.push(token.issuer)
+									if (!useToken.issuers[localStorageAuthRequest[key].issuerConfig.collectionID]) {
+										useToken.issuers[localStorageAuthRequest[key].issuerConfig.collectionID] = []
+										useToken.issuersProcessed.push(localStorageAuthRequest[key].issuerConfig.collectionID)
 									}
 									// @ts-ignore
 									const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(
 										// @ts-ignore
-										createIssuerHashArray(issuerConfig),
-										token.unsignedToken,
+										createIssuerHashArray(localStorageAuthRequest[key].issuerConfig),
+										singleToken.unsignedToken,
 									)
 									// @ts-ignore
-									const singleUseToken = await AuthHandler.getUseToken(issuerConfig, attestationBlob, attestationSecret, ticketRecord)
+									const singleUseToken = await AuthHandler.getUseToken(
+										localStorageAuthRequest[key].issuerConfig,
+										attestationBlob,
+										attestationSecret,
+										ticketRecord,
+									)
 									// Create a list of tokens to return to the callback
-									useToken.issuers[token.issuer].push(singleUseToken)
+									useToken.issuers[localStorageAuthRequest[key].issuerConfig.collectionID].push(singleUseToken)
 								})
 							}
 							if (requesterURL) {
