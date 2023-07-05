@@ -20,6 +20,8 @@ jobs:
       - tn-p1
     name: SonarCloud
     runs-on: ubuntu-latest
+    # dependabot created branch has a very long name, which will cause issue for SonarCloud
+    if: "!startsWith(github.head_ref, 'dependabot/')"
     steps:
       - uses: actions/checkout@v3
         with:
