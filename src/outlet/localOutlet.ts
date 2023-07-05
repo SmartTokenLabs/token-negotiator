@@ -48,6 +48,7 @@ export class LocalOutlet {
 		wallet: string,
 		redirectMode: false | string = false,
 	) {
+		localStorage.setItem(LocalStorageMessaging.TOKEN_AUTH_REQUEST, JSON.stringify(issuerKeyHashesAndRequestTokens))
 		let output = {}
 		await Promise.all(
 			Object.keys(issuerKeyHashesAndRequestTokens).map(async (collectionKey: any) => {
@@ -65,7 +66,6 @@ export class LocalOutlet {
 				}
 			}),
 		)
-		localStorage.setItem(LocalStorageMessaging.TOKEN_AUTH_REQUEST, JSON.stringify(issuerKeyHashesAndRequestTokens))
 		return output
 	}
 }

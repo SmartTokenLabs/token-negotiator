@@ -1,6 +1,6 @@
 import { AbstractAuthentication, AuthenticationMethodMulti, AuthenticationResult } from './abstractAuthentication'
 import { OffChainTokenConfig, MultiTokenInterface } from '../interface'
-import { OutletAction, Messaging } from '../messaging'
+import { OutletAction, Messaging, LocalStorageMessaging } from '../messaging'
 import { Authenticator } from '@tokenscript/attestation'
 import { SignedUNChallenge } from './signedUNChallenge'
 import { UNInterface } from './util/UN'
@@ -42,7 +42,7 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 		if (new URL(issuerCollectionConfig.tokenOrigin).origin === window.location.origin) {
 			output = await this.authenticateLocally(issuerCollectionConfig, userTokens, address, wallet, redirectMode, request)
 		} else {
-			output = await this.authenticateCrossOrigin(issuerCollectionConfig, userTokens, address, wallet, redirectMode, request)
+			output = await this.authenticateCrossOrigin(issuerCollectionConfig.tokenOrigin, userTokens, address, wallet, redirectMode, request)
 		}
 		if (!output || !Object.keys(output)) throw new Error('Failed to get proof from the outlet.')
 		return this.validateMultiTokenProof(output, userTokens, issuerCollectionConfig, useEthKey)
@@ -80,7 +80,7 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 	}
 
 	async authenticateCrossOrigin(
-		issuerCollectionConfig: OffChainTokenConfig,
+		tokenOrigin: string,
 		userTokens: MultiTokenInterface[],
 		address: string,
 		wallet: string,
@@ -91,7 +91,7 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 		let res = await this.messaging.sendMessage(
 			{
 				action: OutletAction.GET_MUTLI_PROOF,
-				origin: issuerCollectionConfig.tokenOrigin,
+				origin: tokenOrigin,
 				timeout: 0, // Don't time out on this event as it needs active input from the user
 				data: {
 					tokens: userTokens,

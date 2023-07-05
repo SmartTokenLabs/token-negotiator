@@ -6,6 +6,7 @@ import { DecodedToken, TicketStorage } from './ticketStorage'
 import { SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
 import { AsnParser } from '@peculiar/asn1-schema'
 import { Whitelist } from './whitelist'
+import { OffChainTokenConfig } from 'src/client/interface'
 
 export interface OutletIssuerInterface {
 	collectionID: string
@@ -120,7 +121,7 @@ export class Outlet {
 						const attestationBlob = this.getDataFromQuery('attestation')
 						const attestationSecret = '0x' + this.getDataFromQuery('requestSecret')
 
-						let issuerConfig = this.getIssuerConfigById(issuer) ?? this.tokenConfig
+						let issuerConfig = this.getIssuerConfigById(issuer) ?? (this.tokenConfig as unknown as OffChainTokenConfig)
 
 						let useToken
 
@@ -162,6 +163,7 @@ export class Outlet {
 								localStorage.removeItem('token-auth-request') // remove now used.
 								return
 							}
+							this.dispatchAuthCallbackEvent(undefined, useToken, null)
 						} else {
 							// Single token Flow (legacy)
 							// @ts-ignore
@@ -179,9 +181,8 @@ export class Outlet {
 								window.location.href = requesterURL.href
 								return
 							}
+							this.dispatchAuthCallbackEvent(issuer, useToken, null)
 						}
-
-						this.dispatchAuthCallbackEvent(issuer, useToken, null)
 					} catch (e: any) {
 						console.error(e)
 
