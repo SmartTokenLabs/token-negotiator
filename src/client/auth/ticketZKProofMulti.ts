@@ -1,16 +1,13 @@
 import { AbstractAuthentication, AuthenticationMethodMulti, AuthenticationResult } from './abstractAuthentication'
 import { OffChainTokenConfig, MultiTokenInterface } from '../interface'
-import { OutletAction, Messaging, LocalStorageMessaging } from '../messaging'
-import { Authenticator } from '@tokenscript/attestation'
+import { OutletAction, Messaging } from '../messaging'
 import { SignedUNChallenge } from './signedUNChallenge'
 import { UNInterface } from './util/UN'
 import { LocalOutlet } from '../../outlet/localOutlet'
-import { OutletIssuerInterface } from '../../outlet'
 import { createIssuerHashArray } from '../../utils'
 import { shouldUseRedirectMode } from '../../utils/support/getBrowserData'
-import { EasZkProof } from '@tokenscript/attestation/dist/eas/EasZkProof'
-import { DEFAULT_EAS_SCHEMA, TokenType } from '../../outlet/ticketStorage'
-import { EAS_RPC_CONFIG } from '../../core/eas'
+import { TicketZKProof } from './ticketZKProof'
+import { MultiTokenAuthRequest, MultiTokenAuthResult, OutletIssuerInterface } from 'src/outlet/interfaces'
 
 export class TicketZKProofMulti extends AbstractAuthentication implements AuthenticationMethodMulti {
 	TYPE = 'ticketZKProofMulti'
@@ -20,11 +17,16 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 	// NOTE: A limitation at this time is that the user can only authenticate tokens
 	// that use the same issuer origin, email and it's underlying config (see: firstCollectionFound via getTokenProofMulti).
 
-	async getTokenProofMulti(userTokens: MultiTokenInterface[], request: any): Promise<AuthenticationResult> {
-		const firstCollectionFound = Object.keys(userTokens)[0]
-		const tokenCollectionConfig = userTokens[firstCollectionFound].requestTokens[0]
-		const issuerCollectionConfig = userTokens[firstCollectionFound].issuerConfig
-		let redirectMode: false | string = this.getRedirectModeSetting(tokenCollectionConfig, request)
+	async getTokenProofMulti(
+		tokenOrigin: string,
+		tokens: { [issuerName: string]: MultiTokenInterface },
+		request: any,
+	): Promise<AuthenticationResult> {
+		const firstCollectionFound = Object.keys(tokens)[0]
+
+		// const tokenCollectionConfig = tokens[firstCollectionFound].requestTokens[0]
+		const issuerCollectionConfig = tokens[firstCollectionFound].issuerConfig
+		let redirectMode: false | string = this.getRedirectModeSetting(issuerCollectionConfig, request)
 		let useEthKey: UNInterface | null = null
 		if (issuerCollectionConfig?.unEndPoint) {
 			let unChallenge = new SignedUNChallenge(this.client)
@@ -38,30 +40,37 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 		const useEthKeyAddress = useEthKey ? useEthKey.address : ''
 		const address = request.address ? request.address : useEthKeyAddress
 		const wallet = request.wallet ? request.wallet : ''
-		let output
-		if (new URL(issuerCollectionConfig.tokenOrigin).origin === window.location.origin) {
-			output = await this.authenticateLocally(issuerCollectionConfig, userTokens, address, wallet, redirectMode, request)
-		} else {
-			output = await this.authenticateCrossOrigin(issuerCollectionConfig.tokenOrigin, userTokens, address, wallet, redirectMode, request)
+
+		const authRequest: MultiTokenAuthRequest = {}
+
+		for (const issuerName in tokens) {
+			authRequest[issuerName] = {
+				issuerHashes: createIssuerHashArray(tokens[issuerName].issuerConfig),
+				tokenIds: tokens[issuerName].tokenIds,
+			}
 		}
+
+		let output
+		if (new URL(tokenOrigin).origin === window.location.origin) {
+			output = await this.authenticateLocally(authRequest, address, wallet, redirectMode, request)
+		} else {
+			output = await this.authenticateCrossOrigin(tokenOrigin, authRequest, address, wallet, redirectMode, request)
+		}
+
 		if (!output || !Object.keys(output)) throw new Error('Failed to get proof from the outlet.')
-		return this.validateMultiTokenProof(output, userTokens, issuerCollectionConfig, useEthKey)
+
+		return this.validateMultiTokenProof(output, useEthKey)
 	}
 
-	async validateMultiTokenProof(
-		data: any,
-		userTokens: MultiTokenInterface[],
-		issuerCollectionConfig: OffChainTokenConfig,
-		useEthKey: UNInterface | null = null,
-	) {
+	async validateMultiTokenProof(proofResult: MultiTokenAuthResult, useEthKey: UNInterface | null = null) {
 		let proof: AuthenticationResult = {
 			type: this.TYPE,
-			data: data,
+			data: proofResult,
 			target: {
 				tokens: [],
 			},
 		}
-		if (Object.keys(data)) {
+		/* if (Object.keys(data)) {
 			await Promise.all(
 				Object.keys(data).map(async (collectionKey) => {
 					for (const [index, value] of data[collectionKey].entries()) {
@@ -75,13 +84,24 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 					}
 				}),
 			)
+		}*/
+
+		for (const issuer in proofResult) {
+			for (const tokenId in proofResult[issuer]) {
+				const result = proofResult[issuer][tokenId]
+
+				const config = this.client.getTokenStore().getCurrentIssuers(false)[issuer] as OffChainTokenConfig | null
+
+				await TicketZKProof.validateProof(config, result.proof, result.type, useEthKey?.address ?? '')
+			}
 		}
+
 		return proof
 	}
 
 	async authenticateCrossOrigin(
 		tokenOrigin: string,
-		userTokens: MultiTokenInterface[],
+		userTokens: MultiTokenAuthRequest,
 		address: string,
 		wallet: string,
 		redirectMode: string | false,
@@ -115,15 +135,16 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 	}
 
 	async authenticateLocally(
-		issuerCollectionConfig: OffChainTokenConfig,
-		userTokens: MultiTokenInterface[],
+		authRequest: MultiTokenAuthRequest,
 		address: string,
 		wallet: string,
 		redirectMode: false | string,
 		request?: any,
 	) {
-		const localOutlet = new LocalOutlet(Object.values(this.client.getTokenStore().getCurrentIssuers(false)) as OffChainTokenConfig[])
-		let issuerKeyHashesAndRequestTokens = {}
+		const localOutlet = new LocalOutlet(
+			Object.values(this.client.getTokenStore().getCurrentIssuers(false)) as unknown as OutletIssuerInterface[],
+		)
+		/* let issuerKeyHashesAndRequestTokens = {}
 		for (const key in userTokens) {
 			if (!issuerKeyHashesAndRequestTokens[key]) {
 				issuerKeyHashesAndRequestTokens[key] = {
@@ -132,14 +153,9 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 					issuerConfig: userTokens[key].issuerConfig,
 				}
 			}
-		}
-		return localOutlet.authenticateMany(
-			issuerCollectionConfig as OffChainTokenConfig & OutletIssuerInterface,
-			issuerKeyHashesAndRequestTokens,
-			address,
-			wallet,
-			redirectMode,
-		)
+		}*/
+
+		return localOutlet.authenticateMany(authRequest, address, wallet, redirectMode)
 	}
 
 	getRedirectModeSetting(tokenCollectionConfig, request) {
@@ -147,14 +163,5 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 			tokenCollectionConfig?.options?.useRedirect || shouldUseRedirectMode(this.client.config.offChainRedirectMode) || false
 		if (redirectMode) redirectMode = request?.options?.redirectUrl || window.location.href
 		return redirectMode
-	}
-
-	public static async validateProof(issuerConfig: OffChainTokenConfig, proof: string, type: TokenType, ethAddress = '') {
-		if (type === 'eas') {
-			const easZkProof = new EasZkProof(DEFAULT_EAS_SCHEMA, EAS_RPC_CONFIG)
-			await easZkProof.validateUseTicket(proof, issuerConfig.base64attestorPubKey, issuerConfig.base64senderPublicKeys, ethAddress)
-		} else {
-			Authenticator.validateUseTicket(proof, issuerConfig.base64attestorPubKey, issuerConfig.base64senderPublicKeys, ethAddress)
-		}
 	}
 }

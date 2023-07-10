@@ -22,6 +22,7 @@ import {
 	EventSenderTokensRefreshed,
 	EventSenderTokensLoaded,
 	OutletTokenResult,
+	MultiTokenInterface,
 } from './interface'
 import { SignedUNChallenge } from './auth/signedUNChallenge'
 import { TicketZKProof } from './auth/ticketZKProof'
@@ -30,13 +31,12 @@ import { AuthenticationMethod, AuthenticationMethodMulti } from './auth/abstract
 import { isUserAgentSupported, validateBlockchain } from '../utils/support/isSupported'
 import Web3WalletProvider from '../wallet/Web3WalletProvider'
 import { LocalOutlet } from '../outlet/localOutlet'
-// import { Outlet, OutletInterface, OutletIssuerInterface } from '../outlet'
 import { shouldUseRedirectMode } from '../utils/support/getBrowserData'
 import { VERSION } from '../version'
 import { getFungibleTokenBalances, getFungibleTokensMeta } from '../utils/token/fungibleTokenProvider'
 import { URLNS } from '../core/messaging'
-import { DecodedToken, TokenType } from '../outlet/ticketStorage'
-import { ProofResult } from '../outlet/auth-handler'
+import { TokenType } from '../outlet/ticketStorage'
+import { OutletIssuerInterface, ProofResult } from '../outlet/interfaces'
 
 if (typeof window !== 'undefined') window.tn = { VERSION }
 
@@ -241,7 +241,6 @@ export class Client {
 			if (error) {
 				this.handleProofError(new Error(error), 'multi token authentication error')
 			} else {
-				// @ts-ignore
 				this.eventSender('token-proof', {
 					issuer: null,
 					issuers: token.issuers,
@@ -421,7 +420,7 @@ export class Client {
 
 		if (currentIssuer) {
 			logger(2, 'Sync Outlet fired in Client to read MagicLink before negotiate().')
-			let outlet = new LocalOutlet(Object.values(this.tokenStore.getCurrentIssuers(false)) as OffChainTokenConfig[])
+			let outlet = new LocalOutlet(Object.values(this.tokenStore.getCurrentIssuers(false)) as unknown as OutletIssuerInterface[])
 			await outlet.readMagicLink(this.urlParams)
 			outlet = null
 		}
@@ -777,7 +776,7 @@ export class Client {
 	}
 
 	private async loadLocalOutletTokens(issuer: OffChainTokenConfig) {
-		const localOutlet = new LocalOutlet(Object.values(this.tokenStore.getCurrentIssuers(false)) as OffChainTokenConfig[])
+		const localOutlet = new LocalOutlet([issuer as unknown as OutletIssuerInterface])
 		return await localOutlet.getTokens(this.prepareMultiOutletRequest(issuer))
 	}
 
@@ -797,35 +796,46 @@ export class Client {
 	}
 
 	async getMultiRequestBatch(authRequests: AuthenticateInterface[]) {
-		let authRequestBatch = { onChain: {}, offChain: {} }
+		let authRequestBatch: { onChain: {}; offChain: { [origin: string]: { [issuer: string]: MultiTokenInterface } } } = {
+			onChain: {},
+			offChain: {},
+		}
 		// build a list of the batches for each token origin. At this point when this loop is complete
 		// we will have a list of all the tokens that need to be authenticated and the origin they need to be authenticated against.
 		await Promise.all(
 			authRequests.map(async (authRequestItem) => {
 				const reqItem = await this.prepareToAuthenticateToken(authRequestItem)
-				const issuerConfig = this.tokenStore.getCurrentIssuers()[reqItem.issuer] as any
-				const offChain = issuerConfig.tokenOrigin ? true : false
+				const issuerConfig = this.tokenStore.getCurrentIssuers()[reqItem.issuer] as OffChainTokenConfig
 				// Off Chain
 				// Setup for Token Collection. e.g. authRequestBatch.offChain['https://mywebsite.com']['devcon']
-				if (offChain) {
+				/**
+				 * Always generate a batch
+				 */
+				if (issuerConfig.onChain === false) {
 					if (!authRequestBatch.offChain[issuerConfig.tokenOrigin]) authRequestBatch.offChain[issuerConfig.tokenOrigin] = {}
+
 					if (!authRequestBatch.offChain[issuerConfig.tokenOrigin][reqItem.issuer]) {
 						authRequestBatch.offChain[issuerConfig.tokenOrigin][reqItem.issuer] = {
-							requestTokens: [],
+							tokenIds: [],
 							issuerConfig: issuerConfig,
 						}
 					}
 					// Push token into the request batch
-					authRequestBatch.offChain[issuerConfig.tokenOrigin][reqItem.issuer].requestTokens.push(reqItem)
+					authRequestBatch.offChain[issuerConfig.tokenOrigin][reqItem.issuer].tokenIds.push(reqItem.tokenId)
 					return
 				}
-				// TODO on Chain
+
+				throw new Error('On-chain token are not supported by batch authentication at this time.')
 			}),
 		)
+
+		if (Object.keys(authRequestBatch.offChain).length > 1)
+			throw new Error('Only a single token origin is supported by batch authentication at this time.')
+
 		return authRequestBatch
 	}
 
-	async athenticateMutilple(authRequests: AuthenticateInterface[]) {
+	async authenticateMultiple(authRequests: AuthenticateInterface[]) {
 		try {
 			let issuersProcessed = []
 			let issuerProofs = {}
@@ -847,7 +857,7 @@ export class Client {
 
 			// Send the request batches to each token origin:
 			// Off Chain: // ['https://devcon.com']['issuer'][list of tokens]
-			for (const key in authRequestBatch.offChain) {
+			for (const tokenOrigin in authRequestBatch.offChain) {
 				let AuthType = TicketZKProofMulti
 				let authenticator: AuthenticationMethodMulti = new AuthType(this)
 				const authRequest = {
@@ -856,7 +866,7 @@ export class Client {
 					},
 				}
 				try {
-					const result = await authenticator.getTokenProofMulti(authRequestBatch.offChain[key], authRequest)
+					const result = await authenticator.getTokenProofMulti(tokenOrigin, authRequestBatch.offChain[tokenOrigin], authRequest)
 					if (!result) return // Site is redirecting
 					issuerProofs = result.data
 					issuersProcessed = Object.keys(result.data)
@@ -864,7 +874,7 @@ export class Client {
 					if (err.message === 'WALLET_REQUIRED') {
 						return this.handleWalletRequired(authRequest)
 					}
-					errorHandler(err, 'error', () => this.handleProofError(err, `multi issuer authentication via ${key}`), null, false, true)
+					errorHandler(err, 'error', () => this.handleProofError(err, `multi issuer authentication via ${tokenOrigin}`), null, false, true)
 				}
 			}
 			if (this.ui) {
@@ -885,7 +895,7 @@ export class Client {
 	}
 
 	async authenticate(authRequest: any) {
-		if (Array.isArray(authRequest)) return this.athenticateMutilple(authRequest as AuthenticateInterface[])
+		if (Array.isArray(authRequest)) return this.authenticateMultiple(authRequest as AuthenticateInterface[])
 		else return this.authenticateToken(authRequest as AuthenticateInterface)
 	}
 
@@ -1036,8 +1046,8 @@ export class Client {
 	}
 
 	getOutletConfigForCurrentOrigin(origin: string = window.location.origin) {
-		let allIssuers = this.tokenStore.getCurrentIssuers(false)
-		let currentIssuers = []
+		const allIssuers = this.tokenStore.getCurrentIssuers(false)
+		const currentIssuers: OffChainTokenConfig[] = []
 
 		Object.keys(allIssuers).forEach((key) => {
 			let issuerConfig = allIssuers[key] as OffChainTokenConfig

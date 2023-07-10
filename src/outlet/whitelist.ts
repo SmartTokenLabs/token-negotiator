@@ -1,6 +1,5 @@
-import { OutletInterface, OutletIssuerInterface } from './index'
 import { logger } from '../utils'
-import { ResponseActionBase } from '../core/messaging'
+import { OutletInterface, OutletIssuerInterface } from './interfaces'
 
 export interface StoredWhitelist {
 	[origin: string]: {

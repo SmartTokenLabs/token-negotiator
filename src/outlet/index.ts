@@ -1,30 +1,14 @@
-import { createIssuerHashArray, createIssuerHashMap, IssuerHashMap, logger, removeUrlSearchParams, requiredParams } from '../utils'
+import { createIssuerHashArray, IssuerHashMap, logger, removeUrlSearchParams, requiredParams } from '../utils'
 import { ResponseActionBase, ResponseInterfaceBase, URLNS } from '../core/messaging'
 import { OutletAction, OutletResponseAction, LocalStorageMessaging } from '../client/messaging'
-import { AuthHandler, ProofResult } from './auth-handler'
-import { DecodedToken, TicketStorage } from './ticketStorage'
+import { DecodedToken } from './ticketStorage'
 import { SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
 import { AsnParser } from '@peculiar/asn1-schema'
 import { Whitelist } from './whitelist'
-import { OffChainTokenConfig } from 'src/client/interface'
-
-export interface OutletIssuerInterface {
-	collectionID: string
-	title?: string
-	tokenOrigin?: string
-	attestationOrigin: string
-	tokenParser?: any
-	base64senderPublicKeys: { [key: string]: string }
-	base64attestorPubKey: string
-	whitelist?: string[]
-}
-
-export interface OutletInterface {
-	issuers: OutletIssuerInterface[]
-	whitelistDialogWidth?: string
-	whitelistDialogHeight?: string
-	whitelistDialogRenderer?: (permissionTxt: string, acceptBtn: string, denyBtn: string) => string
-}
+import { LocalOutlet } from './localOutlet'
+import { AttestationIdClient } from './attestationIdClient'
+import { getUseToken } from './getUseToken'
+import { MultiTokenAuthRequest, OutletInterface, OutletIssuerInterface, ProofResult } from './interfaces'
 
 export const defaultConfig = {
 	whitelistDialogWidth: '450px',
@@ -42,18 +26,20 @@ export class readSignedTicket {
 	}
 }
 
-export class Outlet {
-	private ticketStorage: TicketStorage
+export class Outlet extends LocalOutlet {
+	// private ticketStorage: TicketStorage
 	private whitelist: Whitelist
 
 	urlParams?: URLSearchParams
 
 	redirectCallbackUrl?: URL
 
-	constructor(private tokenConfig: OutletInterface, urlParams: any = null) {
+	constructor(private tokenConfig: OutletInterface, urlParams: URLSearchParams = null) {
+		super(tokenConfig.issuers)
+
 		this.tokenConfig = Object.assign(defaultConfig, tokenConfig)
 
-		this.ticketStorage = new TicketStorage(this.tokenConfig.issuers)
+		// this.ticketStorage = new TicketStorage(this.tokenConfig.issuers)
 		this.whitelist = new Whitelist(this.tokenConfig, () => {
 			const evtid = this.getDataFromQuery('evtid')
 
@@ -121,7 +107,7 @@ export class Outlet {
 						const attestationBlob = this.getDataFromQuery('attestation')
 						const attestationSecret = '0x' + this.getDataFromQuery('requestSecret')
 
-						let issuerConfig = this.getIssuerConfigById(issuer) ?? (this.tokenConfig as unknown as OffChainTokenConfig)
+						let issuerConfig = this.getIssuerConfigById(issuer) ?? (this.tokenConfig as unknown as OutletIssuerInterface)
 
 						let useToken
 
@@ -129,29 +115,28 @@ export class Outlet {
 						// multi token version
 						if (localStorageAuthRequest !== null) {
 							for (const key in localStorageAuthRequest) {
-								await localStorageAuthRequest[key].requestTokens.forEach(async (singleToken) => {
-									// { issuers: { devcon: [{ proof, type, token data }] }, issuersProcessed: ['devcon', 'edcon'] }
-									if (!useToken) useToken = { issuers: {}, issuersProcessed: [] }
-									if (!useToken.issuers[localStorageAuthRequest[key].issuerConfig.collectionID]) {
-										useToken.issuers[localStorageAuthRequest[key].issuerConfig.collectionID] = []
-										useToken.issuersProcessed.push(localStorageAuthRequest[key].issuerConfig.collectionID)
-									}
-									// @ts-ignore
-									const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(
-										// @ts-ignore
-										createIssuerHashArray(localStorageAuthRequest[key].issuerConfig),
-										singleToken.unsignedToken,
-									)
-									// @ts-ignore
-									const singleUseToken = await AuthHandler.getUseToken(
-										localStorageAuthRequest[key].issuerConfig,
-										attestationBlob,
-										attestationSecret,
-										ticketRecord,
-									)
-									// Create a list of tokens to return to the callback
-									useToken.issuers[localStorageAuthRequest[key].issuerConfig.collectionID].push(singleUseToken)
-								})
+								await Promise.all(
+									localStorageAuthRequest[key].requestTokens.map(async (singleToken) => {
+										// { issuers: { devcon: [{ proof, type, token data }] }, issuersProcessed: ['devcon', 'edcon'] }
+										if (!useToken) useToken = { issuers: {}, issuersProcessed: [] }
+										if (!useToken.issuers[localStorageAuthRequest[key].issuerConfig.collectionID]) {
+											useToken.issuers[localStorageAuthRequest[key].issuerConfig.collectionID] = []
+											useToken.issuersProcessed.push(localStorageAuthRequest[key].issuerConfig.collectionID)
+										}
+										const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedTokenOrId(
+											createIssuerHashArray(localStorageAuthRequest[key].issuerConfig),
+											singleToken.unsignedToken,
+										)
+										const singleUseToken = await getUseToken(
+											localStorageAuthRequest[key].issuerConfig,
+											attestationBlob,
+											attestationSecret,
+											ticketRecord,
+										)
+										// Create a list of tokens to return to the callback
+										useToken.issuers[localStorageAuthRequest[key].issuerConfig.collectionID].push(singleUseToken)
+									}),
+								)
 							}
 							if (requesterURL) {
 								const params = new URLSearchParams(requesterURL.hash.substring(1))
@@ -166,10 +151,9 @@ export class Outlet {
 							this.dispatchAuthCallbackEvent(undefined, useToken, null)
 						} else {
 							// Single token Flow (legacy)
-							// @ts-ignore
-							const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(createIssuerHashArray(issuerConfig), token)
-							// @ts-ignore
-							useToken = await AuthHandler.getUseToken(issuerConfig, attestationBlob, attestationSecret, ticketRecord)
+							const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedTokenOrId(createIssuerHashArray(issuerConfig), token)
+
+							useToken = await getUseToken(issuerConfig, attestationBlob, attestationSecret, ticketRecord)
 							if (requesterURL) {
 								const params = new URLSearchParams(requesterURL.hash.substring(1))
 								params.set(this.getCallbackUrlKey('action'), 'proof-callback')
@@ -339,9 +323,9 @@ export class Outlet {
 		const redirect = this.getDataFromQuery('redirect') === 'true' ? window.location.href : false
 
 		try {
-			const tokensObj = JSON.parse(tokens)
+			const authRequest = JSON.parse(tokens) as MultiTokenAuthRequest
 
-			let output = { issuers: {}, issuersProcessed: [] }
+			/* let output = { issuers: {}, issuersProcessed: [] }
 
 			await Promise.all(
 				Object.keys(tokensObj).map(async (key) => {
@@ -351,7 +335,7 @@ export class Outlet {
 					}
 					for (const token of tokensObj[key].requestTokens) {
 						const issuer = this.getIssuerConfigById(key)
-						const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(
+						const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedTokenOrId(
 							createIssuerHashArray(issuer),
 							token.unsignedToken,
 						)
@@ -360,13 +344,14 @@ export class Outlet {
 						output.issuers[key].push(tokenProof)
 					}
 				}),
-			)
+			)*/
+
+			const output = this.authenticateMany(authRequest, address, wallet)
+
 			this.sendMessageResponse({
 				evtid: evtid,
 				evt: OutletResponseAction.PROOF,
-				data: {
-					...output.issuers,
-				},
+				data: output,
 			})
 		} catch (e) {
 			logger(2, e)
@@ -385,11 +370,22 @@ export class Outlet {
 		try {
 			const issuer = this.getIssuerConfigById(collectionId)
 
-			const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedToken(createIssuerHashArray(issuer), decodedToken)
+			const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedTokenOrId(createIssuerHashArray(issuer), decodedToken)
 
-			let authHandler = new AuthHandler(issuer, ticketRecord, decodedToken, address, wallet, redirect, this, evtid)
+			const attestIdClient = new AttestationIdClient(issuer.attestationOrigin, () => {
+				this.sendMessageResponse({
+					evtid: evtid,
+					evt: ResponseActionBase.SHOW_FRAME,
+					max_width: this.tokenConfig.whitelistDialogWidth,
+					min_height: this.tokenConfig.whitelistDialogHeight,
+				})
+			})
 
-			let tokenProof = await authHandler.authenticate()
+			const idAttestation = await attestIdClient.getIdentifierAttestation(ticketRecord.id, wallet, address)
+
+			const tokenProof = await getUseToken(issuer, idAttestation.attestation, idAttestation.identifierSecret, ticketRecord)
+			// let authHandler = new AuthHandler(issuer, ticketRecord, decodedToken, address, wallet, redirect, this, evtid)
+			// let tokenProof = await authHandler.authenticate()
 
 			this.sendMessageResponse({
 				evtid: evtid,
