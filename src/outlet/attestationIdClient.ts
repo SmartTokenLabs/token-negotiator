@@ -1,5 +1,7 @@
-import { logger } from '../utils'
+import { logger, removeUrlSearchParams } from '../utils'
 import { isBrave } from '../utils/support/getBrowserData'
+import { OutletAction } from '../client/messaging'
+import { URLNS } from '../core/messaging'
 
 interface PostMessageData {
 	force?: boolean
@@ -38,7 +40,7 @@ export class AttestationIdClient {
 	private LOCAL_STORAGE_KEY = 'tn-id-attestations'
 	private attestations: StoredIdAttestations
 
-	constructor(private attestationOrigin: string, private showIframeCallback?: () => void, private redirectUrl?: false | string) {
+	constructor(private attestationOrigin?: string, private showIframeCallback?: () => void, private redirectUrl?: false | string) {
 		this.attestations = JSON.parse(localStorage.getItem(this.LOCAL_STORAGE_KEY)) ?? ({} as StoredIdAttestations)
 	}
 
@@ -48,7 +50,7 @@ export class AttestationIdClient {
 		if (this.attestations[key]) {
 			const attestation = this.attestations[key]
 
-			if (attestation.expiry < Math.round(Date.now() / 1000)) {
+			if (attestation.expiry > Math.round(Date.now() / 1000)) {
 				return this.attestations[key]
 			}
 
@@ -167,26 +169,76 @@ export class AttestationIdClient {
 		}
 	}
 
-	// TODO: combine functionality with messaging to enable tab support? Changes required in attestation.id code
-	public getIdentifierAttestation(email: string, wallet?: string, walletAddress?: string): Promise<IdAttestationRecord> {
+	public captureAttestationIdCallback(urlParams: URLSearchParams) {
+		if (!urlParams.has('attestation') || urlParams.has('requestSecret')) return false
+
+		const email = urlParams.get('email')
+		const attestationBlob = urlParams.get('attestation')
+		const attestationSecret = '0x' + urlParams.get('requestSecret')
+
+		const record = this.getAttestationDetails(email, attestationBlob, attestationSecret)
+
+		this.saveAttestation(record)
+
+		return true
+	}
+
+	private getAttestationDetails(email: string, attestation: string, attestationSecret: string) {
+		// TODO: Get expiry from attestation.id
+		let expiry = new Date()
+		expiry.setDate(expiry.getDate() + 30)
+
+		const attestationRecord: IdAttestationRecord = {
+			type: 'asn',
+			identifierType: 'email',
+			identifier: email,
+			identifierSecret: attestationSecret,
+			attestation,
+			expiry: Math.round(expiry.getTime() / 1000),
+		}
+
+		return attestationRecord
+	}
+
+	public getIdentifierAttestation(
+		email: string,
+		wallet?: string,
+		walletAddress?: string,
+		currentActionParams?: { [key: string]: any },
+	): Promise<IdAttestationRecord> {
 		return new Promise((resolve, reject) => {
 			const existing = this.getExistingAttestation(email)
 
-			if (existing) resolve(existing)
+			if (existing) {
+				resolve(existing)
+				return
+			}
 
 			this.rejectHandler = reject
-			/* if (this.redirectUrl) {
+			if (this.redirectUrl) {
 				const curParams = new URLSearchParams(window.location.hash.substring(1))
 
 				const params = new URLSearchParams()
-				params.set('email', this.ticketRecord.id)
-				params.set('address', this.address)
-				params.set('wallet', this.wallet)
+				params.set('email', email)
+				params.set('address', walletAddress)
+				params.set('wallet', wallet)
+
 				const callbackUrl = new URL(this.redirectUrl)
-				const callbackParams = removeUrlSearchParams(new URLSearchParams(callbackUrl.hash.substring(1)))
+				const callbackParams = new URLSearchParams(callbackUrl.hash.substring(1))
+
+				console.log('original redirect URL: ', callbackUrl)
+
+				if (currentActionParams) for (const key in currentActionParams) callbackParams.set(URLNS + key, currentActionParams[key])
+
+				// Set the original action here, so we can come back to the same method after storing the attestation
+				callbackParams.set(URLNS + 'orig-action', currentActionParams.action)
+
 				callbackParams.set(URLNS + 'action', OutletAction.EMAIL_ATTEST_CALLBACK)
-				callbackParams.set(URLNS + 'issuer', this.tokenConfig.collectionID)
-				callbackParams.set(URLNS + 'token', JSON.stringify(this.decodedToken))
+
+				console.log('attestation.id callback params: ', callbackParams.toString())
+				// callbackParams.set(URLNS + 'issuer', this.tokenConfig.collectionID)
+				// callbackParams.set(URLNS + 'token', JSON.stringify(this.decodedToken))
+
 				const requestor = curParams.get(URLNS + 'requestor')
 				if (requestor) {
 					callbackParams.set(URLNS + 'requestor', requestor)
@@ -197,7 +249,7 @@ export class AttestationIdClient {
 				logger(2, 'authenticate. go to: ', goto)
 				window.location.href = goto
 				return
-			}*/
+			}
 
 			// TODO: Is tab actually required? If we are storing in local storage on outlet
 			if (this.attestationInTab && !isBrave()) {
@@ -315,29 +367,10 @@ export class AttestationIdClient {
 		// TODO: Fix attestation.id to always return hex
 		if (typeof attestationSecret === 'bigint') attestationSecret = '0x' + attestationSecret.toString(16)
 
-		// TODO: Get expiry from attestation.id
-		let expiry = new Date()
-		expiry.setDate(expiry.getDate() + 30)
-
-		// TODO: Add EAS identifer attestation support
-		const attestationRecord: IdAttestationRecord = {
-			type: 'asn',
-			identifierType: 'email',
-			identifier: email,
-			identifierSecret: attestationSecret,
-			attestation,
-			expiry: Math.round(expiry.getTime() / 1000),
-		}
+		const attestationRecord = this.getAttestationDetails(email, attestation, attestationSecret)
 
 		this.saveAttestation(attestationRecord)
 		resolve(attestationRecord)
-
-		/* try {
-			const useToken = await getUseToken(this.tokenConfig, this.attestationBlob, this.attestationSecret, this.ticketRecord)
-			resolve(useToken)
-		} catch (e: any) {
-			reject(e)
-		}*/
 
 		if (this.buttonOverlay) this.buttonOverlay.remove()
 	}

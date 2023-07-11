@@ -1,12 +1,12 @@
 import { createIssuerHashArray, IssuerHashMap, logger, removeUrlSearchParams, requiredParams } from '../utils'
 import { ResponseActionBase, ResponseInterfaceBase, URLNS } from '../core/messaging'
-import { OutletAction, OutletResponseAction, LocalStorageMessaging } from '../client/messaging'
+import { OutletAction, OutletResponseAction } from '../client/messaging'
 import { DecodedToken } from './ticketStorage'
 import { Whitelist } from './whitelist'
 import { LocalOutlet } from './localOutlet'
 import { AttestationIdClient } from './attestationIdClient'
 import { getUseToken } from './getUseToken'
-import { MultiTokenAuthRequest, OutletInterface, OutletIssuerInterface, ProofResult } from './interfaces'
+import { MultiTokenAuthRequest, MultiTokenAuthResult, OutletInterface, OutletIssuerInterface, ProofResult } from './interfaces'
 
 export const defaultConfig = {
 	whitelistDialogWidth: '450px',
@@ -68,7 +68,6 @@ export class Outlet extends LocalOutlet {
 	async pageOnLoadEventHandler() {
 		const evtid = this.getDataFromQuery('evtid')
 		const action = this.getDataFromQuery('action')
-		const access = this.getDataFromQuery('access')
 
 		const requester = this.getDataFromQuery('requestor')
 
@@ -83,176 +82,15 @@ export class Outlet extends LocalOutlet {
 					break
 				}
 				case OutletAction.EMAIL_ATTEST_CALLBACK: {
-					const requesterURL = this.redirectCallbackUrl
-					const issuer = this.getDataFromQuery('issuer')
-
-					try {
-						const tokenString = this.getDataFromQuery('token')
-
-						let token = JSON.parse(tokenString)
-
-						const attestationBlob = this.getDataFromQuery('attestation')
-						const attestationSecret = '0x' + this.getDataFromQuery('requestSecret')
-
-						let issuerConfig = this.getIssuerConfigById(issuer) ?? (this.tokenConfig as unknown as OutletIssuerInterface)
-
-						let useToken
-
-						let localStorageAuthRequest = JSON.parse(localStorage.getItem(LocalStorageMessaging.TOKEN_AUTH_REQUEST))
-						// multi token version
-						if (localStorageAuthRequest !== null) {
-							for (const key in localStorageAuthRequest) {
-								await Promise.all(
-									localStorageAuthRequest[key].requestTokens.map(async (singleToken) => {
-										// { issuers: { devcon: [{ proof, type, token data }] }, issuersProcessed: ['devcon', 'edcon'] }
-										if (!useToken) useToken = { issuers: {}, issuersProcessed: [] }
-										if (!useToken.issuers[localStorageAuthRequest[key].issuerConfig.collectionID]) {
-											useToken.issuers[localStorageAuthRequest[key].issuerConfig.collectionID] = []
-											useToken.issuersProcessed.push(localStorageAuthRequest[key].issuerConfig.collectionID)
-										}
-										const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedTokenOrId(
-											createIssuerHashArray(localStorageAuthRequest[key].issuerConfig),
-											singleToken.unsignedToken,
-										)
-										const singleUseToken = await getUseToken(
-											localStorageAuthRequest[key].issuerConfig,
-											attestationBlob,
-											attestationSecret,
-											ticketRecord,
-										)
-										// Create a list of tokens to return to the callback
-										useToken.issuers[localStorageAuthRequest[key].issuerConfig.collectionID].push(singleUseToken)
-									}),
-								)
-							}
-							if (requesterURL) {
-								const params = new URLSearchParams(requesterURL.hash.substring(1))
-								params.set(this.getCallbackUrlKey('action'), 'proof-callback')
-								params.set(this.getCallbackUrlKey('multi-token'), 'true')
-								params.set(this.getCallbackUrlKey('token'), JSON.stringify(useToken))
-								requesterURL.hash = params.toString()
-								window.location.href = requesterURL.href
-								localStorage.removeItem('token-auth-request') // remove now used.
-								return
-							}
-							this.dispatchAuthCallbackEvent(undefined, useToken, null)
-						} else {
-							// Single token Flow (legacy)
-							const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedTokenOrId(createIssuerHashArray(issuerConfig), token)
-
-							useToken = await getUseToken(issuerConfig, attestationBlob, attestationSecret, ticketRecord)
-							if (requesterURL) {
-								const params = new URLSearchParams(requesterURL.hash.substring(1))
-								params.set(this.getCallbackUrlKey('action'), 'proof-callback')
-								params.set(this.getCallbackUrlKey('issuer'), issuer)
-								params.set(this.getCallbackUrlKey('attestation'), useToken.proof as string)
-								params.set(this.getCallbackUrlKey('type'), ticketRecord.type)
-								params.set(this.getCallbackUrlKey('token'), tokenString)
-								requesterURL.hash = params.toString()
-								window.location.href = requesterURL.href
-								return
-							}
-							this.dispatchAuthCallbackEvent(issuer, useToken, null)
-						}
-					} catch (e: any) {
-						console.error(e)
-
-						if (requesterURL) return this.proofRedirectError(issuer, e.message)
-
-						this.dispatchAuthCallbackEvent(issuer, null, e.message)
-					}
-
-					window.location.hash = removeUrlSearchParams(this.urlParams, ['attestation', 'requestSecret', 'address', 'wallet']).toString()
-
+					await this.processAttestationIdCallback(evtid)
 					break
 				}
 				case OutletAction.GET_PROOF: {
-					// TODO: Replace with new request to handle multiple issuers & tokens
-					const issuer: string = this.getDataFromQuery('issuer')
-					const token: string = this.getDataFromQuery('token')
-					const wallet: string = this.getDataFromQuery('wallet')
-					const address: string = this.getDataFromQuery('address')
-					requiredParams(token, 'unsigned token is missing')
-					await this.sendTokenProof(evtid, issuer, token, address, wallet)
-
+					await this.sendTokenProof(evtid)
 					break
 				}
 				case OutletAction.GET_MUTLI_PROOF: {
-					const tokens: string = this.getDataFromQuery('tokens')
-					const wallet: string = this.getDataFromQuery('wallet')
-					const address: string = this.getDataFromQuery('address')
-					requiredParams(tokens, 'unsigned token is missing')
-					await this.sendMultiTokenProof(evtid, tokens, address, wallet)
-
-					// TODO - Next Steps.
-
-					// TODO: Check if there's an existing attestation in the callback parameters, if so save to local storage
-					/* const attestationBlob = this.getDataFromQuery('attestation')
-					const attestationSecret = '0x' + this.getDataFromQuery('requestSecret')
-
-					if (attestationBlob){
-						// Save to local storage
-					}*/
-
-					// TODO: Here we receive a list of issuer hashes and token IDs
-
-					// We can get a list of decoded tokens and issuer config for each token. We can reuse similar logic to the get tokens request
-					// i.e. let issuerTokens = await this.ticketStorage.getDecodedTokens(requestHashes)
-
-					/**
-					 * {
-					 *     issuerName: {
-					 *         collectionHash: {
-					 *             	tokens: [] // Array of decoded tokens, filtered by the IDs provided in the request
-					 *       		config: IssuerConfig // So we can access public key of issuer
-					 *         }
-					 *     }
-					 * }
-					 */
-
-					/* const requestData = {
-						"devcon": {
-							"0x000": {
-								tokens: [
-									{
-										record: {id: "test@test.com"}
-									},
-									{
-										record: {id: "test@test.com"}
-									}
-								]
-							}
-						}
-					}*/
-
-					// We loop through each token and create a list of unique email addresses
-					/* const emails = {
-						"test@test.com": null,
-						"test2@test.com": "0x0000"
-					};
-
-					// TODO: Loop through each email address
-					for (const email in emails){
-
-						// TODO: If identifier attestation isn't in local storage, redirect with attestation ID request.
-
-						// TODO: Check expiry of the attestation
-
-						// The callback URL should be the original request send to Outlet URL + the attestation that was generated by attestation.if
-						const attestationIdClient = new AuthHandler();
-						const attestationResult = await attestationIdClient.authenticate();
-
-						//
-						emails[email] = attestationResult.proof;
-
-					}*/
-
-					// We get to this point after 'n' redirects that is equal to the number of unique email addresses
-
-					// Loop through all requested tokens, and create useTicket attestation for each
-
-					// requiredParams(tokens, 'unsigned tokens are missing')
-					// await this.sendTokenProof(evtid, issuer, tokens, address, wallet)
+					await this.sendMultiTokenProof(evtid)
 					break
 				}
 				default: {
@@ -267,6 +105,37 @@ export class Outlet extends LocalOutlet {
 			console.error(e)
 			this.sendErrorResponse(evtid, e?.message ?? e, this.getDataFromQuery('issuer'))
 		}
+	}
+
+	private processAttestationIdCallback(evtid: string) {
+		const requesterURL = this.redirectCallbackUrl
+		const issuer = this.getDataFromQuery('issuer')
+
+		try {
+			const attestIdClient = new AttestationIdClient()
+			attestIdClient.captureAttestationIdCallback(this.urlParams)
+
+			const originalAction = this.getDataFromQuery('orig-action')
+
+			switch (originalAction) {
+				case OutletAction.GET_PROOF:
+					this.sendTokenProof(evtid)
+					break
+				case OutletAction.GET_MUTLI_PROOF:
+					this.sendMultiTokenProof(evtid)
+					break
+				default:
+					throw new Error('Original action not defined in attestation.id callback')
+			}
+		} catch (e: any) {
+			console.error(e)
+
+			if (requesterURL) return this.proofRedirectError(issuer, e.message)
+
+			this.dispatchAuthCallbackEvent(issuer, null, e.message)
+		}
+
+		window.location.hash = removeUrlSearchParams(this.urlParams, ['attestation', 'requestSecret', 'address', 'wallet']).toString()
 	}
 
 	private getIssuerConfigById(collectionId: string) {
@@ -292,7 +161,7 @@ export class Outlet extends LocalOutlet {
 		}
 	}
 
-	private dispatchAuthCallbackEvent(issuer: string, proof?: ProofResult, error?: string) {
+	private dispatchAuthCallbackEvent(issuer: string, proof?: ProofResult | MultiTokenAuthResult, error?: string) {
 		const event = new CustomEvent('auth-callback', {
 			detail: {
 				proof: proof,
@@ -304,36 +173,40 @@ export class Outlet extends LocalOutlet {
 		window.dispatchEvent(event)
 	}
 
-	async sendMultiTokenProof(evtid: string, tokens: string, address: string, wallet: string) {
-		if (!tokens) return 'error'
+	async sendMultiTokenProof(evtid: string) {
+		const tokens: string = this.getDataFromQuery('tokens')
+		const wallet: string = this.getDataFromQuery('wallet')
+		const address: string = this.getDataFromQuery('address')
+		requiredParams(tokens, 'unsigned token is missing')
 
 		const redirect = this.getDataFromQuery('redirect') === 'true' ? window.location.href : false
 
 		try {
 			const authRequest = JSON.parse(tokens) as MultiTokenAuthRequest
 
-			/* let output = { issuers: {}, issuersProcessed: [] }
+			const output = await this.authenticateMany(authRequest, address, wallet, redirect, () => {
+				this.sendMessageResponse({
+					evtid: evtid,
+					evt: ResponseActionBase.SHOW_FRAME,
+					max_width: this.tokenConfig.whitelistDialogWidth,
+					min_height: this.tokenConfig.whitelistDialogHeight,
+				})
+			})
 
-			await Promise.all(
-				Object.keys(tokensObj).map(async (key) => {
-					if (!output.issuers[key]) {
-						output.issuers[key] = []
-						output.issuersProcessed.push(key)
-					}
-					for (const token of tokensObj[key].requestTokens) {
-						const issuer = this.getIssuerConfigById(key)
-						const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedTokenOrId(
-							createIssuerHashArray(issuer),
-							token.unsignedToken,
-						)
-						let authHandler = new AuthHandler(issuer, ticketRecord, tokensObj[key].unsignedToken, address, wallet, redirect, this, evtid)
-						let tokenProof = await authHandler.authenticate()
-						output.issuers[key].push(tokenProof)
-					}
-				}),
-			)*/
+			if (this.redirectCallbackUrl) {
+				const requesterURL = this.redirectCallbackUrl
 
-			const output = this.authenticateMany(authRequest, address, wallet)
+				const params = new URLSearchParams(requesterURL.hash.substring(1))
+				params.set(this.getCallbackUrlKey('action'), 'proof-callback')
+				params.set(this.getCallbackUrlKey('multi-token'), 'true')
+				params.set(this.getCallbackUrlKey('tokens'), JSON.stringify(output))
+
+				requesterURL.hash = params.toString()
+				window.location.href = requesterURL.href
+				// localStorage.removeItem('token-auth-request') // remove now used.
+				return
+			}
+			this.dispatchAuthCallbackEvent(undefined, output, null)
 
 			this.sendMessageResponse({
 				evtid: evtid,
@@ -347,8 +220,12 @@ export class Outlet extends LocalOutlet {
 		}
 	}
 
-	async sendTokenProof(evtid: string, collectionId: string, token: string, address: string, wallet: string) {
-		if (!token) return 'error'
+	async sendTokenProof(evtid: string) {
+		const collectionId: string = this.getDataFromQuery('issuer')
+		const token: string = this.getDataFromQuery('token')
+		const wallet: string = this.getDataFromQuery('wallet')
+		const address: string = this.getDataFromQuery('address')
+		requiredParams(token, 'unsigned token is missing')
 
 		const decodedToken = JSON.parse(token) as DecodedToken
 
@@ -359,20 +236,44 @@ export class Outlet extends LocalOutlet {
 
 			const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedTokenOrId(createIssuerHashArray(issuer), decodedToken)
 
-			const attestIdClient = new AttestationIdClient(issuer.attestationOrigin, () => {
-				this.sendMessageResponse({
-					evtid: evtid,
-					evt: ResponseActionBase.SHOW_FRAME,
-					max_width: this.tokenConfig.whitelistDialogWidth,
-					min_height: this.tokenConfig.whitelistDialogHeight,
-				})
-			})
+			const attestIdClient = new AttestationIdClient(
+				issuer.attestationOrigin,
+				() => {
+					this.sendMessageResponse({
+						evtid: evtid,
+						evt: ResponseActionBase.SHOW_FRAME,
+						max_width: this.tokenConfig.whitelistDialogWidth,
+						min_height: this.tokenConfig.whitelistDialogHeight,
+					})
+				},
+				redirect,
+			)
 
-			const idAttestation = await attestIdClient.getIdentifierAttestation(ticketRecord.id, wallet, address)
+			const idAttestation = await attestIdClient.getIdentifierAttestation(ticketRecord.id, wallet, address, {
+				action: OutletAction.GET_PROOF,
+				issuer: collectionId,
+				token: JSON.stringify(decodedToken),
+			})
 
 			const tokenProof = await getUseToken(issuer, idAttestation.attestation, idAttestation.identifierSecret, ticketRecord)
 			// let authHandler = new AuthHandler(issuer, ticketRecord, decodedToken, address, wallet, redirect, this, evtid)
 			// let tokenProof = await authHandler.authenticate()
+
+			if (this.redirectCallbackUrl) {
+				const requesterURL = this.redirectCallbackUrl
+
+				const params = new URLSearchParams(requesterURL.hash.substring(1))
+				params.set(this.getCallbackUrlKey('action'), 'proof-callback')
+				params.set(this.getCallbackUrlKey('issuer'), collectionId)
+				params.set(this.getCallbackUrlKey('attestation'), tokenProof.proof as string)
+				params.set(this.getCallbackUrlKey('type'), ticketRecord.type)
+				params.set(this.getCallbackUrlKey('token'), token)
+
+				requesterURL.hash = params.toString()
+				window.location.href = requesterURL.href
+				return
+			}
+			this.dispatchAuthCallbackEvent(collectionId, tokenProof, null)
 
 			this.sendMessageResponse({
 				evtid: evtid,

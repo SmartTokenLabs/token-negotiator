@@ -36,7 +36,7 @@ import { VERSION } from '../version'
 import { getFungibleTokenBalances, getFungibleTokensMeta } from '../utils/token/fungibleTokenProvider'
 import { URLNS } from '../core/messaging'
 import { TokenType } from '../outlet/ticketStorage'
-import { OutletIssuerInterface, ProofResult } from '../outlet/interfaces'
+import { MultiTokenAuthResult, OutletIssuerInterface, ProofResult } from '../outlet/interfaces'
 
 if (typeof window !== 'undefined') window.tn = { VERSION }
 
@@ -181,18 +181,18 @@ export class Client {
 
 	private async readProofCallbackMultiToken() {
 		// { issuers: { devcon: [{ proof, type, token data }] }, issuersProcessed: ['devcon', 'edcon'] }
-		const token = JSON.parse(this.getDataFromQuery('token'))
+		const proofs = JSON.parse(this.getDataFromQuery('tokens')) as MultiTokenAuthResult
 		const error = this.getDataFromQuery('error')
 
 		// for each issuer
-		for (const key in token.issuers) {
+		for (const issuer in proofs) {
 			// validate proof
-			const issuerConfig = this.tokenStore.getCurrentIssuers(false)[key] as OffChainTokenConfig
-			for (let issuerToken of token.issuers[key]) {
-				await TicketZKProof.validateProof(issuerConfig, issuerToken.proof, issuerToken.type as TokenType)
+			const issuerConfig = this.tokenStore.getCurrentIssuers(false)[issuer] as OffChainTokenConfig
+			for (const tokenId in proofs[issuer]) {
+				await TicketZKProof.validateProof(issuerConfig, proofs[issuer][tokenId].proof, proofs[issuer][tokenId].type)
 			}
 		}
-		this.emitMultiRedirectProofEvent({ tokens: token }, error)
+		this.emitMultiRedirectProofEvent(proofs, error)
 	}
 
 	private async readProofCallbackLegacy() {
@@ -235,17 +235,14 @@ export class Client {
 		}, 500)
 	}
 
-	private emitMultiRedirectProofEvent(token: any, error?: string) {
+	private emitMultiRedirectProofEvent(proofs?: MultiTokenAuthResult, error?: string) {
 		// Wait to ensure UI is initialized
 		setTimeout(() => {
 			if (error) {
 				this.handleProofError(new Error(error), 'multi token authentication error')
 			} else {
 				this.eventSender('token-proof', {
-					issuer: null,
-					issuers: token.issuers,
-					issuersProcessed: token.issuersProcessed,
-					proof: null,
+					issuers: proofs,
 				})
 			}
 		}, 500)
