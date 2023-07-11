@@ -48,8 +48,8 @@ export class LocalOutlet {
 
 	async authenticateMany(
 		authRequest: MultiTokenAuthRequest,
-		address: string,
-		wallet: string,
+		address?: string,
+		wallet?: string,
 		redirectMode: false | string = false,
 		showIframeCallback?: () => void,
 	) {
@@ -64,6 +64,7 @@ export class LocalOutlet {
 
 				const attestIdClient = new AttestationIdClient(config.attestationOrigin, showIframeCallback, redirectMode)
 				const idAttestation = await attestIdClient.getIdentifierAttestation(ticketRecord.id, wallet, address, {
+					localClient: !showIframeCallback,
 					action: OutletAction.GET_MUTLI_PROOF,
 					tokens: JSON.stringify(authRequest),
 				})

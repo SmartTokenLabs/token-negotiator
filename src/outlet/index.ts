@@ -82,6 +82,10 @@ export class Outlet extends LocalOutlet {
 					break
 				}
 				case OutletAction.EMAIL_ATTEST_CALLBACK: {
+					// Request came from local client instance, process it in Client class when "token-proof" event callback is registered
+					if (this.getDataFromQuery('localClient') === 'true') {
+						return
+					}
 					await this.processAttestationIdCallback(evtid)
 					break
 				}
@@ -132,7 +136,7 @@ export class Outlet extends LocalOutlet {
 
 			if (requesterURL) return this.proofRedirectError(issuer, e.message)
 
-			this.dispatchAuthCallbackEvent(issuer, null, e.message)
+			// this.dispatchAuthCallbackEvent(issuer, null, e.message)
 		}
 
 		window.location.hash = removeUrlSearchParams(this.urlParams, ['attestation', 'requestSecret', 'address', 'wallet']).toString()
@@ -161,7 +165,10 @@ export class Outlet extends LocalOutlet {
 		}
 	}
 
-	private dispatchAuthCallbackEvent(issuer: string, proof?: ProofResult | MultiTokenAuthResult, error?: string) {
+	/* private dispatchAuthCallbackEvent(issuer: string, proof?: ProofResult | MultiTokenAuthResult, error?: string) {
+
+		console.log("Outlet callback event !!!!!!!!!!!!!: ", proof);
+
 		const event = new CustomEvent('auth-callback', {
 			detail: {
 				proof: proof,
@@ -171,7 +178,7 @@ export class Outlet extends LocalOutlet {
 		})
 
 		window.dispatchEvent(event)
-	}
+	}*/
 
 	async sendMultiTokenProof(evtid: string) {
 		const tokens: string = this.getDataFromQuery('tokens')
@@ -206,7 +213,7 @@ export class Outlet extends LocalOutlet {
 				// localStorage.removeItem('token-auth-request') // remove now used.
 				return
 			}
-			this.dispatchAuthCallbackEvent(undefined, output, null)
+			// this.dispatchAuthCallbackEvent(undefined, output, null)
 
 			this.sendMessageResponse({
 				evtid: evtid,
@@ -256,8 +263,6 @@ export class Outlet extends LocalOutlet {
 			})
 
 			const tokenProof = await getUseToken(issuer, idAttestation.attestation, idAttestation.identifierSecret, ticketRecord)
-			// let authHandler = new AuthHandler(issuer, ticketRecord, decodedToken, address, wallet, redirect, this, evtid)
-			// let tokenProof = await authHandler.authenticate()
 
 			if (this.redirectCallbackUrl) {
 				const requesterURL = this.redirectCallbackUrl
@@ -273,7 +278,7 @@ export class Outlet extends LocalOutlet {
 				window.location.href = requesterURL.href
 				return
 			}
-			this.dispatchAuthCallbackEvent(collectionId, tokenProof, null)
+			// this.dispatchAuthCallbackEvent(collectionId, tokenProof, null)
 
 			this.sendMessageResponse({
 				evtid: evtid,

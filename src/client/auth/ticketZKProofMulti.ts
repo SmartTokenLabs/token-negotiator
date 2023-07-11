@@ -70,33 +70,30 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 				tokens: [],
 			},
 		}
-		/* if (Object.keys(data)) {
-			await Promise.all(
-				Object.keys(data).map(async (collectionKey) => {
-					for (const [index, value] of data[collectionKey].entries()) {
-						await TicketZKProofMulti.validateProof(
-							userTokens[collectionKey].issuerConfig,
-							value.proof,
-							value.type,
-							useEthKey?.address ?? '',
-						)
-						if (useEthKey) proof.data[collectionKey][index].useEthKey = useEthKey
-					}
-				}),
-			)
-		}*/
 
+		await TicketZKProofMulti.validateProofResult(
+			proofResult,
+			this.client.getTokenStore().getCurrentIssuers(false) as unknown as OffChainTokenConfig[],
+			useEthKey,
+		)
+
+		return proof
+	}
+
+	static async validateProofResult(
+		proofResult: MultiTokenAuthResult,
+		issuerConfig: OffChainTokenConfig[],
+		useEthKey: UNInterface | null = null,
+	) {
 		for (const issuer in proofResult) {
 			for (const tokenId in proofResult[issuer]) {
 				const result = proofResult[issuer][tokenId]
 
-				const config = this.client.getTokenStore().getCurrentIssuers(false)[issuer] as OffChainTokenConfig | null
+				const config = issuerConfig[issuer]
 
 				await TicketZKProof.validateProof(config, result.proof, result.type, useEthKey?.address ?? '')
 			}
 		}
-
-		return proof
 	}
 
 	async authenticateCrossOrigin(
