@@ -1,14 +1,26 @@
 import { URLSearchParams } from 'url'
 import { EasTicketAttestation } from '@tokenscript/attestation/dist/eas/EasTicketAttestation'
-import { readSignedTicket } from './index'
 import { KeyPair } from '@tokenscript/attestation/dist/libs/KeyPair'
-import { base64ToUint8array, createIssuerHashArray, createOffChainCollectionHash, IssuerHashMap } from '../utils'
+import { base64ToUint8array, createIssuerHashArray, createOffChainCollectionHash, IssuerHashMap, logger } from '../utils'
 import { uint8tohex } from '@tokenscript/attestation/dist/libs/utils'
 import { Ticket } from '@tokenscript/attestation/dist/Ticket'
 import { EAS_RPC_CONFIG } from '../core/eas'
 import { OutletIssuerInterface } from './interfaces'
+import { SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
+import { AsnParser } from '@peculiar/asn1-schema'
 
 export type TokenType = 'asn' | 'eas'
+
+export class readSignedTicket {
+	ticket: any
+	constructor(source: Uint8Array) {
+		const signedDevconTicket: SignedDevconTicket = AsnParser.parse(source, SignedDevconTicket)
+
+		this.ticket = signedDevconTicket.ticket
+
+		logger(3, this.ticket)
+	}
+}
 
 export interface StoredTicketRecord {
 	/**

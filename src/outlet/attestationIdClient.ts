@@ -310,7 +310,10 @@ export class AttestationIdClient {
 		}
 
 		const attestation = event.data?.attestation
-		const attestationSecret = event.data?.requestSecret
+		let attestationSecret = event.data?.requestSecret
+
+		// TODO: Fix attestation.id to always return hex
+		if (typeof attestationSecret === 'bigint') attestationSecret = '0x' + attestationSecret.toString(16)
 
 		// TODO: Get expiry from attestation.id
 		let expiry = new Date()

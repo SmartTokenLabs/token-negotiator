@@ -50,6 +50,7 @@ export class LocalOutlet {
 		for (const issuer in authRequest) {
 			const request = authRequest[issuer]
 			for (const tokenId of request.tokenIds) {
+				console.log('request: ', request)
 				const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedTokenOrId(request.issuerHashes, tokenId.toString())
 				const config = this.ticketStorage.getConfigFromIssuerHash(ticketRecord.collectionHash)
 

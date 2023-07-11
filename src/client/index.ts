@@ -776,7 +776,7 @@ export class Client {
 	}
 
 	private async loadLocalOutletTokens(issuer: OffChainTokenConfig) {
-		const localOutlet = new LocalOutlet([issuer as unknown as OutletIssuerInterface])
+		const localOutlet = new LocalOutlet(Object.values(this.tokenStore.getCurrentIssuers(false)) as unknown as OutletIssuerInterface[])
 		return await localOutlet.getTokens(this.prepareMultiOutletRequest(issuer))
 	}
 
@@ -787,9 +787,8 @@ export class Client {
 
 	async prepareToAuthenticateToken(authRequest: AuthenticateInterface) {
 		await this.checkUserAgentSupport('authentication')
-		const { issuer, unsignedToken } = authRequest
-		requiredParams(issuer && unsignedToken, 'Issuer and unsigned token required.')
-		if (unsignedToken.signedToken) delete unsignedToken.signedToken
+		const { issuer, unsignedToken, tokenId } = authRequest
+		requiredParams(issuer && (unsignedToken || tokenId), 'Issuer and unsigned token required.')
 		const config = this.tokenStore.getCurrentIssuers()[issuer]
 		if (!config) errorHandler('Provided issuer was not found.', 'error', null, null, true, true)
 		return authRequest
@@ -805,6 +804,9 @@ export class Client {
 		await Promise.all(
 			authRequests.map(async (authRequestItem) => {
 				const reqItem = await this.prepareToAuthenticateToken(authRequestItem)
+
+				if (!reqItem.tokenId && reqItem.unsignedToken?.tokenId) reqItem.tokenId = reqItem.unsignedToken?.tokenId
+
 				const issuerConfig = this.tokenStore.getCurrentIssuers()[reqItem.issuer] as OffChainTokenConfig
 				// Off Chain
 				// Setup for Token Collection. e.g. authRequestBatch.offChain['https://mywebsite.com']['devcon']
@@ -874,7 +876,9 @@ export class Client {
 					if (err.message === 'WALLET_REQUIRED') {
 						return this.handleWalletRequired(authRequest)
 					}
-					errorHandler(err, 'error', () => this.handleProofError(err, `multi issuer authentication via ${tokenOrigin}`), null, false, true)
+					// errorHandler(err, 'error', () => this.handleProofError(err, `multi issuer authentication via ${tokenOrigin}`), null, false, true)
+					console.error(err)
+					throw err
 				}
 			}
 			if (this.ui) {

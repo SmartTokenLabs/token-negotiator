@@ -2,8 +2,6 @@ import { createIssuerHashArray, IssuerHashMap, logger, removeUrlSearchParams, re
 import { ResponseActionBase, ResponseInterfaceBase, URLNS } from '../core/messaging'
 import { OutletAction, OutletResponseAction, LocalStorageMessaging } from '../client/messaging'
 import { DecodedToken } from './ticketStorage'
-import { SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
-import { AsnParser } from '@peculiar/asn1-schema'
 import { Whitelist } from './whitelist'
 import { LocalOutlet } from './localOutlet'
 import { AttestationIdClient } from './attestationIdClient'
@@ -13,17 +11,6 @@ import { MultiTokenAuthRequest, OutletInterface, OutletIssuerInterface, ProofRes
 export const defaultConfig = {
 	whitelistDialogWidth: '450px',
 	whitelistDialogHeight: '350px',
-}
-
-export class readSignedTicket {
-	ticket: any
-	constructor(source: Uint8Array) {
-		const signedDevconTicket: SignedDevconTicket = AsnParser.parse(source, SignedDevconTicket)
-
-		this.ticket = signedDevconTicket.ticket
-
-		logger(3, this.ticket)
-	}
 }
 
 export class Outlet extends LocalOutlet {
