@@ -1,6 +1,5 @@
-import { OutletInterface, OutletIssuerInterface } from './index'
 import { logger } from '../utils'
-import { ResponseActionBase } from '../core/messaging'
+import { OutletInterface, OutletIssuerInterface } from './interfaces'
 
 export interface StoredWhitelist {
 	[origin: string]: {
@@ -27,17 +26,16 @@ export class Whitelist {
 	}
 
 	private loadStaticWhitelist() {
+		if (!this.config.issuers) return
 		for (const { collectionID, whitelist } of this.config.issuers) {
 			if (whitelist)
 				for (let origin of whitelist) {
 					try {
 						origin = new URL(origin).origin
-
 						if (!this.staticWhitelist[origin]) {
 							this.staticWhitelist[origin] = [collectionID]
 							continue
 						}
-
 						this.staticWhitelist[origin].push(collectionID)
 					} catch (e) {
 						logger(2, 'Failed to validate whitelist origin: ' + e.message)

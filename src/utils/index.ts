@@ -2,7 +2,7 @@ import { URLNS } from '../core/messaging'
 import { KeyPair } from '@tokenscript/attestation/dist/libs/KeyPair'
 import { sha256 } from 'ethers/lib/utils'
 import { OffChainTokenConfig } from '../client/interface'
-import { OutletIssuerInterface } from '../outlet'
+import { OutletIssuerInterface } from '../outlet/interfaces'
 
 export interface IssuerHashMap {
 	[collectionId: string]: string[]
@@ -15,8 +15,8 @@ declare global {
 }
 
 export function logger(level: number, ...args: any[]) {
-	// if (!window.DISPLAY_DEBUG_LEVEL || level > parseInt(window.DISPLAY_DEBUG_LEVEL)) return
-	console.log(...args)
+	if (!window.DISPLAY_DEBUG_LEVEL || level > parseInt(window.DISPLAY_DEBUG_LEVEL)) return
+	if (args) console.log(...args)
 }
 
 export const requiredParams = (item: any, msg: string) => {
@@ -213,6 +213,11 @@ export const createIssuerHashMap = (issuers: OffChainTokenConfig[]): IssuerHashM
 	return hashObj
 }
 
+// output per issuer base64senderPublicKey
+// [
+// 	'0x0915bb6dcd508278764d9bfff6ba113c87c761ed78e84ed238811f2264a83a05',
+// 	'0x76d49eaf820fc5313a752214192a223511244124e188557fe84d88d8ff8c3a2f',
+// ]
 export const createIssuerHashArray = (issuer: OffChainTokenConfig | OutletIssuerInterface) => {
 	const hashes = []
 
@@ -229,6 +234,7 @@ export const createIssuerHashArray = (issuer: OffChainTokenConfig | OutletIssuer
 	return hashes
 }
 
+// output: 32 byte hash
 export const createOffChainCollectionHash = (key: KeyPair, eventId: string) => {
 	const encoder = new TextEncoder()
 	return sha256(encoder.encode(key.getPublicKeyAsHexStr() + '-' + eventId))

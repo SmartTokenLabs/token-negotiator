@@ -467,7 +467,9 @@ negotiator.on("tokens-selected", callback);
   </tbody>
 </table>
 
-### Authenticate ownership of off chain Token
+### Authenticate ownership of single off chain Token
+
+Note: the proof callback object structure will change in version 3.0.0 to multiple call back data structure.
 
 Authenticating ownership of the token will provide a proof with a limited expiry.
 
@@ -481,8 +483,28 @@ negotiator.authenticate({
 	unsignedToken,
 });
 
-negotiator.on("proof", () => {
+negotiator.on("proof", ({ proof, issuer, error }) => {
 	// the proof will be received here (valid or failed)
+});
+```
+
+### Authenticate ownership of multiple off chain Tokens
+
+Authenticating ownership of the tokens will provide a list of proof data with a limited expiry.
+
+```javascript
+/**
+ * @param {{issuer: String, unsignedToken: Object}[]} tokens object array of tokens
+ */
+negotiator.authenticate([{
+	issuer,
+	unsignedToken,
+}]);
+
+negotiator.on("proof", ({ issuers, issuersProcessed }) => {
+	// the proof will be received here (valid or failed)
+	// issuers: { issuerName: [ token, ... ] }
+	// issuersProcessed: [ 'issuerName1', 'issuerName2', '...' ]
 });
 ```
 

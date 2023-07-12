@@ -1,4 +1,4 @@
-import { AuthenticateInterface, OffChainTokenConfig, OnChainTokenConfig } from '../interface'
+import { AuthenticateInterface, MultiTokenInterface, OffChainTokenConfig, OnChainTokenConfig } from '../interface'
 import { Client } from '../index'
 
 export interface AuthenticationResult {
@@ -16,6 +16,24 @@ export interface AuthenticationMethod {
 		issuerConfig: OnChainTokenConfig | OffChainTokenConfig,
 		tokens: Array<any>,
 		request: AuthenticateInterface,
+	): Promise<AuthenticationResult>
+}
+
+export interface AuthenticationMethodUN {
+	TYPE: string
+	getTokenProof(request: AuthenticateInterface): Promise<AuthenticationResult>
+}
+
+export interface MultiAuthenticateInterface {
+	options?: any
+}
+
+export interface AuthenticationMethodMulti {
+	TYPE: string
+	getTokenProofMulti(
+		tokenOrigin: string,
+		tokens: { [issuerName: string]: MultiTokenInterface },
+		options: MultiAuthenticateInterface,
 	): Promise<AuthenticationResult>
 }
 

@@ -78,6 +78,11 @@ export interface WalletOptionsInterface {
 	}
 }
 
+export interface MultiTokenInterface {
+	issuerConfig: OffChainTokenConfig
+	tokenIds: (string | number)[]
+}
+
 export interface AuthenticateInterface {
 	issuer: string
 	tokenId?: number | string

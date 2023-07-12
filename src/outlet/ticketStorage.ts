@@ -1,14 +1,26 @@
 import { URLSearchParams } from 'url'
 import { EasTicketAttestation } from '@tokenscript/attestation/dist/eas/EasTicketAttestation'
-import { OutletIssuerInterface, readSignedTicket } from './index'
 import { KeyPair } from '@tokenscript/attestation/dist/libs/KeyPair'
-import { base64ToUint8array, createOffChainCollectionHash, IssuerHashMap } from '../utils'
+import { base64ToUint8array, createIssuerHashArray, createOffChainCollectionHash, IssuerHashMap, logger } from '../utils'
 import { uint8tohex } from '@tokenscript/attestation/dist/libs/utils'
 import { Ticket } from '@tokenscript/attestation/dist/Ticket'
 import { EAS_RPC_CONFIG } from '../core/eas'
-import { OffChainTokenConfig } from '../client/interface'
+import { OutletIssuerInterface } from './interfaces'
+import { SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
+import { AsnParser } from '@peculiar/asn1-schema'
 
 export type TokenType = 'asn' | 'eas'
+
+export class readSignedTicket {
+	ticket: any
+	constructor(source: Uint8Array) {
+		const signedDevconTicket: SignedDevconTicket = AsnParser.parse(source, SignedDevconTicket)
+
+		this.ticket = signedDevconTicket.ticket
+
+		logger(3, this.ticket)
+	}
+}
 
 export interface StoredTicketRecord {
 	/**
@@ -33,8 +45,14 @@ export interface StoredTicketRecord {
 	tokenId: string
 }
 
-export interface DecodedToken {
+// This data returned to clients has additional meta information
+export type DecodedToken = DecodedTokenData & {
 	type: TokenType
+	tokenId: string
+	signedToken: string
+}
+
+export interface DecodedTokenData {
 	devconId: string
 	ticketIdNumber?: number
 	ticketIdString?: string
@@ -64,11 +82,13 @@ export class TicketStorage {
 
 	private ticketCollections: TicketStorageSchema = {}
 
+	private issuerHashConfigIndex?: { [hash: string]: OutletIssuerInterface }
+
 	private static LOCAL_STORAGE_KEY = 'tn-tokens'
 
 	private signingKeys: { [eventId: string]: KeyPair[] } = {}
 
-	constructor(private issuers: OutletIssuerInterface[] | OffChainTokenConfig[]) {
+	constructor(private issuers: OutletIssuerInterface[]) {
 		this.processSigningKeys()
 
 		this.easManager = new EasTicketAttestation(DEFAULT_EAS_SCHEMA, undefined, EAS_RPC_CONFIG, this.signingKeys)
@@ -98,6 +118,24 @@ export class TicketStorage {
 				}
 			}
 		}
+	}
+
+	private getIssuerHashIndex() {
+		if (!this.issuerHashConfigIndex) {
+			this.issuerHashConfigIndex = {}
+			for (const issuer of this.issuers) {
+				for (const hash of createIssuerHashArray(issuer)) {
+					this.issuerHashConfigIndex[hash] = issuer
+				}
+			}
+		}
+
+		return this.issuerHashConfigIndex
+	}
+
+	public getConfigFromIssuerHash(hash: string) {
+		const configIndex = this.getIssuerHashIndex()
+		return configIndex[hash]
 	}
 
 	public async importTicketFromMagicLink(urlParams: URLSearchParams): Promise<boolean> {
@@ -143,7 +181,12 @@ export class TicketStorage {
 				let tokens = await Promise.all(
 					this.ticketCollections[hash].map(async (ticket) => {
 						const tokenData = await this.decodeTokenData(ticket.type, ticket.token)
-						return <DecodedToken>{ type: ticket.type, signedToken: ticket.token, ...tokenData }
+						return <DecodedToken>{
+							type: ticket.type,
+							tokenId: ticket.tokenId,
+							signedToken: ticket.token,
+							...tokenData,
+						}
 					}),
 				)
 
@@ -154,25 +197,26 @@ export class TicketStorage {
 		return result
 	}
 
-	// TODO: This is for authentication and needs to be reworked to support multiple issuers at a time
-	public async getStoredTicketFromDecodedToken(issuerHashes: string[], decodedToken: DecodedToken) {
-		const tokenId = this.getUniqueTokenId(decodedToken)
+	public async getStoredTicketFromDecodedTokenOrId(issuerHashes: string[], decodedTokenOrId: DecodedToken | string) {
+		const tokenId = typeof decodedTokenOrId === 'string' ? decodedTokenOrId : this.getUniqueTokenId(decodedTokenOrId)
 
 		for (const hash of issuerHashes) {
 			for (const ticket of this.ticketCollections[hash]) {
-				// TODO: Can be removed with multi-outlet
 				// Backward compatibility with old data
 				if (!ticket.tokenId || !ticket.type) {
 					ticket.type = ticket.type ?? 'asn'
 					ticket.tokenId = this.getUniqueTokenId(await this.decodeTokenData(ticket.type, ticket.token))
 					this.storeTickets()
 				}
-
-				if (ticket.tokenId === tokenId) return ticket
+				if (ticket.tokenId === tokenId) {
+					return {
+						collectionHash: hash,
+						...ticket,
+					}
+				}
 			}
 		}
-
-		throw new Error('Could not find stored ticket for decoded token.')
+		throw new Error('Could not find stored ticket for decoded token or ID.')
 	}
 
 	/**
@@ -197,12 +241,12 @@ export class TicketStorage {
 	}
 
 	private async decodeTokenData(type: TokenType, token: string) {
-		let tokenData: DecodedToken
+		let tokenData: DecodedTokenData
 
 		if (type === 'eas') {
 			this.easManager.loadFromEncoded(token)
 
-			tokenData = this.easManager.getAttestationData() as DecodedToken
+			tokenData = this.easManager.getAttestationData() as DecodedTokenData
 		} else {
 			// TODO: Use ticket class instead?
 			let decodedToken = new readSignedTicket(base64ToUint8array(token))
@@ -253,7 +297,7 @@ export class TicketStorage {
 	 * Calculates a unique token ID to identify this ticket. Tickets can be reissued and have a different commitment, but are still the same token
 	 * @private
 	 */
-	private getUniqueTokenId(decodedToken: DecodedToken) {
+	private getUniqueTokenId(decodedToken: DecodedTokenData) {
 		return `${decodedToken.devconId}-${decodedToken.ticketIdNumber ?? decodedToken.ticketIdString}`
 	}
 

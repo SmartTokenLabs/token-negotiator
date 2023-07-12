@@ -5,12 +5,12 @@ import { Authenticator } from '@tokenscript/attestation'
 import { SignedUNChallenge } from './signedUNChallenge'
 import { UNInterface } from './util/UN'
 import { LocalOutlet } from '../../outlet/localOutlet'
-import { OutletIssuerInterface } from '../../outlet'
 import { createIssuerHashArray, logger } from '../../utils'
 import { shouldUseRedirectMode } from '../../utils/support/getBrowserData'
 import { EasZkProof } from '@tokenscript/attestation/dist/eas/EasZkProof'
 import { DEFAULT_EAS_SCHEMA, TokenType } from '../../outlet/ticketStorage'
 import { EAS_RPC_CONFIG } from '../../core/eas'
+import { OutletIssuerInterface } from '../../outlet/interfaces'
 
 export class TicketZKProof extends AbstractAuthentication implements AuthenticationMethod {
 	TYPE = 'ticketZKProof'
@@ -39,7 +39,7 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 				...request.options,
 				unEndPoint: issuerConfig.unEndPoint,
 			}
-			let unRes = await unChallenge.getTokenProof(issuerConfig, tokens, request)
+			let unRes = await unChallenge.getTokenProof(request)
 			useEthKey = unRes.data as UNInterface
 		}
 
@@ -50,7 +50,9 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 		let data
 
 		if (new URL(issuerConfig.tokenOrigin).origin === window.location.origin) {
-			const localOutlet = new LocalOutlet(Object.values(this.client.getTokenStore().getCurrentIssuers(false)) as OffChainTokenConfig[])
+			const localOutlet = new LocalOutlet(
+				Object.values(this.client.getTokenStore().getCurrentIssuers(false)) as unknown as OutletIssuerInterface[],
+			)
 
 			const issuerHashes = createIssuerHashArray(issuerConfig)
 
