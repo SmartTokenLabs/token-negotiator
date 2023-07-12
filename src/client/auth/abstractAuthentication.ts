@@ -1,4 +1,4 @@
-import { AuthenticateInterface, OffChainTokenConfig, OnChainTokenConfig } from '../interface'
+import { AuthenticateInterface, MultiTokenInterface, OffChainTokenConfig, OnChainTokenConfig } from '../interface'
 import { Client } from '../index'
 
 export interface AuthenticationResult {
@@ -30,7 +30,11 @@ export interface MultiAuthenticateInterface {
 
 export interface AuthenticationMethodMulti {
 	TYPE: string
-	getTokenProofMulti(userTokens: Array<any>, request: MultiAuthenticateInterface): Promise<AuthenticationResult>
+	getTokenProofMulti(
+		tokenOrigin: string,
+		tokens: { [issuerName: string]: MultiTokenInterface },
+		options: MultiAuthenticateInterface,
+	): Promise<AuthenticationResult>
 }
 
 export abstract class AbstractAuthentication {

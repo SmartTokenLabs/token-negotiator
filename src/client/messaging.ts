@@ -11,10 +11,6 @@ export enum OutletAction {
 	EMAIL_ATTEST_CALLBACK = 'email-callback',
 }
 
-export enum LocalStorageMessaging {
-	TOKEN_AUTH_REQUEST = 'token-auth-request',
-}
-
 export enum OutletResponseAction {
 	ISSUER_TOKENS = 'issuer-tokens',
 	PROOF = 'proof',

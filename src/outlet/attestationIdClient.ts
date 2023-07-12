@@ -1,12 +1,7 @@
-import { ResponseActionBase, URLNS } from '../core/messaging'
-import { OutletAction } from '../client/messaging'
-import { Outlet, OutletIssuerInterface } from './index'
-import { Authenticator } from '@tokenscript/attestation'
 import { logger, removeUrlSearchParams } from '../utils'
 import { isBrave } from '../utils/support/getBrowserData'
-import { DecodedToken, DEFAULT_EAS_SCHEMA, StoredTicketRecord, TokenType } from './ticketStorage'
-import { EasZkProof } from '@tokenscript/attestation/dist/eas/EasZkProof'
-import { EAS_RPC_CONFIG } from '../core/eas'
+import { OutletAction } from '../client/messaging'
+import { URLNS } from '../core/messaging'
 
 interface PostMessageData {
 	force?: boolean
@@ -15,14 +10,21 @@ interface PostMessageData {
 	address?: string
 }
 
-export interface ProofResult {
-	proof: string
-	type: TokenType
+export interface IdAttestationRecord {
+	type: 'eas' | 'asn'
+	identifierType: 'email'
+	identifier: string
+	identifierSecret: string
+	attestation: string
+	expiry: number
 }
 
-export class AuthHandler {
-	private attestationOrigin: string | undefined
+export interface StoredIdAttestations {
+	// Keyed by identifiertype-identifier
+	[typeAndId: string]: IdAttestationRecord
+}
 
+export class AttestationIdClient {
 	private attestationInTab: boolean
 	private attestationTabHandler: any
 	private buttonOverlay: HTMLElement | null = null
@@ -31,42 +33,44 @@ export class AuthHandler {
 	private iframe: HTMLIFrameElement | null = null
 	private iframeWrap: HTMLElement | null = null
 
-	private attestationBlob: string | null = null
-	private attestationSecret: string | null = null
-
-	private base64attestorPubKey: string | undefined
-	private base64senderPublicKeys: { [key: string]: string }
-
 	private wrapperBase = 'tn_attestation_open'
 	private interval = null
 	private rejectHandler: Function
 
-	constructor(
-		private tokenConfig: OutletIssuerInterface,
-		private ticketRecord: StoredTicketRecord,
-		private decodedToken: DecodedToken,
-		private address?: string,
-		private wallet?: string,
-		private redirectUrl?: false | string,
-		private outlet?: Outlet,
-		private evtid?: number | string,
-	) {
-		this.base64senderPublicKeys = tokenConfig.base64senderPublicKeys
-		this.base64attestorPubKey = tokenConfig.base64attestorPubKey
-		this.attestationOrigin = tokenConfig.attestationOrigin
+	private LOCAL_STORAGE_KEY = 'tn-id-attestations'
+	private attestations: StoredIdAttestations
+
+	constructor(private attestationOrigin?: string, private showIframeCallback?: () => void, private redirectUrl?: false | string) {
+		this.attestations = JSON.parse(localStorage.getItem(this.LOCAL_STORAGE_KEY)) ?? ({} as StoredIdAttestations)
+	}
+
+	private getExistingAttestation(id: string, idType = 'email') {
+		const key = idType + '/' + id
+
+		if (this.attestations[key]) {
+			const attestation = this.attestations[key]
+
+			if (attestation.expiry > Math.round(Date.now() / 1000)) {
+				return attestation
+			}
+
+			delete this.attestations[key]
+		}
+
+		return null
+	}
+
+	private saveAttestation(attestation: IdAttestationRecord) {
+		this.attestations[attestation.identifierType + '/' + attestation.identifier] = attestation
+		localStorage.setItem(this.LOCAL_STORAGE_KEY, JSON.stringify(this.attestations))
 	}
 
 	openAttestationApp() {
 		if (this.attestationInTab && !this.tryingToGetAttestationInBackground) {
 			// TODO check if its an iframe, if TAB then no need to request to display
 			logger(2, 'display new TAB to attest, ask parent to show current iframe')
-			if (this.outlet)
-				this.outlet.sendMessageResponse({
-					evtid: this.evtid,
-					evt: ResponseActionBase.SHOW_FRAME,
-					max_width: '500px',
-					min_height: '300px',
-				})
+			if (this.showIframeCallback) this.showIframeCallback()
+
 			let button: HTMLDivElement
 
 			button = document.createElement('div')
@@ -165,22 +169,77 @@ export class AuthHandler {
 		}
 	}
 
-	// TODO: combine functionality with messaging to enable tab support? Changes required in attestation.id code
-	public authenticate(): Promise<{ proof: string; type: TokenType }> {
+	public captureAttestationIdCallback(urlParams: URLSearchParams) {
+		if (!urlParams.has('attestation') || !urlParams.has('requestSecret')) {
+			console.log('no attestation detected', urlParams.toString())
+			return false
+		}
+
+		const email = urlParams.get('email')
+		const attestationBlob = urlParams.get('attestation')
+		const attestationSecret = '0x' + urlParams.get('requestSecret')
+
+		const record = this.getAttestationDetails(email, attestationBlob, attestationSecret)
+
+		this.saveAttestation(record)
+
+		return true
+	}
+
+	private getAttestationDetails(email: string, attestation: string, attestationSecret: string) {
+		// TODO: Get expiry from attestation.id
+		let expiry = new Date()
+		expiry.setDate(expiry.getDate() + 30)
+
+		const attestationRecord: IdAttestationRecord = {
+			type: 'asn',
+			identifierType: 'email',
+			identifier: email,
+			identifierSecret: attestationSecret,
+			attestation,
+			expiry: Math.round(expiry.getTime() / 1000),
+		}
+
+		return attestationRecord
+	}
+
+	public getIdentifierAttestation(
+		email: string,
+		wallet?: string,
+		walletAddress?: string,
+		currentActionParams?: { [key: string]: any },
+	): Promise<IdAttestationRecord> {
 		return new Promise((resolve, reject) => {
+			const existing = this.getExistingAttestation(email)
+
+			if (existing) {
+				resolve(existing)
+				return
+			}
+
 			this.rejectHandler = reject
 			if (this.redirectUrl) {
 				const curParams = new URLSearchParams(window.location.hash.substring(1))
 
 				const params = new URLSearchParams()
-				params.set('email', this.ticketRecord.id)
-				params.set('address', this.address)
-				params.set('wallet', this.wallet)
+				params.set('email', email)
+				params.set('address', walletAddress)
+				params.set('wallet', wallet)
+
 				const callbackUrl = new URL(this.redirectUrl)
-				const callbackParams = removeUrlSearchParams(new URLSearchParams(callbackUrl.hash.substring(1)))
+				const callbackParams = new URLSearchParams(callbackUrl.hash.substring(1))
+
+				if (currentActionParams) for (const key in currentActionParams) callbackParams.set(URLNS + key, currentActionParams[key])
+
+				// Set the original action here, so we can come back to the same method after storing the attestation
+				callbackParams.set(URLNS + 'orig-action', currentActionParams.action)
+				callbackParams.set('email', email) // TODO: return with attestation.id callback
 				callbackParams.set(URLNS + 'action', OutletAction.EMAIL_ATTEST_CALLBACK)
-				callbackParams.set(URLNS + 'issuer', this.tokenConfig.collectionID)
-				callbackParams.set(URLNS + 'token', JSON.stringify(this.decodedToken))
+
+				// console.log('attestation.id callback params: ', callbackParams.toString())
+				// callbackParams.set(URLNS + 'issuer', this.tokenConfig.collectionID)
+				// callbackParams.set(URLNS + 'token', JSON.stringify(this.decodedToken))
+
 				const requestor = curParams.get(URLNS + 'requestor')
 				if (requestor) {
 					callbackParams.set(URLNS + 'requestor', requestor)
@@ -192,18 +251,22 @@ export class AuthHandler {
 				window.location.href = goto
 				return
 			}
+
+			// TODO: Is tab actually required? If we are storing in local storage on outlet
 			if (this.attestationInTab && !isBrave()) {
 				this.tryingToGetAttestationInBackground = true
 			}
+
 			if (!this.attestationOrigin) return reject(new Error('Attestation origin is null'))
+
 			window.addEventListener('message', (e) => {
-				if (!this.attestationOrigin) return
 				let attestURL = new URL(this.attestationOrigin)
 				if (e.origin !== attestURL.origin) {
 					return
 				}
+
 				if ((this.iframe && this.iframeWrap && this.iframe.contentWindow) || this.attestationTabHandler) {
-					this.postMessageAttestationListener(e, resolve, reject)
+					this.postMessageAttestationListener(e, resolve, reject, email)
 				}
 			})
 			// opens the attestation app in Iframe, supported iframe and tab modes.
@@ -234,69 +297,15 @@ export class AuthHandler {
 		document.body.appendChild(iframeWrap)
 	}
 
-	public static async getUseToken(
-		issuerConfig: OutletIssuerInterface,
-		attestationBlob: string,
-		attestationSecret: string,
-		ticketRecord: StoredTicketRecord,
-	) {
-		try {
-			if (!ticketRecord.secret) {
-				throw new Error('signedTokenSecret required')
-			}
-			if (!attestationSecret) {
-				throw new Error('attestationSecret required')
-			}
-			if (!ticketRecord.token) {
-				throw new Error('signedTokenBlob required')
-			}
-			if (!attestationBlob) {
-				throw new Error('attestationBlob required')
-			}
-			if (!issuerConfig.base64attestorPubKey) {
-				throw new Error('base64attestorPubKey required')
-			}
-			if (!issuerConfig.base64senderPublicKeys) {
-				throw new Error('base64senderPublicKeys required')
-			}
-
-			let useToken
-
-			if (ticketRecord.type === 'eas') {
-				const easZkProof = new EasZkProof(DEFAULT_EAS_SCHEMA, EAS_RPC_CONFIG)
-				useToken = easZkProof.getUseTicket(
-					BigInt(ticketRecord.secret),
-					BigInt(attestationSecret),
-					ticketRecord.token,
-					attestationBlob,
-					issuerConfig.base64attestorPubKey,
-					issuerConfig.base64senderPublicKeys,
-				)
-			} else {
-				useToken = await Authenticator.getUseTicket(
-					BigInt(ticketRecord.secret),
-					BigInt(attestationSecret),
-					ticketRecord.token,
-					attestationBlob,
-					issuerConfig.base64attestorPubKey,
-					issuerConfig.base64senderPublicKeys,
-				)
-			}
-			if (useToken) {
-				return <ProofResult>{ proof: useToken, type: ticketRecord.type, tokenId: ticketRecord.tokenId }
-			} else {
-				logger(2, 'this.authResultCallback( empty ): ')
-				throw new Error('Empty useToken')
-			}
-		} catch (e) {
-			logger(2, `UseDevconTicket failed.`, e.message)
-			logger(3, e)
-			throw new Error('Failed to create UseTicket. ' + e.message)
-		}
-	}
-
 	// TODO review this logic to map out the behaviour
-	async postMessageAttestationListener(event: MessageEvent, resolve: (res: ProofResult) => void, reject: Function) {
+	async postMessageAttestationListener(
+		event: MessageEvent,
+		resolve: (res: IdAttestationRecord) => void,
+		reject: Function,
+		email: string,
+		wallet?: string,
+		address?: string,
+	) {
 		logger(2, 'postMessageAttestationListener event (auth-handler)', event.data)
 
 		let attestationHandler = this.attestationTabHandler ? this.attestationTabHandler : this.iframe.contentWindow
@@ -304,9 +313,9 @@ export class AuthHandler {
 		if (typeof event.data.ready !== 'undefined' && event.data.ready === true) {
 			let sendData: PostMessageData = { force: false }
 
-			if (this.ticketRecord.id) sendData.email = this.ticketRecord.id
-			if (this.wallet) sendData.wallet = this.wallet
-			if (this.address) sendData.address = this.address
+			sendData.email = email
+			if (wallet) sendData.wallet = wallet
+			if (address) sendData.address = address
 
 			attestationHandler.postMessage(sendData, this.attestationOrigin)
 
@@ -326,11 +335,7 @@ export class AuthHandler {
 
 					this.iframeWrap.style.display = 'flex'
 
-					if (this.outlet)
-						this.outlet.sendMessageResponse({
-							evtid: this.evtid,
-							evt: ResponseActionBase.SHOW_FRAME,
-						})
+					if (this.showIframeCallback) this.showIframeCallback()
 				}
 			} else {
 				if (event.data.error) {
@@ -357,15 +362,16 @@ export class AuthHandler {
 			this.iframeWrap.remove()
 		}
 
-		this.attestationBlob = event.data?.attestation
-		this.attestationSecret = event.data?.requestSecret
+		const attestation = event.data?.attestation
+		let attestationSecret = event.data?.requestSecret
 
-		try {
-			const useToken = await AuthHandler.getUseToken(this.tokenConfig, this.attestationBlob, this.attestationSecret, this.ticketRecord)
-			resolve(useToken)
-		} catch (e: any) {
-			reject(e)
-		}
+		// TODO: Fix attestation.id to always return hex
+		if (typeof attestationSecret === 'bigint') attestationSecret = '0x' + attestationSecret.toString(16)
+
+		const attestationRecord = this.getAttestationDetails(email, attestation, attestationSecret)
+
+		this.saveAttestation(attestationRecord)
+		resolve(attestationRecord)
 
 		if (this.buttonOverlay) this.buttonOverlay.remove()
 	}
