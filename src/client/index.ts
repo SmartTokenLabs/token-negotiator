@@ -189,7 +189,6 @@ export class Client {
 	}
 
 	private async readProofCallbackMultiToken() {
-		// { issuers: { devcon: [{ proof, type, token data }] }, issuersProcessed: ['devcon', 'edcon'] }
 		const proofs = JSON.parse(this.getDataFromQuery('tokens')) as MultiTokenAuthResult
 		const error = this.getDataFromQuery('error')
 
@@ -838,8 +837,6 @@ export class Client {
 
 	async authenticateMultiple(authRequests: AuthenticateInterface[]) {
 		try {
-			let issuersProcessed = []
-			let issuerProofs = {}
 			let messagingForceTab = false
 
 			if (this.ui) {
@@ -855,9 +852,10 @@ export class Client {
 			}
 
 			const authRequestBatch = await this.getMultiRequestBatch(authRequests)
+			let issuerProofs = {}
 
 			// Send the request batches to each token origin:
-			// Off Chain: // ['https://devcon.com']['issuer'][list of tokens]
+			// Off Chain: // ['https://devcon.com']['issuer'][list of tokenIds]
 			for (const tokenOrigin in authRequestBatch.offChain) {
 				let AuthType = TicketZKProofMulti
 				let authenticator: AuthenticationMethodMulti = new AuthType(this)
@@ -870,7 +868,6 @@ export class Client {
 					const result = await authenticator.getTokenProofMulti(tokenOrigin, authRequestBatch.offChain[tokenOrigin], authRequest)
 					if (!result) return // Site is redirecting
 					issuerProofs = result.data
-					issuersProcessed = Object.keys(result.data)
 				} catch (err) {
 					if (err.message === 'WALLET_REQUIRED') {
 						return this.handleWalletRequired(authRequest)
@@ -884,16 +881,14 @@ export class Client {
 				this.ui.dismissLoader()
 				this.ui.closeOverlay()
 			}
-			// @ts-ignore
+
 			this.eventSender('token-proof', {
-				issuer: null,
-				issuers: issuerProofs, // { devcon: [], edcon: [], ... }
-				issuersProcessed,
-				proof: null,
+				issuers: issuerProofs,
 			})
-			return { issuer: null, issuers: issuerProofs, issuersProcessed }
+
+			return { issuers: issuerProofs }
 		} catch (err) {
-			errorHandler(err, 'error', null, false, true, false)
+			errorHandler(err, 'error', null, false, true, true)
 		}
 	}
 

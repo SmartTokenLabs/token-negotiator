@@ -15,7 +15,7 @@ declare global {
 }
 
 export function logger(level: number, ...args: any[]) {
-	// if (!window.DISPLAY_DEBUG_LEVEL || level > parseInt(window.DISPLAY_DEBUG_LEVEL)) return
+	if (!window.DISPLAY_DEBUG_LEVEL || level > parseInt(window.DISPLAY_DEBUG_LEVEL)) return
 	if (args) console.log(...args)
 }
 
