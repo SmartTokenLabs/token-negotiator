@@ -58,6 +58,8 @@ export class LocalOutlet {
 		for (const issuer in authRequest) {
 			const request = authRequest[issuer]
 
+			// TODO: Create a list of unique emails, then fetch all identifier attestations first before calling getUseToken.
+			// 		 This prevents execution of getUseToken before all required ID attestations are stored in localStorage.
 			for (const tokenId of request.tokenIds) {
 				const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedTokenOrId(request.issuerHashes, tokenId.toString())
 				const config = this.ticketStorage.getConfigFromIssuerHash(ticketRecord.collectionHash)
