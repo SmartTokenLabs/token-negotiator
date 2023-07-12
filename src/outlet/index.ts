@@ -135,8 +135,6 @@ export class Outlet extends LocalOutlet {
 			console.error(e)
 
 			if (requesterURL) return this.proofRedirectError(issuer, e.message)
-
-			// this.dispatchAuthCallbackEvent(issuer, null, e.message)
 		}
 
 		window.location.hash = removeUrlSearchParams(this.urlParams, ['attestation', 'requestSecret', 'address', 'wallet']).toString()
@@ -164,21 +162,6 @@ export class Outlet extends LocalOutlet {
 			logger(2, e)
 		}
 	}
-
-	/* private dispatchAuthCallbackEvent(issuer: string, proof?: ProofResult | MultiTokenAuthResult, error?: string) {
-
-		console.log("Outlet callback event !!!!!!!!!!!!!: ", proof);
-
-		const event = new CustomEvent('auth-callback', {
-			detail: {
-				proof: proof,
-				issuer: issuer,
-				error: error,
-			},
-		})
-
-		window.dispatchEvent(event)
-	}*/
 
 	async sendMultiTokenProof(evtid: string) {
 		const tokens: string = this.getDataFromQuery('tokens')
@@ -210,10 +193,8 @@ export class Outlet extends LocalOutlet {
 
 				requesterURL.hash = params.toString()
 				window.location.href = requesterURL.href
-				// localStorage.removeItem('token-auth-request') // remove now used.
 				return
 			}
-			// this.dispatchAuthCallbackEvent(undefined, output, null)
 
 			this.sendMessageResponse({
 				evtid: evtid,
@@ -278,7 +259,6 @@ export class Outlet extends LocalOutlet {
 				window.location.href = requesterURL.href
 				return
 			}
-			// this.dispatchAuthCallbackEvent(collectionId, tokenProof, null)
 
 			this.sendMessageResponse({
 				evtid: evtid,
