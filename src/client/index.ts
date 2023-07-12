@@ -1192,7 +1192,7 @@ export class Client {
 			this.emitRedirectProofEvent(null, null, e.message)
 		}
 
-		window.location.hash = removeUrlSearchParams(this.urlParams, ['attestation', 'requestSecret', 'address', 'wallet']).toString()
+		window.location.hash = removeUrlSearchParams(this.urlParams, ['attestation', 'requestSecret', 'address', 'email', 'wallet']).toString()
 	}
 
 	switchTheme(newTheme: UItheme) {

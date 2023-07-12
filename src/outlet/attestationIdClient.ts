@@ -51,7 +51,7 @@ export class AttestationIdClient {
 			const attestation = this.attestations[key]
 
 			if (attestation.expiry > Math.round(Date.now() / 1000)) {
-				return this.attestations[key]
+				return attestation
 			}
 
 			delete this.attestations[key]
@@ -170,7 +170,10 @@ export class AttestationIdClient {
 	}
 
 	public captureAttestationIdCallback(urlParams: URLSearchParams) {
-		if (!urlParams.has('attestation') || urlParams.has('requestSecret')) return false
+		if (!urlParams.has('attestation') || !urlParams.has('requestSecret')) {
+			console.log('NO FUCKING ATTESTATION DETECTED!!!!!!!!!!!!!!!', urlParams.toString())
+			return false
+		}
 
 		const email = urlParams.get('email')
 		const attestationBlob = urlParams.get('attestation')
@@ -226,16 +229,14 @@ export class AttestationIdClient {
 				const callbackUrl = new URL(this.redirectUrl)
 				const callbackParams = new URLSearchParams(callbackUrl.hash.substring(1))
 
-				console.log('original redirect URL: ', callbackUrl)
-
 				if (currentActionParams) for (const key in currentActionParams) callbackParams.set(URLNS + key, currentActionParams[key])
 
 				// Set the original action here, so we can come back to the same method after storing the attestation
 				callbackParams.set(URLNS + 'orig-action', currentActionParams.action)
-
+				callbackParams.set('email', email) // TODO: return with attestation.id callback
 				callbackParams.set(URLNS + 'action', OutletAction.EMAIL_ATTEST_CALLBACK)
 
-				console.log('attestation.id callback params: ', callbackParams.toString())
+				// console.log('attestation.id callback params: ', callbackParams.toString())
 				// callbackParams.set(URLNS + 'issuer', this.tokenConfig.collectionID)
 				// callbackParams.set(URLNS + 'token', JSON.stringify(this.decodedToken))
 
