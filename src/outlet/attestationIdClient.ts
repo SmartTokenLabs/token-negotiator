@@ -171,7 +171,7 @@ export class AttestationIdClient {
 
 	public captureAttestationIdCallback(urlParams: URLSearchParams) {
 		if (!urlParams.has('attestation') || !urlParams.has('requestSecret')) {
-			console.log('NO FUCKING ATTESTATION DETECTED!!!!!!!!!!!!!!!', urlParams.toString())
+			console.log('no attestation detected', urlParams.toString())
 			return false
 		}
 
