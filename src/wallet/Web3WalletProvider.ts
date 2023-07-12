@@ -26,6 +26,7 @@ export enum SupportedWalletProviders {
 	Phantom_Brave = 'Phantom_Brave',
 	Flow = 'Flow',
 	SafeConnect = 'SafeConnect',
+	AlphaWallet = 'AlphaWallet',
 }
 
 export class Web3WalletProvider {
@@ -445,6 +446,10 @@ export class Web3WalletProvider {
 							},
 						},
 					})
+					window.open(
+						'https://aw.app/wc?uri=wc%3Af0b2df2598e9503314d9b45c115ba8d8be652a308686f6be7bd44807b58b243b%402%3Frelay-protocol%3Dirn%26symKey%3D63cb046504d5dfee27433db88e458107e99dc77bc4af14cb5725af20549d50b1',
+						'_blank',
+					)
 				}
 
 				connect
