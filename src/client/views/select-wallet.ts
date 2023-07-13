@@ -19,6 +19,9 @@ export class SelectWallet extends AbstractView {
 				walletButtons += this.getWalletButtonHtml(safeConnect)
 			}
 
+			const alphaWallet = getWalletInfo(SupportedWalletProviders.AlphaWallet)
+			walletButtons += this.getWalletButtonHtml(alphaWallet)
+
 			if (typeof window.ethereum !== 'undefined') {
 				const injectedWallet = getWalletInfo(SupportedWalletProviders.MetaMask)
 				walletButtons += this.getWalletButtonHtml(injectedWallet)
