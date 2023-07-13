@@ -1,4 +1,5 @@
 import { TokenType } from './ticketStorage'
+import { AbiFieldTypes } from '@tokenscript/attestation/dist/eas/EasTicketAttestation'
 
 export interface OutletInterface {
 	issuers: OutletIssuerInterface[]
@@ -30,25 +31,8 @@ export interface OutletIssuerInterface {
 	base64attestorPubKey: string
 	whitelist?: string[]
 	eas?: {
-		schemaUid: '0x7f6fb09beb1886d0b223e9f15242961198dd360021b2c9f75ac879c0f786cafd'
-		fields: [
-			{
-				name: 'eventId'
-				type: 'string'
-			},
-			{
-				name: 'ticketId'
-				type: 'string'
-			},
-			{
-				name: 'ticketClass'
-				type: 'uint8'
-			},
-			{
-				name: 'commitment'
-				type: 'bytes'
-			},
-		]
+		schemaUid: string
+		fields: { name: string; type: AbiFieldTypes }[]
 	}
 }
 
