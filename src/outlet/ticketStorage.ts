@@ -1,5 +1,5 @@
 import { URLSearchParams } from 'url'
-import { EasTicketAttestation } from '@tokenscript/attestation/dist/eas/EasTicketAttestation'
+import { EasTicketAttestation, TicketSchema } from '@tokenscript/attestation/dist/eas/EasTicketAttestation'
 import { KeyPair } from '@tokenscript/attestation/dist/libs/KeyPair'
 import { base64ToUint8array, createIssuerHashArray, createOffChainCollectionHash, IssuerHashMap, logger } from '../utils'
 import { uint8tohex } from '@tokenscript/attestation/dist/libs/utils'
@@ -8,6 +8,7 @@ import { EAS_RPC_CONFIG } from '../core/eas'
 import { OutletIssuerInterface } from './interfaces'
 import { SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
 import { AsnParser } from '@peculiar/asn1-schema'
+import { decodeBase64ZippedBase64 } from '@tokenscript/attestation/dist/eas/AttestationUrl'
 
 export type TokenType = 'asn' | 'eas'
 
@@ -68,7 +69,7 @@ export interface FilterInterface {
 	[key: string]: any
 }
 
-export const DEFAULT_EAS_SCHEMA = {
+export const DEFAULT_EAS_SCHEMA: TicketSchema = {
 	fields: [
 		{ name: 'devconId', type: 'string' },
 		{ name: 'ticketIdString', type: 'string' },
@@ -78,7 +79,7 @@ export const DEFAULT_EAS_SCHEMA = {
 }
 
 export class TicketStorage {
-	private easManager: EasTicketAttestation
+	// private easManager: EasTicketAttestation
 
 	private ticketCollections: TicketStorageSchema = {}
 
@@ -91,7 +92,7 @@ export class TicketStorage {
 	constructor(private issuers: OutletIssuerInterface[]) {
 		this.processSigningKeys()
 
-		this.easManager = new EasTicketAttestation(DEFAULT_EAS_SCHEMA, undefined, EAS_RPC_CONFIG, this.signingKeys)
+		// this.easManager = new EasTicketAttestation(DEFAULT_EAS_SCHEMA, undefined, EAS_RPC_CONFIG, this.signingKeys)
 
 		this.loadTickets()
 	}
@@ -228,11 +229,13 @@ export class TicketStorage {
 	 */
 	private async validateTokenData(type: TokenType, token: string) {
 		if (type === 'eas') {
-			this.easManager.loadFromEncoded(token)
+			const easManager = this.getEasManagerForToken(token)
 
-			await this.easManager.validateEasAttestation()
+			easManager.loadFromEncoded(token)
 
-			return this.easManager.getSignerKeyPair()
+			await easManager.validateEasAttestation()
+
+			return easManager.getSignerKeyPair()
 		} else {
 			const ticket = Ticket.fromBase64(token, this.signingKeys)
 
@@ -244,9 +247,12 @@ export class TicketStorage {
 		let tokenData: DecodedTokenData
 
 		if (type === 'eas') {
-			this.easManager.loadFromEncoded(token)
+			const easManager = this.getEasManagerForToken(token)
 
-			tokenData = this.easManager.getAttestationData() as DecodedTokenData
+			easManager.loadFromEncoded(token)
+
+			// TODO: Changed DecodedTokenData to have arbitrary fields
+			tokenData = easManager.getAttestationData() as DecodedTokenData
 		} else {
 			// TODO: Use ticket class instead?
 			let decodedToken = new readSignedTicket(base64ToUint8array(token))
@@ -258,6 +264,34 @@ export class TicketStorage {
 		}
 
 		return tokenData
+	}
+
+	private getEasManagerForToken(token: string) {
+		// Decode attestation URL = EAS JSON data
+		const decoded = decodeBase64ZippedBase64(token)
+		const schemaUid = decoded.sig.message.schema
+
+		let schemaConfig: TicketSchema
+
+		if (
+			schemaUid !== '0x0000000000000000000000000000000000000000000000000000000000000000' &&
+			schemaUid !== '0x7f6fb09beb1886d0b223e9f15242961198dd360021b2c9f75ac879c0f786cafd'
+		) {
+			let issuerConfig
+
+			// Once we have decoded the URL, we have a schema ID
+			for (const config of this.issuers) {
+				if (config.eas.schemaUid === schemaUid) issuerConfig = config
+			}
+
+			if (!issuerConfig) throw new Error('Schema configuration is not defined')
+
+			schemaConfig = { fields: issuerConfig.eas.fields }
+		} else {
+			schemaConfig = DEFAULT_EAS_SCHEMA
+		}
+
+		return new EasTicketAttestation(schemaConfig, undefined, EAS_RPC_CONFIG, this.signingKeys)
 	}
 
 	private propsArrayBufferToHex(obj: DecodedToken) {

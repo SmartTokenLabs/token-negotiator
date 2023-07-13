@@ -29,6 +29,27 @@ export interface OutletIssuerInterface {
 	base64senderPublicKeys: { [key: string]: string }
 	base64attestorPubKey: string
 	whitelist?: string[]
+	eas?: {
+		schemaUid: '0x7f6fb09beb1886d0b223e9f15242961198dd360021b2c9f75ac879c0f786cafd'
+		fields: [
+			{
+				name: 'eventId'
+				type: 'string'
+			},
+			{
+				name: 'ticketId'
+				type: 'string'
+			},
+			{
+				name: 'ticketClass'
+				type: 'uint8'
+			},
+			{
+				name: 'commitment'
+				type: 'bytes'
+			},
+		]
+	}
 }
 
 export interface ProofResult {
