@@ -401,8 +401,8 @@ export class Web3WalletProvider {
 		})
 	}
 
-	async AlphaWallet(checkConnectionOnly: boolean) {
-		logger(2, 'connect to AlphaWallet via Wallet Connect V2')
+	async WalletConnectV2(checkConnectionOnly: boolean, qrURI?: string) {
+		logger(2, 'connect Wallet Connect V2')
 
 		const walletConnectProvider = await import('./WalletConnectV2Provider')
 
@@ -412,65 +412,6 @@ export class Web3WalletProvider {
 
 		// invoke the QR image to load as initial option via WC Modal
 		if (!checkConnectionOnly) QRCodeModal = (await import('@walletconnect/qrcode-modal')).default
-
-		universalWalletConnect.on('display_uri', async (uri: string) => {
-			QRCodeModal.open(uri, () => {
-				this.client.getUi().showError('User closed modal')
-			})
-		})
-
-		universalWalletConnect.on('session_delete', ({ id, topic }: { id: number; topic: string }) => {
-			// TODO: There is currently a bug in the universal provider that prevents this handler from being called.
-			//  After this is fixed, this should handle the event correctly
-			//  https://github.com/WalletConnect/walletconnect-monorepo/issues/1772
-			this.client.disconnectWallet()
-		})
-
-		let preSavedWalletOptions = this.walletOptions
-
-		return new Promise((resolve, reject) => {
-			if (checkConnectionOnly && !universalWalletConnect.session) {
-				reject('Not connected')
-			} else {
-				let connect
-				if (universalWalletConnect.session) {
-					connect = universalWalletConnect.enable()
-				} else {
-					connect = universalWalletConnect.connect({
-						namespaces: {
-							eip155: {
-								methods: ['eth_sendTransaction', 'eth_signTransaction', 'eth_sign', 'personal_sign', 'eth_signTypedData'],
-								chains: preSavedWalletOptions?.walletConnectV2?.chains ?? walletConnectProvider.WC_V2_DEFAULT_CHAINS,
-								events: ['chainChanged', 'accountsChanged'],
-								rpcMap: preSavedWalletOptions?.walletConnectV2?.rpcMap ?? walletConnectProvider.WC_DEFAULT_RPC_MAP,
-							},
-						},
-					})
-				}
-				connect
-					.then(() => {
-						logger(2, 'WC2 connected.....')
-						QRCodeModal?.close()
-						const provider = new ethers.providers.Web3Provider(universalWalletConnect, 'any')
-						resolve(this.registerEvmProvider(provider, 'WalletConnectV2'))
-					})
-					.catch((e) => {
-						logger(2, 'WC2 connect error...', e)
-						QRCodeModal?.close()
-						reject(e)
-					})
-			}
-		})
-	}
-
-	async WalletConnectV2(checkConnectionOnly: boolean, qrURI?: string) {
-		logger(2, 'connect Wallet Connect V2')
-
-		const walletConnectProvider = await import('./WalletConnectV2Provider')
-
-		const universalWalletConnect = await walletConnectProvider.getWalletConnectV2ProviderInstance()
-
-		let QRCodeModal
 
 		universalWalletConnect.on('display_uri', async (uri: string) => {
 			QRCodeModal = (await import('@walletconnect/qrcode-modal')).default

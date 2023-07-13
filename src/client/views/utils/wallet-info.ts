@@ -165,7 +165,7 @@ export function getWalletInfo(providerType: SupportedWalletProviders): WalletInf
 			}
 		case SupportedWalletProviders.AlphaWallet:
 			return {
-				name: providerType,
+				name: SupportedWalletProviders.WalletConnectV2,
 				label: 'AlphaWallet',
 				imgBig: alphaWallet.imgBig,
 			}
