@@ -26,6 +26,7 @@ export enum SupportedWalletProviders {
 	Phantom_Brave = 'Phantom_Brave',
 	Flow = 'Flow',
 	SafeConnect = 'SafeConnect',
+	AlphaWallet = 'AlphaWallet',
 }
 
 export class Web3WalletProvider {
@@ -408,6 +409,9 @@ export class Web3WalletProvider {
 		const universalWalletConnect = await walletConnectProvider.getWalletConnectV2ProviderInstance()
 
 		let QRCodeModal
+
+		// invoke the QR image to load as initial option via WC Modal
+		if (!checkConnectionOnly) QRCodeModal = (await import('@walletconnect/qrcode-modal')).default
 
 		universalWalletConnect.on('display_uri', async (uri: string) => {
 			QRCodeModal = (await import('@walletconnect/qrcode-modal')).default
