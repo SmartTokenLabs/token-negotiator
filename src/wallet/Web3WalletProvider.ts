@@ -401,7 +401,7 @@ export class Web3WalletProvider {
 		})
 	}
 
-	async WalletConnectV2(checkConnectionOnly: boolean, qrURI?: string) {
+	async WalletConnectV2(checkConnectionOnly: boolean) {
 		logger(2, 'connect Wallet Connect V2')
 
 		const walletConnectProvider = await import('./WalletConnectV2Provider')
