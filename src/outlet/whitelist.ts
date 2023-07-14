@@ -150,32 +150,6 @@ export class Whitelist {
 
 			document.body.insertAdjacentHTML('beforeend', content)
 
-			// document.getElementById('tn-access-accept').addEventListener('click', () => {
-			// 	const checks = document.getElementsByClassName('tn-permission-cb') as HTMLCollectionOf<HTMLInputElement>
-
-			// 	for (const check of checks) {
-			// 		const issuer = check.getAttribute('data-issuer')
-
-			// 		if (!this.storedWhitelist[origin]?.issuers) this.storedWhitelist[origin] = { issuers: [] }
-
-			// 		if (check.checked) {
-			// 			if (this.storedWhitelist[origin].issuers.indexOf(issuer) > -1) continue
-
-			// 			this.storedWhitelist[origin].issuers.push(issuer)
-			// 		} else {
-			// 			const index = this.storedWhitelist[origin].issuers.indexOf(issuer)
-
-			// 			if (!index) continue
-
-			// 			this.storedWhitelist[origin].issuers.splice(index, 1)
-			// 		}
-			// 	}
-
-			// 	this.saveWhitelist()
-
-			// 	resolve()
-			// })
-
 			document.getElementById('tn-access-accept').addEventListener('click', () => {
 				const checks = document.getElementsByClassName('tn-permission-cb') as HTMLCollectionOf<HTMLInputElement>
 
