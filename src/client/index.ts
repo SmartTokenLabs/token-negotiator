@@ -1092,11 +1092,13 @@ export class Client {
 				return new Promise((_resolve) => {
 					return
 				}) // Site is redirecting
-
 			if (res.evt === OutletResponseAction.ISSUER_TOKENS) {
 				const issuerConfig = this.getOutletConfigForCurrentOrigin(url.origin)
-				if (issuerConfig) this.tokenStore.setTokens(issuerConfig.collectionID, res.data.tokens)
-
+				if (issuerConfig) this.storeOutletTokenResponse(res.data.tokens)
+				this.eventSender('tokens-selected', {
+					selectedTokens: this.tokenStore.getSelectedTokens(),
+				})
+				this.eventSender('tokens', this.tokenStore.getSelectedTokens())
 				return res.data.tokens
 			}
 		} catch (e) {
