@@ -163,6 +163,8 @@ export class Whitelist {
 
 				this.storedWhitelist[origin].issuers = updatedOriginIssuersList
 
+				this.saveWhitelist()
+
 				resolve()
 			})
 
