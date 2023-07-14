@@ -239,3 +239,29 @@ export const createOffChainCollectionHash = (key: KeyPair, eventId: string) => {
 	const encoder = new TextEncoder()
 	return sha256(encoder.encode(key.getPublicKeyAsHexStr() + '-' + eventId))
 }
+
+export const createCookie = (name: string, value: any, seconds: number) => {
+	let expires = ''
+	if (seconds) {
+		let date = new Date()
+		date.setTime(date.getTime() + seconds * 1000)
+		expires = '; expires=' + date.toUTCString()
+	}
+	document.cookie = name + '=' + value + expires + '; path=/'
+}
+
+export const isCookieExpired = (cookieName: string) => {
+	let cookies = document.cookie.split('; ')
+	for (let i = 0; i < cookies.length; i++) {
+		let cookie = cookies[i].split('=')
+		if (cookie[0] === cookieName) {
+			let expiration = cookie[1]
+			if (expiration === 'true') {
+				return false // Cookie is not expired
+			} else {
+				return true // Cookie is expired
+			}
+		}
+	}
+	return true // Cookie is not found, considered expired
+}
