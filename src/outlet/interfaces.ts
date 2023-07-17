@@ -28,14 +28,16 @@ export interface OutletIssuerInterface {
 	attestationOrigin: string
 	tokenParser?: any
 	base64senderPublicKeys: { [key: string]: string }
-	base64attestorPubKey: string
+	base64attestorPubKey: string // TODO: Remove - only required in outlet
 	whitelist?: string[]
-	eas?: {
-		schemaUid: string
-		// Defined the fields used to calculate a unique token ID.
-		idFields: string[]
-		fields: EasFieldDefinition[]
-	}
+	eas?: EasSchemaConfig
+}
+
+export interface EasSchemaConfig {
+	schemaUid: string
+	// Defined the fields used to calculate a unique token ID.
+	idFields: string[]
+	fields: EasFieldDefinition[]
 }
 
 export interface EasFieldDefinition {

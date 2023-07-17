@@ -34,7 +34,9 @@ export const getUseToken = async (
 		let useToken
 
 		if (ticketRecord.type === 'eas') {
-			const easZkProof = new EasZkProof(DEFAULT_EAS_SCHEMA, EAS_RPC_CONFIG)
+			const schema = issuerConfig.eas ? { fields: issuerConfig.eas.fields } : DEFAULT_EAS_SCHEMA
+
+			const easZkProof = new EasZkProof(schema, EAS_RPC_CONFIG)
 			useToken = easZkProof.getUseTicket(
 				BigInt(ticketRecord.secret),
 				BigInt(attestationSecret),

@@ -4,6 +4,7 @@ import { SafeConnectOptions } from '../wallet/SafeConnectProvider'
 import { BrowserDataInterface } from '../utils/support/isSupported'
 import { WalletConnection } from '../wallet/Web3WalletProvider'
 import { DecodedToken } from '../outlet/ticketStorage'
+import { EasSchemaConfig } from '../outlet/interfaces'
 
 export type SupportedBlockchainsParam = 'evm' | 'flow' | 'solana'
 export const SignatureSupportedBlockchainsParamList = ['evm', 'flow', 'solana']
@@ -13,8 +14,8 @@ export interface OffChainTokenConfig extends IssuerConfigInterface {
 	tokenOrigin?: string
 	unEndPoint?: string
 	base64senderPublicKeys: { [key: string]: string }
-	base64attestorPubKey: string
-	accessRequestType?: 'read' | 'write'
+	base64attestorPubKey: string // TODO: Remove - only required in outlet
+	eas?: EasSchemaConfig
 }
 
 export interface OnChainTokenConfig extends IssuerConfigInterface {
