@@ -1,5 +1,6 @@
 import { logger } from '../utils'
 import { OutletInterface, OutletIssuerInterface } from './interfaces'
+import { createCookie, isCookieExpired } from '../utils'
 
 export interface StoredWhitelist {
 	[origin: string]: {
@@ -95,7 +96,9 @@ export class Whitelist {
 
 		const collectionIds = issuers.map((issuer) => issuer.collectionID)
 
-		if (force || !this.isWhitelisted(origin, collectionIds)) await this.showWhitelistDialog(origin, issuers)
+		if (force || (!this.isWhitelisted(origin, collectionIds) && isCookieExpired('tn-user-denied-access-to-connection'))) {
+			await this.showWhitelistDialog(origin, issuers)
+		}
 
 		return this.getWhitelistedIssuers(origin)
 	}
@@ -153,23 +156,15 @@ export class Whitelist {
 			document.getElementById('tn-access-accept').addEventListener('click', () => {
 				const checks = document.getElementsByClassName('tn-permission-cb') as HTMLCollectionOf<HTMLInputElement>
 
+				let updatedOriginIssuersList = []
+
 				for (const check of checks) {
 					const issuer = check.getAttribute('data-issuer')
-
 					if (!this.storedWhitelist[origin]?.issuers) this.storedWhitelist[origin] = { issuers: [] }
-
-					if (check.checked) {
-						if (this.storedWhitelist[origin].issuers.indexOf(issuer) > -1) continue
-
-						this.storedWhitelist[origin].issuers.push(issuer)
-					} else {
-						const index = this.storedWhitelist[origin].issuers.indexOf(issuer)
-
-						if (!index) continue
-
-						this.storedWhitelist[origin].issuers.splice(index, 1)
-					}
+					if (check.checked) updatedOriginIssuersList.push(issuer)
 				}
+
+				this.storedWhitelist[origin].issuers = updatedOriginIssuersList
 
 				this.saveWhitelist()
 
@@ -180,6 +175,14 @@ export class Whitelist {
 				if (this.storedWhitelist[origin]) delete this.storedWhitelist[origin]
 
 				this.saveWhitelist()
+
+				// set for 10 seconds so the following send token requests don't re-open
+				// the dialog multiple times when the user has declined connection.
+				// adjust if needed to find the best timing, which should be the approx duration of
+				// the time needed to ignore request for same site issuer dialog requests
+				// and the time a user would come back to load the tokens again should
+				// the decline by accident.
+				createCookie('tn-user-denied-access-to-connection', true, 10)
 
 				reject(new Error('USER_ABORT'))
 			})
