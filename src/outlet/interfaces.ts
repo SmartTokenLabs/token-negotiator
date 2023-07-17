@@ -32,8 +32,16 @@ export interface OutletIssuerInterface {
 	whitelist?: string[]
 	eas?: {
 		schemaUid: string
-		fields: { name: string; type: AbiFieldTypes }[]
+		// Defined the fields used to calculate a unique token ID.
+		idFields: string[]
+		fields: EasFieldDefinition[]
 	}
+}
+
+export interface EasFieldDefinition {
+	name: string
+	label?: string
+	type: AbiFieldTypes | string // TODO: Change type in attestation library
 }
 
 export interface ProofResult {
