@@ -77,7 +77,7 @@ jobs:
           name: test-report
           path: reports/
 
-      - uses: actions/upload-pages-artifact@v1
+      - uses: actions/upload-pages-artifact@v2
         if: github.event_name == 'push'
         with:
           path: token-negotiator-dist/
