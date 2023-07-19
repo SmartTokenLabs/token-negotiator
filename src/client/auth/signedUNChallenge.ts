@@ -6,7 +6,6 @@ import { logger } from '../../utils'
 
 export class SignedUNChallenge extends AbstractAuthentication implements AuthenticationMethodUN {
 	TYPE = 'signedUN'
-	private static DEFAULT_ENDPOINT = 'https://attestation-verify.tokenscript.org/un'
 
 	async getTokenProof(request: AuthenticateInterface): Promise<any> {
 		let web3WalletProvider = await this.client.getWalletProvider()
@@ -45,9 +44,7 @@ export class SignedUNChallenge extends AbstractAuthentication implements Authent
 				},
 			}
 
-			let endpoint = request.options?.unEndPoint ?? SignedUNChallenge.DEFAULT_ENDPOINT
-
-			const challenge = await UN.getNewUN(endpoint)
+			const challenge = await UN.getNewUN(request.options?.unEndPoint)
 			challenge.address = address
 			let signature
 
