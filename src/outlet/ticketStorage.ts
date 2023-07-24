@@ -57,6 +57,7 @@ export type DecodedToken = DecodedTokenData & {
 export interface DecodedTokenData {
 	tokenId?: string
 	eventId?: string
+	ticketId?: string | number
 	ticketIdNumber?: number
 	ticketIdString?: string
 	ticketClass?: number
@@ -84,7 +85,7 @@ export interface FilterInterface {
 export const DEFAULT_EAS_SCHEMA: TicketSchema = {
 	fields: [
 		{ name: 'eventId', type: 'string' },
-		{ name: 'ticketIdString', type: 'string' },
+		{ name: 'ticketId', type: 'string' },
 		{ name: 'ticketClass', type: 'uint8' },
 		{ name: 'commitment', type: 'bytes', isCommitment: true },
 	],
@@ -277,9 +278,12 @@ export class TicketStorage {
 				}
 			}
 
+			let ticketId = easData?.ticketId
+			if (!ticketId) easData?.ticketIdString
+
 			tokenData = {
+				ticketId,
 				eventId: easData.eventId,
-				ticketIdString: easData.ticketIdString,
 				ticketClass: easData.ticketClass,
 				commitment: easData.commitment,
 				easAttestation: easAttest.sig,
@@ -393,7 +397,11 @@ export class TicketStorage {
 			return parts.join('-')
 		}
 
-		return `${decodedToken.eventId}-${decodedToken.ticketIdNumber ?? decodedToken.ticketIdString}`
+		let decodedTicketId = decodedToken?.ticketId
+		if (!decodedTicketId) decodedToken?.ticketIdNumber
+		if (!decodedTicketId) decodedToken?.ticketIdString
+
+		return `${decodedToken.eventId}-${decodedTicketId}`
 	}
 
 	private loadTickets() {
