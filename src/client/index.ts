@@ -658,7 +658,7 @@ export class Client {
 			tokens[issuer] = { tokens: tokens[issuer] }
 		}
 
-		this.eventSender('tokens', tokens)
+		this.eventSender('tokens-selected', tokens)
 		this.eventSender('tokens-loaded', { loadedCollections: Object.keys(tokens).length })
 
 		// Feature not supported when an end users third party cookies are disabled
@@ -1094,7 +1094,6 @@ export class Client {
 				this.eventSender('tokens-selected', {
 					selectedTokens: this.tokenStore.getSelectedTokens(),
 				})
-				this.eventSender('tokens', this.tokenStore.getSelectedTokens())
 				return res.data.tokens
 			}
 		} catch (e) {
