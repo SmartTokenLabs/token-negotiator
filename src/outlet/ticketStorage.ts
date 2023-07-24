@@ -185,6 +185,7 @@ export class TicketStorage {
 							type: ticket.type,
 							tokenId: ticket.tokenId,
 							signedToken: ticket.token,
+							collectionId: collectionId,
 							...tokenData,
 						}
 					}),
