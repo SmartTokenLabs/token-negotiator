@@ -466,9 +466,7 @@ export class Client {
 		}
 
 		if (this.config.autoEnableTokens && Object.keys(this.tokenStore.getSelectedTokens()).length)
-			this.eventSender('tokens-selected', {
-				selectedTokens: this.tokenStore.getSelectedTokens(),
-			})
+			this.eventSender('tokens-selected', this.tokenStore.getSelectedTokens())
 
 		if (openPopup || (this.config.uiOptions.autoPopup === true && autoOpenPopup)) this.ui.openOverlay()
 	}
@@ -685,9 +683,7 @@ export class Client {
 		}
 
 		if (this.config.autoEnableTokens) {
-			this.eventSender('tokens-selected', {
-				selectedTokens: this.tokenStore.getSelectedTokens(),
-			})
+			this.eventSender('tokens-selected', this.tokenStore.getSelectedTokens())
 		}
 
 		return tokens
@@ -780,7 +776,7 @@ export class Client {
 
 	updateSelectedTokens(selectedTokens) {
 		this.tokenStore.setSelectedTokens(selectedTokens)
-		this.eventSender('tokens-selected', { selectedTokens })
+		this.eventSender('tokens-selected', selectedTokens)
 	}
 
 	async prepareToAuthenticateToken(authRequest: AuthenticateInterface) {
