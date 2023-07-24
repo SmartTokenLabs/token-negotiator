@@ -63,7 +63,7 @@ jobs:
 
       - name: test
         if: github.event_name != 'push'
-        uses: ArtiomTr/jest-coverage-report-action@v2
+        uses: ArtiomTr/jest-coverage-report-action@v3
         with:
           annotations: failed-tests
           test-script: npm run test
