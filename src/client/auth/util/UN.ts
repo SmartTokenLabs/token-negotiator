@@ -15,9 +15,25 @@ export interface UNInterface {
 }
 
 export class UN {
+	private static DEFAULT_ENDPOINT = 'https://api.smarttokenlabs.com/un'
+	private static COMMON_API_KEY =
+		'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9qZWN0IjoidG9rZW4tbmVnb3RpYXRvciIsImlhdCI6MTY4OTc1NzQ4Nn0.ELE1OVvVFY1yrWlbnxtQur6dgeVxmKlPb9LZ_8cMOs8'
+
 	public static async getNewUN(endPoint: string): Promise<UNInterface> {
 		try {
-			const response = await fetch(endPoint)
+			let response
+			if (endPoint) {
+				response = await fetch(endPoint)
+			} else {
+				response = await fetch(this.DEFAULT_ENDPOINT, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'x-stl-key': this.COMMON_API_KEY,
+					},
+					body: JSON.stringify({ targetDomain: window.location.origin }),
+				})
+			}
 
 			return await response.json()
 		} catch (e: any) {

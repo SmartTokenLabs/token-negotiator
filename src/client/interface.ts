@@ -94,20 +94,21 @@ export interface AuthenticateInterface {
 	blockchain?: string
 }
 
-export type TokenNegotiatorEvents =
-	| 'view-changed'
-	| 'tokens-refreshed'
-	| 'opened-overlay'
-	| 'closed-overlay'
-	| 'loaded'
-	| 'token-proof'
-	| 'connected-wallet'
-	| 'disconnected-wallet'
-	| 'tokens-selected'
-	| 'tokens'
-	| 'tokens-loaded'
-	| 'network-change'
-	| 'error'
+export interface TokenNegotiatorEventsArgs {
+	'view-changed': EventSenderViewChanged
+	'tokens-refreshed': EventSenderTokensRefreshed
+	'opened-overlay': EventSenderOpenedOverlay
+	'closed-overlay': EventSenderClosedOverlay
+	loaded: EventSenderViewLoaded
+	'token-proof': any // EventSenderTokenProof // TODO: Update this
+	'connected-wallet': EventSenderConnectedWallet
+	'disconnected-wallet': EventSenderDisconnectedWallet
+	'tokens-selected': EventSenderTokensSelected
+	tokens: EventSenderTokens
+	'tokens-loaded': EventSenderTokensLoaded
+	'network-change': string
+	error: EventSenderError
+}
 
 export interface EventSenderViewLoaded {
 	data: any
@@ -137,6 +138,10 @@ export interface EventSenderViewChanged {
 
 export interface EventSenderTokensSelected {
 	selectedTokens: Object
+}
+
+export interface EventSenderTokens {
+	data: any[]
 }
 
 export interface EventSenderTokensLoaded {

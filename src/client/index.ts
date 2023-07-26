@@ -10,27 +10,16 @@ import {
 	createIssuerHashArray,
 } from '../utils'
 import { getNftCollection, getNftTokens } from '../utils/token/nftProvider'
-import { Authenticator } from '@tokenscript/attestation'
 import { TokenStore } from './tokenStore'
 import {
 	OffChainTokenConfig,
 	OnChainTokenConfig,
 	AuthenticateInterface,
 	NegotiationInterface,
-	TokenNegotiatorEvents,
-	EventSenderTokensSelected,
-	EventSenderConnectedWallet,
-	EventSenderDisconnectedWallet,
-	EventSenderError,
-	EventSenderViewChanged,
 	OnChainIssuer,
-	EventSenderViewLoaded,
-	EventSenderOpenedOverlay,
-	EventSenderClosedOverlay,
-	EventSenderTokensRefreshed,
-	EventSenderTokensLoaded,
 	OutletTokenResult,
 	MultiTokenInterface,
+	TokenNegotiatorEventsArgs,
 } from './interface'
 import { SignedUNChallenge } from './auth/signedUNChallenge'
 import { TicketZKProof } from './auth/ticketZKProof'
@@ -48,10 +37,6 @@ import { MultiTokenAuthRequest, MultiTokenAuthResult, OutletIssuerInterface, Pro
 import { AttestationIdClient } from '../outlet/attestationIdClient'
 
 if (typeof window !== 'undefined') window.tn = { VERSION }
-
-interface EventSenderTokens {
-	data: any[]
-}
 
 declare global {
 	interface Window {
@@ -117,7 +102,7 @@ export class Client {
 	private web3WalletProvider: Web3WalletProvider
 	private messaging: Messaging
 	protected ui: UiInterface
-	private clientCallBackEvents: {} = {}
+	private clientCallBackEvents: { [key: string]: (data: any) => Promise<void> | void } = {}
 	protected tokenStore: TokenStore
 	private uiUpdateCallbacks: { [type in UIUpdateEventType] } = {
 		[UIUpdateEventType.ISSUERS_LOADING]: undefined,
@@ -1025,22 +1010,8 @@ export class Client {
 		this.eventSender('token-proof', { issuer, error: err, data: null })
 	}
 
-	async eventSender(eventName: 'loaded', data: EventSenderViewLoaded)
-	async eventSender(eventName: 'tokens-refreshed', data: EventSenderTokensRefreshed)
-	async eventSender(eventName: 'closed-overlay', data: EventSenderClosedOverlay)
-	async eventSender(eventName: 'opened-overlay', data: EventSenderOpenedOverlay)
-	async eventSender(eventName: 'view-changed', data: EventSenderViewChanged)
-	async eventSender(eventName: 'tokens', data: EventSenderTokens)
-	async eventSender(eventName: 'token-proof', data: any)
-	async eventSender(eventName: 'tokens-selected', data: EventSenderTokensSelected)
-	async eventSender(eventName: 'tokens-loaded', data: EventSenderTokensLoaded)
-	async eventSender(eventName: 'connected-wallet', data: EventSenderConnectedWallet)
-	async eventSender(eventName: 'disconnected-wallet', data: EventSenderDisconnectedWallet)
-	async eventSender(eventName: 'network-change', data: string)
-	async eventSender(eventName: 'error', data: EventSenderError)
-
-	async eventSender(eventName: TokenNegotiatorEvents, data: any) {
-		await Promise.resolve(this.on(eventName, null, data))
+	async eventSender<T extends keyof TokenNegotiatorEventsArgs, R extends TokenNegotiatorEventsArgs[T]>(eventName: T, data: R) {
+		await Promise.resolve(this.on(eventName, undefined, data))
 	}
 
 	getOutletConfigForCurrentOrigin(origin: string = window.location.origin) {
@@ -1105,7 +1076,11 @@ export class Client {
 		}
 	}
 
-	on(type: TokenNegotiatorEvents, callback?: any, data?: any) {
+	on<T extends keyof TokenNegotiatorEventsArgs, R extends (data: TokenNegotiatorEventsArgs[T]) => Promise<void> | void>(
+		type: T,
+		callback?: R,
+		data?: TokenNegotiatorEventsArgs[T],
+	) {
 		requiredParams(type, 'Event type is not defined')
 
 		if ((type === 'tokens' || type === 'tokens-selected') && callback) {
