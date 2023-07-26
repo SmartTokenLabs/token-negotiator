@@ -95,10 +95,7 @@ it('get nft collection meta from zed run', async () => {
 
 it('directly test tokenRequest() to fetch success', async () => {
 	global.fetch = jest.fn(() => Promise.resolve({ status: 200, json: () => Promise.resolve(mockZedRunCollection) }))
-	const reqStr = await tokenRequest(
-		'https://api.token-discovery.tokenscript.org/get-token-collection?smartcontract=0x123&chain=eth',
-		true,
-	)
+	const reqStr = await tokenRequest('https://api.token-discovery.tokenscript.org/get-token-collection?smartcontract=0x123&chain=eth', true)
 	global.fetch.mockClear()
 	delete global.fetch
 	expect(reqStr).toEqual(mockZedRunCollection)
@@ -300,9 +297,7 @@ it('get  solana fungible tokens', async () => {
 
 // TODO: This test doesn't test anything since fetch is hardcoded to return the exact result the test expects
 it('get fungible tokens', async () => {
-	global.fetch = jest.fn(() =>
-		Promise.resolve({ status: 200, json: () => Promise.resolve(mockFungibleTokensResponse) }),
-	)
+	global.fetch = jest.fn(() => Promise.resolve({ status: 200, json: () => Promise.resolve(mockFungibleTokensResponse) }))
 	const tokens = await getFungibleTokenBalances(
 		{
 			contract: '0xe0ad1806fd3e7edf6ff52fdb822432e847411033',

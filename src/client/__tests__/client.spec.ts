@@ -3,23 +3,69 @@ import { AbstractAuthentication } from '../auth/abstractAuthentication'
 import { AttestedAddress } from '../auth/attestedAddress'
 import { Client } from '../index'
 import { TicketZKProof } from '../auth/ticketZKProof'
+import { URLNS } from '../../core/messaging'
+import { Outlet, defaultConfig } from '../../outlet/index'
+import { Client as client_2_0, Outlet as outlet_2_0 } from 'tn2_0'
+import { Client as client_2_2, Outlet as outlet_2_2 } from 'tn2_2'
+import { OffChainTokenConfig } from '../interface'
+
+function delay(time) {
+	return new Promise((resolve) => setTimeout(resolve, time))
+}
+
+let tokenIssuer: OffChainTokenConfig = {
+	collectionID: 'devcon',
+	title: 'Devcon',
+	onChain: false,
+	tokenOrigin: 'http://some.url/',
+	attestationOrigin: 'https://stage.attestation.id/',
+	unEndPoint: 'https://crypto-verify.herokuapp.com/use-devcon-ticket',
+	image: 'https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg',
+	base64senderPublicKeys: {
+		6: 'MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABGMxHraqggr2keTXszIcchTjYjH5WXpDaBOYgXva82mKcGnKgGRORXSmcjWN2suUCMkLQj3UNlZCFWF10wIrrlw=',
+	},
+	base64attestorPubKey: '',
+}
+
+let tokenIssuer2: OffChainTokenConfig = {
+	collectionID: 'edcon',
+	title: 'Devcon',
+	onChain: false,
+	tokenOrigin: 'http://some.url/',
+	attestationOrigin: 'https://stage.attestation.id/',
+	unEndPoint: 'https://crypto-verify.herokuapp.com/use-devcon-ticket',
+	image: 'https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg',
+	base64senderPublicKeys: {
+		10: 'MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEAGJAHCiHbrCNAY9fAMdom4dGD6v/KkTIgRCkwLCjXFTkXWGrCEXHaZ8kWwdqlu0oYCrNQ2vdlqOl0s26/LzO8A==|MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEAGJAHCiHbrCNAY9fAMdom4dGD6v/KkTIgRCkwLCjXFTkXWGrCEXHaZ8kWwdqlu0oYCrNQ2vdlqOl0s26/LzO8B==',
+	},
+	base64attestorPubKey: '',
+}
+
+let tokenIssuer3: OffChainTokenConfig = {
+	collectionID: 'devconnect',
+	title: 'Devcon',
+	onChain: false,
+	tokenOrigin: 'http://some.url/',
+	attestationOrigin: 'https://stage.attestation.id/',
+	unEndPoint: 'https://crypto-verify.herokuapp.com/use-devcon-ticket',
+	image: 'https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg',
+	base64senderPublicKeys: {
+		55: 'MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEAGJAHCiHbrCNAY9fAMdom4dGD6v/KkTIgRCkwLCjXFTkXWGrCEXHaZ8kWwdqlu0oYCrNQ2vdlqOl0s26/LzO8A==',
+	},
+	base64attestorPubKey: '',
+}
+
+const config = {
+	type: 'passive',
+	// requred to force redirect mode for Client 2.2
+	enableOffChainRedirectMode: true,
+	issuers: [tokenIssuer],
+}
 
 function getOffChainConfigClient() {
 	return new Client({
 		type: 'active',
-		issuers: [
-			{
-				collectionID: 'devcon',
-				title: 'Devcon',
-				onChain: false,
-				tokenOrigin: 'http://localhost:3002/',
-				attestationOrigin: 'https://stage.attestation.id/',
-				unEndPoint: 'https://crypto-verify.herokuapp.com/use-devcon-ticket',
-				image: 'https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg',
-				base64senderPublicKey: '',
-				base64attestorPubKey: '',
-			},
-		],
+		issuers: [tokenIssuer],
 	})
 }
 
@@ -49,6 +95,34 @@ function getOnChainSolanaConfigClient() {
 		],
 		options: {},
 	})
+}
+
+class LocalStorageMock {
+	constructor() {
+		this.store = {}
+	}
+
+	clear() {
+		this.store = {}
+	}
+
+	getItem(key) {
+		// console.log("LocalStorageMock (getItem):", key, this.store[key])
+		return this.store[key] || null
+	}
+
+	setItem(key, value) {
+		// console.log("LocalStorageMock (setItem):", key, value)
+		if (value) {
+			this.store[key] = String(value)
+		} else {
+			delete this.store[key]
+		}
+	}
+
+	removeItem(key) {
+		delete this.store[key]
+	}
 }
 
 describe('client spec', () => {
@@ -82,19 +156,25 @@ describe('client spec', () => {
 
 		delete issuers['devcon'].timestamp
 
-		expect(issuers).toEqual({
-			devcon: {
-				attestationOrigin: 'https://stage.attestation.id/',
-				base64attestorPubKey: '',
-				base64senderPublicKey: '',
-				collectionID: 'devcon',
-				image: 'https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg',
-				onChain: false,
-				title: 'Devcon',
-				tokenOrigin: 'http://localhost:3002/',
-				unEndPoint: 'https://crypto-verify.herokuapp.com/use-devcon-ticket',
-			},
-		})
+		expect(issuers.toString()).toEqual(
+			{
+				devcon: {
+					attestationOrigin: 'https://stage.attestation.id/',
+					base64attestorPubKey: '',
+					base64senderPublicKey: '',
+					base64senderPublicKeys: {
+						'6': 'MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABGMxHraqggr2keTXszIcchTjYjH5WXpDaBOYgXva82mKcGnKgGRORXSmcjWN2suUCMkLQj3UNlZCFWF10wIrrlw=',
+					},
+					base64senderPublicKey: '',
+					collectionID: 'devcon',
+					image: 'https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg',
+					onChain: false,
+					title: 'Devcon',
+					tokenOrigin: 'http://some.url/',
+					unEndPoint: 'https://crypto-verify.herokuapp.com/use-devcon-ticket',
+				},
+			}.toString(),
+		)
 	})
 
 	test('tokenNegotiatorClient getTokenStore Data', () => {
@@ -111,19 +191,25 @@ describe('client spec', () => {
 
 		delete issuers['devcon'].timestamp
 
-		expect(issuers).toEqual({
-			devcon: {
-				attestationOrigin: 'https://stage.attestation.id/',
-				base64attestorPubKey: '',
-				base64senderPublicKey: '',
-				collectionID: 'devcon',
-				image: 'https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg',
-				onChain: false,
-				title: 'Devcon',
-				tokenOrigin: 'http://localhost:3002/',
-				unEndPoint: 'https://crypto-verify.herokuapp.com/use-devcon-ticket',
-			},
-		})
+		expect(issuers.toString()).toEqual(
+			{
+				devcon: {
+					attestationOrigin: 'https://stage.attestation.id/',
+					base64attestorPubKey: '',
+					base64senderPublicKey: '',
+					base64senderPublicKeys: {
+						'6': 'MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABGMxHraqggr2keTXszIcchTjYjH5WXpDaBOYgXva82mKcGnKgGRORXSmcjWN2suUCMkLQj3UNlZCFWF10wIrrlw=',
+					},
+					base64senderPublicKey: '',
+					collectionID: 'devcon',
+					image: 'https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg',
+					onChain: false,
+					title: 'Devcon',
+					tokenOrigin: 'http://some.url/',
+					unEndPoint: 'https://crypto-verify.herokuapp.com/use-devcon-ticket',
+				},
+			}.toString(),
+		)
 
 		expect(store.getSelectedTokens()).toEqual({})
 	})
@@ -354,10 +440,16 @@ describe('client spec', () => {
 	})
 
 	test('tokenNegotiatorClient abstractAuth saveProof', async () => {
+		let localStorageOriginal = localStorage
+		Object.defineProperty(global, 'localStorage', { value: new LocalStorageMock() })
+
 		const abstractAuth = new AbstractAuthentication()
-		const spyLoStoRemove = jest.spyOn(localStorage, 'setItem')
-		await abstractAuth.saveProof('tn-proof', null)
-		expect(spyLoStoRemove).toHaveBeenCalled()
+		abstractAuth.TYPE = 'test'
+		await abstractAuth.saveProof('tn-proof', { a: 1 })
+		expect(localStorage.getItem('tn-proof')).toEqual(JSON.stringify({ 'test-tn-proof': { a: 1 } }))
+		await abstractAuth.deleteProof('tn-proof')
+		expect(localStorage.getItem('tn-proof')).toEqual(JSON.stringify({}))
+		Object.defineProperty(global, 'localStorage', { value: localStorageOriginal })
 	})
 
 	test('tokenNegotiatorClient abstractAuth getSavedProof', () => {
@@ -375,9 +467,11 @@ describe('client spec', () => {
 
 	test('tokenNegotiatorClient abstractAuth deletePRoof', async () => {
 		const abstractAuth = new AbstractAuthentication()
-		const spyLoStoRemove = jest.spyOn(localStorage, 'setItem')
-		await abstractAuth.deleteProof('tn-proof')
-		expect(spyLoStoRemove).toHaveBeenCalled()
+		expect(abstractAuth.getSavedProof('123')).toEqual(null)
+		abstractAuth.saveProof('123', '222')
+		expect(abstractAuth.getSavedProof('123')).toEqual('222')
+		await abstractAuth.deleteProof('123')
+		expect(abstractAuth.getSavedProof('123')).toEqual(null)
 	})
 
 	test('tokenNegotiatorClient ticketZKProof', async () => {
@@ -410,4 +504,128 @@ describe('client spec', () => {
 			expect(err).toEqual(new Error('WALLET_REQUIRED'))
 		}
 	})
+
+	test('when no redirect errors are found via handleRecievedRedirectMessages', async () => {
+		const tokenNegotiatorClient = getOnChainConfigClient()
+		const error = tokenNegotiatorClient.handleRecievedRedirectMessages()
+		expect(error).toEqual(null)
+	})
 })
+
+// TODO: Reimplement cross-version test for version 3.1
+/* describe('client spec cross-version', () => {
+	let originalDocument = document
+	let originalLocation = window.location
+
+	const nonLocalUrl = 'https://non-local.url'
+
+	beforeAll(() => {
+		Object.defineProperty(global, 'document', {
+			value: {
+				location: {
+					href: '',
+					referrer: '',
+					hash: '',
+					search: '',
+					origin: '',
+				},
+				addEventListener: () => {
+					return true
+				},
+			},
+		})
+
+		Object.defineProperty(window, 'location', {
+			value: {
+				href: nonLocalUrl,
+				origin: nonLocalUrl,
+			},
+			writable: true, // possibility to override
+		})
+
+		// required to force redirect mode
+		window.navigator.brave = 1
+	})
+
+	afterAll(() => {
+		Object.defineProperty(global, 'document', {
+			value: originalDocument,
+		})
+
+		Object.defineProperty(window, 'location', {
+			value: originalLocation,
+		})
+	})
+
+	test('Outlet_2_0 save magicLink', async () => {
+		let magicLinkParams =
+			'?ticket=MIGTME0MATYCAgFNAgEBBEEEF6_tKK2dCfLQiwS4FuqmiQDVrafJ05vCOkYN4iT28JULCClrvI2_kGTxrL12sXlH9w9mohLQlMdmaWvFzaZVlgNCAKu7SESOLf7L5sjZPcTQVkAu9YTC88mNK8oyUjiP2gsnTUxr0BGr0eWSTYmbDqNlX3JXOEqvEH39LEQjWsXn44oc&secret=45845870684&mail=oleh.hryb.us@gmail.com'
+
+		window.location.search = magicLinkParams
+
+		// LocalStorage must be empty
+		expect(localStorage.getItem(defaultConfig.itemStorageKey)).toBe(null)
+		new outlet_2_0(tokenIssuer)
+
+		expect(localStorage.getItem(defaultConfig.itemStorageKey)).toContain(magicLinkParams)
+	})
+
+	test('Redirect Client_lastest -> Outlet 2.2', async () => {
+		let client = new Client(config)
+
+		// prepare Redirect URL
+		await client.negotiate()
+		let url = new URL(window.location.href)
+		expect(new URLSearchParams(url.hash.substring(1)).get('action')).toBe('get-issuer-tokens')
+
+		window.location.hash = url.hash
+		new outlet_2_2(tokenIssuer)
+
+		// need delay, because pageOnLoadEventHandler() is async
+		await delay(1000)
+
+		let hash = new URL(document.location.href).hash.substring(1)
+		expect(new URLSearchParams(hash).get('action')).toBe('get-issuer-tokens-response')
+	})
+
+	test('Redirect Client_2.2 -> Outlet_lastest', async () => {
+		let client = new client_2_2(config)
+
+		window.location.hash = ''
+		window.location.href = 'http://localhost'
+		document.location.hash = ''
+		document.location.href = 'http://localhost'
+		// prepare Redirect URL
+		await client.negotiate()
+		let url = new URL(document.location.href)
+		expect(new URLSearchParams(url.hash.substring(1)).get('action')).toBe('get-issuer-tokens')
+
+		// console.log(
+		// 	`window.location.hash = "${window.location.hash}",
+		// 	window.location.href = "${window.location.href}",
+		// 	document.location.hash = "${document.location.hash}",
+		// 	document.location.href = "${document.location.href}",`
+		// )
+
+		window.location.hash = url.hash
+		document.location.hash = url.hash
+		document.referrer = nonLocalUrl
+		localStorage.setItem('tn-whitelist', '{"https://non-local.url":{"type":"read"}}')
+
+		new Outlet(tokenIssuer)
+
+		// need delay, because pageOnLoadEventHandler() is async
+		await delay(1000)
+
+		let hash = new URL(window.location.href).hash.substring(1)
+		expect(new URLSearchParams(hash).get('action')).toBe('get-issuer-tokens-response')
+	})
+
+	test('tokenNegotiatorClient read prefixed param', async () => {
+		window.location.hash = `p1=1&${URLNS}p2=2`
+		let client = getOffChainConfigClient()
+
+		expect(client.getDataFromQuery('p2')).toBe('2')
+		expect(client.getDataFromQuery('p1')).toBe('1')
+	})
+})*/

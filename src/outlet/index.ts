@@ -1,87 +1,41 @@
-import {
-	rawTokenCheck,
-	readTokenFromMagicUrl,
-	storeMagicURL,
-	decodeTokens,
-	decodeToken,
-	filterTokens,
-	readTokens,
-	OffChainTokenData,
-	DecodedToken,
-} from '../core'
-import { logger, requiredParams, removeUrlSearchParams } from '../utils'
-import { OutletAction, OutletResponseAction } from '../client/messaging'
-import { AuthHandler } from './auth-handler'
-import { SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
-import { AsnParser } from '@peculiar/asn1-schema'
+import { createIssuerHashArray, IssuerHashMap, logger, removeUrlSearchParams, requiredParams } from '../utils'
 import { ResponseActionBase, ResponseInterfaceBase, URLNS } from '../core/messaging'
-
-export interface OutletInterface {
-	collectionID: string
-	title?: string
-	attestationOrigin: string
-	attestationInTab?: boolean
-	tokenParser?: any
-	base64senderPublicKeys: { [key: string]: string }
-	base64attestorPubKey: string
-	signedTokenWhitelist?: string[]
-
-	whitelistDialogWidth: string
-	whitelistDialogHeight: string
-	whitelistDialogRenderer?: (permissionTxt: string, acceptBtn: string, denyBtn: string) => string
-
-	tokenUrlName?: string
-	tokenSecretName?: string
-	tokenIdName?: string
-	unsignedTokenDataName?: string
-	itemStorageKey?: string
-	tokenOrigin?: string
-}
+import { OutletAction, OutletResponseAction } from '../client/messaging'
+import { DecodedToken } from './ticketStorage'
+import { Whitelist } from './whitelist'
+import { LocalOutlet } from './localOutlet'
+import { AttestationIdClient } from './attestationIdClient'
+import { getUseToken } from './getUseToken'
+import { MultiTokenAuthRequest, MultiTokenAuthResult, OutletInterface, OutletIssuerInterface, ProofResult } from './interfaces'
 
 export const defaultConfig = {
-	tokenUrlName: 'ticket',
-	tokenSecretName: 'secret',
-	tokenIdName: 'mail',
-	unsignedTokenDataName: 'ticket',
-	itemStorageKey: 'dcTokens',
-	signedTokenWhitelist: [],
 	whitelistDialogWidth: '450px',
 	whitelistDialogHeight: '350px',
 }
 
-export class readSignedTicket {
-	ticket: any
-	constructor(source: Uint8Array) {
-		const signedDevconTicket: SignedDevconTicket = AsnParser.parse(source, SignedDevconTicket)
+export class Outlet extends LocalOutlet {
+	// private ticketStorage: TicketStorage
+	private whitelist: Whitelist
 
-		this.ticket = signedDevconTicket.ticket
-
-		logger(3, this.ticket)
-	}
-}
-
-export class Outlet {
-	tokenConfig: OutletInterface
 	urlParams?: URLSearchParams
-
-	singleUse = false
 
 	redirectCallbackUrl?: URL
 
-	constructor(config: OutletInterface, singleUse = false, urlParams: any = null) {
-		this.tokenConfig = Object.assign(defaultConfig, config)
-		this.singleUse = singleUse
+	constructor(private tokenConfig: OutletInterface, urlParams: URLSearchParams = null) {
+		super(tokenConfig.issuers)
 
-		if (!this.tokenConfig.tokenParser) {
-			this.tokenConfig.tokenParser = readSignedTicket
-		}
+		this.tokenConfig = Object.assign(defaultConfig, tokenConfig)
 
-		this.tokenConfig.signedTokenWhitelist = this.tokenConfig.signedTokenWhitelist.map((origin) => {
-			try {
-				return new URL(origin).origin
-			} catch (e) {
-				logger(2, 'Failed to validate whitelist origin: ' + e.message)
-			}
+		// this.ticketStorage = new TicketStorage(this.tokenConfig.issuers)
+		this.whitelist = new Whitelist(this.tokenConfig, () => {
+			const evtid = this.getDataFromQuery('evtid')
+
+			this.sendMessageResponse({
+				evtid,
+				evt: ResponseActionBase.SHOW_FRAME,
+				max_width: this.tokenConfig.whitelistDialogWidth,
+				min_height: this.tokenConfig.whitelistDialogHeight,
+			})
 		})
 
 		if (urlParams) {
@@ -91,118 +45,63 @@ export class Outlet {
 			this.urlParams = new URLSearchParams(params)
 		}
 
-		if (!this.singleUse) {
-			this.pageOnLoadEventHandler()
+		this.pageOnLoadEventHandler().catch((e) => {
+			console.error(e)
+			logger(2, 'Outlet pageOnLoadEventHandler error: ' + e.message)
+		})
+	}
+
+	getDataFromQuery(itemKey: string): string {
+		if (this.urlParams) {
+			if (this.urlParams.has(URLNS + itemKey)) return this.urlParams.get(URLNS + itemKey)
+
+			return this.urlParams.get(itemKey) // Fallback to non-namespaced version for attestation.id parameters
 		}
+
+		return null
 	}
 
-	getDataFromQuery(itemKey: string, namespaced = true): string {
-		itemKey = (namespaced ? URLNS : '') + itemKey
-		return this.urlParams ? this.urlParams.get(itemKey) : ''
-	}
-
-	getFilter() {
-		const filter = this.getDataFromQuery('filter')
-		return filter ? JSON.parse(filter) : {}
+	getCallbackUrlKey(key: string) {
+		return URLNS + key
 	}
 
 	async pageOnLoadEventHandler() {
 		const evtid = this.getDataFromQuery('evtid')
 		const action = this.getDataFromQuery('action')
-		const access = this.getDataFromQuery('access')
 
 		const requester = this.getDataFromQuery('requestor')
 
 		if (requester) this.redirectCallbackUrl = new URL(requester)
 
-		logger(2, 'Outlet received event ID ' + evtid + ' action ' + action + ' at ' + document.location.href)
-
-		// TODO: should issuer be validated against requested issuer?
+		logger(2, 'Outlet received event ID ' + evtid + ' action ' + action + ' at ' + window.location.href)
 
 		try {
 			switch (action) {
 				case OutletAction.GET_ISSUER_TOKENS: {
-					await this.whitelistCheck(evtid, access === 'write' ? 'write' : 'read')
-
-					this.sendTokens(evtid)
-
+					await this.sendTokens(evtid)
 					break
 				}
 				case OutletAction.EMAIL_ATTEST_CALLBACK: {
-					const requesterURL = this.redirectCallbackUrl
-					const issuer = this.getDataFromQuery('issuer')
-
-					try {
-						const tokenString = this.getDataFromQuery('token')
-						let token = JSON.parse(tokenString)
-
-						const attestationBlob = this.getDataFromQuery('attestation', false)
-						const attestationSecret = '0x' + this.getDataFromQuery('requestSecret', false)
-
-						let authHandler = new AuthHandler(
-							this,
-							evtid,
-							this.tokenConfig,
-							await rawTokenCheck(token, this.tokenConfig),
-							null,
-							null,
-							false,
-						)
-
-						const useToken = await authHandler.getUseToken(attestationBlob, attestationSecret)
-
-						if (requesterURL) {
-							const params = new URLSearchParams(requesterURL.hash.substring(1))
-							params.set(URLNS + 'action', 'proof-callback')
-							params.set(URLNS + 'issuer', issuer)
-							params.set(URLNS + 'attestation', useToken as string)
-
-							// TODO: Remove once https://github.com/AlphaWallet/attestation.id/pull/196 is merged
-							params.delete('email')
-							params.delete('#email')
-
-							let outlet = new Outlet(this.tokenConfig, true)
-							let issuerTokens = outlet.prepareTokenOutput({})
-
-							logger(2, 'issuerTokens: ', issuerTokens)
-
-							params.set(URLNS + 'tokens', JSON.stringify(issuerTokens))
-
-							requesterURL.hash = params.toString()
-
-							document.location.href = requesterURL.href
-
-							return
-						}
-
-						this.dispatchAuthCallbackEvent(issuer, useToken, null)
-					} catch (e: any) {
-						if (requesterURL) return this.proofRedirectError(issuer, e.message)
-
-						this.dispatchAuthCallbackEvent(issuer, null, e.message)
+					// Request came from local client instance, process it in Client class when "token-proof" event callback is registered
+					if (this.getDataFromQuery('localClient') === 'true') {
+						return
 					}
-
-					document.location.hash = removeUrlSearchParams(this.urlParams, ['attestation', 'requestSecret', 'address', 'wallet']).toString()
-
+					await this.processAttestationIdCallback(evtid)
 					break
 				}
 				case OutletAction.GET_PROOF: {
-					const token: string = this.getDataFromQuery('token')
-					const wallet: string = this.getDataFromQuery('wallet')
-					const address: string = this.getDataFromQuery('address')
-					requiredParams(token, 'unsigned token is missing')
-					this.sendTokenProof(evtid, token, address, wallet)
+					await this.sendTokenProof(evtid)
+					break
+				}
+				case OutletAction.GET_MUTLI_PROOF: {
+					await this.sendMultiTokenProof(evtid)
 					break
 				}
 				default: {
-					// TODO: Remove singleUse - this is only needed in negotiator that calls readMagicLink.
-					//  move single link somewhere that it can be used by both Outlet & LocalOutlet
-					if (!this.singleUse) {
-						await this.whitelistCheck(evtid, 'write')
+					if (this.getDataFromQuery('ticket')) {
 						await this.readMagicLink()
-						this.sendTokens(evtid)
+						await this.sendTokens(evtid)
 					}
-
 					break
 				}
 			}
@@ -212,191 +111,164 @@ export class Outlet {
 		}
 	}
 
-	public async readMagicLink() {
-		const { tokenUrlName, tokenSecretName, tokenIdName, itemStorageKey } = this.tokenConfig
+	private processAttestationIdCallback(evtid: string) {
+		const requesterURL = this.redirectCallbackUrl
+		const issuer = this.getDataFromQuery('issuer')
 
 		try {
-			const newToken = readTokenFromMagicUrl(tokenUrlName, tokenSecretName, tokenIdName, this.urlParams)
-			let tokensOutput = readTokens(itemStorageKey)
+			const attestIdClient = new AttestationIdClient()
+			attestIdClient.captureAttestationIdCallback(this.urlParams)
 
-			const newTokens = this.mergeNewToken(newToken, tokensOutput.tokens)
+			const originalAction = this.getDataFromQuery('orig-action')
 
-			if (newTokens !== false) {
-				storeMagicURL(newTokens, itemStorageKey)
+			switch (originalAction) {
+				case OutletAction.GET_PROOF:
+					this.sendTokenProof(evtid)
+					break
+				case OutletAction.GET_MUTLI_PROOF:
+					this.sendMultiTokenProof(evtid)
+					break
+				default:
+					throw new Error('Original action not defined in attestation.id callback')
 			}
+		} catch (e: any) {
+			console.error(e)
 
-			const event = new Event('tokensupdated')
+			if (requesterURL) return this.proofRedirectError(issuer, e.message)
+		}
 
-			document.body.dispatchEvent(event)
+		window.location.hash = removeUrlSearchParams(this.urlParams, ['attestation', 'requestSecret', 'address', 'wallet']).toString()
+	}
+
+	private getIssuerConfigById(collectionId: string) {
+		if (this.tokenConfig.issuers) {
+			for (const issuer of this.tokenConfig.issuers) {
+				if (issuer.collectionID === collectionId) return issuer
+			}
+			throw new Error('Issuer ' + collectionId + ' not found')
+		}
+	}
+
+	public async readMagicLink() {
+		try {
+			if (await this.ticketStorage.importTicketFromMagicLink(this.urlParams)) {
+				const event = new Event('tokensupdated')
+				document.body.dispatchEvent(event)
+				// TODO: tokens could be read from the hooks "tokens" and "tokens-selected" by
+				// triggering await this.sendTokens(this.getDataFromQuery('evtid')) at this point instead.
+				// Let's review this approach to confirm if this hook is required.
+			}
 		} catch (e) {
-			console.warn(e)
+			logger(2, e)
 		}
 	}
 
-	/**
-	 * Merges a new magic link into the existing token data. If a token is found with the same ID it is overwritten.
-	 * @private
-	 * @returns false when no changes to the data are required - the token is already added
-	 */
-	public mergeNewToken(newToken: OffChainTokenData, existingTokens: OffChainTokenData[]): OffChainTokenData[] | false {
-		const decodedNewToken = decodeToken(newToken, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName, false)
+	async sendMultiTokenProof(evtid: string) {
+		const tokens: string = this.getDataFromQuery('tokens')
+		const wallet: string = this.getDataFromQuery('wallet')
+		const address: string = this.getDataFromQuery('address')
+		requiredParams(tokens, 'unsigned token is missing')
 
-		const newTokenId = this.getUniqueTokenId(decodedNewToken)
+		const redirect = this.getDataFromQuery('redirect') === 'true' ? window.location.href : false
 
-		for (const [index, tokenData] of existingTokens.entries()) {
-			// Nothing required, this token already exists
-			if (tokenData.token === newToken.token) {
-				return false
-			}
+		try {
+			const authRequest = JSON.parse(tokens) as MultiTokenAuthRequest
 
-			const decodedTokenData = decodeToken(tokenData, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName, false)
-
-			const tokenId = this.getUniqueTokenId(decodedTokenData)
-
-			if (newTokenId === tokenId) {
-				existingTokens[index] = newToken
-				return existingTokens
-			}
-		}
-
-		existingTokens.push(newToken)
-		return existingTokens
-	}
-
-	/**
-	 * Calculates a unique token ID to identify this ticket. Tickets can be reissued and have a different commitment, but are still the same token
-	 * @private
-	 */
-	private getUniqueTokenId(decodedToken: DecodedToken) {
-		return `${decodedToken.devconId}-${decodedToken.ticketIdNumber ?? decodedToken.ticketIdString}`
-	}
-
-	private dispatchAuthCallbackEvent(issuer: string, proof?: string, error?: string) {
-		const event = new CustomEvent('auth-callback', {
-			detail: {
-				proof: proof,
-				issuer: issuer,
-				error: error,
-			},
-		})
-
-		window.dispatchEvent(event)
-	}
-
-	private async whitelistCheck(evtid, whiteListType: 'read' | 'write') {
-		if ((!window.parent && !window.opener) || !document.referrer) return
-
-		const origin = new URL(document.referrer).origin
-
-		if (origin === document.location.origin) return
-
-		let accessWhitelist = JSON.parse(localStorage.getItem('tn-whitelist')) ?? {}
-
-		// TODO: Storage access API no longer gives access to localStorage in firefox, only cookies like Safari
-		//		I'm keeping this here in case chrome implements state partitioning in the same way as Firefox
-		//		originally did. If chrome goes the way of Mozilla & Apple then this can be removed
-		// const storageAccessRequired = document.hasStorageAccess && !(await document.hasStorageAccess())
-
-		const needsPermission =
-			this.tokenConfig.signedTokenWhitelist.indexOf(origin) === -1 &&
-			(!accessWhitelist[origin] || (accessWhitelist[origin].type === 'read' && whiteListType === 'write'))
-
-		if (needsPermission /* || storageAccessRequired */) {
-			return new Promise<void>((resolve, reject) => {
-				const typeTxt = whiteListType === 'read' ? 'read' : 'read & write'
-				const permissionTxt = `${origin} is requesting ${typeTxt} access to your ${this.tokenConfig.title} tickets`
-				const acceptBtn = '<button id="tn-access-accept">Accept</button>'
-				const denyBtn = '<button id="tn-access-deny">Deny</button>'
-
-				const content = this.tokenConfig.whitelistDialogRenderer
-					? this.tokenConfig.whitelistDialogRenderer(permissionTxt, acceptBtn, denyBtn)
-					: `
-						<div style="font-family: sans-serif; text-align: center; position: absolute; width: 100vw; min-height: 100vh;top: 0;
-						left: 0;
-						background: #0C0A50;
-						z-index: 99999;
-						display: flex;
-						flex-direction: column;
-						justify-content: center;
-						align-items: center;
-						color: #fff;
-						padding: 30px;
-						font-size: 24px;
-						line-height: 1.2;">
-							<p>${permissionTxt}</p>
-							<div>
-							${acceptBtn}
-							${denyBtn}
-							</div>
-						</div>
-					`
-
-				document.body.insertAdjacentHTML('beforeend', content)
-
-				document.getElementById('tn-access-accept').addEventListener('click', async () => {
-					if (!accessWhitelist[origin] || whiteListType !== accessWhitelist[origin].type) {
-						accessWhitelist[origin] = {
-							type: whiteListType,
-						}
-						localStorage.setItem('tn-whitelist', JSON.stringify(accessWhitelist))
-					}
-
-					resolve()
-				})
-
-				document.getElementById('tn-access-deny').addEventListener('click', () => {
-					reject('USER_ABORT')
-				})
-
+			const output = await this.authenticateMany(authRequest, address, wallet, redirect, () => {
 				this.sendMessageResponse({
-					evtid,
+					evtid: evtid,
 					evt: ResponseActionBase.SHOW_FRAME,
 					max_width: this.tokenConfig.whitelistDialogWidth,
 					min_height: this.tokenConfig.whitelistDialogHeight,
 				})
 			})
+
+			if (this.redirectCallbackUrl) {
+				const requesterURL = this.redirectCallbackUrl
+
+				const params = new URLSearchParams(requesterURL.hash.substring(1))
+				params.set(this.getCallbackUrlKey('action'), 'proof-callback')
+				params.set(this.getCallbackUrlKey('multi-token'), 'true')
+				params.set(this.getCallbackUrlKey('tokens'), JSON.stringify(output))
+
+				requesterURL.hash = params.toString()
+				window.location.href = requesterURL.href
+				return
+			}
+
+			this.sendMessageResponse({
+				evtid: evtid,
+				evt: OutletResponseAction.PROOF,
+				data: output,
+			})
+		} catch (e) {
+			logger(2, e)
+			if (redirect) return this.proofRedirectError(this.getDataFromQuery('issuer'), e.message)
+			this.sendErrorResponse(evtid, e.message)
 		}
 	}
 
-	prepareTokenOutput(filter: any) {
-		const storageTokens = localStorage.getItem(this.tokenConfig.itemStorageKey)
+	async sendTokenProof(evtid: string) {
+		const collectionId: string = this.getDataFromQuery('issuer')
+		const token: string = this.getDataFromQuery('token')
+		const wallet: string = this.getDataFromQuery('wallet')
+		const address: string = this.getDataFromQuery('address')
+		requiredParams(token, 'unsigned token is missing')
 
-		if (!storageTokens) return []
+		const decodedToken = JSON.parse(token) as DecodedToken
 
-		let includeSigned = false
-
-		if (this.tokenConfig.signedTokenWhitelist?.length && this.tokenConfig.signedTokenWhitelist.indexOf(this.getRequestOrigin()) > -1) {
-			includeSigned = true
-		}
-
-		const decodedTokens = decodeTokens(storageTokens, this.tokenConfig.tokenParser, this.tokenConfig.unsignedTokenDataName, includeSigned)
-
-		return filterTokens(decodedTokens, filter)
-	}
-
-	async sendTokenProof(evtid: any, token: any, address: string, wallet: string) {
-		if (!token) return 'error'
-
-		const unsignedToken = JSON.parse(token)
-
-		const redirect = this.getDataFromQuery('redirect') === 'true' ? document.location.href : false
+		const redirect = this.getDataFromQuery('redirect') === 'true' ? window.location.href : false
 
 		try {
-			let tokenObj = await rawTokenCheck(unsignedToken, this.tokenConfig)
+			const issuer = this.getIssuerConfigById(collectionId)
 
-			let authHandler = new AuthHandler(this, evtid, this.tokenConfig, tokenObj, address, wallet, redirect, unsignedToken)
+			const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedTokenOrId(createIssuerHashArray(issuer), decodedToken)
 
-			let tokenProof = await authHandler.authenticate()
+			const attestIdClient = new AttestationIdClient(
+				issuer.attestationOrigin,
+				() => {
+					this.sendMessageResponse({
+						evtid: evtid,
+						evt: ResponseActionBase.SHOW_FRAME,
+						max_width: this.tokenConfig.whitelistDialogWidth,
+						min_height: this.tokenConfig.whitelistDialogHeight,
+					})
+				},
+				redirect,
+			)
+
+			const idAttestation = await attestIdClient.getIdentifierAttestation(ticketRecord.id, wallet, address, {
+				action: OutletAction.GET_PROOF,
+				issuer: collectionId,
+				token: JSON.stringify(decodedToken),
+			})
+
+			const tokenProof = await getUseToken(issuer, idAttestation.attestation, idAttestation.identifierSecret, ticketRecord)
+
+			if (this.redirectCallbackUrl) {
+				const requesterURL = this.redirectCallbackUrl
+
+				const params = new URLSearchParams(requesterURL.hash.substring(1))
+				params.set(this.getCallbackUrlKey('action'), 'proof-callback')
+				params.set(this.getCallbackUrlKey('issuer'), collectionId)
+				params.set(this.getCallbackUrlKey('attestation'), tokenProof.proof as string)
+				params.set(this.getCallbackUrlKey('type'), ticketRecord.type)
+				params.set(this.getCallbackUrlKey('token'), token)
+
+				requesterURL.hash = params.toString()
+				window.location.href = requesterURL.href
+				return
+			}
 
 			this.sendMessageResponse({
 				evtid: evtid,
 				evt: OutletResponseAction.PROOF,
 				data: {
-					issuer: this.tokenConfig.collectionID,
-					proof: tokenProof,
+					issuer: issuer.collectionID,
+					...tokenProof,
 				},
 			})
-		} catch (e: any) {
+		} catch (e) {
 			logger(2, e)
 
 			if (redirect) return this.proofRedirectError(this.getDataFromQuery('issuer'), e.message)
@@ -405,21 +277,47 @@ export class Outlet {
 		}
 	}
 
-	private getRequestOrigin() {
-		const requester = document.referrer
-
-		if (!requester) return null
-
-		try {
-			return new URL(requester).origin
-		} catch (e) {
-			return null
-		}
-	}
-
 	// TODO: Consolidate redirect callback for tokens, proof & errors into the sendMessageResponse function to remove duplication
-	private sendTokens(evtid: any) {
-		let issuerTokens = this.prepareTokenOutput(this.getFilter())
+	private async sendTokens(evtid: any) {
+		const requestHashes = JSON.parse(this.getDataFromQuery('request')) as IssuerHashMap
+
+		if (!requestHashes) return
+
+		// Create a map of outlet hashes to issuer config
+		const hashToConfigMap = {}
+
+		for (const issuer of this.tokenConfig.issuers) {
+			const hashes = createIssuerHashArray(issuer)
+			for (const hash of hashes) {
+				hashToConfigMap[hash] = issuer
+			}
+		}
+
+		const reqIssuers: OutletIssuerInterface[] = []
+
+		// Loop through client request hashes & create an array of issuers for whitelist processing
+		for (const issuer in requestHashes) {
+			for (const hash of requestHashes[issuer]) {
+				if (hashToConfigMap[hash]) {
+					if (reqIssuers.indexOf(hashToConfigMap[hash]) === -1) reqIssuers.push(hashToConfigMap[hash])
+				}
+			}
+		}
+
+		const whitelistedIssuers = await this.whitelist.whitelistCheck(reqIssuers, false)
+
+		// Remove hashes that don't exist in outlets own config and non-whitelisted issuers
+		for (const issuer in requestHashes) {
+			const filteredHashes = []
+			for (const hash of requestHashes[issuer]) {
+				if (hashToConfigMap[hash] && whitelistedIssuers.indexOf(hashToConfigMap[hash].collectionID) > -1) {
+					filteredHashes.push(hash)
+				}
+			}
+			requestHashes[issuer] = filteredHashes
+		}
+
+		let issuerTokens = await this.ticketStorage.getDecodedTokens(requestHashes)
 
 		logger(2, 'issuerTokens: (Outlet.sendTokens)', issuerTokens)
 
@@ -428,9 +326,9 @@ export class Outlet {
 				let url = this.redirectCallbackUrl
 
 				const params = new URLSearchParams(url.hash.substring(1))
-				params.set(URLNS + 'action', OutletAction.GET_ISSUER_TOKENS + '-response')
-				params.set(URLNS + 'issuer', this.tokenConfig.collectionID)
-				params.set(URLNS + 'tokens', JSON.stringify(issuerTokens))
+				params.set(this.getCallbackUrlKey('action'), OutletAction.GET_ISSUER_TOKENS + '-response')
+				// params.set(this.getCallbackUrlKey('issuer'), this.tokenConfig.collectionID)
+				params.set(this.getCallbackUrlKey('tokens'), JSON.stringify(issuerTokens))
 
 				url.hash = '#' + params.toString()
 
@@ -438,7 +336,7 @@ export class Outlet {
 
 				logger(2, 'tokens ready. go to: ', requesterURL)
 
-				document.location.href = requesterURL
+				window.location.href = requesterURL
 
 				return
 			} catch (e) {
@@ -450,24 +348,25 @@ export class Outlet {
 			evtid: evtid,
 			evt: OutletResponseAction.ISSUER_TOKENS,
 			data: {
-				issuer: this.tokenConfig.collectionID,
+				// issuer: this.tokenConfig.collectionID,
 				tokens: issuerTokens,
 			},
 		})
 	}
 
-	public sendErrorResponse(evtid: any, error: string, issuer?: string) {
+	public sendErrorResponse(evtid: any, error: string, issuer?: string, type = 'error') {
 		if (this.redirectCallbackUrl) {
 			let url = this.redirectCallbackUrl
 
 			const params = new URLSearchParams(url.hash.substring(1))
-			params.set(URLNS + 'action', ResponseActionBase.ERROR)
-			params.set(URLNS + 'issuer', issuer)
-			params.set(URLNS + 'error', error)
+			params.set(this.getCallbackUrlKey('action'), ResponseActionBase.ERROR)
+			params.set(this.getCallbackUrlKey('issuer'), issuer)
+			params.set(this.getCallbackUrlKey('type'), type)
+			params.set(this.getCallbackUrlKey('error'), error)
 
 			url.hash = '#' + params.toString()
 
-			document.location.href = url.href
+			window.location.href = url.href
 			return
 		}
 
@@ -479,27 +378,16 @@ export class Outlet {
 	}
 
 	public proofRedirectError(issuer: string, error: string) {
-		const requesterURL = this.redirectCallbackUrl.href
+		const requesterURL = this.redirectCallbackUrl
 
-		const params = new URLSearchParams()
-		params.set(URLNS + 'action', 'proof-callback')
-		params.set(URLNS + 'issuer', issuer)
-		params.set(URLNS + 'error', error)
+		const params = new URLSearchParams(requesterURL.hash.substring(1))
+		params.set(this.getCallbackUrlKey('action'), 'proof-callback')
+		params.set(this.getCallbackUrlKey('issuer'), issuer)
+		params.set(this.getCallbackUrlKey('error'), error)
 
-		document.location.href = requesterURL + '#' + params.toString()
-	}
+		requesterURL.hash = params.toString()
 
-	private isSameOrigin() {
-		try {
-			let tokenUrl = new URL(this.tokenConfig.tokenOrigin)
-			if (tokenUrl.origin === document.location.origin) {
-				return true
-			} else {
-				return false
-			}
-		} catch (e) {
-			return false
-		}
+		window.location.href = requesterURL.href
 	}
 
 	public sendMessageResponse(response: ResponseInterfaceBase) {
@@ -517,23 +405,6 @@ export class Outlet {
 
 		if (target) {
 			target.postMessage(response, '*')
-		}
-
-		// TODO: this is probably no longer needed as brave is set to always use redirect mode now
-		if (!this.isSameOrigin()) {
-			let style = `
-				background: #eee;
-				padding: 10px;
-				color: #000;
-				display: inline-block;
-				border-radius: 4px;
-				font-size: 1.2em;
-				box-shadow: rgb(0 0 0 / 35%) 0px 5px 15px;
-			`
-			let div = document.createElement('div')
-			div.innerHTML = 'Data sent. Please close the tab and back to main app.'
-			div.setAttribute('style', style)
-			document.body.appendChild(div)
 		}
 	}
 }

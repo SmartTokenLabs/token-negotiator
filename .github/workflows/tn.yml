@@ -6,9 +6,12 @@ on:
       - main
       - staging
       - ci-testing
+    tags:
+      - "v*"
   pull_request:
     branches:
       - "*"
+  workflow_dispatch:
 
 jobs:
   tn-p1:
@@ -20,6 +23,8 @@ jobs:
       - tn-p1
     name: SonarCloud
     runs-on: ubuntu-latest
+    # dependabot created branch has a very long name, which will cause issue for SonarCloud
+    if: "!startsWith(github.head_ref, 'dependabot/')"
     steps:
       - uses: actions/checkout@v3
         with:
@@ -40,12 +45,42 @@ jobs:
     permissions:
       pages: write
       id-token: write
-    environment:
-      name: gh-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      contents: write
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && contains(fromJson('["main", "ci-testing"]'), github.ref_name)
+    if: github.event_name == 'push' && (contains(fromJson('["main", "ci-testing"]'), github.ref_name) || github.ref_type == 'tag' )
     steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: token-negotiator-dist
+          path: token-negotiator-dist/
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+          git config --global credential.helper store
+          echo "https://oauth2:${GITHUB_TOKEN}@github.com" > ~/.git-credentials
+          TARGET=latest
+          if [ x"${GITHUB_REF_TYPE}" = x"tag" ]; then
+            TARGET="${GITHUB_REF_NAME}"
+          fi
+          npx -y @koumoul/gh-pages-multi deploy -s token-negotiator-dist/ -t "${TARGET}" --no-history -v
+      - name: copy latest dir to root dir
+        run: |
+          git remote set-branches origin 'gh-pages'
+          git fetch origin gh-pages
+          git checkout .
+          git checkout gh-pages
+          rm -fr token-negotiator-dist
+          if [ -d "latest" ]; then
+            rm -fr theme negotiator*
+            cp -frv latest/. .
+          fi
+          git add .
+          if ! git diff --quiet HEAD; then
+            git commit -a --amend --no-edit
+            git push -f
+          fi

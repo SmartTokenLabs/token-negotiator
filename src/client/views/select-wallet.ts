@@ -19,6 +19,9 @@ export class SelectWallet extends AbstractView {
 				walletButtons += this.getWalletButtonHtml(safeConnect)
 			}
 
+			const alphaWallet = getWalletInfo(SupportedWalletProviders.AlphaWallet)
+			walletButtons += this.getWalletButtonHtml(alphaWallet)
+
 			if (typeof window.ethereum !== 'undefined') {
 				const injectedWallet = getWalletInfo(SupportedWalletProviders.MetaMask)
 				walletButtons += this.getWalletButtonHtml(injectedWallet)
@@ -91,7 +94,7 @@ export class SelectWallet extends AbstractView {
 
 	private getWalletButtonHtml(wallet: WalletInfo) {
 		return `
-			<button class="wallet-button-tn" data-wallet="${wallet.name}" aria-label="${wallet.label} wallet button">
+			<button class="wallet-button-tn ${wallet.name}" data-wallet="${wallet.name}" aria-label="${wallet.label} wallet button">
 				${wallet.imgBig}
 				<p>${wallet.label}</p>
 			</button>
@@ -104,6 +107,8 @@ export class SelectWallet extends AbstractView {
 		walletlabel = walletlabel ?? wallet
 
 		logger(2, 'Connect wallet: ' + wallet)
+
+		this.ui.setForceToOpen(true)
 
 		this.ui.showLoaderDelayed(
 			['<h4>Connecting to ' + walletlabel + '...</h4>', '<small>You may need to unlock your wallet to continue.</small>'],
@@ -121,10 +126,14 @@ export class SelectWallet extends AbstractView {
 				this.client.enrichTokenLookupDataOnChainTokens()
 				this.ui.updateUI('main', { viewName: 'main' }, { viewTransition: 'slide-in-right' })
 			}
+			this.ui.setForceToOpen(false)
 		} catch (err: any) {
 			logger(2, 'negotiatorConnectToWallet error', e)
 			this.ui.showError(err)
-			return
+			setTimeout(() => {
+				console.log('this.ui.setForceToOpen(false)')
+				this.ui.setForceToOpen(false)
+			}, 0)
 		}
 	}
 }

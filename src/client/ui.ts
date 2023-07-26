@@ -78,12 +78,14 @@ export class Ui implements UiInterface {
 	currentView: ViewInterface | undefined
 	retryCallback?: Function
 	retryButton: HTMLButtonElement
+	forceToOpen: Boolean
 
 	private isStartView = true
 
 	constructor(options: UIOptionsInterface, client: Client) {
 		this.options = options
 		this.client = client
+		this.forceToOpen = false
 	}
 
 	async initialize() {
@@ -202,6 +204,7 @@ export class Ui implements UiInterface {
 
 	closeOverlay() {
 		if (this.options.uiType === 'inline') return
+		if (this.forceToOpen) return
 		this.popupContainer.classList.add('close')
 		this.popupContainer.classList.remove('open')
 		this.client.eventSender('closed-overlay', null)
@@ -314,6 +317,16 @@ export class Ui implements UiInterface {
 		return !this.isStartView
 	}
 
+	// TODO to support mulitple languages and custom UX directions, this should be part of the library configuration
+	// allowing for the end developer to override key error types. Such as; user abort, network error, etc.
+	getCustomUserError(error) {
+		let output = error
+		if (error && error.contains && error.contains(`Failed to read the 'localStorage' property from 'Window'`)) {
+			output = 'Please enable cookies in your browser to use this feature or try a different browser.'
+		}
+		return output
+	}
+
 	showError(error: string | Error, canDismiss = true) {
 		this.cancelDelayedLoader()
 
@@ -331,7 +344,9 @@ export class Ui implements UiInterface {
 
 		this.retryButton.style.display = 'block'
 
-		this.loadContainer.querySelector('.loader-msg-tn').innerHTML = error
+		const errorOutput = this.getCustomUserError(error)
+
+		this.loadContainer.querySelector('.loader-msg-tn').innerHTML = `<p style="padding: 9px">${errorOutput}</p>`
 
 		this.loadContainer.style.display = 'flex'
 
@@ -399,5 +414,9 @@ export class Ui implements UiInterface {
 
 	switchTheme(newTheme: UItheme) {
 		this.setTheme(newTheme)
+	}
+
+	setForceToOpen(open: boolean) {
+		this.forceToOpen = open
 	}
 }

@@ -26,6 +26,9 @@ module.exports = {
     "dist"
   ],
   testEnvironment: 'jsdom',
+  setupFilesAfterEnv: [
+    "./config/jest-setup.js"
+  ],
   "globals": {
     "window": {},
     "localStorage": {}

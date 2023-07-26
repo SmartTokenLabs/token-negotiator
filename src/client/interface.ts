@@ -3,6 +3,7 @@ import { AuthenticationMethod } from './auth/abstractAuthentication'
 import { SafeConnectOptions } from '../wallet/SafeConnectProvider'
 import { BrowserDataInterface } from '../utils/support/isSupported'
 import { WalletConnection } from '../wallet/Web3WalletProvider'
+import { DecodedToken } from '../outlet/ticketStorage'
 
 export type SupportedBlockchainsParam = 'evm' | 'flow' | 'solana' | 'ultra'
 export const SignatureSupportedBlockchainsParamList = ['evm', 'flow', 'solana', 'ultra']
@@ -45,7 +46,6 @@ export interface IssuerConfigInterface {
 	image?: string
 	symbol?: string
 	decimals?: number
-	filters?: {}
 	noTokenMsg?: string
 	hideToggle?: boolean
 	fungible?: boolean
@@ -83,6 +83,11 @@ export interface WalletOptionsInterface {
 		chains?: string[]
 		rpcMap: { [chainId: string]: string }
 	}
+}
+
+export interface MultiTokenInterface {
+	issuerConfig: OffChainTokenConfig
+	tokenIds: (string | number)[]
 }
 
 export interface AuthenticateInterface {
@@ -148,4 +153,8 @@ export interface EventSenderTokensLoaded {
 export type EventSenderConnectedWallet = WalletConnection | null
 export interface EventSenderDisconnectedWallet {
 	data: null
+}
+
+export interface OutletTokenResult {
+	[collectionId: string]: DecodedToken[]
 }

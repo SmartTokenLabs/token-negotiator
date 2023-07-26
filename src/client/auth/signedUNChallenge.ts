@@ -1,18 +1,14 @@
-import { AbstractAuthentication, AuthenticationMethod, AuthenticationResult } from './abstractAuthentication'
+import { AbstractAuthentication, AuthenticationMethod, AuthenticationResult, AuthenticationMethodUN } from './abstractAuthentication'
 import { AuthenticateInterface, OffChainTokenConfig, OnChainTokenConfig } from '../interface'
 import { SafeConnectProvider } from '../../wallet/SafeConnectProvider'
 import { UN, UNInterface } from './util/UN'
 import { logger } from '../../utils'
 
-export class SignedUNChallenge extends AbstractAuthentication implements AuthenticationMethod {
+export class SignedUNChallenge extends AbstractAuthentication implements AuthenticationMethodUN {
 	TYPE = 'signedUN'
 	private static DEFAULT_ENDPOINT = 'https://attestation-verify.tokenscript.org/un'
 
-	async getTokenProof(
-		_issuerConfig: OnChainTokenConfig | OffChainTokenConfig,
-		_tokens: Array<any>,
-		request: AuthenticateInterface,
-	): Promise<AuthenticationResult> {
+	async getTokenProof(request: AuthenticateInterface): Promise<any> {
 		let web3WalletProvider = await this.client.getWalletProvider()
 
 		// TODO: Update once Flow & Solana signing support is added

@@ -28,9 +28,11 @@ export enum SupportedWalletProviders {
 	WalletConnectV2 = 'WalletConnectV2',
 	Torus = 'Torus',
 	Phantom = 'Phantom',
+	Phantom_Brave = 'Phantom_Brave',
 	Flow = 'Flow',
 	Ultra = 'Ultra',
 	SafeConnect = 'SafeConnect',
+	AlphaWallet = 'AlphaWallet',
 }
 
 export class Web3WalletProvider {
@@ -246,40 +248,6 @@ export class Web3WalletProvider {
 		this.connections[address.toLowerCase()] = { address, chainId, providerType, provider, blockchain, ethers, meta: walletMeta }
 		switch (blockchain) {
 			case 'solana':
-				provider.on('connect', (publicKey) => {
-					let newAddress = publicKey.toBase58()
-					logger(2, 'connected wallet: ', newAddress)
-					this.registerNewWalletAddress(newAddress, 'mainnet-beta', 'phantom', window.solana, 'solana')
-				})
-
-				provider.on('disconnect', () => {
-					logger(2, 'disconnected wallet.')
-					delete this.connections[address.toLowerCase()]
-					/**
-					 * TODO do we need to disconnect all wallets?
-					 * for now user cant connect to multiple wallets
-					 * but do we need it for future?
-					 */
-					this.client.disconnectWallet()
-				})
-
-				provider.on('accountChanged', (publicKey) => {
-					delete this.connections[address.toLowerCase()]
-					if (publicKey) {
-						// Set new public key and continue as usual
-						logger(2, `Switched to account ${publicKey.toBase58()}`)
-						this.registerNewWalletAddress(publicKey.toBase58(), 'mainnet-beta', 'phantom', window.solana, 'solana')
-					} else {
-						logger(2, 'Disconnected from wallet')
-						delete this.connections[address.toLowerCase()]
-						/**
-						 * TODO do we need to disconnect all wallets?
-						 * for now user cant connect to multiple wallets
-						 * but do we need it for future?
-						 */
-						this.client.disconnectWallet()
-					}
-				})
 				break
 			case 'flow':
 				provider.currentUser().subscribe((user) => {
@@ -295,54 +263,6 @@ export class Web3WalletProvider {
 				})
 				break
 			case 'evm':
-				// @ts-ignore
-				provider.on('accountsChanged', (accounts) => {
-					logger(2, 'accountsChanged: ', accounts)
-					if (!accounts || accounts.length === 0) {
-						/**
-						 * TODO do we need to disconnect all wallets?
-						 * for now user cant connect to multiple wallets
-						 * but do we need it for future?
-						 */
-						this.client.disconnectWallet()
-						return
-					}
-
-					if (address === accounts[0]) return
-
-					delete this.connections[address.toLowerCase()]
-
-					address = accounts[0]
-
-					this.registerNewWalletAddress(address, chainId, providerType, provider, 'evm')
-
-					this.saveConnections()
-
-					this.emitSavedConnection(address)
-
-					this.client.getTokenStore().clearCachedTokens()
-					this.client.enrichTokenLookupDataOnChainTokens()
-				})
-
-				// @ts-ignore
-				provider.on('chainChanged', (_chainId: any) => {
-					this.registerNewWalletAddress(address, _chainId, providerType, provider, 'evm')
-
-					this.saveConnections()
-
-					this.emitNetworkChange(_chainId)
-				})
-
-				// @ts-ignore
-				provider.on('disconnect', (reason: any) => {
-					if (reason?.message && reason.message.indexOf('MetaMask: Disconnected from chain') > -1) return
-					/**
-					 * TODO do we need to disconnect all wallets?
-					 * for now user cant connect to multiple wallets
-					 * but do we need it for future?
-					 */
-					this.client.disconnectWallet()
-				})
 				break
 			default:
 				logger(2, 'Unknown blockchain, dont attach listeners')
@@ -362,6 +282,49 @@ export class Web3WalletProvider {
 
 		this.registerNewWalletAddress(curAccount, chainId, providerName, provider, 'evm')
 
+		// @ts-ignore
+		provider.provider.on('accountsChanged', (newAccounts) => {
+			logger(2, 'accountsChanged: ', newAccounts)
+			if (!newAccounts || newAccounts.length === 0) {
+				this.client.disconnectWallet()
+				return
+			}
+
+			if (curAccount === newAccounts[0]) return
+
+			delete this.connections[curAccount.toLowerCase()]
+			curAccount = newAccounts[0]
+
+			this.registerNewWalletAddress(curAccount, chainId, providerName, provider, 'evm')
+
+			this.saveConnections()
+
+			this.emitSavedConnection(curAccount)
+
+			this.client.getTokenStore().clearCachedTokens()
+			this.client.enrichTokenLookupDataOnChainTokens()
+		})
+
+		// @ts-ignore
+		provider.provider.on('chainChanged', (_chainId: any) => {
+			this.registerNewWalletAddress(curAccount, _chainId, providerName, provider, 'evm')
+
+			this.saveConnections()
+
+			this.emitNetworkChange(_chainId)
+		})
+
+		// @ts-ignore
+		provider.provider.on('disconnect', (reason: any) => {
+			if (reason?.message && reason.message.indexOf('MetaMask: Disconnected from chain') > -1) return
+			/**
+			 * TODO do we need to disconnect all wallets?
+			 * for now user cant connect to multiple wallets
+			 * but do we need it for future?
+			 */
+			this.client.disconnectWallet()
+		})
+
 		return curAccount
 	}
 
@@ -369,23 +332,35 @@ export class Web3WalletProvider {
 		const connection = await provider.connect()
 		const accountAddress: string = connection.publicKey.toBase58()
 
+		let curAccount = accountAddress
 		this.registerNewWalletAddress(accountAddress, 'mainnet-beta', providerName, provider, 'solana')
 
+		// event hooks
+		provider.on('connect', (publicKey) => {
+			let newAddress = publicKey.toBase58()
+			logger(2, 'connected wallet: ', newAddress)
+			this.registerNewWalletAddress(newAddress, 'mainnet-beta', 'phantom', window.solana, 'solana')
+		})
+
 		provider.on('disconnect', () => {
+			logger(2, 'disconnected wallet.')
 			this.client.disconnectWallet()
 		})
 
 		provider.on('accountChanged', (publicKey) => {
 			if (publicKey) {
+				delete this.connections[curAccount.toLowerCase()]
 				// Set new public key and continue as usual
 				const newAccountAddress = publicKey.toBase58()
-				this.registerNewWalletAddress(newAccountAddress, 'mainnet-beta', providerName, provider, 'solana')
+				curAccount = newAccountAddress
+				this.registerNewWalletAddress(curAccount, 'mainnet-beta', 'phantom', window.solana, 'solana')
 				this.saveConnections()
-
-				this.emitSavedConnection(newAccountAddress)
-
+				this.emitSavedConnection(curAccount)
 				this.client.getTokenStore().clearCachedTokens()
 				this.client.enrichTokenLookupDataOnChainTokens()
+			} else {
+				logger(2, 'disconnected wallet.')
+				this.client.disconnectWallet()
 			}
 		})
 
@@ -410,9 +385,9 @@ export class Web3WalletProvider {
 		logger(2, 'connect Wallet Connect')
 
 		const walletConnectProvider = await import('./WalletConnectProvider')
-
 		const walletConnect = await walletConnectProvider.getWalletConnectProviderInstance(checkConnectionOnly)
 
+		let connecting = true
 		return new Promise((resolve, reject) => {
 			if (checkConnectionOnly) {
 				walletConnect.connector.on('display_uri', (err, payload) => {
@@ -420,14 +395,26 @@ export class Web3WalletProvider {
 				})
 			}
 
+			// this is for the edge case when user rejects connection from wallet
+			walletConnect.connector.on('disconnect', (err, payload) => {
+				if (connecting) {
+					connecting = false
+					reject(new Error('User rejected connection'))
+				}
+			})
+
 			walletConnect
 				.enable()
 				.then(() => {
+					connecting = false
 					const provider = new ethers.providers.Web3Provider(walletConnect, 'any')
 
 					resolve(this.registerEvmProvider(provider, 'WalletConnect'))
 				})
-				.catch((e) => reject(e))
+				.catch((e) => {
+					connecting = false
+					reject(e)
+				})
 		})
 	}
 
@@ -439,6 +426,9 @@ export class Web3WalletProvider {
 		const universalWalletConnect = await walletConnectProvider.getWalletConnectV2ProviderInstance()
 
 		let QRCodeModal
+
+		// invoke the QR image to load as initial option via WC Modal
+		if (!checkConnectionOnly) QRCodeModal = (await import('@walletconnect/qrcode-modal')).default
 
 		universalWalletConnect.on('display_uri', async (uri: string) => {
 			QRCodeModal = (await import('@walletconnect/qrcode-modal')).default

@@ -1,6 +1,14 @@
 import { OutletAction, OutletResponseAction, Messaging } from './messaging'
 import { Ui, UiInterface, UItheme } from './ui'
-import { logger, requiredParams, waitForElementToExist, errorHandler, removeUrlSearchParams } from '../utils'
+import {
+	logger,
+	requiredParams,
+	waitForElementToExist,
+	errorHandler,
+	removeUrlSearchParams,
+	createIssuerHashMap,
+	createIssuerHashArray,
+} from '../utils'
 import { getNftCollection, getNftTokens } from '../utils/token/nftProvider'
 import { Authenticator } from '@tokenscript/attestation'
 import { TokenStore } from './tokenStore'
@@ -10,7 +18,6 @@ import {
 	AuthenticateInterface,
 	NegotiationInterface,
 	TokenNegotiatorEvents,
-	EventSenderTokenProof,
 	EventSenderTokensSelected,
 	EventSenderConnectedWallet,
 	EventSenderDisconnectedWallet,
@@ -22,18 +29,23 @@ import {
 	EventSenderClosedOverlay,
 	EventSenderTokensRefreshed,
 	EventSenderTokensLoaded,
+	OutletTokenResult,
+	MultiTokenInterface,
 } from './interface'
 import { SignedUNChallenge } from './auth/signedUNChallenge'
 import { TicketZKProof } from './auth/ticketZKProof'
-import { AuthenticationMethod } from './auth/abstractAuthentication'
+import { TicketZKProofMulti } from './auth/ticketZKProofMulti'
+import { AuthenticationMethod, AuthenticationMethodMulti } from './auth/abstractAuthentication'
 import { isUserAgentSupported, validateBlockchain } from '../utils/support/isSupported'
 import Web3WalletProvider from '../wallet/Web3WalletProvider'
 import { LocalOutlet } from '../outlet/localOutlet'
-import { Outlet, OutletInterface } from '../outlet'
 import { shouldUseRedirectMode } from '../utils/support/getBrowserData'
 import { VERSION } from '../version'
 import { getFungibleTokenBalances, getFungibleTokensMeta } from '../utils/token/fungibleTokenProvider'
 import { URLNS } from '../core/messaging'
+import { DecodedToken, TokenType } from '../outlet/ticketStorage'
+import { MultiTokenAuthRequest, MultiTokenAuthResult, OutletIssuerInterface, ProofResult } from '../outlet/interfaces'
+import { AttestationIdClient } from '../outlet/attestationIdClient'
 
 if (typeof window !== 'undefined') window.tn = { VERSION }
 
@@ -59,7 +71,7 @@ export const defaultConfig: NegotiationInterface = {
 	uiOptions: {
 		uiType: 'popup',
 		containerElement: '.overlay-tn',
-		openingHeading: 'Validate your token ownership for access',
+		openingHeading: 'Open a new world of perks, benefits and opportunities with your attestation, collectible or token.',
 		issuerHeading: 'Detected tokens',
 		autoPopup: true,
 		position: 'bottom-right',
@@ -116,9 +128,9 @@ export class Client {
 
 	private urlParams: URLSearchParams
 
-	static getKey(file: string) {
+	/* static getKey(file: string) {
 		return Authenticator.decodePublicKey(file)
-	}
+	}*/
 
 	constructor(config: NegotiationInterface) {
 		if (window.location.hash) {
@@ -136,42 +148,89 @@ export class Client {
 		if (this.config.issuers?.length > 0) this.tokenStore.updateIssuers(this.config.issuers)
 
 		this.messaging = new Messaging()
-		this.registerOutletProofEventListener()
+		// this.registerOutletProofEventListener()
+	}
+
+	handleRecievedRedirectMessages() {
+		const issuer = this.getDataFromQuery('issuer')
+		const error = this.getDataFromQuery('error')
+		const type = this.getDataFromQuery('type')
+		if (error === 'USER_ABORT' && type === 'offchain-issuer-connection') {
+			let userAbortError = new Error(error)
+			userAbortError.name = 'USER_ABORT'
+			errorHandler(
+				'issuer denied connection with off chain issuer',
+				'error',
+				() => this.eventSender('error', { issuer: issuer, error: userAbortError }),
+				null,
+				true,
+				false,
+			)
+			return userAbortError
+		}
+		return null
 	}
 
 	getDataFromQuery(itemKey: any): string {
-		return this.urlParams ? this.urlParams.get(URLNS + itemKey) : ''
+		if (this.urlParams) {
+			return this.urlParams.get(URLNS + itemKey)
+		}
+
+		return null
 	}
 
-	public readProofCallback() {
+	public async readProofCallback() {
 		if (!this.getDataFromQuery) return false
-
 		let action = this.getDataFromQuery('action')
-
+		let multiToken = this.getDataFromQuery('multi-token')
 		if (action !== 'proof-callback') return false
+		// single or multi token flow
+		if (multiToken !== 'true') this.readProofCallbackLegacy()
+		else this.readProofCallbackMultiToken()
+	}
 
-		const issuer = this.getDataFromQuery('issuer')
-		const attest = this.getDataFromQuery('attestation')
+	private async readProofCallbackMultiToken() {
+		const proofs = JSON.parse(this.getDataFromQuery('tokens')) as MultiTokenAuthResult
 		const error = this.getDataFromQuery('error')
 
-		this.emitRedirectProofEvent(issuer, attest, error)
+		// for each issuer
+		for (const issuer in proofs) {
+			// validate proof
+			const issuerConfig = this.tokenStore.getCurrentIssuers(false)[issuer] as OffChainTokenConfig
+			for (const tokenId in proofs[issuer]) {
+				await TicketZKProof.validateProof(issuerConfig, proofs[issuer][tokenId].proof, proofs[issuer][tokenId].type)
+			}
+		}
+		this.emitMultiRedirectProofEvent(proofs, error)
+	}
+
+	private async readProofCallbackLegacy() {
+		const issuer = this.getDataFromQuery('issuer')
+		const attest = this.getDataFromQuery('attestation')
+		const type = this.getDataFromQuery('type') as TokenType
+		const error = this.getDataFromQuery('error')
+
+		await TicketZKProof.validateProof(this.tokenStore.getCurrentIssuers(false)[issuer] as OffChainTokenConfig, attest, type as TokenType)
+
+		this.emitRedirectProofEvent(issuer, { proof: attest, type }, error)
 	}
 
 	private removeCallbackParamsFromUrl() {
-		let params = new URLSearchParams(document.location.hash.substring(1))
+		let params = new URLSearchParams(window.location.hash.substring(1))
 
 		params = removeUrlSearchParams(params)
 
-		document.location.hash = '#' + params.toString()
+		window.location.hash = '#' + params.toString()
 	}
 
-	private registerOutletProofEventListener() {
+	/* private registerOutletProofEventListener() {
 		window.addEventListener('auth-callback', (e: CustomEvent) => {
 			this.emitRedirectProofEvent(e.detail.issuer, e.detail.proof, e.detail.error)
 		})
-	}
+	}*/
 
-	private emitRedirectProofEvent(issuer: string, proof?: string, error?: string) {
+	// TODO: Merge these proof events
+	private emitRedirectProofEvent(issuer: string, proof?: ProofResult, error?: string) {
 		// Wait to ensure UI is initialized
 		setTimeout(() => {
 			if (error) {
@@ -180,7 +239,20 @@ export class Client {
 				this.eventSender('token-proof', {
 					issuer,
 					error: null,
-					data: { proof },
+					data: proof,
+				})
+			}
+		}, 500)
+	}
+
+	private emitMultiRedirectProofEvent(proofs?: MultiTokenAuthResult, error?: string) {
+		// Wait to ensure UI is initialized
+		setTimeout(() => {
+			if (error) {
+				this.handleProofError(new Error(error), 'multi token authentication error')
+			} else {
+				this.eventSender('token-proof', {
+					issuers: proofs,
 				})
 			}
 		}, 500)
@@ -197,7 +269,7 @@ export class Client {
 
 		// Check if blockchain is supported one
 		// TODO: Put in separate method - issuers can also be specified via negotiate()
-		if (defaultConfig.issuers && defaultConfig.issuers.length) {
+		if (defaultConfig.issuers?.length) {
 			for (const issuer of defaultConfig.issuers) {
 				if (issuer.onChain === true) {
 					validateBlockchain(issuer.blockchain ?? '')
@@ -244,10 +316,6 @@ export class Client {
 		)
 	}
 
-	public experimentalFeaturesEnabled(feature: string) {
-		return this.config.experimentalFeatures && this.config.experimentalFeatures.indexOf(feature) > -1
-	}
-
 	public async getWalletProvider() {
 		if (!this.web3WalletProvider) {
 			const { Web3WalletProvider } = await import('./../wallet/Web3WalletProvider')
@@ -258,12 +326,16 @@ export class Client {
 	}
 
 	public async disconnectWallet() {
-		let wp = await this.getWalletProvider()
-		wp.deleteConnections()
-		this.tokenStore.clearCachedTokens()
-		this.eventSender('connected-wallet', null)
-		this.eventSender('disconnected-wallet', null)
-		this.triggerUiUpdateCallback(UIUpdateEventType.WALLET_DISCONNECTED)
+		try {
+			let wp = await this.getWalletProvider()
+			await wp.deleteConnections()
+			this.tokenStore.clearCachedTokens()
+			this.eventSender('connected-wallet', null)
+			this.eventSender('disconnected-wallet', null)
+			this.triggerUiUpdateCallback(UIUpdateEventType.WALLET_DISCONNECTED)
+		} catch (e) {
+			logger(2, 'Failed to disconnect wallet', e)
+		}
 	}
 
 	async negotiatorConnectToWallet(walletType: string) {
@@ -307,7 +379,7 @@ export class Client {
 					this.tokenStore.updateTokenLookupStore(issuer, lookupData)
 				}
 			} catch (e) {
-				logger(2, 'Failed to load contract data for ' + issuer + ': ' + e.message)
+				logger(2, 'Failed to load contract data for ' + issuer + ': ' + e.message, e)
 			}
 		}
 
@@ -337,10 +409,6 @@ export class Client {
 		return this.config.type === 'active'
 	}
 
-	private createCurrentUrlWithoutHash(): string {
-		return window.location.origin + window.location.pathname + window.location.search ?? '?' + window.location.search
-	}
-
 	public getNoTokenMsg(collectionID: string) {
 		const store = this.getTokenStore().getCurrentIssuers()
 		const collectionNoTokenMsg = store[collectionID]?.noTokenMsg
@@ -352,8 +420,8 @@ export class Client {
 
 		if (currentIssuer) {
 			logger(2, 'Sync Outlet fired in Client to read MagicLink before negotiate().')
-			let outlet = new Outlet(currentIssuer, true)
-			await outlet.readMagicLink()
+			let outlet = new LocalOutlet(Object.values(this.tokenStore.getCurrentIssuers(false)) as unknown as OutletIssuerInterface[])
+			await outlet.readMagicLink(this.urlParams)
 			outlet = null
 		}
 
@@ -377,6 +445,8 @@ export class Client {
 			await this.passiveNegotiationStrategy()
 		}
 
+		this.handleRecievedRedirectMessages()
+
 		this.eventSender('loaded', null)
 	}
 
@@ -387,7 +457,7 @@ export class Client {
 			autoOpenPopup = this.tokenStore.hasUnloadedTokens()
 
 			if (this.ui.viewIsNotStart() && this.tokenStore.hasUnloadedIssuers()) {
-				this.enrichTokenLookupDataOnChainTokens()
+				await this.enrichTokenLookupDataOnChainTokens()
 			} else {
 				this.triggerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADED)
 			}
@@ -414,10 +484,15 @@ export class Client {
 
 		let count = 1
 
+		if (refresh) this.tokenStore.clearCachedTokens()
+
 		for (let issuerKey in this.tokenStore.getCurrentIssuers()) {
 			let tokens = this.tokenStore.getIssuerTokens(issuerKey)
 
-			if (!refresh && tokens != null) continue
+			if (tokens != null) {
+				onComplete(issuerKey, tokens)
+				continue
+			}
 
 			onLoading(issuerKey)
 
@@ -429,7 +504,7 @@ export class Client {
 				onComplete(issuerKey, tokens)
 			} catch (e) {
 				e.message = 'Failed to load ' + issuerKey + ': ' + e.message
-				logger(2, e.message)
+				logger(2, e)
 				errorHandler('autoload tokens error', 'error', () => this.eventSender('error', { issuer: issuerKey, error: e }), null, true, false)
 				onComplete(issuerKey, null)
 			}
@@ -459,8 +534,9 @@ export class Client {
 			const issuerConfig = this.tokenStore.getCurrentIssuers()[issuer] as OffChainTokenConfig
 
 			try {
-				if (new URL(issuerConfig.tokenOrigin).origin === document.location.origin) {
-					tokens = this.loadLocalOutletTokens(issuerConfig)
+				// TODO: Consolidate this with the logic in readTokensFromUrl (probably best to run this in the Client constructor)
+				if (new URL(issuerConfig.tokenOrigin).origin === window.location.origin) {
+					tokens = await this.loadLocalOutletTokens(issuerConfig)
 				} else {
 					let responseIssuer = this.getDataFromQuery('issuer')
 
@@ -489,64 +565,44 @@ export class Client {
 			logger(2, 'tokens:')
 			logger(2, tokens)
 
-			this.tokenStore.setTokens(issuer, tokens)
+			this.storeOutletTokenResponse(tokens)
 		}
 	}
 
 	readTokensFromUrl() {
-		let issuers = this.tokenStore.getCurrentIssuers(false)
-
 		let action = this.getDataFromQuery('action')
 
 		if (action === 'error') {
-			this.handleRedirectTokensError()
-			return
+			return this.handleRedirectTokensError()
+				.then()
+				.catch((e) => logger(2, 'Error handle redirect tokens error. ', e))
 		}
 
 		if (action !== OutletAction.GET_ISSUER_TOKENS + '-response') return
 
-		let issuer = this.getDataFromQuery('issuer')
-
-		if (!issuer) {
+		if (!this.getDataFromQuery('tokens')) {
 			logger(3, 'No issuer in URL.')
-			return
-		}
-
-		const issuerConfig = issuers[issuer] as OffChainTokenConfig
-		if (!issuerConfig) {
-			logger(3, `No issuer config for "${issuer}" in URL.`)
 			return
 		}
 
 		let tokens
 
 		try {
-			if (new URL(issuerConfig.tokenOrigin).origin !== document.location.origin) {
-				// TODO make solution:
-				// in case if we have multiple tokens then redirect flow will not work
-				// because page will reload on first remote token
-
-				let resposeTokensEncoded = this.getDataFromQuery('tokens')
-				try {
-					tokens = JSON.parse(resposeTokensEncoded)
-				} catch (e) {
-					logger(2, 'Error parse tokens from Response. ', e)
-				}
+			let resposeTokensEncoded = this.getDataFromQuery('tokens')
+			try {
+				tokens = JSON.parse(resposeTokensEncoded) as OutletTokenResult
+			} catch (e) {
+				logger(2, 'Error parse tokens from Response. ', e)
 			}
 		} catch (err) {
 			logger(1, 'Error read tokens from URL')
 			return
 		}
 
-		if (!tokens) {
-			logger(2, `No tokens for "${issuer}" in URL.`)
-			return
-		}
-
 		logger(2, 'readTokensFromUrl tokens:')
 		logger(2, tokens)
 
-		this.tokenStore.setTokens(issuer, tokens)
+		this.storeOutletTokenResponse(tokens)
 	}
 
 	private async handleRedirectTokensError() {
@@ -627,16 +683,8 @@ export class Client {
 		if (config.onChain === true) {
 			tokens = await this.loadOnChainTokens(config)
 		} else {
-			if (new URL(config.tokenOrigin).origin === document.location.origin) {
-				tokens = this.loadLocalOutletTokens(config)
-			} else {
-				tokens = await this.loadRemoteOutletTokens(config)
-
-				if (!tokens) return // Site is redirecting
-			}
+			tokens = await this.loadOutletTokens(config)
 		}
-
-		this.tokenStore.setTokens(issuer, tokens)
 
 		if (this.config.autoEnableTokens) {
 			this.eventSender('tokens-selected', {
@@ -669,21 +717,42 @@ export class Client {
 			return token
 		})
 
+		this.tokenStore.setTokens(issuer.collectionID, tokens)
+
 		return tokens
 	}
 
-	private async loadRemoteOutletTokens(issuer: OffChainTokenConfig): Promise<unknown[] | void> {
-		const data: {
-			issuer: OffChainTokenConfig
-			filter?: {}
-			access?: string
-		} = {
-			issuer: issuer,
-			filter: issuer.filters,
+	public prepareMultiOutletRequest(initialIssuer: OffChainTokenConfig) {
+		const requestBatchOfSameOutletIssuers = [initialIssuer]
+		for (const issuer of Object.values(this.tokenStore.getCurrentIssuers(false)) as OffChainTokenConfig[]) {
+			if (issuer.tokenOrigin === initialIssuer.tokenOrigin) requestBatchOfSameOutletIssuers.push(issuer)
+		}
+		return createIssuerHashMap(requestBatchOfSameOutletIssuers)
+	}
+
+	private async loadOutletTokens(config: OffChainTokenConfig) {
+		let tokens
+
+		if (new URL(config.tokenOrigin).origin === window.location.origin) {
+			tokens = await this.loadLocalOutletTokens(config)
+		} else {
+			tokens = await this.loadRemoteOutletTokens(config)
+
+			if (!tokens) return // Site is redirecting
 		}
 
-		if (issuer.accessRequestType) data.access = issuer.accessRequestType
+		this.storeOutletTokenResponse(tokens)
 
+		return tokens[config.collectionID]
+	}
+
+	private storeOutletTokenResponse(tokens: OutletTokenResult) {
+		for (const issuer in tokens) {
+			this.tokenStore.setTokens(issuer, tokens[issuer])
+		}
+	}
+
+	private async loadRemoteOutletTokens(issuer: OffChainTokenConfig): Promise<OutletTokenResult | void> {
 		const redirectRequired = shouldUseRedirectMode(this.config.offChainRedirectMode)
 
 		if (redirectRequired) this.tokenStore.setTokens(issuer.collectionID, [])
@@ -692,22 +761,23 @@ export class Client {
 			{
 				action: OutletAction.GET_ISSUER_TOKENS,
 				origin: issuer.tokenOrigin,
-				data: data,
+				data: {
+					request: this.prepareMultiOutletRequest(issuer),
+				},
 			},
 			this.config.messagingForceTab,
 			this.config.type === 'active' ? this.ui : null,
-			redirectRequired ? document.location.href : false,
+			redirectRequired ? window.location.href : false,
 		)
 
 		if (!res) return // Site is redirecting
 
-		return res.data?.tokens ?? []
+		return res.data?.tokens ?? {}
 	}
 
-	private loadLocalOutletTokens(issuer: OffChainTokenConfig) {
-		const localOutlet = new LocalOutlet(issuer as OutletInterface & OffChainTokenConfig)
-
-		return localOutlet.getTokens()
+	private async loadLocalOutletTokens(issuer: OffChainTokenConfig) {
+		const localOutlet = new LocalOutlet(Object.values(this.tokenStore.getCurrentIssuers(false)) as unknown as OutletIssuerInterface[])
+		return await localOutlet.getTokens(this.prepareMultiOutletRequest(issuer))
 	}
 
 	updateSelectedTokens(selectedTokens) {
@@ -715,7 +785,121 @@ export class Client {
 		this.eventSender('tokens-selected', { selectedTokens })
 	}
 
-	async authenticate(authRequest: AuthenticateInterface) {
+	async prepareToAuthenticateToken(authRequest: AuthenticateInterface) {
+		await this.checkUserAgentSupport('authentication')
+		const { issuer, unsignedToken, tokenId } = authRequest
+		requiredParams(issuer && (unsignedToken || tokenId), 'Issuer and unsigned token required.')
+		const config = this.tokenStore.getCurrentIssuers()[issuer]
+		if (!config) errorHandler('Provided issuer was not found.', 'error', null, null, true, true)
+		return authRequest
+	}
+
+	async getMultiRequestBatch(authRequests: AuthenticateInterface[]) {
+		let authRequestBatch: { onChain: {}; offChain: { [origin: string]: { [issuer: string]: MultiTokenInterface } } } = {
+			onChain: {},
+			offChain: {},
+		}
+		// build a list of the batches for each token origin. At this point when this loop is complete
+		// we will have a list of all the tokens that need to be authenticated and the origin they need to be authenticated against.
+		await Promise.all(
+			authRequests.map(async (authRequestItem) => {
+				const reqItem = await this.prepareToAuthenticateToken(authRequestItem)
+
+				if (!reqItem.tokenId && reqItem.unsignedToken?.tokenId) reqItem.tokenId = reqItem.unsignedToken?.tokenId
+
+				const issuerConfig = this.tokenStore.getCurrentIssuers()[reqItem.issuer] as OffChainTokenConfig
+				// Off Chain
+				// Setup for Token Collection. e.g. authRequestBatch.offChain['https://mywebsite.com']['devcon']
+				/**
+				 * Always generate a batch
+				 */
+				if (issuerConfig.onChain === false) {
+					if (!authRequestBatch.offChain[issuerConfig.tokenOrigin]) authRequestBatch.offChain[issuerConfig.tokenOrigin] = {}
+
+					if (!authRequestBatch.offChain[issuerConfig.tokenOrigin][reqItem.issuer]) {
+						authRequestBatch.offChain[issuerConfig.tokenOrigin][reqItem.issuer] = {
+							tokenIds: [],
+							issuerConfig: issuerConfig,
+						}
+					}
+					// Push token into the request batch
+					authRequestBatch.offChain[issuerConfig.tokenOrigin][reqItem.issuer].tokenIds.push(reqItem.tokenId)
+					return
+				}
+
+				throw new Error('On-chain token are not supported by batch authentication at this time.')
+			}),
+		)
+
+		if (Object.keys(authRequestBatch.offChain).length > 1)
+			throw new Error('Only a single token origin is supported by batch authentication at this time.')
+
+		return authRequestBatch
+	}
+
+	async authenticateMultiple(authRequests: AuthenticateInterface[]) {
+		try {
+			let messagingForceTab = false
+
+			if (this.ui) {
+				this.ui.showLoaderDelayed(
+					[
+						'<h4>Authenticating...</h4>',
+						'<small>You may need to sign a new challenge in your wallet</small>',
+						"<button class='cancel-auth-btn btn-tn' aria-label='Cancel authentication'>Cancel</button>",
+					],
+					600,
+					true,
+				)
+			}
+
+			const authRequestBatch = await this.getMultiRequestBatch(authRequests)
+			let issuerProofs = {}
+
+			// Send the request batches to each token origin:
+			// Off Chain: // ['https://devcon.com']['issuer'][list of tokenIds]
+			for (const tokenOrigin in authRequestBatch.offChain) {
+				let AuthType = TicketZKProofMulti
+				let authenticator: AuthenticationMethodMulti = new AuthType(this)
+				const authRequest = {
+					options: {
+						useRedirect: messagingForceTab,
+					},
+				}
+				try {
+					const result = await authenticator.getTokenProofMulti(tokenOrigin, authRequestBatch.offChain[tokenOrigin], authRequest)
+					if (!result) return // Site is redirecting
+					issuerProofs = result.data
+				} catch (err) {
+					if (err.message === 'WALLET_REQUIRED') {
+						return this.handleWalletRequired(authRequest)
+					}
+					// errorHandler(err, 'error', () => this.handleProofError(err, `multi issuer authentication via ${tokenOrigin}`), null, false, true)
+					console.error(err)
+					throw err
+				}
+			}
+			if (this.ui) {
+				this.ui.dismissLoader()
+				this.ui.closeOverlay()
+			}
+
+			this.eventSender('token-proof', {
+				issuers: issuerProofs,
+			})
+
+			return { issuers: issuerProofs }
+		} catch (err) {
+			errorHandler(err, 'error', null, false, true, true)
+		}
+	}
+
+	async authenticate(authRequest: any) {
+		if (Array.isArray(authRequest)) return this.authenticateMultiple(authRequest as AuthenticateInterface[])
+		else return this.authenticateToken(authRequest as AuthenticateInterface)
+	}
+
+	async authenticateToken(authRequest: AuthenticateInterface) {
 		await this.checkUserAgentSupport('authentication')
 
 		const { issuer, unsignedToken } = authRequest
@@ -793,13 +977,17 @@ export class Client {
 	}
 
 	public enableAuthCancel(issuer): void {
-		waitForElementToExist('.cancel-auth-btn').then((cancelAuthButton: HTMLElement) => {
-			cancelAuthButton.onclick = () => {
-				const err = 'User cancelled authentication'
-				this.ui.showError(err)
-				this.eventSender('token-proof', { issuer, error: err, data: null })
-			}
-		})
+		waitForElementToExist('.cancel-auth-btn')
+			.then((cancelAuthButton: HTMLElement) => {
+				cancelAuthButton.onclick = () => {
+					const err = 'User cancelled authentication'
+					this.ui.showError(err)
+					this.eventSender('token-proof', { issuer, error: err, data: null })
+				}
+			})
+			.catch((err) => {
+				logger(2, err)
+			})
 	}
 
 	private async handleWalletRequired(authRequest) {
@@ -845,7 +1033,7 @@ export class Client {
 	async eventSender(eventName: 'opened-overlay', data: EventSenderOpenedOverlay)
 	async eventSender(eventName: 'view-changed', data: EventSenderViewChanged)
 	async eventSender(eventName: 'tokens', data: EventSenderTokens)
-	async eventSender(eventName: 'token-proof', data: EventSenderTokenProof)
+	async eventSender(eventName: 'token-proof', data: any)
 	async eventSender(eventName: 'tokens-selected', data: EventSenderTokensSelected)
 	async eventSender(eventName: 'tokens-loaded', data: EventSenderTokensLoaded)
 	async eventSender(eventName: 'connected-wallet', data: EventSenderConnectedWallet)
@@ -854,12 +1042,12 @@ export class Client {
 	async eventSender(eventName: 'error', data: EventSenderError)
 
 	async eventSender(eventName: TokenNegotiatorEvents, data: any) {
-		Promise.resolve(this.on(eventName, null, data))
+		await Promise.resolve(this.on(eventName, null, data))
 	}
 
-	getOutletConfigForCurrentOrigin(origin: string = document.location.origin) {
-		let allIssuers = this.tokenStore.getCurrentIssuers(false)
-		let currentIssuers = []
+	getOutletConfigForCurrentOrigin(origin: string = window.location.origin) {
+		const allIssuers = this.tokenStore.getCurrentIssuers(false)
+		const currentIssuers: OffChainTokenConfig[] = []
 
 		Object.keys(allIssuers).forEach((key) => {
 			let issuerConfig = allIssuers[key] as OffChainTokenConfig
@@ -879,34 +1067,13 @@ export class Client {
 		return false
 	}
 
-	onlySameOrigin() {
-		let allIssuers = this.tokenStore.getCurrentIssuers(false)
-		let onlySameOriginFlag = true
-
-		Object.keys(allIssuers).forEach((key) => {
-			let issuerConfig = allIssuers[key] as OffChainTokenConfig
-			let thisOneSameOrigin = false
-			try {
-				if (new URL(issuerConfig.tokenOrigin).origin === document.location.origin) {
-					thisOneSameOrigin = true
-				}
-			} catch (err) {
-				logger(2, err)
-			}
-
-			if (!thisOneSameOrigin) {
-				onlySameOriginFlag = false
-			}
-		})
-
-		return onlySameOriginFlag
-	}
-
 	async addTokenViaMagicLink(magicLink: any) {
 		let url = new URL(magicLink)
 		let params = url.hash.length > 1 ? url.hash.substring(1) : url.search.substring(1)
 
 		const redirectRequired = shouldUseRedirectMode(this.config.offChainRedirectMode)
+
+		const request = createIssuerHashMap(Object.values(this.tokenStore.getCurrentIssuers(false)) as OffChainTokenConfig[])
 
 		try {
 			let res = await this.messaging.sendMessage(
@@ -914,23 +1081,26 @@ export class Client {
 					action: OutletAction.MAGIC_URL,
 					origin: url.origin + url.pathname,
 					data: {
+						request,
 						urlParams: params,
 					},
 				},
 				this.config.messagingForceTab,
 				undefined,
-				redirectRequired ? document.location.href : false,
+				redirectRequired ? window.location.href : false,
 			)
 
 			if (!res)
 				return new Promise((_resolve) => {
 					return
 				}) // Site is redirecting
-
 			if (res.evt === OutletResponseAction.ISSUER_TOKENS) {
 				const issuerConfig = this.getOutletConfigForCurrentOrigin(url.origin)
-				if (issuerConfig) this.tokenStore.setTokens(issuerConfig.collectionID, res.data.tokens)
-
+				if (issuerConfig) this.storeOutletTokenResponse(res.data.tokens)
+				this.eventSender('tokens-selected', {
+					selectedTokens: this.tokenStore.getSelectedTokens(),
+				})
+				this.eventSender('tokens', this.tokenStore.getSelectedTokens())
 				return res.data.tokens
 			}
 		} catch (e) {
@@ -953,16 +1123,7 @@ export class Client {
 			if (action === 'proof-callback') {
 				this.readProofCallback()
 			} else if (action === 'email-callback') {
-				let currentIssuer = this.getOutletConfigForCurrentOrigin()
-
-				if (currentIssuer) {
-					logger(2, 'Outlet fired to parse URL hash params.')
-
-					let outlet = new Outlet(currentIssuer, true, this.urlParams)
-					outlet.pageOnLoadEventHandler().then(() => {
-						outlet = null
-					})
-				}
+				this.processAttestationIdCallback()
 			}
 		}
 
@@ -973,6 +1134,64 @@ export class Client {
 				return this.clientCallBackEvents[type].call(type, data)
 			}
 		}
+	}
+
+	private async processAttestationIdCallback() {
+		try {
+			const attestIdClient = new AttestationIdClient()
+			attestIdClient.captureAttestationIdCallback(this.urlParams)
+			const originalAction = this.getDataFromQuery('orig-action')
+
+			switch (originalAction) {
+				case OutletAction.GET_PROOF: {
+					const collectionId: string = this.getDataFromQuery('issuer')
+					const token: string = this.getDataFromQuery('token')
+					const decodedToken = JSON.parse(token) as DecodedToken
+
+					const issuerConfig = this.tokenStore.getCurrentIssuers(false)[collectionId] as unknown as OutletIssuerInterface
+					const localOutlet = new LocalOutlet(Object.values(this.tokenStore.getCurrentIssuers(false)) as unknown as OutletIssuerInterface[])
+					const issuerHashes = createIssuerHashArray(issuerConfig)
+
+					const result = await localOutlet.authenticate(issuerConfig, issuerHashes, decodedToken)
+
+					await TicketZKProof.validateProof(issuerConfig as unknown as OffChainTokenConfig, result.proof, result.type)
+
+					this.eventSender('token-proof', {
+						issuer: collectionId,
+						proof: result,
+					})
+
+					break
+				}
+				case OutletAction.GET_MUTLI_PROOF: {
+					const authRequest = JSON.parse(this.getDataFromQuery('tokens')) ?? ({} as MultiTokenAuthRequest)
+
+					const localOutlet = new LocalOutlet(
+						Object.values(this.getTokenStore().getCurrentIssuers(false)) as unknown as OutletIssuerInterface[],
+					)
+
+					const result = await localOutlet.authenticateMany(authRequest)
+
+					await TicketZKProofMulti.validateProofResult(
+						result,
+						this.getTokenStore().getCurrentIssuers(false) as unknown as OffChainTokenConfig[],
+					)
+
+					this.eventSender('token-proof', {
+						issuers: result,
+					})
+
+					break
+				}
+				default:
+					throw new Error('Original action not defined in attestation.id callback')
+			}
+		} catch (e: any) {
+			console.error(e)
+			this.emitRedirectProofEvent(null, null, e.message)
+		}
+
+		window.location.hash = removeUrlSearchParams(this.urlParams, ['attestation', 'requestSecret', 'address', 'email', 'wallet']).toString()
 	}
 
 	switchTheme(newTheme: UItheme) {

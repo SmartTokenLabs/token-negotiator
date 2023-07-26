@@ -2,17 +2,7 @@ import { logger } from '..'
 import { getBrowserData } from './getBrowserData'
 import { errorHandler } from '../index'
 
-export const SUPPORTED_EVM_BLOCKCHAINS = [
-	'evm',
-	'polygon',
-	'optimism',
-	'bsc',
-	'avalanche',
-	'fantom',
-	'goerli',
-	'mumbai',
-	'arbitrum',
-]
+export const SUPPORTED_EVM_BLOCKCHAINS = ['evm', 'polygon', 'optimism', 'bsc', 'avalanche', 'fantom', 'goerli', 'mumbai', 'arbitrum']
 
 export interface BrowserDataInterface {
 	iE?: boolean

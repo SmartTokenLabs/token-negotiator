@@ -56,11 +56,6 @@ The following types of tokens are supported:
     </tr>
     <tr>
 	    <td>evm</td>
-      <td>avalanche testnet</td>
-      <td>Y</td>
-    </tr>
-    <tr>
-	    <td>evm</td>
       <td>fantom</td>
       <td>N</td>
     </tr>
@@ -83,11 +78,6 @@ The following types of tokens are supported:
       <td>evm</td>
       <td>cronos</td>
       <td>N</td>
-    </tr>
-    <tr>
-      <td>evm</td>
-      <td>cronos testnet</td>
-      <td>Y</td>
     </tr>
     <tr>
 	  <td>solana</td>
@@ -232,7 +222,7 @@ const negotiator = new Client({
 		},
 	],
 	uiOptions: {
-		openingHeading: "Open a new world of discounts available with your tokens.",
+		openingHeading: "Open a new world of perks, benefits and opportunities with your attestation, collectible or token.",
 		issuerHeading: "Get discount with Ticket",
 		repeatAction: "try again",
 		theme: "light",
@@ -477,7 +467,9 @@ negotiator.on("tokens-selected", callback);
   </tbody>
 </table>
 
-### Authenticate ownership of off chain Token
+### Authenticate ownership of single off chain Token
+
+Note: the proof callback object structure will change in version 3.0.0 to multiple call back data structure.
 
 Authenticating ownership of the token will provide a proof with a limited expiry.
 
@@ -491,8 +483,28 @@ negotiator.authenticate({
 	unsignedToken,
 });
 
-negotiator.on("proof", () => {
+negotiator.on("proof", ({ proof, issuer, error }) => {
 	// the proof will be received here (valid or failed)
+});
+```
+
+### Authenticate ownership of multiple off chain Tokens
+
+Authenticating ownership of the tokens will provide a list of proof data with a limited expiry.
+
+```javascript
+/**
+ * @param {{issuer: String, unsignedToken: Object}[]} tokens object array of tokens
+ */
+negotiator.authenticate([{
+	issuer,
+	unsignedToken,
+}]);
+
+negotiator.on("proof", ({ issuers, issuersProcessed }) => {
+	// the proof will be received here (valid or failed)
+	// issuers: { issuerName: [ token, ... ] }
+	// issuersProcessed: [ 'issuerName1', 'issuerName2', '...' ]
 });
 ```
 
@@ -505,6 +517,19 @@ Changing the theme.
  * @param {String} theme 'light' || 'dark'
  */
 negotiator.switchTheme("dark");
+```
+
+### Tokens Updated Hook
+
+Detect when new tokens have been added to the Token Negotiator during an applications lifecycle (for off chain tokens at this time).
+
+```javascript
+
+// temporary solution likely to change in the next major release version.
+document.body.addEventListener("tokensupdated", () => {
+	console.log("Tokens updated event fired!!");
+});
+
 ```
 
 ### When working without NPM
@@ -566,7 +591,7 @@ Configure the library using the following example.
 				],
 				uiOptions: {
 					openingHeading:
-						"Open a new world of discounts available with your tokens.",
+						"Open a new world of perks, benefits and opportunities with your attestation, collectible or token.",
 					issuerHeading: "Get discount with Ticket",
 					repeatAction: "try again",
 					theme: "light",
@@ -623,7 +648,7 @@ This table lists all possible configuration options for Token Negotiator client.
 | **uiOptions**                          | An object defining UI specific options                                                                                                                                                                                                                         | N        | UIOptionsInterface                            |                                          |
 | uiOptions.uiType                       | The type of UI that should be used for active negotiation type.                                                                                                                                                                                                | N        | "popup" or "inline"                           | popup                                    |
 | uiOptions.containerElement             | The query selector of the element that should contain the negotiator UI                                                                                                                                                                                        | N        | string                                        | .overlay-tn                              |
-| uiOptions.openingHeading               | Custom text to display on the start page                                                                                                                                                                                                                       | N        | string                                        | Validate your token ownership for access |
+| uiOptions.openingHeading               | Custom text to display on the start page                                                                                                                                                                                                                       | N        | string                                        | Open a new world of perks, benefits and opportunities with your attestation, collectible or token. |
 | uiOptions.issuerHeading                | Custom heading to display on the issuer list                                                                                                                                                                                                                   | N        | string                                        | Detected tokens                          |
 | uiOptions.repeatAction                 | (Deprecated) Text for retry actions                                                                                                                                                                                                                            | N        | string                                        |                                          |
 | uiOptions.theme                        | The theme to use for the UI                                                                                                                                                                                                                                    | N        | "light" or "dark"                             | light                                    |

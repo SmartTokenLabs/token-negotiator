@@ -5,9 +5,12 @@ import { Authenticator } from '@tokenscript/attestation'
 import { SignedUNChallenge } from './signedUNChallenge'
 import { UNInterface } from './util/UN'
 import { LocalOutlet } from '../../outlet/localOutlet'
-import { OutletInterface } from '../../outlet'
-import { logger } from '../../utils'
+import { createIssuerHashArray, logger } from '../../utils'
 import { shouldUseRedirectMode } from '../../utils/support/getBrowserData'
+import { EasZkProof } from '@tokenscript/attestation/dist/eas/EasZkProof'
+import { DEFAULT_EAS_SCHEMA, TokenType } from '../../outlet/ticketStorage'
+import { EAS_RPC_CONFIG } from '../../core/eas'
+import { OutletIssuerInterface } from '../../outlet/interfaces'
 
 export class TicketZKProof extends AbstractAuthentication implements AuthenticationMethod {
 	TYPE = 'ticketZKProof'
@@ -26,7 +29,7 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 		let redirectMode: false | string =
 			request?.options?.useRedirect || shouldUseRedirectMode(this.client.config.offChainRedirectMode) || false
 
-		if (redirectMode) redirectMode = request?.options?.redirectUrl || document.location.href
+		if (redirectMode) redirectMode = request?.options?.redirectUrl || window.location.href
 
 		let useEthKey: UNInterface | null = null
 
@@ -36,7 +39,7 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 				...request.options,
 				unEndPoint: issuerConfig.unEndPoint,
 			}
-			let unRes = await unChallenge.getTokenProof(issuerConfig, tokens, request)
+			let unRes = await unChallenge.getTokenProof(request)
 			useEthKey = unRes.data as UNInterface
 		}
 
@@ -46,11 +49,21 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 
 		let data
 
-		if (new URL(issuerConfig.tokenOrigin).origin === document.location.origin) {
-			const localOutlet = new LocalOutlet(issuerConfig as OffChainTokenConfig & OutletInterface)
+		if (new URL(issuerConfig.tokenOrigin).origin === window.location.origin) {
+			const localOutlet = new LocalOutlet(
+				Object.values(this.client.getTokenStore().getCurrentIssuers(false)) as unknown as OutletIssuerInterface[],
+			)
 
-			data = {}
-			data.proof = await localOutlet.authenticate(tokens[0], address, wallet, redirectMode)
+			const issuerHashes = createIssuerHashArray(issuerConfig)
+
+			data = await localOutlet.authenticate(
+				issuerConfig as OffChainTokenConfig & OutletIssuerInterface,
+				issuerHashes,
+				tokens[0],
+				address,
+				wallet,
+				redirectMode,
+			)
 		} else {
 			logger(2, 'run OutletAction.GET_PROOF at ', window.location.href)
 			let res = await this.messaging.sendMessage(
@@ -91,17 +104,19 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 			},
 		}
 
-		if (useEthKey) {
-			Authenticator.validateUseTicket(
-				data.proof,
-				issuerConfig.base64attestorPubKey,
-				issuerConfig.base64senderPublicKeys,
-				useEthKey.address ?? '',
-			)
+		await TicketZKProof.validateProof(issuerConfig, data.proof, data.type, useEthKey?.address ?? '')
 
-			proof.data.useEthKey = useEthKey
-		}
+		if (useEthKey) proof.data.useEthKey = useEthKey
 
 		return proof
+	}
+
+	public static async validateProof(issuerConfig: OffChainTokenConfig, proof: string, type: TokenType, ethAddress = '') {
+		if (type === 'eas') {
+			const easZkProof = new EasZkProof(DEFAULT_EAS_SCHEMA, EAS_RPC_CONFIG)
+			await easZkProof.validateUseTicket(proof, issuerConfig.base64attestorPubKey, issuerConfig.base64senderPublicKeys, ethAddress)
+		} else {
+			Authenticator.validateUseTicket(proof, issuerConfig.base64attestorPubKey, issuerConfig.base64senderPublicKeys, ethAddress)
+		}
 	}
 }
