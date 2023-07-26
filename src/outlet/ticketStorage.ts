@@ -316,7 +316,7 @@ export class TicketStorage {
 			// @ts-ignore
 			delete tokenData.ticketIdString
 			// @ts-ignore
-			delete tokenData.ticketIdString
+			delete tokenData.ticketIdNumber
 		}
 		return tokenData
 	}
