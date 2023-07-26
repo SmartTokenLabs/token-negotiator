@@ -64,6 +64,18 @@ export interface DecodedTokenData {
 	easData?: EasFieldData
 }
 
+export interface DecodedTokenDataNewAndLegacy {
+	tokenId?: string
+	eventId?: string
+	ticketId?: string | number
+	ticketIdString?: string
+	ticketIdNumber?: number
+	ticketClass?: number
+	commitment?: Uint8Array
+	easAttestation?: SignedOffchainAttestation
+	easData?: EasFieldData
+}
+
 export interface EasFieldData {
 	[key: string]: {
 		// Arbitrary token data for custom schemas
@@ -306,16 +318,10 @@ export class TicketStorage {
 		return tokenData
 	}
 
-	private assignTicketId(tokenData: DecodedTokenData) {
-		// ts ignore where this data should not be present for DecodedTokenData.
-		// for legacy reasons we ensure ticketId is defined using previously utilised data schemas
-		// when ticketId is missing from tokenData.
+	private assignTicketId(tokenData: DecodedTokenDataNewAndLegacy) {
 		if (!tokenData.ticketId) {
-			// @ts-ignore
 			tokenData.ticketId = tokenData.ticketIdString ?? tokenData.ticketIdNumber
-			// @ts-ignore
 			delete tokenData.ticketIdString
-			// @ts-ignore
 			delete tokenData.ticketIdNumber
 		}
 		return tokenData
