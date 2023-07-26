@@ -43,6 +43,7 @@ declare global {
 		tokenToggleSelection: any
 		ethereum: any
 		solana: any
+		ultra: any
 		tn: unknown
 	}
 }
@@ -288,11 +289,12 @@ export class Client {
 	}
 
 	// TODO: Move to token store OR select-wallet view - this method is very similar to getCurrentBlockchains()
-	public hasIssuerForBlockchain(blockchain: 'evm' | 'solana' | 'flow') {
+	public hasIssuerForBlockchain(blockchain: 'evm' | 'solana' | 'flow' | 'ultra') {
 		return (
 			this.config.issuers.filter((issuer: OnChainTokenConfig) => {
 				if (blockchain === 'evm' && !issuer.onChain) return true
 				if (blockchain === 'solana' && typeof window.solana === 'undefined') return false
+				if (blockchain === 'ultra' && typeof window.ultra === 'undefined') return false
 
 				return (issuer.blockchain ? issuer.blockchain.toLowerCase() : 'evm') === blockchain
 			}).length > 0

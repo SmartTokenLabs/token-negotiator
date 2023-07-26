@@ -31,9 +31,7 @@ export class SignedUNChallenge extends AbstractAuthentication implements Authent
 				this.deleteProof(address)
 				currentProof = null
 			}
-		}
-
-		if (!currentProof) {
+		} else {
 			let walletConnection = connection.provider
 
 			currentProof = {
@@ -55,6 +53,11 @@ export class SignedUNChallenge extends AbstractAuthentication implements Authent
 				signature = await web3WalletProvider.signMessage(address, challenge.messageToSign)
 			}
 
+			const publicKeys = connection.meta?.publicKeys
+			if (publicKeys?.length) {
+				// ultra allows single key only
+				challenge.publicKey = publicKeys[0];
+			}
 			challenge.signature = signature
 			challenge.blockchain = connection.blockchain
 			if (!(await UN.verifySignature(challenge))) {

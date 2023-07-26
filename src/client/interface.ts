@@ -5,8 +5,8 @@ import { BrowserDataInterface } from '../utils/support/isSupported'
 import { WalletConnection } from '../wallet/Web3WalletProvider'
 import { DecodedToken } from '../outlet/ticketStorage'
 
-export type SupportedBlockchainsParam = 'evm' | 'flow' | 'solana'
-export const SignatureSupportedBlockchainsParamList = ['evm', 'flow', 'solana']
+export type SupportedBlockchainsParam = 'evm' | 'flow' | 'solana' | 'ultra'
+export const SignatureSupportedBlockchainsParamList = ['evm', 'flow', 'solana', 'ultra']
 
 export interface OffChainTokenConfig extends IssuerConfigInterface {
 	onChain: false
@@ -23,6 +23,13 @@ export interface OnChainTokenConfig extends IssuerConfigInterface {
 	chain: string
 	openSeaSlug?: string
 	blockchain?: SupportedBlockchainsParam
+}
+
+export interface UltraIssuerConfig extends OnChainTokenConfig {
+	blockchain: 'ultra'
+	// NFT collection is static
+	contract: 'eosio.nft.ft'
+	factoryId?: number
 }
 
 export interface SolanaIssuerConfig extends OnChainTokenConfig {
@@ -44,8 +51,8 @@ export interface IssuerConfigInterface {
 	fungible?: boolean
 }
 
-export type Issuer = OffChainTokenConfig | SolanaIssuerConfig | OnChainTokenConfig
-export type OnChainIssuer = SolanaIssuerConfig | OnChainTokenConfig
+export type Issuer = OffChainTokenConfig | SolanaIssuerConfig | OnChainTokenConfig | UltraIssuerConfig
+export type OnChainIssuer = SolanaIssuerConfig | OnChainTokenConfig | UltraIssuerConfig
 export interface NegotiationInterface {
 	type: string
 	issuers?: Issuer[]

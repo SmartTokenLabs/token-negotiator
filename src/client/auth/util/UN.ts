@@ -2,6 +2,7 @@ import { ethers } from 'ethers'
 import { sign } from 'tweetnacl'
 import { base58ToUint8Array, hexStringToUint8Array, strToHexStr, strToUtfBytes } from '../../../utils'
 import * as flowTypes from '@onflow/types'
+import * as ecc from 'eosjs-ecc'
 
 export interface UNInterface {
 	expiration: number
@@ -12,6 +13,7 @@ export interface UNInterface {
 	address?: string
 	signature?: string
 	blockchain?: string
+	publicKey?: string
 }
 
 export class UN {
@@ -44,7 +46,9 @@ export class UN {
 	public static async verifySignature(un: UNInterface) {
 		if (!un.signature) throw new Error('Null signature')
 
-		if (un.blockchain === 'solana') {
+		if (un.blockchain === 'ultra') {
+			return ecc.verify(un.signature, un.messageToSign, un.publicKey)
+		} else if (un.blockchain === 'solana') {
 			return await sign.detached.verify(
 				strToUtfBytes(un.messageToSign),
 				hexStringToUint8Array(un.signature),

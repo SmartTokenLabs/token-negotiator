@@ -60,6 +60,10 @@ export const validateBlockchain = (blockchain: string) => {
 		return 'flow'
 	}
 
+	if (blockchain === 'ultra') {
+		return 'ultra'
+	}
+
 	if (SUPPORTED_EVM_BLOCKCHAINS.includes(blockchain.toLowerCase())) {
 		errorHandler("We recommend you to set `blockchain` as 'evm'.", 'warning', null, null)
 		return 'evm'
