@@ -2,11 +2,10 @@ import { URLSearchParams } from 'url'
 import { EasTicketAttestation, TicketSchema } from '@tokenscript/attestation/dist/eas/EasTicketAttestation'
 import { KeyPair } from '@tokenscript/attestation/dist/libs/KeyPair'
 import { base64ToUint8array, createIssuerHashArray, createOffChainCollectionHash, IssuerHashMap, logger } from '../utils'
-import { uint8tohex } from '@tokenscript/attestation/dist/libs/utils'
 import { Ticket } from '@tokenscript/attestation/dist/Ticket'
 import { EAS_RPC_CONFIG } from '../core/eas'
 import { EasFieldDefinition, OutletIssuerInterface } from './interfaces'
-import { SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
+import { DevconTicket, SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
 import { AsnParser } from '@peculiar/asn1-schema'
 import { decodeBase64ZippedBase64 } from '@tokenscript/attestation/dist/eas/AttestationUrl'
 import { SignedOffchainAttestation } from '@ethereum-attestation-service/eas-sdk/dist/offchain/offchain'
@@ -14,7 +13,7 @@ import { SignedOffchainAttestation } from '@ethereum-attestation-service/eas-sdk
 export type TokenType = 'asn' | 'eas'
 
 export class readSignedTicket {
-	ticket: any
+	ticket: DevconTicket
 	constructor(source: Uint8Array) {
 		const signedDevconTicket: SignedDevconTicket = AsnParser.parse(source, SignedDevconTicket)
 
@@ -57,19 +56,7 @@ export type DecodedToken = DecodedTokenData & {
 export interface DecodedTokenData {
 	tokenId?: string
 	eventId?: string
-	ticketId?: string | number
-	ticketClass?: number
-	commitment?: Uint8Array
-	easAttestation?: SignedOffchainAttestation
-	easData?: EasFieldData
-}
-
-export interface DecodedTokenDataNewAndLegacy {
-	tokenId?: string
-	eventId?: string
-	ticketId?: string | number
-	ticketIdString?: string
-	ticketIdNumber?: number
+	ticketId?: string | number | bigint
 	ticketClass?: number
 	commitment?: Uint8Array
 	easAttestation?: SignedOffchainAttestation
@@ -289,8 +276,6 @@ export class TicketStorage {
 				}
 			}
 
-			tokenData = this.assignTicketId(easData)
-
 			tokenData = {
 				ticketId: easData.ticketId,
 				eventId: easData.eventId,
@@ -302,28 +287,23 @@ export class TicketStorage {
 
 			tokenData.tokenId = this.getUniqueTokenId(tokenData, idFields)
 		} else {
-			// TODO: Use ticket class instead?
 			let decodedToken = new readSignedTicket(base64ToUint8array(token))
 
 			// TODO: Validate ASN.1 tokens when they are imported
-			if (!decodedToken || !decodedToken['ticket']) throw new Error('Failed to decode token.')
+			if (!decodedToken || !decodedToken.ticket) throw new Error('Failed to decode token.')
 
-			tokenData = this.propsArrayBufferToHex(decodedToken['ticket'])
+			const ticket = decodedToken.ticket
 
-			tokenData = this.assignTicketId(tokenData)
+			tokenData = {
+				eventId: ticket.devconId,
+				ticketId: ticket.ticketIdString ?? ticket.ticketIdNumber.valueOf(),
+				ticketClass: ticket.ticketClass,
+				commitment: ticket.commitment,
+			}
 
 			tokenData.tokenId = this.getUniqueTokenId(tokenData)
 		}
 
-		return tokenData
-	}
-
-	private assignTicketId(tokenData: DecodedTokenDataNewAndLegacy) {
-		if (!tokenData.ticketId) {
-			tokenData.ticketId = tokenData.ticketIdString ?? tokenData.ticketIdNumber
-			delete tokenData.ticketIdString
-			delete tokenData.ticketIdNumber
-		}
 		return tokenData
 	}
 
@@ -371,15 +351,6 @@ export class TicketStorage {
 			idFields,
 			easManager: new EasTicketAttestation(schemaConfig, undefined, EAS_RPC_CONFIG, this.signingKeys),
 		}
-	}
-
-	private propsArrayBufferToHex(obj: DecodedToken) {
-		Object.keys(obj).forEach((key) => {
-			if (obj[key] instanceof Uint8Array) {
-				obj[key] = '0x' + uint8tohex(new Uint8Array(obj[key]))
-			}
-		})
-		return obj
 	}
 
 	private async updateOrInsertTicket(collectionHash: string, tokenRecord: StoredTicketRecord): Promise<boolean> {
