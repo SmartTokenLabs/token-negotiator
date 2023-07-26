@@ -340,7 +340,7 @@ describe('client spec', () => {
 	test('tokenNegotiatorClient method eventSender event hook functions', async () => {
 		const tokenNegotiatorClient = getOffChainConfigClient()
 		tokenNegotiatorClient.eventSender('emitAllTokensToClient', [])
-		tokenNegotiatorClient.eventSender('emitSelectedTokensToClient', null)
+		tokenNegotiatorClient.eventSender('emitSelectedTokensToClient', { selectedTokens: null })
 		tokenNegotiatorClient.eventSender('emitProofToClient', { data: 'test', issuer: 'devcon', error: null })
 		tokenNegotiatorClient.eventSender('emitNetworkChange', '0x1')
 	})
