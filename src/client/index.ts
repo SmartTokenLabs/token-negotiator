@@ -306,7 +306,6 @@ export class Client {
 			const { Web3WalletProvider } = await import('./../wallet/Web3WalletProvider')
 			this.web3WalletProvider = new Web3WalletProvider(this, this.config.walletOptions, this.config.safeConnectOptions)
 		}
-
 		return this.web3WalletProvider
 	}
 
@@ -772,9 +771,10 @@ export class Client {
 
 	async prepareToAuthenticateToken(authRequest: AuthenticateInterface) {
 		await this.checkUserAgentSupport('authentication')
-		const { issuer, unsignedToken, tokenId } = authRequest
-		requiredParams(issuer && (unsignedToken || tokenId), 'Issuer and unsigned token required.')
-		const config = this.tokenStore.getCurrentIssuers()[issuer]
+		const { unsignedToken, tokenId } = authRequest
+		if (!authRequest.issuer) authRequest.issuer = unsignedToken?.collectionId
+		requiredParams(authRequest.issuer && (unsignedToken || tokenId), 'Issuer and unsigned token required.')
+		const config = this.tokenStore.getCurrentIssuers()[authRequest.issuer]
 		if (!config) errorHandler('Provided issuer was not found.', 'error', null, null, true, true)
 		return authRequest
 	}
@@ -887,7 +887,8 @@ export class Client {
 	async authenticateToken(authRequest: AuthenticateInterface) {
 		await this.checkUserAgentSupport('authentication')
 
-		const { issuer, unsignedToken } = authRequest
+		const { unsignedToken } = authRequest
+		const issuer = unsignedToken.collectionId
 
 		requiredParams(issuer && unsignedToken, 'Issuer and unsigned token required.')
 

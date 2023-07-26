@@ -377,31 +377,15 @@ describe('client spec', () => {
 	})
 
 	test('tokenNegotiatorClient method authenticate', async () => {
-		const issuer = {
-			collectionID: 'devcon',
-			onChain: false,
-			title: 'Devcon',
-			image: 'https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg',
-			tokenOrigin: 'http://localhost:3002/',
-			attestationOrigin: 'https://attestation.id/',
-			unEndPoint: 'https://crypto-verify.herokuapp.com/use-devcon-ticket',
-			base64senderPublicKeys: {
-				'6': 'MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABGMxHraqggr2keTXszIcchTjYjH5WXpDaBOYgXva82mKcGnKgGRORXSmcjWN2suUCMkLQj3UNlZCFWF10wIrrlw=',
-			},
-			base64attestorPubKey:
-				'MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ=',
-		}
 		const tokenNegotiatorClient = getOffChainConfigClient()
-		tokenNegotiatorClient.getTokenStore().setTokens('devcon', [{ devcon: { a: 'true' } }])
-
+		tokenNegotiatorClient.getTokenStore().setTokens('devcon', [{ devcon: { a: 'true', collectionId: 'devcon' } }])
 		const authRequest = {
-			issuer: issuer,
-			unsignedToken: { devcon: { a: 'true' } },
+			unsignedToken: { a: 'true', collectionId: 'devcon' },
 		}
 		try {
 			await tokenNegotiatorClient.authenticate(authRequest)
 		} catch (err) {
-			expect(err).toEqual(new Error('Provided issuer was not found.'))
+			expect(err).toEqual(new Error('MetaMask is not available. Please check the extension is supported and active.'))
 		}
 	})
 
