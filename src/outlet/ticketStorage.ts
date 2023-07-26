@@ -58,8 +58,6 @@ export interface DecodedTokenData {
 	tokenId?: string
 	eventId?: string
 	ticketId?: string | number
-	ticketIdNumber?: number
-	ticketIdString?: string
 	ticketClass?: number
 	commitment?: Uint8Array
 	easAttestation?: SignedOffchainAttestation
@@ -195,6 +193,7 @@ export class TicketStorage {
 				let tokens = await Promise.all(
 					this.ticketCollections[hash].map(async (ticket) => {
 						const tokenData = await this.decodeTokenData(ticket.type, ticket.token)
+
 						return <DecodedToken>{
 							type: ticket.type,
 							tokenId: ticket.tokenId,
@@ -278,11 +277,10 @@ export class TicketStorage {
 				}
 			}
 
-			let ticketId = easData?.ticketId
-			if (!ticketId) easData?.ticketIdString
+			tokenData = this.assignTicketId(easData)
 
 			tokenData = {
-				ticketId,
+				ticketId: easData.ticketId,
 				eventId: easData.eventId,
 				ticketClass: easData.ticketClass,
 				commitment: easData.commitment,
@@ -300,9 +298,26 @@ export class TicketStorage {
 
 			tokenData = this.propsArrayBufferToHex(decodedToken['ticket'])
 
+			tokenData = this.assignTicketId(tokenData)
+
 			tokenData.tokenId = this.getUniqueTokenId(tokenData)
 		}
 
+		return tokenData
+	}
+
+	private assignTicketId(tokenData: DecodedTokenData) {
+		// ts ignore where this data should not be present for DecodedTokenData.
+		// for legacy reasons we ensure ticketId is defined using previously utilised data schemas
+		// when ticketId is missing from tokenData.
+		if (!tokenData.ticketId) {
+			// @ts-ignore
+			tokenData.ticketId = tokenData.ticketIdString ?? tokenData.ticketIdNumber
+			// @ts-ignore
+			delete tokenData.ticketIdString
+			// @ts-ignore
+			delete tokenData.ticketIdString
+		}
 		return tokenData
 	}
 
@@ -397,11 +412,7 @@ export class TicketStorage {
 			return parts.join('-')
 		}
 
-		let decodedTicketId = decodedToken?.ticketId
-		if (!decodedTicketId) decodedToken?.ticketIdNumber
-		if (!decodedTicketId) decodedToken?.ticketIdString
-
-		return `${decodedToken.eventId}-${decodedTicketId}`
+		return `${decodedToken.eventId}-${decodedToken.ticketId}`
 	}
 
 	private loadTickets() {
