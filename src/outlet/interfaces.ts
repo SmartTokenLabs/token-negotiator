@@ -1,4 +1,5 @@
 import { TokenType } from './ticketStorage'
+import { AbiFieldTypes } from '@tokenscript/attestation/dist/eas/EasTicketAttestation'
 
 export interface OutletInterface {
 	issuers: OutletIssuerInterface[]
@@ -27,8 +28,22 @@ export interface OutletIssuerInterface {
 	attestationOrigin: string
 	tokenParser?: any
 	base64senderPublicKeys: { [key: string]: string }
-	base64attestorPubKey: string
+	base64attestorPubKey: string // TODO: Remove - only required in outlet
 	whitelist?: string[]
+	eas?: EasSchemaConfig
+}
+
+export interface EasSchemaConfig {
+	schemaUid: string
+	// Defined the fields used to calculate a unique token ID.
+	idFields: string[]
+	fields: EasFieldDefinition[]
+}
+
+export interface EasFieldDefinition {
+	name: string
+	label?: string
+	type: AbiFieldTypes | string // TODO: Change type in attestation library
 }
 
 export interface ProofResult {

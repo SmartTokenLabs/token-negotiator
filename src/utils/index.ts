@@ -223,11 +223,13 @@ export const createIssuerHashArray = (issuer: OffChainTokenConfig | OutletIssuer
 
 	const keysArr = KeyPair.parseKeyArrayStrings(issuer.base64senderPublicKeys)
 
+	const schemaUid = 'eas' in issuer ? issuer.eas.schemaUid : undefined
+
 	for (let [eventId, keys] of Object.entries(keysArr)) {
 		if (!Array.isArray(keys)) keys = [keys]
 
 		for (const key of keys) {
-			hashes.push(createOffChainCollectionHash(key, eventId))
+			hashes.push(createOffChainCollectionHash(key, eventId, schemaUid))
 		}
 	}
 
@@ -235,9 +237,17 @@ export const createIssuerHashArray = (issuer: OffChainTokenConfig | OutletIssuer
 }
 
 // output: 32 byte hash
-export const createOffChainCollectionHash = (key: KeyPair, eventId: string) => {
+export const createOffChainCollectionHash = (key: KeyPair, eventId: string, schemaUid?: string) => {
+	// Only include custom schemaUids in the hash
+	const schemaPart =
+		schemaUid &&
+		schemaUid !== '0x0000000000000000000000000000000000000000000000000000000000000000' &&
+		schemaUid !== '0x7f6fb09beb1886d0b223e9f15242961198dd360021b2c9f75ac879c0f786cafd'
+			? '-' + schemaUid
+			: ''
+
 	const encoder = new TextEncoder()
-	return sha256(encoder.encode(key.getPublicKeyAsHexStr() + '-' + eventId))
+	return sha256(encoder.encode(key.getPublicKeyAsHexStr() + '-' + eventId + schemaPart))
 }
 
 export const createCookie = (name: string, value: any, seconds: number) => {
