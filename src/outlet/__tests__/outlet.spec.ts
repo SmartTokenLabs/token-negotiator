@@ -79,7 +79,7 @@ export const EAS_CONFIG = {
 const EAS_TICKET_SCHEMA = {
 	fields: [
 		{ name: 'devconId', type: 'string' },
-		{ name: 'ticketIdString', type: 'string' },
+		{ name: 'ticketId', type: 'string' },
 		{ name: 'ticketClass', type: 'uint8' },
 		{ name: 'commitment', type: 'bytes', isCommitment: true },
 	],
@@ -165,6 +165,6 @@ describe('Test TicketStorage', () => {
 	// test('Locate token via decoded data', async () => {
 	// 	const decToken = (await storage.getDecodedTokens())[0]
 	// 	const token = await storage.getStoredTicketFromDecodedToken(decToken)
-	// 	expect(token.tokenId).toBe(`${decToken.devconId}-${decToken.ticketIdString}`)
+	// 	expect(token.tokenId).toBe(`${decToken.devconId}-${decToken.ticketId}`)
 	// })
 })
