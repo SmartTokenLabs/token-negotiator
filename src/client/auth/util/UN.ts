@@ -2,7 +2,7 @@ import { ethers } from 'ethers'
 import { sign } from 'tweetnacl'
 import { base58ToUint8Array, hexStringToUint8Array, strToHexStr, strToUtfBytes } from '../../../utils'
 import * as flowTypes from '@onflow/types'
-import * as ecc from 'eosjs-ecc'
+import { ecc } from 'eosjs/dist/eosjs-ecc-migration'
 
 export interface UNInterface {
 	expiration: number
