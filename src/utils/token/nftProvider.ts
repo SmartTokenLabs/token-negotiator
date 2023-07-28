@@ -88,7 +88,7 @@ export const getNftTokens = async (issuer: OnChainIssuer, owner: string, ipfsBas
 					json: true,
 					code: issuer.contract, // "eosio.nft.ft",
 					scope: owner,
-					table: 'token.a',
+					table: 'token.b',
 					limit: 1,
 					lower_bound,
 				}
