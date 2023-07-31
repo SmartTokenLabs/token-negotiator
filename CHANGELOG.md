@@ -1,30 +1,33 @@
 > Description
 
-- tbc -
+This major version of the Token Negotiator provides simplification to the library interface, many new features such as multi-attestation authentication, updates wallet providers and more.
 
 ### Upgrade Steps
 
-- tbc -
+- Please refer to the migration from 2x to 3x guide. https://tokenscript.gitbook.io/token-negotiator/migrating-from-version-2x-to-3x
 
 ### Breaking Changes
 
-- tbc -
+- Passive Negotiation 'tokens' hook
+- Off chain interface changes
 
 ### New Features
 
-- tbc -
+- Support for multi batch EAS & ASN attestation readability and authentication
+- Ultra Network support
+- Added AlphaWallet as provider in active UI
 
 ### Bug Fixes
 
-- tbc -
+- MetaMask support via Wallet Connect V2
 
 ### Performance Improvements
 
-- tbc -
+- Simplified off chain storage of issuer data
  
 ### Other Changes
 
-- tbc -
+- Removal of Wallet Connect V1
 
 **Full Change log**:
 
