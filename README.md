@@ -7,34 +7,31 @@ Token Negotiator provides the gateway for web applications to connect with user 
 
 ```js
 
-	import { Client } from "@tokenscript/token-negotiator";
-	import "@tokenscript/token-negotiator/dist/theme/style.css";
-	​	​
-	const negotiator = new Client({
-		type: "active",
-		issuers: [
-			{
-				blockchain: "evm",
-				onChain: true,
-				collectionID: "cool-cats",
-				contract: "0x1a92f7381b9f03921564a437210bb9396471050c",
-				chain: "eth",
-			}
-		],
-		uiOptions: {
-			openingHeading: "Connect your NFT to access custom content and more.",
-			issuerHeading: "Get discount with token",
-			repeatAction: "try again",
-			theme: "light",
-			position: "bottom-right",
-		},
-	});
-	​​
-	negotiator.negotiate();
-	​	​
-	negotiator.on("tokens-selected", (tokens) => {
-		console.log('owner tokens found: ', tokens);
-	});
+import { Client } from "@tokenscript/token-negotiator";
+import "@tokenscript/token-negotiator/dist/theme/style.css";
+​	​
+const negotiator = new Client({
+	type: "active",
+	issuers: [
+		{
+			blockchain: "evm",
+			onChain: true,
+			collectionID: "cool-cats",
+			contract: "0x1a92f7381b9f03921564a437210bb9396471050c",
+			chain: "eth",
+		}
+	],
+	uiOptions: {
+		openingHeading: "Connect your Cool Cats NFT for a VIP experience.",
+		issuerHeading: "Get discount with token"
+	},
+});
+​​
+negotiator.negotiate();
+​	​
+negotiator.on("tokens-selected", (tokens) => {
+	console.log('owner tokens found: ', tokens);
+});
 ​
 ```
 
