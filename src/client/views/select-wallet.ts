@@ -125,6 +125,7 @@ export class SelectWallet extends AbstractView {
 				this.client.enrichTokenLookupDataOnChainTokens()
 				this.ui.updateUI('main', { viewName: 'main' }, { viewTransition: 'slide-in-right' })
 			}
+			this.ui.setForceToOpen(false)
 		} catch (err: any) {
 			logger(2, 'negotiatorConnectToWallet error', e)
 			this.ui.showError(err)
