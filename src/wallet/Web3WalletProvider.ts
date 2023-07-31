@@ -24,7 +24,6 @@ export interface WalletConnection {
 
 export enum SupportedWalletProviders {
 	MetaMask = 'MetaMask',
-	WalletConnect = 'WalletConnect',
 	WalletConnectV2 = 'WalletConnectV2',
 	Torus = 'Torus',
 	Phantom = 'Phantom',
@@ -86,22 +85,6 @@ export class Web3WalletProvider {
 				for (let item in state) {
 					let provider = state[item].providerType
 					switch (provider) {
-						case 'WalletConnect':
-							{
-								let walletConnectProvider = await import('./WalletConnectProvider')
-								let walletConnect = await walletConnectProvider.getWalletConnectProviderInstance(true)
-								if (walletConnect?.wc?._connected) {
-									walletConnect
-										.disconnect()
-										// eslint-disable-next-line @typescript-eslint/no-empty-function
-										.then(() => {})
-										.catch((error) => {
-											localStorage.removeItem('walletconnect')
-										})
-								}
-							}
-							break
-
 						case 'WalletConnectV2':
 							{
 								let walletConnect2Provider = await import('./WalletConnectV2Provider')
@@ -379,43 +362,6 @@ export class Web3WalletProvider {
 		} else {
 			throw new Error('MetaMask is not available. Please check the extension is supported and active.')
 		}
-	}
-
-	async WalletConnect(checkConnectionOnly: boolean) {
-		logger(2, 'connect Wallet Connect')
-
-		const walletConnectProvider = await import('./WalletConnectProvider')
-		const walletConnect = await walletConnectProvider.getWalletConnectProviderInstance(checkConnectionOnly)
-
-		let connecting = true
-		return new Promise((resolve, reject) => {
-			if (checkConnectionOnly) {
-				walletConnect.connector.on('display_uri', (err, payload) => {
-					reject(new Error('Connection expired'))
-				})
-			}
-
-			// this is for the edge case when user rejects connection from wallet
-			walletConnect.connector.on('disconnect', (err, payload) => {
-				if (connecting) {
-					connecting = false
-					reject(new Error('User rejected connection'))
-				}
-			})
-
-			walletConnect
-				.enable()
-				.then(() => {
-					connecting = false
-					const provider = new ethers.providers.Web3Provider(walletConnect, 'any')
-
-					resolve(this.registerEvmProvider(provider, 'WalletConnect'))
-				})
-				.catch((e) => {
-					connecting = false
-					reject(e)
-				})
-		})
 	}
 
 	async WalletConnectV2(checkConnectionOnly: boolean) {

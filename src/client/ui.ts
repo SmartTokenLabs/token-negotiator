@@ -354,6 +354,12 @@ export class Ui implements UiInterface {
 			const dismissBtn = this.loadContainer.querySelector('.dismiss-error-tn') as HTMLDivElement
 			dismissBtn.style.display = 'none'
 		}
+
+		// fix to allow the user to close the modal in instances where an error is thrown.
+		// Timeout applied to enable the modal to remain open initially for error msg.
+		setTimeout(() => {
+			this.setForceToOpen(false)
+		}, 0)
 	}
 
 	setErrorRetryCallback(retryCallback?: Function) {

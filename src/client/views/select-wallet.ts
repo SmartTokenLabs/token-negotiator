@@ -27,9 +27,8 @@ export class SelectWallet extends AbstractView {
 				walletButtons += this.getWalletButtonHtml(injectedWallet)
 			}
 
-			const walletConnect = getWalletInfo(SupportedWalletProviders.WalletConnect)
 			const walletConnectV2 = getWalletInfo(SupportedWalletProviders.WalletConnectV2)
-			const supportedWallets = [walletConnect, walletConnectV2]
+			const supportedWallets = [walletConnectV2]
 
 			const browserData = getBrowserData()
 
