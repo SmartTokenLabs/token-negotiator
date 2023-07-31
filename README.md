@@ -1,7 +1,9 @@
 
 # `token-negotiator`
 
-Token Negotiator provides the gateway for web applications to connect with user tokens, enabling developers to create bespoke tokenised web experiences from both on and off chain sources.
+Token Negotiator provides the gateway for web applications to connect with user tokens.
+
+Enabling developers to create bespoke tokenised web experiences from both on and off chain sources.
 
 ## Usage
 
@@ -38,7 +40,3 @@ negotiator.on("tokens-selected", (tokens) => {
 ## Documentation
 
 See https://tokenscript.gitbook.io/token-negotiator/
-
-## Github
-
-https://github.com/TokenScript/token-negotiator
