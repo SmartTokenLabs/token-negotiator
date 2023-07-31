@@ -27,9 +27,8 @@ export class SelectWallet extends AbstractView {
 				walletButtons += this.getWalletButtonHtml(injectedWallet)
 			}
 
-			const walletConnect = getWalletInfo(SupportedWalletProviders.WalletConnect)
 			const walletConnectV2 = getWalletInfo(SupportedWalletProviders.WalletConnectV2)
-			const supportedWallets = [walletConnect, walletConnectV2]
+			const supportedWallets = [walletConnectV2]
 
 			const browserData = getBrowserData()
 
@@ -126,7 +125,6 @@ export class SelectWallet extends AbstractView {
 				this.client.enrichTokenLookupDataOnChainTokens()
 				this.ui.updateUI('main', { viewName: 'main' }, { viewTransition: 'slide-in-right' })
 			}
-			this.ui.setForceToOpen(false)
 		} catch (err: any) {
 			logger(2, 'negotiatorConnectToWallet error', e)
 			this.ui.showError(err)
