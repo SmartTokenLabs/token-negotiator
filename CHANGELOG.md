@@ -28,7 +28,8 @@ This major version of the Token Negotiator provides simplification to the librar
 ### Other Changes
 
 - Removal of Wallet Connect V1
+- Migrated this libraries documentation from README to gitbooks
 
 **Full Change log**:
 
-https://github.com/TokenScript/token-negotiator/compare/v2.7.1...v2.8.0
+https://github.com/TokenScript/token-negotiator/compare/v2.7.1...v3.0.0
