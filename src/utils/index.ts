@@ -112,7 +112,11 @@ export const errorHandler = (error: any, type: ErrorType, action?: Function | nu
 }
 
 export class NegotiatorError extends Error {
-	constructor(message: string, public originalError: any, public code?: string) {
+	constructor(
+		message: string,
+		public originalError: any,
+		public code?: string,
+	) {
 		super(message)
 	}
 }

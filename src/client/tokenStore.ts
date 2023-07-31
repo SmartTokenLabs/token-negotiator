@@ -30,7 +30,10 @@ export class TokenStore {
 	// TODO: change to disabled tokens
 	private selectedTokens: any = {}
 
-	constructor(private autoEnableTokens: boolean, private tokenPersistenceTTL: number) {
+	constructor(
+		private autoEnableTokens: boolean,
+		private tokenPersistenceTTL: number,
+	) {
 		if (this.tokenPersistenceTTL > 0) this.loadTokenStore()
 	}
 

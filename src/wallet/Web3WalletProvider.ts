@@ -39,7 +39,11 @@ export class Web3WalletProvider {
 
 	connections: WalletConnectionState = {}
 
-	constructor(private client: Client, private walletOptions?: WalletOptionsInterface, public safeConnectOptions?: SafeConnectOptions) {}
+	constructor(
+		private client: Client,
+		private walletOptions?: WalletOptionsInterface,
+		public safeConnectOptions?: SafeConnectOptions,
+	) {}
 
 	saveConnections() {
 		let savedConnections: WalletConnectionState = {}

@@ -1,7 +1,9 @@
 
 # `token-negotiator`
 
-Token Negotiator provides the client gateway for web applications to connect user tokens from on or off chain sources, enabling developers to create build tokenised web experiences. 
+Token Negotiator provides the gateway for web applications to connect with user tokens.
+
+Enabling developers to create bespoke tokenised web experiences from on and off chain sources.
 
 ## Usage
 

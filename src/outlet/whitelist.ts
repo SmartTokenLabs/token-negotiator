@@ -18,7 +18,10 @@ export class Whitelist {
 	private storedWhitelist: StoredWhitelist = {}
 	private staticWhitelist: StaticWhitelist = {}
 
-	constructor(private config: OutletInterface, private showWhitelistCallback: () => void) {
+	constructor(
+		private config: OutletInterface,
+		private showWhitelistCallback: () => void,
+	) {
 		// Setup static whitelist values
 		this.loadStaticWhitelist()
 
@@ -112,8 +115,8 @@ export class Whitelist {
 						(issuer) => `
 						<label>
 							<input class="tn-permission-cb" type="checkbox" data-issuer="${issuer.collectionID}" ${
-							!this.storedWhitelist[origin] || this.isWhitelisted(origin, [issuer.collectionID]) ? 'checked="checked"' : ''
-						} />
+								!this.storedWhitelist[origin] || this.isWhitelisted(origin, [issuer.collectionID]) ? 'checked="checked"' : ''
+							} />
 							${issuer.title}
 						</label>
 					`,

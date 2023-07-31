@@ -193,13 +193,21 @@
 }
 
 .overlay-tn.popup-tn.open .overlay-fab-button-tn .stl-tn > .child_a {
-  animation: 0.2s linear both a0_t, 0.2s linear both a0_d;
-  -webkit-animation: 0.2s linear both a0_t, 0.2s linear both a0_d;
+  animation:
+    0.2s linear both a0_t,
+    0.2s linear both a0_d;
+  -webkit-animation:
+    0.2s linear both a0_t,
+    0.2s linear both a0_d;
 }
 
 .overlay-tn.popup-tn.open .overlay-fab-button-tn .stl-tn > .child_b {
-  animation: 0.2s linear both a0_t, 0.2s linear both a1_d;
-  -webkit-animation: 0.2s linear both a0_t, 0.2s linear both a1_d;
+  animation:
+    0.2s linear both a0_t,
+    0.2s linear both a1_d;
+  -webkit-animation:
+    0.2s linear both a0_t,
+    0.2s linear both a1_d;
 }
 
 .overlay-tn.popup-tn.open .overlay-content-tn {
