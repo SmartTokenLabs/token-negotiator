@@ -356,8 +356,7 @@ export class Ui implements UiInterface {
 		}
 
 		// fix to allow the user to close the modal in instances where an error is thrown.
-		// Timeout applied to enable the modal to remain open initially shown the end user
-		// error msg.
+		// Timeout applied to enable the modal to remain open initially for error msg.
 		setTimeout(() => {
 			this.setForceToOpen(false)
 		}, 0)
