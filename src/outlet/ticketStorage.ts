@@ -157,7 +157,7 @@ export class TicketStorage {
 		// Check the result for the signing key
 		const signingKey = await this.validateTokenData(typeFromQuery, tokenFromQuery)
 
-		const collectionHash = createOffChainCollectionHash(signingKey, tokenData.eventId ?? '', tokenData.easAttestation.message.schema)
+		const collectionHash = createOffChainCollectionHash(signingKey, tokenData.eventId ?? '', tokenData?.easAttestation?.message?.schema)
 
 		return await this.updateOrInsertTicket(collectionHash, {
 			type: typeFromQuery,

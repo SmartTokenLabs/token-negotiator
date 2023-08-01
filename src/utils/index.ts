@@ -242,6 +242,7 @@ export const createIssuerHashArray = (issuer: OffChainTokenConfig | OutletIssuer
 
 // output: 32 byte hash
 export const createOffChainCollectionHash = (key: KeyPair, eventId: string, schemaUid?: string) => {
+	console.log('does this work??????? createOffChainCollectionHash')
 	// Only include custom schemaUids in the hash
 	const schemaPart =
 		schemaUid &&
