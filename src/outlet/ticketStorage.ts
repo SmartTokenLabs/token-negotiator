@@ -3,12 +3,12 @@ import { EasTicketAttestation, TicketSchema } from '@tokenscript/attestation/dis
 import { KeyPair } from '@tokenscript/attestation/dist/libs/KeyPair'
 import { base64ToUint8array, createIssuerHashArray, createOffChainCollectionHash, IssuerHashMap, logger } from '../utils'
 import { Ticket } from '@tokenscript/attestation/dist/Ticket'
-import { EAS_RPC_CONFIG } from '../core/eas'
-import { EasFieldDefinition, OutletIssuerInterface } from './interfaces'
+import { EasFieldDefinition, OutletInterface, OutletIssuerInterface } from './interfaces'
 import { DevconTicket, SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
 import { AsnParser } from '@peculiar/asn1-schema'
 import { decodeBase64ZippedBase64 } from '@tokenscript/attestation/dist/eas/AttestationUrl'
 import { SignedOffchainAttestation } from '@ethereum-attestation-service/eas-sdk/dist/offchain/offchain'
+import { DEFAULT_RPC_MAP } from '../core/constants'
 
 export type TokenType = 'asn' | 'eas'
 
@@ -89,8 +89,6 @@ export const DEFAULT_EAS_SCHEMA: TicketSchema = {
 }
 
 export class TicketStorage {
-	// private easManager: EasTicketAttestation
-
 	private ticketCollections: TicketStorageSchema = {}
 
 	private issuerHashConfigIndex?: { [hash: string]: OutletIssuerInterface }
@@ -99,11 +97,8 @@ export class TicketStorage {
 
 	private signingKeys: { [eventId: string]: KeyPair[] } = {}
 
-	constructor(private issuers: OutletIssuerInterface[]) {
+	constructor(private config: OutletInterface) {
 		this.processSigningKeys()
-
-		// this.easManager = new EasTicketAttestation(DEFAULT_EAS_SCHEMA, undefined, EAS_RPC_CONFIG, this.signingKeys)
-
 		this.loadTickets()
 	}
 
@@ -112,9 +107,9 @@ export class TicketStorage {
 	 * @private
 	 */
 	private processSigningKeys() {
-		if (!this.issuers) return
+		if (!this.config.issuers) return
 
-		for (const issuer of this.issuers) {
+		for (const issuer of this.config.issuers) {
 			const keys = KeyPair.parseKeyArrayStrings(issuer.base64senderPublicKeys)
 
 			for (const eventId in keys) {
@@ -134,7 +129,7 @@ export class TicketStorage {
 	private getIssuerHashIndex() {
 		if (!this.issuerHashConfigIndex) {
 			this.issuerHashConfigIndex = {}
-			for (const issuer of this.issuers) {
+			for (const issuer of this.config.issuers) {
 				for (const hash of createIssuerHashArray(issuer)) {
 					this.issuerHashConfigIndex[hash] = issuer
 				}
@@ -238,6 +233,7 @@ export class TicketStorage {
 	 * Validate token against all possible public keys
 	 * @param type
 	 * @param token
+	 * @param skipRevokeCheck
 	 * @return The keypair used to sign the token
 	 * @private
 	 */
@@ -247,7 +243,7 @@ export class TicketStorage {
 
 			easManager.loadFromEncoded(token)
 
-			await easManager.validateEasAttestation()
+			await easManager.validateEasAttestation(this.config.skipEasRevokeCheck)
 
 			return easManager.getSignerKeyPair()
 		} else {
@@ -326,7 +322,7 @@ export class TicketStorage {
 			let issuerConfig
 
 			// Once we have decoded the URL, we have a schema ID
-			for (const config of this.issuers) {
+			for (const config of this.config.issuers) {
 				if (config.eas?.schemaUid === schemaUid) issuerConfig = config
 			}
 
@@ -350,7 +346,7 @@ export class TicketStorage {
 		return {
 			fieldDefinition: fieldDefinition,
 			idFields,
-			easManager: new EasTicketAttestation(schemaConfig, undefined, EAS_RPC_CONFIG, this.signingKeys),
+			easManager: new EasTicketAttestation(schemaConfig, undefined, { ...DEFAULT_RPC_MAP, ...this.config.ethRpcMap }, this.signingKeys),
 		}
 	}
 

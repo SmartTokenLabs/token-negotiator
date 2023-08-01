@@ -2,14 +2,14 @@ import { DecodedToken, TicketStorage } from './ticketStorage'
 import { IssuerHashMap, logger } from '../utils'
 import { AttestationIdClient } from './attestationIdClient'
 import { getUseToken } from './getUseToken'
-import { MultiTokenAuthRequest, MultiTokenAuthResult, OutletIssuerInterface } from './interfaces'
+import { MultiTokenAuthRequest, MultiTokenAuthResult, OutletInterface, OutletIssuerInterface } from './interfaces'
 import { OutletAction } from '../client/messaging'
 
 export class LocalOutlet {
 	protected ticketStorage: TicketStorage
 
-	constructor(issuers: OutletIssuerInterface[]) {
-		this.ticketStorage = new TicketStorage(issuers)
+	constructor(config: OutletInterface) {
+		this.ticketStorage = new TicketStorage(config)
 	}
 
 	public async readMagicLink(urlParams: URLSearchParams) {

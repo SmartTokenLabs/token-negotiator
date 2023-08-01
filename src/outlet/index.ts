@@ -25,7 +25,7 @@ export class Outlet extends LocalOutlet {
 		private tokenConfig: OutletInterface,
 		urlParams: URLSearchParams = null,
 	) {
-		super(tokenConfig.issuers)
+		super(tokenConfig)
 
 		this.tokenConfig = Object.assign(defaultConfig, tokenConfig)
 

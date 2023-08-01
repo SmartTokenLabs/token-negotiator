@@ -55,7 +55,7 @@ export interface IssuerConfigInterface {
 export type Issuer = OffChainTokenConfig | SolanaIssuerConfig | OnChainTokenConfig | UltraIssuerConfig
 export type OnChainIssuer = SolanaIssuerConfig | OnChainTokenConfig | UltraIssuerConfig
 export interface NegotiationInterface {
-	type: string
+	type: 'active' | 'passive'
 	issuers?: Issuer[]
 	uiOptions?: UIOptionsInterface
 	autoLoadTokens?: number | boolean
@@ -64,6 +64,8 @@ export interface NegotiationInterface {
 	safeConnectOptions?: SafeConnectOptions
 	offChainRedirectMode?: 'always' | 'never'
 	tokenPersistenceTTL?: number
+	ethRpcMap?: EthRPCMap
+	skipEasRevokeCheck?: boolean
 	unSupportedUserAgent?: {
 		authentication?: {
 			config: BrowserDataInterface
@@ -79,10 +81,13 @@ export interface NegotiationInterface {
 	walletOptions?: WalletOptionsInterface
 }
 
+export interface EthRPCMap {
+	[chainId: number]: string
+}
+
 export interface WalletOptionsInterface {
 	walletConnectV2?: {
 		chains?: string[]
-		rpcMap: { [chainId: string]: string }
 	}
 }
 

@@ -1,15 +1,17 @@
 import { DEFAULT_EAS_SCHEMA, StoredTicketRecord } from './ticketStorage'
 import { EasZkProof } from '@tokenscript/attestation/dist/eas/EasZkProof'
-import { EAS_RPC_CONFIG } from '../core/eas'
 import { Authenticator } from '@tokenscript/attestation'
 import { logger } from '../utils'
 import { OutletIssuerInterface, ProofResult } from './interfaces'
+import { DEFAULT_RPC_MAP } from '../core/constants'
+import { EthRPCMap } from '../client/interface'
 
 export const getUseToken = async (
 	issuerConfig: OutletIssuerInterface,
 	attestationBlob: string,
 	attestationSecret: string,
 	ticketRecord: StoredTicketRecord,
+	ethRpcMap?: EthRPCMap,
 ) => {
 	try {
 		if (!ticketRecord.secret) {
@@ -36,7 +38,7 @@ export const getUseToken = async (
 		if (ticketRecord.type === 'eas') {
 			const schema = issuerConfig.eas ? { fields: issuerConfig.eas.fields } : DEFAULT_EAS_SCHEMA
 
-			const easZkProof = new EasZkProof(schema, EAS_RPC_CONFIG)
+			const easZkProof = new EasZkProof(schema, { ...DEFAULT_RPC_MAP, ...ethRpcMap })
 			useToken = easZkProof.getUseTicket(
 				BigInt(ticketRecord.secret),
 				BigInt(attestationSecret),

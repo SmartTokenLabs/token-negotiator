@@ -404,7 +404,11 @@ export class Client {
 
 		if (currentIssuer) {
 			logger(2, 'Sync Outlet fired in Client to read MagicLink before negotiate().')
-			let outlet = new LocalOutlet(Object.values(this.tokenStore.getCurrentIssuers(false)) as unknown as OutletIssuerInterface[])
+			let outlet = new LocalOutlet({
+				issuers: Object.values(this.tokenStore.getCurrentIssuers(false)) as unknown as OutletIssuerInterface[],
+				ethRpcMap: this.config.ethRpcMap,
+				skipEasRevokeCheck: this.config.skipEasRevokeCheck,
+			})
 			await outlet.readMagicLink(this.urlParams)
 			outlet = null
 		}
@@ -760,7 +764,11 @@ export class Client {
 	}
 
 	private async loadLocalOutletTokens(issuer: OffChainTokenConfig) {
-		const localOutlet = new LocalOutlet(Object.values(this.tokenStore.getCurrentIssuers(false)) as unknown as OutletIssuerInterface[])
+		const localOutlet = new LocalOutlet({
+			issuers: Object.values(this.tokenStore.getCurrentIssuers(false)) as unknown as OutletIssuerInterface[],
+			ethRpcMap: this.config.ethRpcMap,
+			skipEasRevokeCheck: this.config.skipEasRevokeCheck,
+		})
 		return await localOutlet.getTokens(this.prepareMultiOutletRequest(issuer))
 	}
 
@@ -1117,6 +1125,12 @@ export class Client {
 			attestIdClient.captureAttestationIdCallback(this.urlParams)
 			const originalAction = this.getDataFromQuery('orig-action')
 
+			const localOutlet = new LocalOutlet({
+				issuers: Object.values(this.tokenStore.getCurrentIssuers(false)) as unknown as OutletIssuerInterface[],
+				ethRpcMap: this.config.ethRpcMap,
+				skipEasRevokeCheck: this.config.skipEasRevokeCheck,
+			})
+
 			switch (originalAction) {
 				case OutletAction.GET_PROOF: {
 					const collectionId: string = this.getDataFromQuery('issuer')
@@ -1124,7 +1138,7 @@ export class Client {
 					const decodedToken = JSON.parse(token) as DecodedToken
 
 					const issuerConfig = this.tokenStore.getCurrentIssuers(false)[collectionId] as unknown as OutletIssuerInterface
-					const localOutlet = new LocalOutlet(Object.values(this.tokenStore.getCurrentIssuers(false)) as unknown as OutletIssuerInterface[])
+
 					const issuerHashes = createIssuerHashArray(issuerConfig)
 
 					const result = await localOutlet.authenticate(issuerConfig, issuerHashes, decodedToken)
@@ -1140,10 +1154,6 @@ export class Client {
 				}
 				case OutletAction.GET_MUTLI_PROOF: {
 					const authRequest = JSON.parse(this.getDataFromQuery('tokens')) ?? ({} as MultiTokenAuthRequest)
-
-					const localOutlet = new LocalOutlet(
-						Object.values(this.getTokenStore().getCurrentIssuers(false)) as unknown as OutletIssuerInterface[],
-					)
 
 					const result = await localOutlet.authenticateMany(authRequest)
 
