@@ -1,5 +1,5 @@
 import { AbstractAuthentication, AuthenticationMethod, AuthenticationResult } from './abstractAuthentication'
-import { AuthenticateInterface, OffChainTokenConfig, OnChainTokenConfig } from '../interface'
+import { AuthenticateInterface, EthRPCMap, OffChainTokenConfig, OnChainTokenConfig } from '../interface'
 import { OutletAction, Messaging } from '../messaging'
 import { Authenticator } from '@tokenscript/attestation'
 import { SignedUNChallenge } from './signedUNChallenge'
@@ -9,8 +9,8 @@ import { createIssuerHashArray, logger } from '../../utils'
 import { shouldUseRedirectMode } from '../../utils/support/getBrowserData'
 import { EasZkProof } from '@tokenscript/attestation/dist/eas/EasZkProof'
 import { DEFAULT_EAS_SCHEMA, TokenType } from '../../outlet/ticketStorage'
-import { EAS_RPC_CONFIG } from '../../core/eas'
 import { OutletIssuerInterface } from '../../outlet/interfaces'
+import { DEFAULT_RPC_MAP } from '../../core/constants'
 
 export class TicketZKProof extends AbstractAuthentication implements AuthenticationMethod {
 	TYPE = 'ticketZKProof'
@@ -50,9 +50,11 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 		let data
 
 		if (new URL(issuerConfig.tokenOrigin).origin === window.location.origin) {
-			const localOutlet = new LocalOutlet(
-				Object.values(this.client.getTokenStore().getCurrentIssuers(false)) as unknown as OutletIssuerInterface[],
-			)
+			const localOutlet = new LocalOutlet({
+				issuers: Object.values(this.client.getTokenStore().getCurrentIssuers(false)) as unknown as OutletIssuerInterface[],
+				ethRpcMap: this.client.config.ethRpcMap,
+				skipEasRevokeCheck: this.client.config.skipEasRevokeCheck,
+			})
 
 			const issuerHashes = createIssuerHashArray(issuerConfig)
 
@@ -104,17 +106,23 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 			},
 		}
 
-		await TicketZKProof.validateProof(issuerConfig, data.proof, data.type, useEthKey?.address ?? '')
+		await TicketZKProof.validateProof(issuerConfig, data.proof, data.type, this.client.config.ethRpcMap, useEthKey?.address ?? '')
 
 		if (useEthKey) proof.data.useEthKey = useEthKey
 
 		return proof
 	}
 
-	public static async validateProof(issuerConfig: OffChainTokenConfig, proof: string, type: TokenType, ethAddress = '') {
+	public static async validateProof(
+		issuerConfig: OffChainTokenConfig,
+		proof: string,
+		type: TokenType,
+		ethRPCMap?: EthRPCMap,
+		ethAddress = '',
+	) {
 		if (type === 'eas') {
 			const schema = issuerConfig.eas ? { fields: issuerConfig.eas.fields } : DEFAULT_EAS_SCHEMA
-			const easZkProof = new EasZkProof(schema, EAS_RPC_CONFIG)
+			const easZkProof = new EasZkProof(schema, { ...DEFAULT_RPC_MAP, ...ethRPCMap })
 			await easZkProof.validateUseTicket(proof, issuerConfig.base64attestorPubKey, issuerConfig.base64senderPublicKeys, ethAddress)
 		} else {
 			Authenticator.validateUseTicket(proof, issuerConfig.base64attestorPubKey, issuerConfig.base64senderPublicKeys, ethAddress)

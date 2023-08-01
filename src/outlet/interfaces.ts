@@ -1,8 +1,11 @@
 import { TokenType } from './ticketStorage'
 import { AbiFieldTypes } from '@tokenscript/attestation/dist/eas/EasTicketAttestation'
+import { EthRPCMap } from '../client/interface'
 
 export interface OutletInterface {
 	issuers: OutletIssuerInterface[]
+	ethRpcMap?: EthRPCMap
+	skipEasRevokeCheck?: boolean
 	whitelistDialogWidth?: string
 	whitelistDialogHeight?: string
 	whitelistDialogRenderer?: (permissionTxt: string, acceptBtn: string, denyBtn: string) => string

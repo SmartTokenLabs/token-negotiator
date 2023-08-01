@@ -1,5 +1,5 @@
 import { AbstractAuthentication, AuthenticationMethodMulti, AuthenticationResult } from './abstractAuthentication'
-import { OffChainTokenConfig, MultiTokenInterface } from '../interface'
+import { OffChainTokenConfig, MultiTokenInterface, EthRPCMap } from '../interface'
 import { OutletAction, Messaging } from '../messaging'
 import { SignedUNChallenge } from './signedUNChallenge'
 import { UNInterface } from './util/UN'
@@ -74,6 +74,7 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 		await TicketZKProofMulti.validateProofResult(
 			proofResult,
 			this.client.getTokenStore().getCurrentIssuers(false) as unknown as OffChainTokenConfig[],
+			this.client.config.ethRpcMap,
 			useEthKey,
 		)
 
@@ -83,6 +84,7 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 	static async validateProofResult(
 		proofResult: MultiTokenAuthResult,
 		issuerConfig: OffChainTokenConfig[],
+		ethRPCMap?: EthRPCMap,
 		useEthKey: UNInterface | null = null,
 	) {
 		for (const issuer in proofResult) {
@@ -91,7 +93,7 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 
 				const config = issuerConfig[issuer]
 
-				await TicketZKProof.validateProof(config, result.proof, result.type, useEthKey?.address ?? '')
+				await TicketZKProof.validateProof(config, result.proof, result.type, ethRPCMap, useEthKey?.address ?? '')
 			}
 		}
 	}
@@ -136,21 +138,13 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 		address: string,
 		wallet: string,
 		redirectMode: false | string,
-		request?: any,
+		_request?: any,
 	) {
-		const localOutlet = new LocalOutlet(
-			Object.values(this.client.getTokenStore().getCurrentIssuers(false)) as unknown as OutletIssuerInterface[],
-		)
-		/* let issuerKeyHashesAndRequestTokens = {}
-		for (const key in userTokens) {
-			if (!issuerKeyHashesAndRequestTokens[key]) {
-				issuerKeyHashesAndRequestTokens[key] = {
-					issuerHashes: createIssuerHashArray(userTokens[key].issuerConfig as OffChainTokenConfig),
-					requestTokens: userTokens[key].requestTokens,
-					issuerConfig: userTokens[key].issuerConfig,
-				}
-			}
-		}*/
+		const localOutlet = new LocalOutlet({
+			issuers: Object.values(this.client.getTokenStore().getCurrentIssuers(false)) as unknown as OutletIssuerInterface[],
+			ethRpcMap: this.client.config.ethRpcMap,
+			skipEasRevokeCheck: this.client.config.skipEasRevokeCheck,
+		})
 
 		return localOutlet.authenticateMany(authRequest, address, wallet, redirectMode)
 	}

@@ -3,6 +3,7 @@ import { logger, strToHexStr, strToUtfBytes } from '../utils'
 import { SafeConnectOptions } from './SafeConnectProvider'
 import { Client } from '../client'
 import { SupportedBlockchainsParam, WalletOptionsInterface, SignatureSupportedBlockchainsParamList } from '../client/interface'
+import { DEFAULT_RPC_MAP } from '../core/constants'
 
 interface WalletConnectionState {
 	[index: string]: WalletConnection
@@ -412,7 +413,7 @@ export class Web3WalletProvider {
 								methods: ['eth_sendTransaction', 'eth_signTransaction', 'eth_sign', 'personal_sign', 'eth_signTypedData'],
 								chains: preSavedWalletOptions?.walletConnectV2?.chains ?? walletConnectProvider.WC_V2_DEFAULT_CHAINS,
 								events: ['chainChanged', 'accountsChanged'],
-								rpcMap: preSavedWalletOptions?.walletConnectV2?.rpcMap ?? walletConnectProvider.WC_DEFAULT_RPC_MAP,
+								rpcMap: { ...DEFAULT_RPC_MAP, ...this.client.config.ethRpcMap },
 							},
 						},
 					})
