@@ -14,7 +14,10 @@
 
 .overlay-tn.light-tn .overlay-content-tn .toggle-tn input.mobileToggle-tn + label:after {
   background: #f1f1f1;
-  box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.1), 0 4px 0px 0 hsla(0, 0%, 0%, 0.04), 0 4px 9px hsla(0, 0%, 0%, 0.13),
+  box-shadow:
+    0 0 0 1px hsla(0, 0%, 0%, 0.1),
+    0 4px 0px 0 hsla(0, 0%, 0%, 0.04),
+    0 4px 9px hsla(0, 0%, 0%, 0.13),
     0 3px 3px hsla(0, 0%, 0%, 0.05);
 }
 

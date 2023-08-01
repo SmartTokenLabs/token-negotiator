@@ -40,7 +40,11 @@ export class AttestationIdClient {
 	private LOCAL_STORAGE_KEY = 'tn-id-attestations'
 	private attestations: StoredIdAttestations
 
-	constructor(private attestationOrigin?: string, private showIframeCallback?: () => void, private redirectUrl?: false | string) {
+	constructor(
+		private attestationOrigin?: string,
+		private showIframeCallback?: () => void,
+		private redirectUrl?: false | string,
+	) {
 		this.attestations = JSON.parse(localStorage.getItem(this.LOCAL_STORAGE_KEY)) ?? ({} as StoredIdAttestations)
 	}
 

@@ -21,7 +21,10 @@ export class Outlet extends LocalOutlet {
 
 	redirectCallbackUrl?: URL
 
-	constructor(private tokenConfig: OutletInterface, urlParams: URLSearchParams = null) {
+	constructor(
+		private tokenConfig: OutletInterface,
+		urlParams: URLSearchParams = null,
+	) {
 		super(tokenConfig.issuers)
 
 		this.tokenConfig = Object.assign(defaultConfig, tokenConfig)
