@@ -44,12 +44,12 @@ jobs:
             cat package.json
           fi
           # make SNAPSHOT-staging package to use @tokenscript/attestation:SNAPSHOT-staging
-          if [ "${GITHUB_EVENT_NAME}" = "push" -a "${GITHUB_REF_NAME}" = "staging" ]; then
-            echo "//npm.pkg.github.com/:_authToken=${GPR_KEY}" >> .npmrc
-            echo "@tokenscript:registry=https://npm.pkg.github.com" >> .npmrc
-            cat .npmrc
-            npm i "@tokenscript/attestation@SNAPSHOT-staging"
-          fi
+          #if [ "${GITHUB_EVENT_NAME}" = "push" -a "${GITHUB_REF_NAME}" = "staging" ]; then
+          #  echo "//npm.pkg.github.com/:_authToken=${GPR_KEY}" >> .npmrc
+          #  echo "@tokenscript:registry=https://npm.pkg.github.com" >> .npmrc
+          #  cat .npmrc
+          #  npm i "@tokenscript/attestation@SNAPSHOT-staging"
+          #fi
           rm -f .npmrc
         env:
           ATTESTATION_VER: ${{ inputs.attestation_ver }}
