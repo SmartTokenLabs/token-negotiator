@@ -46,6 +46,7 @@
     "@peculiar/asn1-schema": "^2.2.0",
     "@tokenscript/attestation": "0.6.0-rc.1",
     "@toruslabs/torus-embed": "^2.2.5",
+    "@walletconnect/qrcode-modal": "^1.8.0",
     "@walletconnect/types": "^2.1.5",
     "@walletconnect/universal-provider": "^2.4.5",
     "eosjs": "^22.1.0",
