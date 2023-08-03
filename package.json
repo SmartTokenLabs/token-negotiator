@@ -44,7 +44,7 @@
     "@onflow/fcl": "^1.3.2",
     "@onflow/types": "^1.0.5",
     "@peculiar/asn1-schema": "^2.2.0",
-    "@tokenscript/attestation": "0.6.0-rc.1",
+    "@tokenscript/attestation": "0.6.0-rc.2",
     "@toruslabs/torus-embed": "^2.2.5",
     "@walletconnect/qrcode-modal": "^1.8.0",
     "@walletconnect/types": "^2.1.5",
