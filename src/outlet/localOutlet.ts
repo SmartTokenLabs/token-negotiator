@@ -13,11 +13,12 @@ export class LocalOutlet {
 	}
 
 	public async readMagicLink(urlParams: URLSearchParams) {
+		if (!urlParams.has('ticket')) return
+
 		try {
 			await this.ticketStorage.importTicketFromMagicLink(urlParams)
-			const event = new Event('tokensupdated')
-			document.body.dispatchEvent(event)
 		} catch (e) {
+			console.error('Failed to import attestation', e)
 			logger(2, e)
 		}
 	}

@@ -153,17 +153,9 @@ export class Outlet extends LocalOutlet {
 	}
 
 	public async readMagicLink() {
-		try {
-			if (await this.ticketStorage.importTicketFromMagicLink(this.urlParams)) {
-				const event = new Event('tokensupdated')
-				document.body.dispatchEvent(event)
-				// TODO: tokens could be read from the hooks "tokens" and "tokens-selected" by
-				// triggering await this.sendTokens(this.getDataFromQuery('evtid')) at this point instead.
-				// Let's review this approach to confirm if this hook is required.
-			}
-		} catch (e) {
-			logger(2, e)
-		}
+		if (!this.urlParams.has('ticket')) return
+
+		await this.ticketStorage.importTicketFromMagicLink(this.urlParams)
 	}
 
 	async sendMultiTokenProof(evtid: string) {

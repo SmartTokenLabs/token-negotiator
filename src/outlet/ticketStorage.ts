@@ -150,7 +150,7 @@ export class TicketStorage {
 		const idFromQuery = urlParams.has('id') ? urlParams.get('id') : urlParams.get('mail') ?? ''
 		const typeFromQuery = (urlParams.has('type') ? urlParams.get('type') : 'asn') as TokenType
 
-		if (!(tokenFromQuery && secretFromQuery)) throw new Error('Incomplete token params in URL.')
+		if (!tokenFromQuery || !secretFromQuery) throw new Error('Incomplete token params in URL.')
 
 		const tokenData = await this.decodeTokenData(typeFromQuery, tokenFromQuery)
 
