@@ -19,7 +19,7 @@ This major version of the Token Negotiator provides simplification to the librar
 - AlphaWallet provider selection in active UI mode
 - Ultra Network support (BETA)
 - Removal of Wallet Connect V1
-- Migrated this libraries documentation from README to gitbooks
+- Migrated this libraries documentation from README to gitbooks https://tokenscript.gitbook.io/token-negotiator/
 
 ### Bug Fixes
 
