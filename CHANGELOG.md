@@ -1,6 +1,6 @@
 > Description
 
-This major version of the Token Negotiator provides simplification to the library interface, many new features such as multi-attestation authentication, updates wallet providers and more.
+This major version of the Token Negotiator provides simplification to the library interface, and new core features including multi-attestation support.
 
 ### Upgrade Steps
 
@@ -10,12 +10,16 @@ This major version of the Token Negotiator provides simplification to the librar
 
 - Passive Negotiation 'tokens' hook
 - Off chain interface changes
+- off chain Attestation schema changes (ASN / EAS)
 
 ### New Features
 
 - Support for multi batch EAS & ASN attestation readability and authentication
-- Ultra Network support
-- Added AlphaWallet as provider in active UI
+- Dynamic EAS attestation support
+- AlphaWallet provider selection in active UI mode
+- Ultra Network support (BETA)
+- Removal of Wallet Connect V1
+- Migrated this libraries documentation from README to gitbooks
 
 ### Bug Fixes
 
@@ -24,11 +28,6 @@ This major version of the Token Negotiator provides simplification to the librar
 ### Performance Improvements
 
 - Simplified off chain storage of issuer data
- 
-### Other Changes
-
-- Removal of Wallet Connect V1
-- Migrated this libraries documentation from README to gitbooks
 
 **Full Change log**:
 
