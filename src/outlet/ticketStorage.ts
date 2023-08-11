@@ -404,12 +404,15 @@ export class TicketStorage {
 	}
 
 	public migrateLegacyTokenStorage(issuerConfig: OffChainTokenConfig, tokenStorageKey = 'dcTokens') {
+		console.log('migrate tokens')
 		if (!issuerConfig || !tokenStorageKey) {
 			errorHandler('Issuer config and token storage key are required for migration.', 'error', null, null, true, false)
 		}
 		const storageData = localStorage.getItem(tokenStorageKey)
 		if (storageData) {
-			let ticketCollectionsUpdated = JSON.parse(localStorage.getItem(TicketStorage.LOCAL_STORAGE_KEY)) as unknown as TicketStorageSchema
+			let ticketCollectionsUpdated = localStorage.getItem(TicketStorage.LOCAL_STORAGE_KEY)
+				? (JSON.parse(localStorage.getItem(TicketStorage.LOCAL_STORAGE_KEY)) as unknown as TicketStorageSchema)
+				: {}
 			const createCollectionHashes = createIssuerHashArray(issuerConfig)
 			ticketCollectionsUpdated[createCollectionHashes[0]] = JSON.parse(storageData)
 			localStorage.removeItem(tokenStorageKey)
