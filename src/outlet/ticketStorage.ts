@@ -284,6 +284,8 @@ export class TicketStorage {
 
 			tokenData.tokenId = this.getUniqueTokenId(tokenData, idFields)
 		} else {
+			console.log('decode token')
+
 			let decodedToken = new readSignedTicket(base64ToUint8array(token))
 
 			// TODO: Validate ASN.1 tokens when they are imported
@@ -404,7 +406,6 @@ export class TicketStorage {
 	}
 
 	public migrateLegacyTokenStorage(issuerConfig: OffChainTokenConfig, tokenStorageKey = 'dcTokens') {
-		console.log('migrate tokens')
 		if (!issuerConfig || !tokenStorageKey) {
 			errorHandler('Issuer config and token storage key are required for migration.', 'error', null, null, true, false)
 		}
@@ -414,7 +415,16 @@ export class TicketStorage {
 				? (JSON.parse(localStorage.getItem(TicketStorage.LOCAL_STORAGE_KEY)) as unknown as TicketStorageSchema)
 				: {}
 			const createCollectionHashes = createIssuerHashArray(issuerConfig)
-			ticketCollectionsUpdated[createCollectionHashes[0]] = JSON.parse(storageData)
+
+			let tokens = JSON.parse(storageData)
+			if (typeof tokens == 'string') tokens = JSON.parse(tokens) // fix. parse again.
+
+			// fix for devcon. Where the token is nested inside the parent data.
+			ticketCollectionsUpdated[createCollectionHashes[0]] = tokens.map((token) => {
+				if (token.token) return token.token
+				return token
+			})
+
 			localStorage.removeItem(tokenStorageKey)
 			this.ticketCollections = ticketCollectionsUpdated
 			this.storeTickets()

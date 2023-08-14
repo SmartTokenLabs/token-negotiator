@@ -63,6 +63,7 @@ export class IconView {
 		context.textAlign = 'center'
 		context.textBaseline = 'middle'
 
+		console.log('split words')
 		let words = text.split(' ')
 		let initials = ''
 
