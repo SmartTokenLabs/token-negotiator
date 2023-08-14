@@ -429,7 +429,7 @@ export class TicketStorage {
 				localStorage.removeItem(tokenStorageKey)
 				// enforce the update of tokens in storage
 				// to utilise the latest via the main copy inside the outlet.
-				const tokenStore = new TokenStore(true, 0)
+				const tokenStore = new TokenStore(true, 600)
 				tokenStore.clearTokenStore()
 			}
 		}
