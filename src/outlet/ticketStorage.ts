@@ -8,6 +8,7 @@ import { AsnParser } from '@peculiar/asn1-schema'
 import { decodeBase64ZippedBase64 } from '@tokenscript/attestation/dist/eas/AttestationUrl'
 import { SignedOffchainAttestation } from '@ethereum-attestation-service/eas-sdk/dist/offchain/offchain'
 import { DEFAULT_RPC_MAP } from '../core/constants'
+import { TokenStore } from '../client/tokenStore'
 export type TokenType = 'asn' | 'eas'
 
 export class readSignedTicket {
@@ -426,6 +427,10 @@ export class TicketStorage {
 			}
 			if (!failedAttempt) {
 				localStorage.removeItem(tokenStorageKey)
+				// enforce the update of tokens in storage
+				// to utilise the latest via the main copy inside the outlet.
+				const tokenStore = new TokenStore(true, 0)
+				tokenStore.clearTokenStore()
 			}
 		}
 	}
