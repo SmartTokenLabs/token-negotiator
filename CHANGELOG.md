@@ -20,6 +20,7 @@ This major version of the Token Negotiator provides simplification to the librar
 - Ultra Network support (BETA)
 - Removal of Wallet Connect V1
 - Migrated this libraries documentation from README to gitbooks https://tokenscript.gitbook.io/token-negotiator/
+- Added attestation migration support utility function 'migrateLegacyTokenStorage'
 
 ### Bug Fixes
 
