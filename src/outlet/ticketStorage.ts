@@ -1,4 +1,3 @@
-import { URLSearchParams } from 'url'
 import { EasTicketAttestation, TicketSchema } from '@tokenscript/attestation/dist/eas/EasTicketAttestation'
 import { KeyPair } from '@tokenscript/attestation/dist/libs/KeyPair'
 import { base64ToUint8array, createIssuerHashArray, createOffChainCollectionHash, errorHandler, IssuerHashMap, logger } from '../utils'
@@ -9,7 +8,6 @@ import { AsnParser } from '@peculiar/asn1-schema'
 import { decodeBase64ZippedBase64 } from '@tokenscript/attestation/dist/eas/AttestationUrl'
 import { SignedOffchainAttestation } from '@ethereum-attestation-service/eas-sdk/dist/offchain/offchain'
 import { DEFAULT_RPC_MAP } from '../core/constants'
-import { OffChainTokenConfig } from 'src/client/interface'
 export type TokenType = 'asn' | 'eas'
 
 export class readSignedTicket {
@@ -405,29 +403,32 @@ export class TicketStorage {
 		localStorage.setItem(TicketStorage.LOCAL_STORAGE_KEY, JSON.stringify(this.ticketCollections))
 	}
 
-	public migrateLegacyTokenStorage(issuerConfig: OffChainTokenConfig, tokenStorageKey = 'dcTokens') {
-		if (!issuerConfig || !tokenStorageKey) {
-			errorHandler('Issuer config and token storage key are required for migration.', 'error', null, null, true, false)
-		}
+	public migrateLegacyTokenStorage(tokenStorageKey = 'dcTokens') {
 		const storageData = localStorage.getItem(tokenStorageKey)
 		if (storageData) {
-			let ticketCollectionsUpdated = localStorage.getItem(TicketStorage.LOCAL_STORAGE_KEY)
-				? (JSON.parse(localStorage.getItem(TicketStorage.LOCAL_STORAGE_KEY)) as unknown as TicketStorageSchema)
-				: {}
-			const createCollectionHashes = createIssuerHashArray(issuerConfig)
-
 			let tokens = JSON.parse(storageData)
-			if (typeof tokens == 'string') tokens = JSON.parse(tokens) // fix. parse again.
-
-			// fix for devcon. Where the token is nested inside the parent data.
-			ticketCollectionsUpdated[createCollectionHashes[0]] = tokens.map((token) => {
-				if (token.token) return token.token
-				return token
-			})
-
-			localStorage.removeItem(tokenStorageKey)
-			this.ticketCollections = ticketCollectionsUpdated
-			this.storeTickets()
+			if (!tokens) {
+				errorHandler('Failed to migrate token data.', 'error', null, null, true, false)
+				return
+			}
+			let failedAttempt = false
+			for (const tokenObj of tokens) {
+				try {
+					const { id, mail, secret, token, ticket, type } = tokenObj
+					const params = new URLSearchParams({
+						ticket: token ?? ticket,
+						secret: secret,
+						id: id ?? mail,
+						type: type ?? 'asn',
+					})
+					this.importTicketFromMagicLink(params)
+				} catch (e) {
+					failedAttempt = true
+				}
+			}
+			if (!failedAttempt) {
+				localStorage.removeItem(tokenStorageKey)
+			}
 		}
 	}
 }
