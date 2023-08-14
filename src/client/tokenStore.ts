@@ -37,6 +37,10 @@ export class TokenStore {
 		if (this.tokenPersistenceTTL > 0) this.loadTokenStore()
 	}
 
+	public clearTokenStore() {
+		localStorage.removeItem(TokenStore.LOCAL_STORAGE_KEY)
+	}
+
 	private loadTokenStore() {
 		const tokenStoreData = JSON.parse(localStorage.getItem(TokenStore.LOCAL_STORAGE_KEY))
 
