@@ -1,7 +1,6 @@
-import { URLSearchParams } from 'url'
 import { EasTicketAttestation, TicketSchema } from '@tokenscript/attestation/dist/eas/EasTicketAttestation'
 import { KeyPair } from '@tokenscript/attestation/dist/libs/KeyPair'
-import { base64ToUint8array, createIssuerHashArray, createOffChainCollectionHash, IssuerHashMap, logger } from '../utils'
+import { base64ToUint8array, createIssuerHashArray, createOffChainCollectionHash, errorHandler, IssuerHashMap, logger } from '../utils'
 import { Ticket } from '@tokenscript/attestation/dist/Ticket'
 import { EasFieldDefinition, OutletInterface, OutletIssuerInterface } from './interfaces'
 import { DevconTicket, SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
@@ -9,7 +8,6 @@ import { AsnParser } from '@peculiar/asn1-schema'
 import { decodeBase64ZippedBase64 } from '@tokenscript/attestation/dist/eas/AttestationUrl'
 import { SignedOffchainAttestation } from '@ethereum-attestation-service/eas-sdk/dist/offchain/offchain'
 import { DEFAULT_RPC_MAP } from '../core/constants'
-
 export type TokenType = 'asn' | 'eas'
 
 export class readSignedTicket {
@@ -401,5 +399,34 @@ export class TicketStorage {
 
 	private storeTickets() {
 		localStorage.setItem(TicketStorage.LOCAL_STORAGE_KEY, JSON.stringify(this.ticketCollections))
+	}
+
+	public migrateLegacyTokenStorage(tokenStorageKey = 'dcTokens') {
+		const storageData = localStorage.getItem(tokenStorageKey)
+		if (storageData) {
+			let tokens = JSON.parse(storageData)
+			if (!tokens) {
+				errorHandler('Failed to migrate token data.', 'error', null, null, true, false)
+				return
+			}
+			let failedAttempt = false
+			for (const tokenObj of tokens) {
+				try {
+					const { id, mail, secret, token, ticket, type } = tokenObj
+					const params = new URLSearchParams({
+						ticket: token ?? ticket,
+						secret: secret,
+						id: id ?? mail,
+						type: type ?? 'asn',
+					})
+					this.importTicketFromMagicLink(params)
+				} catch (e) {
+					failedAttempt = true
+				}
+			}
+			if (!failedAttempt) {
+				localStorage.removeItem(tokenStorageKey)
+			}
+		}
 	}
 }
