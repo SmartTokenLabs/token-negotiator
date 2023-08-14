@@ -282,8 +282,6 @@ export class TicketStorage {
 
 			tokenData.tokenId = this.getUniqueTokenId(tokenData, idFields)
 		} else {
-			console.log('decode token')
-
 			let decodedToken = new readSignedTicket(base64ToUint8array(token))
 
 			// TODO: Validate ASN.1 tokens when they are imported
