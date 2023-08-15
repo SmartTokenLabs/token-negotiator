@@ -146,27 +146,25 @@ export class SelectIssuers extends AbstractView {
 			html += this.issuerConnectMarkup(title, data.image, issuerKey, tokens, data)
 		}
 
-		setTimeout(() => {
-			this.issuerListContainer.innerHTML = html
+		this.issuerListContainer.innerHTML = html
 
-			for (let elem of this.issuerListContainer.getElementsByClassName('img-container-tn')) {
-				let params = {
-					src: elem.getAttribute('data-image-src'),
-					title: elem.getAttribute('data-token-title'),
-				}
-
-				new IconView(elem, params).render()
+		for (let elem of this.issuerListContainer.getElementsByClassName('img-container-tn')) {
+			let params = {
+				src: elem.getAttribute('data-image-src'),
+				title: elem.getAttribute('data-token-title'),
 			}
 
-			this.issuerListContainer.addEventListener('click', (e: any) => {
-				if (e.target.classList.contains('connect-btn-tn')) {
-					this.connectTokenIssuer(e)
-				} else if (e.target.classList.contains('tokens-btn-tn')) {
-					const issuer = e.target.parentNode.dataset.issuer
-					this.navigateToTokensView(issuer)
-				}
-			})
-		}, 0)
+			new IconView(elem, params).render()
+		}
+
+		this.issuerListContainer.addEventListener('click', (e: any) => {
+			if (e.target.classList.contains('connect-btn-tn')) {
+				this.connectTokenIssuer(e)
+			} else if (e.target.classList.contains('tokens-btn-tn')) {
+				const issuer = e.target.parentNode.dataset.issuer
+				this.navigateToTokensView(issuer)
+			}
+		})
 	}
 
 	issuerConnectMarkup(title: string, image: string | undefined, issuer: string, tokens: any[], data: Issuer) {
