@@ -216,7 +216,7 @@ export class SelectIssuers extends AbstractView {
 			this.issuerLoading.bind(this),
 			(issuer: string, tokens: any[]) => {
 				if (!tokens?.length) {
-					const connectBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`)
+					const connectBtn = this.issuerListContainer.querySelector(`[data-issuer="${issuer}"] .connect-btn-tn`)
 
 					if (connectBtn) connectBtn.innerText = 'Load'
 
@@ -260,11 +260,11 @@ export class SelectIssuers extends AbstractView {
 	}
 
 	issuerLoading(issuer: string) {
-		const tokensBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .tokens-btn-tn`)
+		const tokensBtn = this.issuerListContainer.querySelector(`[data-issuer="${issuer}"] .tokens-btn-tn`)
 
 		if (tokensBtn) tokensBtn.style.display = 'none'
 
-		const connectBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`)
+		const connectBtn = this.issuerListContainer.querySelector(`[data-issuer="${issuer}"] .connect-btn-tn`)
 
 		if (connectBtn) {
 			connectBtn.innerHTML = '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
@@ -273,8 +273,8 @@ export class SelectIssuers extends AbstractView {
 	}
 
 	issuerConnected(issuer: string, tokens: any[], showTokens = true) {
-		const connectBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`)
-		const tokenBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .tokens-btn-tn`)
+		const connectBtn = this.issuerListContainer.querySelector(`[data-issuer="${issuer}"] .connect-btn-tn`)
+		const tokenBtn = this.issuerListContainer.querySelector(`[data-issuer="${issuer}"] .tokens-btn-tn`)
 
 		if (!connectBtn || !tokenBtn) {
 			logger(2, 'Could not find button handler')
