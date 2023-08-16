@@ -50,6 +50,8 @@ export interface IssuerConfigInterface {
 	noTokenMsg?: string
 	hideToggle?: boolean
 	fungible?: boolean
+	oauth2?: boolean
+	oauth2ConsumerKey?: string
 }
 
 export type Issuer = OffChainTokenConfig | SolanaIssuerConfig | OnChainTokenConfig | UltraIssuerConfig

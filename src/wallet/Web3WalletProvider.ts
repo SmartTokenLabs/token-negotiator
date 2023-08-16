@@ -2,7 +2,7 @@ import { ethers } from 'ethers'
 import { logger, strToHexStr, strToUtfBytes } from '../utils'
 import { SafeConnectOptions } from './SafeConnectProvider'
 import { Client } from '../client'
-import { SupportedBlockchainsParam, WalletOptionsInterface, SignatureSupportedBlockchainsParamList } from '../client/interface'
+import { SupportedBlockchainsParam, WalletOptionsInterface, SignatureSupportedBlockchainsParamList, Issuer } from '../client/interface'
 import { DEFAULT_RPC_MAP } from '../core/constants'
 
 interface WalletConnectionState {
@@ -33,6 +33,7 @@ export enum SupportedWalletProviders {
 	Ultra = 'Ultra',
 	SafeConnect = 'SafeConnect',
 	AlphaWallet = 'AlphaWallet',
+	Socios = 'Socios',
 }
 
 export class Web3WalletProvider {
@@ -447,6 +448,37 @@ export class Web3WalletProvider {
 		const provider = new ethers.providers.Web3Provider(torus.provider, 'any')
 
 		return this.registerEvmProvider(provider, 'Torus')
+	}
+
+	async Socios(checkConnectionOnly: boolean) {
+		logger(2, 'connect Socios')
+
+		let clientKey
+
+		for (const issuer of this.client.config.issuers) {
+			if (issuer.oauth2ConsumerKey) {
+				clientKey = issuer.oauth2ConsumerKey
+				continue
+			}
+		}
+
+		if (clientKey) {
+			try {
+				const redirectURI = window.location.href
+				const partnerTag = 'smarttokenlabs'
+				const clientId = 'token-negotiator'
+				const query = `https://partner.socios.com/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectURI}&partner_tag=${partnerTag}?`
+				const response = await fetch(query, { method: 'GET', redirect: 'follow' })
+				const ok = response.status >= 200 && response.status <= 299
+				if (!ok) {
+					console.warn('token api request failed: ', query)
+					return
+				} else throw new Error(`HTTP error! status: ${response.status}`)
+			} catch (msg: any) {
+				throw new Error(`HTTP error.`)
+			}
+		}
+		// throw new Error('Lets connect Socios.')
 	}
 
 	async Phantom(checkConnectionOnly: boolean) {

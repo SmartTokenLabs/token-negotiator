@@ -41,6 +41,11 @@ export class SelectWallet extends AbstractView {
 			}
 		}
 
+		if (this.client.hasIssuerForBlockchain('socios')) {
+			const socios = getWalletInfo(SupportedWalletProviders.Socios)
+			walletButtons += this.getWalletButtonHtml(socios)
+		}
+
 		if (this.client.hasIssuerForBlockchain('solana')) {
 			const phantom = getWalletInfo(SupportedWalletProviders.Phantom)
 			walletButtons += this.getWalletButtonHtml(phantom)

@@ -289,13 +289,13 @@ export class Client {
 	}
 
 	// TODO: Move to token store OR select-wallet view - this method is very similar to getCurrentBlockchains()
-	public hasIssuerForBlockchain(blockchain: 'evm' | 'solana' | 'flow' | 'ultra') {
+	public hasIssuerForBlockchain(blockchain: 'evm' | 'solana' | 'flow' | 'ultra' | 'socios') {
 		return (
 			this.config.issuers.filter((issuer: OnChainTokenConfig) => {
 				if (blockchain === 'evm' && !issuer.onChain) return true
+				if (blockchain === 'socios' && !issuer.oauth2 && issuer.oauth2ConsumerKey) return false
 				if (blockchain === 'solana' && typeof window.solana === 'undefined') return false
 				if (blockchain === 'ultra' && typeof window.ultra === 'undefined') return false
-
 				return (issuer.blockchain ? issuer.blockchain.toLowerCase() : 'evm') === blockchain
 			}).length > 0
 		)
@@ -619,8 +619,12 @@ export class Client {
 			let issuer = issuers[issuerKey] as OnChainIssuer
 
 			try {
-				const tokens = await this.loadOnChainTokens(issuer)
-
+				let tokens
+				if (issuers[issuerKey].oauth2) {
+					tokens = await this.loadOnChainTokensViaOauth2(issuer)
+				} else {
+					tokens = await this.loadOnChainTokens(issuer)
+				}
 				this.tokenStore.setTokens(issuerKey, tokens)
 			} catch (err) {
 				logger(2, err)
@@ -668,9 +672,13 @@ export class Client {
 
 		let tokens
 
-		if (config.onChain === true) {
+		if (config.oauth2 && config.onChain === true) {
+			tokens = await this.loadOnChainTokensViaOauth2(config)
+		} else if (!config.oauth2 && config.onChain === true) {
 			tokens = await this.loadOnChainTokens(config)
 		} else {
+			// TODO //
+			// @ts-ignore
 			tokens = await this.loadOutletTokens(config)
 		}
 
@@ -681,6 +689,14 @@ export class Client {
 		}
 
 		return tokens
+	}
+
+	private async loadOnChainTokensViaOauth2(issuer: OnChainIssuer): Promise<any[]> {
+		// TODO implement logic here to attempt to load the tokens with Socios config
+		// when access token is in local storage.
+		// const accessToken = getAccessToken
+		console.log('CLIENT - loadOnChainTokensViaOauth2')
+		return []
 	}
 
 	private async loadOnChainTokens(issuer: OnChainIssuer): Promise<any[]> {
