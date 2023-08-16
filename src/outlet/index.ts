@@ -10,7 +10,7 @@ import { MultiTokenAuthRequest, MultiTokenAuthResult, OutletInterface, OutletIss
 
 export const defaultConfig = {
 	whitelistDialogWidth: '450px',
-	whitelistDialogHeight: '350px',
+	whitelistDialogHeight: '600px',
 }
 
 export class Outlet extends LocalOutlet {
