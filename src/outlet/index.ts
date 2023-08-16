@@ -13,6 +13,11 @@ export const defaultConfig = {
 	whitelistDialogHeight: '350px',
 }
 
+export const attestationWindowConfig = {
+	max_width: window.innerWidth < 700 ? '400px' : '450px',
+	min_height: window.innerHeight < 600 ? '600px' : '650px',
+}
+
 export class Outlet extends LocalOutlet {
 	// private ticketStorage: TicketStorage
 	private whitelist: Whitelist
@@ -173,8 +178,8 @@ export class Outlet extends LocalOutlet {
 				this.sendMessageResponse({
 					evtid: evtid,
 					evt: ResponseActionBase.SHOW_FRAME,
-					max_width: this.tokenConfig.whitelistDialogWidth,
-					min_height: this.tokenConfig.whitelistDialogHeight,
+					max_width: attestationWindowConfig.max_width,
+					min_height: attestationWindowConfig.min_height,
 				})
 			})
 
@@ -225,8 +230,8 @@ export class Outlet extends LocalOutlet {
 					this.sendMessageResponse({
 						evtid: evtid,
 						evt: ResponseActionBase.SHOW_FRAME,
-						max_width: this.tokenConfig.whitelistDialogWidth,
-						min_height: this.tokenConfig.whitelistDialogHeight,
+						max_width: attestationWindowConfig.max_width,
+						min_height: attestationWindowConfig.min_height,
 					})
 				},
 				redirect,
