@@ -117,6 +117,7 @@ export class AttestationIdClient {
 					display: flex;
 					flex-direction: column;
 					padding: 30px;
+					z-index: 9999;
 				}
 				#${wrapperID} div:hover {
 					box-shadow: 0 0px 14px #ffff !important;

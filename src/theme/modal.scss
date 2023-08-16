@@ -76,6 +76,12 @@
   justify-content: center;
 }
 
+@media (max-width: 768px) {
+  .modal-content-tn {
+    width: 90%;
+  }
+}
+
 /* Add Animation */
 @-webkit-keyframes animatetop {
   from {
