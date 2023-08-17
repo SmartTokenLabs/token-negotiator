@@ -187,7 +187,12 @@ export class Whitelist {
 				// the decline by accident.
 				createCookie('tn-user-denied-access-to-connection', true, 10)
 
-				reject(new Error('USER_ABORT'))
+				// store cookie whilst allowing error to be thrown.
+				try {
+					reject(new Error('USER_ABORT'))
+				} catch (e) {
+					reject(new Error('USER_ABORT'))
+				}
 			})
 
 			this.showWhitelistCallback()
