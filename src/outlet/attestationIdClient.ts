@@ -295,7 +295,7 @@ export class AttestationIdClient {
 		this.iframeWrap = iframeWrap
 		iframeWrap.setAttribute(
 			'style',
-			'width:101%;min-height: 100vh; position: fixed; align-items: center; justify-content: center;display: none;top: 0; left: 0; background: #fffa',
+			'width:101%;min-height: 100vh; position: fixed; align-items: center; justify-content: center;display: none;top: 0; left: 0; background: #fffa; z-index: 1400',
 		)
 		iframeWrap.appendChild(iframe)
 
