@@ -25,6 +25,7 @@ This major version of the Token Negotiator provides simplification to the librar
 ### Bug Fixes
 
 - MetaMask support via Wallet Connect V2
+- attestation.id modal dimensions updated for mobile and via Windows browsers
 
 ### Performance Improvements
 
