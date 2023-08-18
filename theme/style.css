@@ -40,7 +40,7 @@
 
 .overlay-tn.popup-tn {
   position: fixed;
-  z-index: 9999;
+  z-index: 1300;
 }
 
 .overlay-tn.popup-tn.bottom-right {
@@ -91,6 +91,14 @@
   max-width: 100%;
   width: 62px;
   height: auto;
+  max-height: 62px;
+}
+.overlay-tn .wallet-button-tn.WalletConnectV2 svg {
+  width: 57px;
+}
+.overlay-tn .wallet-button-tn.Flow svg, .overlay-tn .wallet-button-tn.Phantom_Brave svg {
+  height: 52px;
+  width: auto;
 }
 
 .overlay-tn .no-tokens-tn {
@@ -805,6 +813,18 @@ li.issuer-connect-banner-tn .fungible-token-btn {
   flex-direction: column;
   align-items: center;
 }
+.overlay-tn .wallet-button-tn.WalletConnectV2 svg {
+  margin-top: -5px;
+}
+.overlay-tn .wallet-button-tn.WalletConnectV2 p {
+  padding-top: 10px;
+}
+.overlay-tn .wallet-button-tn.Flow svg, .overlay-tn .wallet-button-tn.Phantom_Brave svg {
+  margin-top: 5px;
+}
+.overlay-tn .wallet-button-tn.Flow p, .overlay-tn .wallet-button-tn.Phantom_Brave p {
+  padding-top: 5px;
+}
 
 .overlay-tn .skeleton-box {
   display: inline-block;
@@ -1236,6 +1256,11 @@ li.issuer-connect-banner-tn .fungible-token-btn {
   justify-content: center;
 }
 
+@media (max-width: 768px) {
+  .modal-content-tn {
+    width: 90%;
+  }
+}
 /* Add Animation */
 @-webkit-keyframes animatetop {
   from {
