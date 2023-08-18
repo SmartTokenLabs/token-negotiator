@@ -39,7 +39,7 @@
 
 .overlay-tn.popup-tn {
   position: fixed;
-  z-index: 9999;
+  z-index: 1300;
 }
 
 .overlay-tn.popup-tn.bottom-right {
@@ -91,11 +91,20 @@
     max-width: 100%;
     width: 62px;
     height: auto;
+    max-height: 62px;
   }
 
   &.WalletConnectV2 {
     svg {
       width: 57px;
+    }
+  }
+
+  &.Flow,
+  &.Phantom_Brave {
+    svg {
+      height: 52px;
+      width: auto;
     }
   }
 }
@@ -184,13 +193,21 @@
 }
 
 .overlay-tn.popup-tn.open .overlay-fab-button-tn .stl-tn > .child_a {
-  animation: 0.2s linear both a0_t, 0.2s linear both a0_d;
-  -webkit-animation: 0.2s linear both a0_t, 0.2s linear both a0_d;
+  animation:
+    0.2s linear both a0_t,
+    0.2s linear both a0_d;
+  -webkit-animation:
+    0.2s linear both a0_t,
+    0.2s linear both a0_d;
 }
 
 .overlay-tn.popup-tn.open .overlay-fab-button-tn .stl-tn > .child_b {
-  animation: 0.2s linear both a0_t, 0.2s linear both a1_d;
-  -webkit-animation: 0.2s linear both a0_t, 0.2s linear both a1_d;
+  animation:
+    0.2s linear both a0_t,
+    0.2s linear both a1_d;
+  -webkit-animation:
+    0.2s linear both a0_t,
+    0.2s linear both a1_d;
 }
 
 .overlay-tn.popup-tn.open .overlay-content-tn {
@@ -853,6 +870,16 @@ li.issuer-connect-banner-tn .fungible-token-btn {
     }
     p {
       padding-top: 10px;
+    }
+  }
+
+  &.Flow,
+  &.Phantom_Brave {
+    svg {
+      margin-top: 5px;
+    }
+    p {
+      padding-top: 5px;
     }
   }
 }

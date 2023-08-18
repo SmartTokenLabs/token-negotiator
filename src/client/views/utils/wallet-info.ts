@@ -18,9 +18,6 @@ const metaMask = {
 	label: 'MetaMask',
 }
 
-const walletConnectSVG =
-	'<svg width="62px" height="62px" viewBox="0 0 319 319" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;"><title>Wallet connect logo</title><g transform="matrix(1.7268,0,0,1.7268,159.3,155.744)"><g transform="matrix(1,0,0,1,-107.5,-107.5)"><path d="M55.953,84.792L72.263,100.335C72.263,100.335 84.86,78.281 106.774,78.436C106.774,78.436 126.648,75.152 143.824,101.06L160.354,85.616C160.354,85.616 143.436,59.639 107.409,59.615C107.409,59.615 79.188,56.141 55.953,84.792Z" style="fill:rgb(59,153,252);"/><path d="M42.568,93.225L25.838,109.259L74.827,157.509L107.434,125.302L141.274,157.461L188.677,109.672L172.91,93.916L141.771,126.195L107.369,93.403L74.398,126.501L42.568,93.225Z" style="fill:rgb(59,153,252);"/></g></g></svg>'
-
 const walletConnectV2SVG =
 	'<svg fill="none" width="57px" height="57px" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><clipPath id="a"><path d="m0 0h400v400h-400z"/></clipPath><g clip-path="url(#a)"><circle cx="200" cy="200" fill="#141414" r="199.5" stroke="#3b4040"/><path d="m122.519 148.965c42.791-41.729 112.171-41.729 154.962 0l5.15 5.022c2.14 2.086 2.14 5.469 0 7.555l-17.617 17.18c-1.07 1.043-2.804 1.043-3.874 0l-7.087-6.911c-29.853-29.111-78.253-29.111-108.106 0l-7.59 7.401c-1.07 1.043-2.804 1.043-3.874 0l-17.617-17.18c-2.14-2.086-2.14-5.469 0-7.555zm191.397 35.529 15.679 15.29c2.14 2.086 2.14 5.469 0 7.555l-70.7 68.944c-2.139 2.087-5.608 2.087-7.748 0l-50.178-48.931c-.535-.522-1.402-.522-1.937 0l-50.178 48.931c-2.139 2.087-5.608 2.087-7.748 0l-70.7015-68.945c-2.1396-2.086-2.1396-5.469 0-7.555l15.6795-15.29c2.1396-2.087 5.6085-2.087 7.7481 0l50.1789 48.932c.535.522 1.402.522 1.937 0l50.177-48.932c2.139-2.087 5.608-2.087 7.748 0l50.179 48.932c.535.522 1.402.522 1.937 0l50.179-48.931c2.139-2.087 5.608-2.087 7.748 0z" fill="#fff"/></g></svg>'
 
@@ -54,6 +51,14 @@ const flowSVG = `
 	</svg>
 `
 
+const ultraSvg = `<svg data-v-a507e41a="" width="45" height="45" viewBox="0 0 45 45" fill="none" xmlns="http://www.w3.org/2000/svg" class="logotype-icon icon"><path d="M0 22.5C0 14.0885 0 9.88269 1.80866 6.75C2.99353 4.69774 4.69774 2.99353 6.75 1.80866C9.88269 0 14.0885 0 22.5 0C30.9115 0 35.1173 0 38.25 1.80866C40.3023 2.99353 42.0065 4.69774 43.1913 6.75C45 9.88269 45 14.0885 45 22.5C45 30.9115 45 35.1173 43.1913 38.25C42.0065 40.3023 40.3023 42.0065 38.25 43.1913C35.1173 45 30.9115 45 22.5 45C14.0885 45 9.88269 45 6.75 43.1913C4.69774 42.0065 2.99353 40.3023 1.80866 38.25C0 35.1173 0 30.9115 0 22.5Z" fill="#fff"></path> <path fill-rule="evenodd" clip-rule="evenodd" d="M11.9999 23.0153V14.55H16.1999V23.0813C16.2107 25.2345 16.8352 26.683 17.8685 27.6882C18.927 28.7069 20.3406 29.2962 22.4999 29.2962C24.6639 29.2962 26.0927 28.7043 27.1484 27.6881C28.1729 26.6914 28.7999 25.2274 28.7999 23.0153V14.55H32.9999V23.0153C32.9999 26.0542 32.0991 28.7012 30.0818 30.661C28.0941 32.5764 25.5357 33.45 22.4999 33.45C19.4597 33.45 16.9201 32.5738 14.9351 30.6609C12.9279 28.7111 12.0134 26.018 11.9999 23.0153ZM24.5999 22.8578V14.55H20.3999V22.8809C20.4034 23.6644 20.6116 24.1913 20.9561 24.557C21.3089 24.9274 21.7801 25.1417 22.4999 25.1417C23.2213 25.1417 23.6975 24.9265 24.0494 24.557C24.3909 24.1945 24.5999 23.6622 24.5999 22.8578Z" fill="#232026"></path></svg>`
+
+const ultra = {
+	imgBig: ultraSvg,
+	// case-sencetive
+	label: 'Ultra',
+}
+
 const imToken = {
 	imgSmall: `
 		<img src='data:image/webp;base64,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'/>
@@ -66,9 +71,7 @@ const imToken = {
 }
 
 const alphaWallet = {
-	imgBig: `
-		<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><defs><style>.cls-1{fill:#3268ff;}.cls-2{fill:#0019ff;}</style></defs><path d="M701.4,492.41c0,31.75-25.64,57.55-57.18,57.55s-57-25.8-57-57.55,25.64-57.55,57-57.55A57.32,57.32,0,0,1,701.4,492.41Z"/><path class="cls-1" d="M770.47,246.59l-20.67,0c-.18,0-.33,0-.49,0h-3.63l-1.93,3.06c-.45.61-.87,1.27-1.3,2-2.33,3.74-5.7,9.11-9.73,15.54L731,270h0C707.75,307,665.52,374.23,662.11,379.64a114.27,114.27,0,0,1,92.36,82.85c1.22-1.91,2.5-3.82,3.68-5.74,2.17-3.62,4.61-7.25,6.92-11,9.46-14.67,99.06-156.55,120.76-191.07h0l5.06-8.06Z"/><path class="cls-2" d="M916.74,737.7c-23,27.54-49,47-82,54.79-45.37,10.72-88.45,5.8-127.2-22.32-28.08-20.44-45.22-49.14-57.75-81-.43-1-.87-2-1.3-3.34-.15-.29-.15-.59-.29-.87-3.15-8.5-8.71-23.87-14.15-40.42l-13.49,13.32v0c-36.13,36-74.8,68.88-118.85,94.53-39.47,23-82.25,38-127.63,43.63-54.59,6.81-108.45,4.63-159.16-20.3-65.11-31.89-101.69-84.21-107-157.28-4.19-56.68,10.8-109.31,36.86-158.74C185.45,382.39,243.49,320.92,317.38,275c46.39-28.85,97.24-44.79,151.82-49.43,42.78-3.62,82.68,4.2,118.4,28.41,30.25,20.58,51.14,49,66.55,81.9,4.16,9,7.9,18.17,12.1,28l2.36,5.45-6.49,10.34c.74.11,1.46.23,2.2.36v0a114.93,114.93,0,0,0-20-1.78,113.77,113.77,0,0,0-77.78,30.62c-7.31-26-15.92-51.35-29.61-74.91-9.64-16.67-21.89-31.31-39.31-40.29-22.76-11.74-46.1-9.57-69.29-2.18-32.85,10.58-58.05,32.47-79.94,58-48.4,56.4-84.84,119.89-105.58,191.66-11.24,38.7-15.28,78.42-7.21,118.57,9.22,45.24,40,72.34,83,72.2a116.8,116.8,0,0,0,43.94-8.41C399.34,709,430,685.08,458.84,658.25c33.88-31.5,62.63-67,89.26-104.38a114.13,114.13,0,0,0,181.32,14.58c7.52,19,15.32,48.14,22.69,70.81v.14c2,6.38,4,12.18,6,17.11,8.36,20.87,17.15,41.47,33.86,57l3.45,3c21.74,18.12,47.82,22.91,75.06,23.78C885.2,741,899.88,739,916.74,737.7Z"/></svg>
-	`,
+	imgBig: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="21 -80 950 950"><defs><style>.cls-1{fill:#3268ff;}.cls-2{fill:#0019ff;}</style></defs><path d="M701.4,492.41c0,31.75-25.64,57.55-57.18,57.55s-57-25.8-57-57.55,25.64-57.55,57-57.55A57.32,57.32,0,0,1,701.4,492.41Z"/><path class="cls-1" d="M770.47,246.59l-20.67,0c-.18,0-.33,0-.49,0h-3.63l-1.93,3.06c-.45.61-.87,1.27-1.3,2-2.33,3.74-5.7,9.11-9.73,15.54L731,270h0C707.75,307,665.52,374.23,662.11,379.64a114.27,114.27,0,0,1,92.36,82.85c1.22-1.91,2.5-3.82,3.68-5.74,2.17-3.62,4.61-7.25,6.92-11,9.46-14.67,99.06-156.55,120.76-191.07h0l5.06-8.06Z"/><path class="cls-2" d="M916.74,737.7c-23,27.54-49,47-82,54.79-45.37,10.72-88.45,5.8-127.2-22.32-28.08-20.44-45.22-49.14-57.75-81-.43-1-.87-2-1.3-3.34-.15-.29-.15-.59-.29-.87-3.15-8.5-8.71-23.87-14.15-40.42l-13.49,13.32v0c-36.13,36-74.8,68.88-118.85,94.53-39.47,23-82.25,38-127.63,43.63-54.59,6.81-108.45,4.63-159.16-20.3-65.11-31.89-101.69-84.21-107-157.28-4.19-56.68,10.8-109.31,36.86-158.74C185.45,382.39,243.49,320.92,317.38,275c46.39-28.85,97.24-44.79,151.82-49.43,42.78-3.62,82.68,4.2,118.4,28.41,30.25,20.58,51.14,49,66.55,81.9,4.16,9,7.9,18.17,12.1,28l2.36,5.45-6.49,10.34c.74.11,1.46.23,2.2.36v0a114.93,114.93,0,0,0-20-1.78,113.77,113.77,0,0,0-77.78,30.62c-7.31-26-15.92-51.35-29.61-74.91-9.64-16.67-21.89-31.31-39.31-40.29-22.76-11.74-46.1-9.57-69.29-2.18-32.85,10.58-58.05,32.47-79.94,58-48.4,56.4-84.84,119.89-105.58,191.66-11.24,38.7-15.28,78.42-7.21,118.57,9.22,45.24,40,72.34,83,72.2a116.8,116.8,0,0,0,43.94-8.41C399.34,709,430,685.08,458.84,658.25c33.88-31.5,62.63-67,89.26-104.38a114.13,114.13,0,0,0,181.32,14.58c7.52,19,15.32,48.14,22.69,70.81v.14c2,6.38,4,12.18,6,17.11,8.36,20.87,17.15,41.47,33.86,57l3.45,3c21.74,18.12,47.82,22.91,75.06,23.78C885.2,741,899.88,739,916.74,737.7Z"/></svg>`,
 	label: 'AlphaWallet',
 }
 
@@ -153,17 +156,17 @@ export function getWalletInfo(providerType: SupportedWalletProviders): WalletInf
 	switch (providerType) {
 		case SupportedWalletProviders.MetaMask:
 			return getEvmInjectedProviderInfo()
-		case SupportedWalletProviders.WalletConnect:
-			return {
-				name: providerType,
-				label: 'WalletConnect',
-				imgBig: walletConnectSVG,
-			}
 		case SupportedWalletProviders.WalletConnectV2:
 			return {
 				name: providerType,
 				label: 'WalletConnect V2',
 				imgBig: walletConnectV2SVG,
+			}
+		case SupportedWalletProviders.AlphaWallet:
+			return {
+				name: SupportedWalletProviders.WalletConnectV2,
+				label: 'AlphaWallet',
+				imgBig: alphaWallet.imgBig,
 			}
 		case SupportedWalletProviders.Torus:
 			return {
@@ -184,6 +187,12 @@ export function getWalletInfo(providerType: SupportedWalletProviders): WalletInf
 				name: providerType,
 				label: 'SafeConnect',
 				imgBig: safeConnectSVG,
+			}
+		case SupportedWalletProviders.Ultra:
+			return {
+				name: providerType,
+				label: ultra.label,
+				imgBig: ultra.imgBig,
 			}
 	}
 }
@@ -210,8 +219,8 @@ function getEvmInjectedProviderInfo() {
 function getSolanaInjectedProviderInfo() {
 	return window.solana?.isBraveWallet
 		? {
-				name: SupportedWalletProviders.Phantom,
-				label: 'Brave (Solana)',
+				name: SupportedWalletProviders.Phantom_Brave,
+				label: 'Phantom (Brave)',
 				imgBig: braveWallet.imgBig,
 		  }
 		: {

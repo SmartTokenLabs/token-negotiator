@@ -1,4 +1,4 @@
-import { AuthenticateInterface, OffChainTokenConfig, OnChainTokenConfig } from '../interface'
+import { AuthenticateInterface, MultiTokenInterface, OffChainTokenConfig, OnChainTokenConfig } from '../interface'
 import { Client } from '../index'
 
 export interface AuthenticationResult {
@@ -19,6 +19,24 @@ export interface AuthenticationMethod {
 	): Promise<AuthenticationResult>
 }
 
+export interface AuthenticationMethodUN {
+	TYPE: string
+	getTokenProof(request: AuthenticateInterface): Promise<AuthenticationResult>
+}
+
+export interface MultiAuthenticateInterface {
+	options?: any
+}
+
+export interface AuthenticationMethodMulti {
+	TYPE: string
+	getTokenProofMulti(
+		tokenOrigin: string,
+		tokens: { [issuerName: string]: MultiTokenInterface },
+		options: MultiAuthenticateInterface,
+	): Promise<AuthenticationResult>
+}
+
 export abstract class AbstractAuthentication {
 	public abstract TYPE: string
 
@@ -33,11 +51,11 @@ export abstract class AbstractAuthentication {
 	public saveProof(key: string, proof: AuthenticationResult) {
 		const challenges = this.getProofs()
 
-		if (!proof){
+		if (!proof) {
 			this.deleteProof(key)
 			return
 		}
-		
+
 		challenges[this.getFullKey(key)] = proof
 
 		localStorage.setItem(AbstractAuthentication.STORAGE_KEY, JSON.stringify(challenges))

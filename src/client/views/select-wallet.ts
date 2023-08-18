@@ -19,14 +19,16 @@ export class SelectWallet extends AbstractView {
 				walletButtons += this.getWalletButtonHtml(safeConnect)
 			}
 
+			const alphaWallet = getWalletInfo(SupportedWalletProviders.AlphaWallet)
+			walletButtons += this.getWalletButtonHtml(alphaWallet)
+
 			if (typeof window.ethereum !== 'undefined') {
 				const injectedWallet = getWalletInfo(SupportedWalletProviders.MetaMask)
 				walletButtons += this.getWalletButtonHtml(injectedWallet)
 			}
 
-			const walletConnect = getWalletInfo(SupportedWalletProviders.WalletConnect)
 			const walletConnectV2 = getWalletInfo(SupportedWalletProviders.WalletConnectV2)
-			const supportedWallets = [walletConnect, walletConnectV2]
+			const supportedWallets = [walletConnectV2]
 
 			const browserData = getBrowserData()
 
@@ -47,6 +49,11 @@ export class SelectWallet extends AbstractView {
 		if (this.client.hasIssuerForBlockchain('flow')) {
 			const flow = getWalletInfo(SupportedWalletProviders.Flow)
 			walletButtons += this.getWalletButtonHtml(flow)
+		}
+
+		if (this.client.hasIssuerForBlockchain('ultra')) {
+			const ultra = getWalletInfo(SupportedWalletProviders.Ultra)
+			walletButtons += this.getWalletButtonHtml(ultra)
 		}
 
 		this.viewContainer.innerHTML = `
@@ -86,9 +93,7 @@ export class SelectWallet extends AbstractView {
 
 	private getWalletButtonHtml(wallet: WalletInfo) {
 		return `
-			<button class="wallet-button-tn ${wallet.name === 'WalletConnectV2' ? 'WalletConnectV2' : ''}" data-wallet="${wallet.name}" aria-label="${
-			wallet.label
-		} wallet button">
+			<button class="wallet-button-tn ${wallet.name}" data-wallet="${wallet.name}" aria-label="${wallet.label} wallet button">
 				${wallet.imgBig}
 				<p>${wallet.label}</p>
 			</button>

@@ -3,9 +3,14 @@ import { logger, strToHexStr, strToUtfBytes } from '../utils'
 import { SafeConnectOptions } from './SafeConnectProvider'
 import { Client } from '../client'
 import { SupportedBlockchainsParam, WalletOptionsInterface, SignatureSupportedBlockchainsParamList } from '../client/interface'
+import { DEFAULT_RPC_MAP } from '../core/constants'
 
 interface WalletConnectionState {
 	[index: string]: WalletConnection
+}
+
+interface WalletMeta {
+	publicKeys?: string[]
 }
 
 export interface WalletConnection {
@@ -15,16 +20,19 @@ export interface WalletConnection {
 	blockchain: SupportedBlockchainsParam
 	provider?: ethers.providers.Web3Provider | any // solana(phantom) have different interface
 	ethers?: any
+	meta?: WalletMeta
 }
 
 export enum SupportedWalletProviders {
 	MetaMask = 'MetaMask',
-	WalletConnect = 'WalletConnect',
 	WalletConnectV2 = 'WalletConnectV2',
 	Torus = 'Torus',
 	Phantom = 'Phantom',
+	Phantom_Brave = 'Phantom_Brave',
 	Flow = 'Flow',
+	Ultra = 'Ultra',
 	SafeConnect = 'SafeConnect',
+	AlphaWallet = 'AlphaWallet',
 }
 
 export class Web3WalletProvider {
@@ -32,7 +40,11 @@ export class Web3WalletProvider {
 
 	connections: WalletConnectionState = {}
 
-	constructor(private client: Client, private walletOptions?: WalletOptionsInterface, public safeConnectOptions?: SafeConnectOptions) {}
+	constructor(
+		private client: Client,
+		private walletOptions?: WalletOptionsInterface,
+		public safeConnectOptions?: SafeConnectOptions,
+	) {}
 
 	saveConnections() {
 		let savedConnections: WalletConnectionState = {}
@@ -78,22 +90,6 @@ export class Web3WalletProvider {
 				for (let item in state) {
 					let provider = state[item].providerType
 					switch (provider) {
-						case 'WalletConnect':
-							{
-								let walletConnectProvider = await import('./WalletConnectProvider')
-								let walletConnect = await walletConnectProvider.getWalletConnectProviderInstance(true)
-								if (walletConnect?.wc?._connected) {
-									walletConnect
-										.disconnect()
-										// eslint-disable-next-line @typescript-eslint/no-empty-function
-										.then(() => {})
-										.catch((error) => {
-											localStorage.removeItem('walletconnect')
-										})
-								}
-							}
-							break
-
 						case 'WalletConnectV2':
 							{
 								let walletConnect2Provider = await import('./WalletConnectV2Provider')
@@ -159,7 +155,6 @@ export class Web3WalletProvider {
 		return address
 	}
 
-	// TODO: Implement signing for Solana & Flow wallets
 	async signMessage(address: string, message: string) {
 		let provider = this.getWalletProvider(address)
 		let connection = this.getConnectionByAddress(address)
@@ -170,6 +165,10 @@ export class Web3WalletProvider {
 		} else if (connection.blockchain === 'solana') {
 			const signedMessage = await provider.signMessage(strToUtfBytes(message), 'utf8')
 			return signedMessage.signature.toString('hex')
+		} else if (connection.blockchain === 'ultra') {
+			const response = await window.ultra.signMessage(message)
+			logger(2, response)
+			return response.data.signature
 		} else if (connection.blockchain === 'flow') {
 			let signatureObj = await provider.currentUser.signUserMessage(strToHexStr(message))
 
@@ -232,8 +231,9 @@ export class Web3WalletProvider {
 		providerType: string,
 		provider: any,
 		blockchain: SupportedBlockchainsParam,
+		walletMeta: WalletMeta = [] as WalletMeta,
 	) {
-		this.connections[address.toLowerCase()] = { address, chainId, providerType, provider, blockchain, ethers }
+		this.connections[address.toLowerCase()] = { address, chainId, providerType, provider, blockchain, ethers, meta: walletMeta }
 		switch (blockchain) {
 			case 'solana':
 				break
@@ -241,6 +241,13 @@ export class Web3WalletProvider {
 				provider.currentUser().subscribe((user) => {
 					// TODO create multiple wallets and test wallet change
 					logger(2, '=========Flow user subscription: ', user)
+				})
+				break
+			case 'ultra':
+				provider.on('disconnect', () => {
+					// TODO handle disconnect
+					logger(2, '========= Ultra disconnected.')
+					this.client.disconnectWallet()
 				})
 				break
 			case 'evm':
@@ -362,43 +369,6 @@ export class Web3WalletProvider {
 		}
 	}
 
-	async WalletConnect(checkConnectionOnly: boolean) {
-		logger(2, 'connect Wallet Connect')
-
-		const walletConnectProvider = await import('./WalletConnectProvider')
-		const walletConnect = await walletConnectProvider.getWalletConnectProviderInstance(checkConnectionOnly)
-
-		let connecting = true
-		return new Promise((resolve, reject) => {
-			if (checkConnectionOnly) {
-				walletConnect.connector.on('display_uri', (err, payload) => {
-					reject(new Error('Connection expired'))
-				})
-			}
-
-			// this is for the edge case when user rejects connection from wallet
-			walletConnect.connector.on('disconnect', (err, payload) => {
-				if (connecting) {
-					connecting = false
-					reject(new Error('User rejected connection'))
-				}
-			})
-
-			walletConnect
-				.enable()
-				.then(() => {
-					connecting = false
-					const provider = new ethers.providers.Web3Provider(walletConnect, 'any')
-
-					resolve(this.registerEvmProvider(provider, 'WalletConnect'))
-				})
-				.catch((e) => {
-					connecting = false
-					reject(e)
-				})
-		})
-	}
-
 	async WalletConnectV2(checkConnectionOnly: boolean) {
 		logger(2, 'connect Wallet Connect V2')
 
@@ -407,6 +377,9 @@ export class Web3WalletProvider {
 		const universalWalletConnect = await walletConnectProvider.getWalletConnectV2ProviderInstance()
 
 		let QRCodeModal
+
+		// invoke the QR image to load as initial option via WC Modal
+		if (!checkConnectionOnly) QRCodeModal = (await import('@walletconnect/qrcode-modal')).default
 
 		universalWalletConnect.on('display_uri', async (uri: string) => {
 			QRCodeModal = (await import('@walletconnect/qrcode-modal')).default
@@ -440,7 +413,7 @@ export class Web3WalletProvider {
 								methods: ['eth_sendTransaction', 'eth_signTransaction', 'eth_sign', 'personal_sign', 'eth_signTypedData'],
 								chains: preSavedWalletOptions?.walletConnectV2?.chains ?? walletConnectProvider.WC_V2_DEFAULT_CHAINS,
 								events: ['chainChanged', 'accountsChanged'],
-								rpcMap: preSavedWalletOptions?.walletConnectV2?.rpcMap ?? walletConnectProvider.WC_DEFAULT_RPC_MAP,
+								rpcMap: { ...DEFAULT_RPC_MAP, ...this.client.config.ethRpcMap },
 							},
 						},
 					})
@@ -513,6 +486,25 @@ export class Web3WalletProvider {
 		this.registerNewWalletAddress(currentUser.addr, 1, 'flow', fcl, 'flow')
 
 		return currentUser.addr
+	}
+
+	async Ultra() {
+		const response = await window.ultra.connect()
+
+		let accountID = ''
+		try {
+			accountID = response.data?.blockchainid.split('@')[0]
+			// No user address after authenticate() then connect was unsuccesfull
+		} catch (e) {
+			throw new Error('Failed to get Ultra wallet address')
+		}
+
+		if (!accountID) throw new Error('Failed to get Ultra wallet address')
+
+		// TODO set chainID
+		this.registerNewWalletAddress(accountID, 1, 'ultra', window.ultra, 'ultra')
+
+		return accountID
 	}
 
 	safeConnectAvailable() {

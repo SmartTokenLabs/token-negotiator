@@ -1,4 +1,4 @@
-import { OffChainTokenConfig, OnChainIssuer, OnChainTokenConfig, SolanaIssuerConfig } from './interface'
+import { OffChainTokenConfig, OnChainIssuer, OnChainTokenConfig, SolanaIssuerConfig, UltraIssuerConfig } from './interface'
 
 import { logger } from '../utils'
 
@@ -16,7 +16,7 @@ interface TokenData {
 	[key: string]: any
 }
 
-type TokenConfig = OnChainTokenConfig | OffChainTokenConfig | SolanaIssuerConfig
+type TokenConfig = OnChainTokenConfig | OffChainTokenConfig | SolanaIssuerConfig | UltraIssuerConfig
 
 export class TokenStore {
 	public static LOCAL_STORAGE_KEY = 'tn-tokenStore'
@@ -30,8 +30,15 @@ export class TokenStore {
 	// TODO: change to disabled tokens
 	private selectedTokens: any = {}
 
-	constructor(private autoEnableTokens: boolean, private tokenPersistenceTTL: number) {
+	constructor(
+		private autoEnableTokens: boolean,
+		private tokenPersistenceTTL: number,
+	) {
 		if (this.tokenPersistenceTTL > 0) this.loadTokenStore()
+	}
+
+	public clearTokenStore() {
+		localStorage.removeItem(TokenStore.LOCAL_STORAGE_KEY)
 	}
 
 	private loadTokenStore() {

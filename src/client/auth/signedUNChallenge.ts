@@ -1,18 +1,13 @@
-import { AbstractAuthentication, AuthenticationMethod, AuthenticationResult } from './abstractAuthentication'
+import { AbstractAuthentication, AuthenticationMethod, AuthenticationResult, AuthenticationMethodUN } from './abstractAuthentication'
 import { AuthenticateInterface, OffChainTokenConfig, OnChainTokenConfig } from '../interface'
 import { SafeConnectProvider } from '../../wallet/SafeConnectProvider'
 import { UN, UNInterface } from './util/UN'
 import { logger } from '../../utils'
 
-export class SignedUNChallenge extends AbstractAuthentication implements AuthenticationMethod {
+export class SignedUNChallenge extends AbstractAuthentication implements AuthenticationMethodUN {
 	TYPE = 'signedUN'
-	private static DEFAULT_ENDPOINT = 'https://attestation-verify.tokenscript.org/un'
 
-	async getTokenProof(
-		_issuerConfig: OnChainTokenConfig | OffChainTokenConfig,
-		_tokens: Array<any>,
-		request: AuthenticateInterface,
-	): Promise<AuthenticationResult> {
+	async getTokenProof(request: AuthenticateInterface): Promise<any> {
 		let web3WalletProvider = await this.client.getWalletProvider()
 
 		// TODO: Update once Flow & Solana signing support is added
@@ -36,9 +31,7 @@ export class SignedUNChallenge extends AbstractAuthentication implements Authent
 				this.deleteProof(address)
 				currentProof = null
 			}
-		}
-
-		if (!currentProof) {
+		} else {
 			let walletConnection = connection.provider
 
 			currentProof = {
@@ -49,9 +42,7 @@ export class SignedUNChallenge extends AbstractAuthentication implements Authent
 				},
 			}
 
-			let endpoint = request.options?.unEndPoint ?? SignedUNChallenge.DEFAULT_ENDPOINT
-
-			const challenge = await UN.getNewUN(endpoint)
+			const challenge = await UN.getNewUN(request.options?.unEndPoint)
 			challenge.address = address
 			let signature
 
@@ -62,6 +53,11 @@ export class SignedUNChallenge extends AbstractAuthentication implements Authent
 				signature = await web3WalletProvider.signMessage(address, challenge.messageToSign)
 			}
 
+			const publicKeys = connection.meta?.publicKeys
+			if (publicKeys?.length) {
+				// ultra allows single key only
+				challenge.publicKey = publicKeys[0];
+			}
 			challenge.signature = signature
 			challenge.blockchain = connection.blockchain
 			if (!(await UN.verifySignature(challenge))) {

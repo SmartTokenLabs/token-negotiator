@@ -142,7 +142,9 @@ export class TokenList extends AbstractView {
 
 		if (!fungible) {
 			detail = index
-			abrieviated = '#' + (index.length > 15 ? index.substring(0, 5) + '...' + index.substring(index.length - 5, index.length) : index)
+			abrieviated = index
+				? '#' + (index.length > 15 ? index.substring(0, 5) + '...' + index.substring(index.length - 5, index.length) : index)
+				: ''
 		} else {
 			const balanceTxt = ethers.utils.formatUnits(balance, decimals)
 

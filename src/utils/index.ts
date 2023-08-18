@@ -1,4 +1,12 @@
 import { URLNS } from '../core/messaging'
+import { KeyPair } from '@tokenscript/attestation/dist/libs/KeyPair'
+import { sha256 } from 'ethers/lib/utils'
+import { OffChainTokenConfig } from '../client/interface'
+import { OutletIssuerInterface } from '../outlet/interfaces'
+
+export interface IssuerHashMap {
+	[collectionId: string]: string[]
+}
 
 declare global {
 	interface Window {
@@ -8,7 +16,7 @@ declare global {
 
 export function logger(level: number, ...args: any[]) {
 	if (!window.DISPLAY_DEBUG_LEVEL || level > parseInt(window.DISPLAY_DEBUG_LEVEL)) return
-	console.log(...args)
+	if (args) console.log(...args)
 }
 
 export const requiredParams = (item: any, msg: string) => {
@@ -35,7 +43,6 @@ export const compareObjects = (o1: any, o2: any) => {
 
 export const base64ToUint8array = (base64str: string) => {
 	base64str = base64str.split('-').join('+').split('_').join('/').split('.').join('=')
-
 	return Uint8Array.from(atob(base64str), (c) => c.charCodeAt(0))
 }
 
@@ -104,7 +111,11 @@ export const errorHandler = (error: any, type: ErrorType, action?: Function | nu
 }
 
 export class NegotiatorError extends Error {
-	constructor(message: string, public originalError: any, public code?: string) {
+	constructor(
+		message: string,
+		public originalError: any,
+		public code?: string,
+	) {
 		super(message)
 	}
 }
@@ -193,4 +204,77 @@ export const hexStringToUint8Array = (hexString: string): Uint8Array => {
 		uint8Array[i / 2] = parseInt(hexString.slice(i, i + 2), 16)
 	}
 	return uint8Array
+}
+
+export const createIssuerHashMap = (issuers: OffChainTokenConfig[]): IssuerHashMap => {
+	const hashObj = {}
+
+	for (const issuer of issuers) {
+		hashObj[issuer.collectionID] = createIssuerHashArray(issuer)
+	}
+
+	return hashObj
+}
+
+// output per issuer base64senderPublicKey
+// [
+// 	'0x0915bb6dcd508278764d9bfff6ba113c87c761ed78e84ed238811f2264a83a05',
+// 	'0x76d49eaf820fc5313a752214192a223511244124e188557fe84d88d8ff8c3a2f',
+// ]
+export const createIssuerHashArray = (issuer: OffChainTokenConfig | OutletIssuerInterface) => {
+	const hashes = []
+
+	const keysArr = KeyPair.parseKeyArrayStrings(issuer.base64senderPublicKeys)
+
+	const schemaUid = 'eas' in issuer ? issuer.eas.schemaUid : undefined
+
+	for (let [eventId, keys] of Object.entries(keysArr)) {
+		if (!Array.isArray(keys)) keys = [keys]
+
+		for (const key of keys) {
+			hashes.push(createOffChainCollectionHash(key, eventId, schemaUid))
+		}
+	}
+
+	return hashes
+}
+
+// output: 32 byte hash
+export const createOffChainCollectionHash = (key: KeyPair, eventId: string, schemaUid?: string) => {
+	// Only include custom schemaUids in the hash
+	const schemaPart =
+		schemaUid &&
+		schemaUid !== '0x0000000000000000000000000000000000000000000000000000000000000000' &&
+		schemaUid !== '0x7f6fb09beb1886d0b223e9f15242961198dd360021b2c9f75ac879c0f786cafd'
+			? '-' + schemaUid
+			: ''
+
+	const encoder = new TextEncoder()
+	return sha256(encoder.encode(key.getPublicKeyAsHexStr() + '-' + eventId + schemaPart))
+}
+
+export const createCookie = (name: string, value: any, seconds: number) => {
+	let expires = ''
+	if (seconds) {
+		let date = new Date()
+		date.setTime(date.getTime() + seconds * 1000)
+		expires = '; expires=' + date.toUTCString()
+	}
+	document.cookie = name + '=' + value + expires + '; path=/'
+}
+
+export const isCookieExpired = (cookieName: string) => {
+	let cookies = document.cookie.split('; ')
+	for (let i = 0; i < cookies.length; i++) {
+		let cookie = cookies[i].split('=')
+		if (cookie[0] === cookieName) {
+			let expiration = cookie[1]
+			if (expiration === 'true') {
+				return false // Cookie is not expired
+			} else {
+				return true // Cookie is expired
+			}
+		}
+	}
+	return true // Cookie is not found, considered expired
 }

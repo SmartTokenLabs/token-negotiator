@@ -104,9 +104,7 @@ export class SelectIssuers extends AbstractView {
 		}
 
 		this.populateIssuers()
-
 		let tokensListElem = this.tokensContainer.getElementsByClassName('token-list-container-tn')[0]
-
 		this.tokenListView = new TokenList(this.client, this.ui, tokensListElem, { ...this.params })
 	}
 
@@ -144,9 +142,7 @@ export class SelectIssuers extends AbstractView {
 		for (let issuerKey in issuers) {
 			let data = issuers[issuerKey]
 			let tokens = this.client.getTokenStore().getIssuerTokens(issuerKey) ?? []
-
 			let title = data.title ? data.title : data.collectionID.replace(/[-,_]+/g, ' ')
-
 			html += this.issuerConnectMarkup(title, data.image, issuerKey, tokens, data)
 		}
 
@@ -218,7 +214,7 @@ export class SelectIssuers extends AbstractView {
 			this.issuerLoading.bind(this),
 			(issuer: string, tokens: any[]) => {
 				if (!tokens?.length) {
-					const connectBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`)
+					const connectBtn = this.issuerListContainer.querySelector(`[data-issuer="${issuer}"] .connect-btn-tn`)
 
 					if (connectBtn) connectBtn.innerText = 'Load'
 
@@ -262,11 +258,11 @@ export class SelectIssuers extends AbstractView {
 	}
 
 	issuerLoading(issuer: string) {
-		const tokensBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .tokens-btn-tn`)
+		const tokensBtn = this.issuerListContainer.querySelector(`[data-issuer="${issuer}"] .tokens-btn-tn`)
 
 		if (tokensBtn) tokensBtn.style.display = 'none'
 
-		const connectBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`)
+		const connectBtn = this.issuerListContainer.querySelector(`[data-issuer="${issuer}"] .connect-btn-tn`)
 
 		if (connectBtn) {
 			connectBtn.innerHTML = '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
@@ -275,8 +271,8 @@ export class SelectIssuers extends AbstractView {
 	}
 
 	issuerConnected(issuer: string, tokens: any[], showTokens = true) {
-		const connectBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .connect-btn-tn`)
-		const tokenBtn = this.issuerListContainer.querySelector(`[data-issuer*="${issuer}"] .tokens-btn-tn`)
+		const connectBtn = this.issuerListContainer.querySelector(`[data-issuer="${issuer}"] .connect-btn-tn`)
+		const tokenBtn = this.issuerListContainer.querySelector(`[data-issuer="${issuer}"] .tokens-btn-tn`)
 
 		if (!connectBtn || !tokenBtn) {
 			logger(2, 'Could not find button handler')
@@ -332,7 +328,7 @@ export class SelectIssuers extends AbstractView {
 				tokens.push(<TokenListItemInterface>{
 					data: t,
 					tokenIssuerKey: issuer,
-					index: t.tiketIdNumber ?? t.ticketIdNumber ?? i,
+					index: t.ticketId,
 					title: title,
 					image: image,
 					toggleState: isSelected,
