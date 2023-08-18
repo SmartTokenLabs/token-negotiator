@@ -22,60 +22,60 @@
         window.negotiator = new negotiator.Client({
           type: "active",
           issuers: [
-            {
-              hideToggle: true,
-              noTokenMsg:
-                "<p>If you hold a Devcon ticket, please visit your magicLink email again and open the link in this browser.</p><p>You may reload this page after and try again.</p>",
-              onChain: false,
-              tokenName: "devcon6",
-              collectionID: "devcon6",
-              title: "Devcon VI Ticket Attestation",
-              image: "https://devcon-vi.attest.tickets/img/nft_bg.png",
-              tokenOrigin: "https://devcon-vi.attest.tickets/outlet.html",
-              attestationOrigin: "https://test.attestation.id/",
-              tokenUrlName: "ticket",
-              cryptoVerify: "https://form.smarttokenlabs.com",
-              tokenSecretName: "secret",
-              tokenIdName: "mail",
-              unsignedTokenDataName: "ticket",
-              whitelistDialogRenderer: (permissionTxt, acceptBtn, denyBtn) => {
-                return `
-		<div class="tn-auth-box">
-			<div class="tn-auth-heading">
-				<img alt="devcon" src="img/FB_OG_Image.svg" style="width: 150px;" />
-			</div>
-			<div class="tn-auth-content">
-				<p>${permissionTxt}</p>
-				${acceptBtn}
-				${denyBtn}
-			</div>
-		</div>
-	`;
-              },
-              signedTokenWhitelist: [
-                "https://devcon-vi.attest.tickets/",
-                "https://dev.loc",
-                "https://devconnect.loc/",
-                "https://devconnect.antopolbus.rv.ua/",
-                "https://perks.antopolbus.rv.ua/",
-                "https://stage-perks.smarttokenlabs.com/",
-                "http://localhost:5000/",
+            //           {
+            //             hideToggle: true,
+            //             noTokenMsg:
+            //               "<p>If you hold a Devcon ticket, please visit your magicLink email again and open the link in this browser.</p><p>You may reload this page after and try again.</p>",
+            //             onChain: false,
+            //             tokenName: "devcon6",
+            //             collectionID: "devcon6",
+            //             title: "Devcon VI Ticket Attestation",
+            //             image: "https://devcon-vi.attest.tickets/img/nft_bg.png",
+            //             tokenOrigin: "https://devcon-vi.attest.tickets/outlet.html",
+            //             attestationOrigin: "https://test.attestation.id/",
+            //             tokenUrlName: "ticket",
+            //             cryptoVerify: "https://form.smarttokenlabs.com",
+            //             tokenSecretName: "secret",
+            //             tokenIdName: "mail",
+            //             unsignedTokenDataName: "ticket",
+            //             whitelistDialogRenderer: (permissionTxt, acceptBtn, denyBtn) => {
+            //               return `
+            // 	<div class="tn-auth-box">
+            // 		<div class="tn-auth-heading">
+            // 			<img alt="devcon" src="img/FB_OG_Image.svg" style="width: 150px;" />
+            // 		</div>
+            // 		<div class="tn-auth-content">
+            // 			<p>${permissionTxt}</p>
+            // 			${acceptBtn}
+            // 			${denyBtn}
+            // 		</div>
+            // 	</div>
+            // `;
+            //             },
+            //             signedTokenWhitelist: [
+            //               "https://devcon-vi.attest.tickets/",
+            //               "https://dev.loc",
+            //               "https://devconnect.loc/",
+            //               "https://devconnect.antopolbus.rv.ua/",
+            //               "https://perks.antopolbus.rv.ua/",
+            //               "https://stage-perks.smarttokenlabs.com/",
+            //               "http://localhost:5000/",
 
-                "https://hashkey.smarttokenlabs.com/",
-                "https://fayre-devcon.webflow.io/",
-                "https://fenbushi-devcon.webflow.io/",
-                "https://metasearch-devcon.webflow.io/",
-                "https://conspicuis-devcon.webflow.io/",
-                "https://devcon-vi.brandextender.io/",
-                "https://www.edcon.io/",
-              ],
-              itemStorageKey: "devconnectTokens",
-              base64senderPublicKeys: {
-                4: "MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEAGJAHCiHbrCNAY9fAMdom4dGD6v/KkTIgRCkwLCjXFTkXWGrCEXHaZ8kWwdqlu0oYCrNQ2vdlqOl0s26/LzO8A==|MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAE-N-jGYo1OuO77XItd3zT-oIhZEVC44uqOhtJkmBsBNDTp3Seu_vmuLB-b4whNeFNBuJTsT7AHUiUe3JOwCcegA==",
-              },
-              base64attestorPubKey:
-                "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ=",
-            },
+            //               "https://hashkey.smarttokenlabs.com/",
+            //               "https://fayre-devcon.webflow.io/",
+            //               "https://fenbushi-devcon.webflow.io/",
+            //               "https://metasearch-devcon.webflow.io/",
+            //               "https://conspicuis-devcon.webflow.io/",
+            //               "https://devcon-vi.brandextender.io/",
+            //               "https://www.edcon.io/",
+            //             ],
+            //             itemStorageKey: "devconnectTokens",
+            //             base64senderPublicKeys: {
+            //               4: "MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEAGJAHCiHbrCNAY9fAMdom4dGD6v/KkTIgRCkwLCjXFTkXWGrCEXHaZ8kWwdqlu0oYCrNQ2vdlqOl0s26/LzO8A==|MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAE-N-jGYo1OuO77XItd3zT-oIhZEVC44uqOhtJkmBsBNDTp3Seu_vmuLB-b4whNeFNBuJTsT7AHUiUe3JOwCcegA==",
+            //             },
+            //             base64attestorPubKey:
+            //               "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ=",
+            //           },
             {
               collectionID: "devcon",
               onChain: false,

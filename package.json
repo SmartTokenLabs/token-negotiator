@@ -10,6 +10,9 @@
     "CHANGELOG.md",
     "LICENSE"
   ],
+  "keywords": [
+    "@tokenscript"
+  ],
   "scripts": {
     "build": "npm run clean && npm run write-version-constant && tsc --outDir dist && npm run compile-scss && npm run copy-assets",
     "build-umd": "shx rm -rf token-negotiator-dist && npm run write-version-constant && webpack && npm run compile-scss-umd && npm run copy-assets-umd",
@@ -46,9 +49,10 @@
     "@peculiar/asn1-schema": "^2.2.0",
     "@tokenscript/attestation": "0.6.0-rc.3",
     "@toruslabs/torus-embed": "^2.2.5",
+    "@walletconnect/ethereum-provider": "^2.10.0",
     "@walletconnect/qrcode-modal": "^1.8.0",
     "@walletconnect/types": "^2.1.5",
-    "@walletconnect/universal-provider": "^2.4.5",
+    "@walletconnect/universal-provider": "^2.10.0",
     "eosjs": "^22.1.0",
     "eosjs-ecc": "^4.0.7",
     "ethers": "^5.4.0",
