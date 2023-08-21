@@ -19,6 +19,7 @@ export interface OffChainTokenConfig extends IssuerConfigInterface {
 }
 
 export interface OnChainTokenConfig extends IssuerConfigInterface {
+	clientID: boolean
 	onChain: true
 	contract: string
 	chain: string
@@ -51,7 +52,10 @@ export interface IssuerConfigInterface {
 	hideToggle?: boolean
 	fungible?: boolean
 	oauth2?: boolean
-	oauth2ConsumerKey?: string
+	consumerKey?: string
+	redirectURI?: string
+	partnerTag?: string
+	serverEndPoint?: string
 }
 
 export type Issuer = OffChainTokenConfig | SolanaIssuerConfig | OnChainTokenConfig | UltraIssuerConfig

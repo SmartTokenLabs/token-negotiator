@@ -453,31 +453,49 @@ export class Web3WalletProvider {
 	async Socios(checkConnectionOnly: boolean) {
 		logger(2, 'connect Socios')
 
-		let clientKey
+		// if tn-oauth-wallet-connections: {} return connection
+
+		let params = { consumerKey: undefined }
+		let serverEndPoint
 
 		for (const issuer of this.client.config.issuers) {
-			if (issuer.oauth2ConsumerKey) {
-				clientKey = issuer.oauth2ConsumerKey
-				continue
+			// @ts-ignore
+			if (issuer.consumerKey && issuer.api.endpoints.login.path) {
+				// TODO check all reqiredParams exist
+				params.consumerKey = issuer.consumerKey
+				// @ts-ignore
+				serverEndPoint = issuer.api.endpoints.login.path
+				break
 			}
 		}
 
-		if (clientKey) {
+		if (params.consumerKey) {
 			try {
-				const redirectURI = window.location.href
-				const partnerTag = 'smarttokenlabs'
-				const clientId = 'token-negotiator'
-				const query = `https://partner.socios.com/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectURI}&partner_tag=${partnerTag}?`
+				const query = `${serverEndPoint}?${new URLSearchParams(params)}`
 				const response = await fetch(query, { method: 'GET', redirect: 'follow' })
 				const ok = response.status >= 200 && response.status <= 299
 				if (!ok) {
-					console.warn('token api request failed: ', query)
+					// store a property e.g. tn-oauth-wallet-connections: {}
 					return
 				} else throw new Error(`HTTP error! status: ${response.status}`)
 			} catch (msg: any) {
 				throw new Error(`HTTP error.`)
 			}
 		}
+
+		// if (clientId && redirectURI && partnerTag) {
+		// 	try {
+		// 		const query = `https://partner.socios.com/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectURI}&partner_tag=${partnerTag}?`
+		// 		const response = await fetch(query, { method: 'GET', redirect: 'follow' })
+		// 		const ok = response.status >= 200 && response.status <= 299
+		// 		if (!ok) {
+		// 			console.warn('token api request failed: ', query)
+		// 			return
+		// 		} else throw new Error(`HTTP error! status: ${response.status}`)
+		// 	} catch (msg: any) {
+		// 		throw new Error(`HTTP error.`)
+		// 	}
+		// }
 		// throw new Error('Lets connect Socios.')
 	}
 

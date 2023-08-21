@@ -1,4 +1,5 @@
 export { Client } from './client/index'
+export { Server } from './server/index'
 export { AbstractView, type ViewInterface } from './client/views/view-interface'
 export { Outlet } from './outlet/index'
 export { Start } from './client/views/start'

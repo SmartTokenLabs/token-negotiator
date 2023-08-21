@@ -19,19 +19,40 @@
     <script>
       var theme = "light";
       function init() {
+        window.negotiator = new negotiator.Server({
+          issuers: {
+            socios: {
+              type: "oauth2",
+              consumerKey: "V6SYZtfR45fanvAPHWOQS50qfsYa",
+              consumerSecret: "...",
+              partnerTag: "smarttokenlabs",
+              redirectURI: "http://my.server.com/bar",
+            },
+          },
+        });
+
         window.negotiator = new negotiator.Client({
           type: "active",
           issuers: [
             {
               onChain: true,
               oauth2: true,
-              oauth2ConsumerKey: "V6SYZtfR45fanvAPHWOQS50qfsYa",
               fungile: true,
               chain: "socios",
               blockchain: "socios",
               collectionID: "Socios",
-              redirect_uri: "",
-              partner_tag: "",
+              endpoints: {
+                login: {
+                  path: "/socios/login",
+                  reqiredParams: {
+                    consumerKey: "V6SYZtfR45fanvAPHWOQS50qfsYa",
+                  },
+                },
+                balance: {
+                  path: "/socios/getTokenBalance",
+                  reqiredParams: {},
+                },
+              },
             },
             //           {
             //             hideToggle: true,
