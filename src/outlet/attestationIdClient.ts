@@ -117,6 +117,7 @@ export class AttestationIdClient {
 					display: flex;
 					flex-direction: column;
 					padding: 30px;
+					z-index: 9999;
 				}
 				#${wrapperID} div:hover {
 					box-shadow: 0 0px 14px #ffff !important;
@@ -294,7 +295,7 @@ export class AttestationIdClient {
 		this.iframeWrap = iframeWrap
 		iframeWrap.setAttribute(
 			'style',
-			'width:101%;min-height: 100vh; position: fixed; align-items: center; justify-content: center;display: none;top: 0; left: 0; background: #fffa',
+			'width:101%;min-height: 100vh; position: fixed; align-items: center; justify-content: center;display: none;top: 0; left: 0; background: #fffa; z-index: 1400',
 		)
 		iframeWrap.appendChild(iframe)
 

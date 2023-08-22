@@ -174,11 +174,9 @@ export class Whitelist {
 				resolve()
 			})
 
-			document.getElementById('tn-access-deny').addEventListener('click', () => {
+			const updateWhistList = () => {
 				if (this.storedWhitelist[origin]) delete this.storedWhitelist[origin]
-
 				this.saveWhitelist()
-
 				// set for 10 seconds so the following send token requests don't re-open
 				// the dialog multiple times when the user has declined connection.
 				// adjust if needed to find the best timing, which should be the approx duration of
@@ -186,7 +184,10 @@ export class Whitelist {
 				// and the time a user would come back to load the tokens again should
 				// the decline by accident.
 				createCookie('tn-user-denied-access-to-connection', true, 10)
+			}
 
+			document.getElementById('tn-access-deny').addEventListener('click', () => {
+				updateWhistList()
 				reject(new Error('USER_ABORT'))
 			})
 

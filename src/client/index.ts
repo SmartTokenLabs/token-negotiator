@@ -911,16 +911,16 @@ export class Client {
 	async authenticateToken(authRequest: AuthenticateInterface) {
 		await this.checkUserAgentSupport('authentication')
 
-		const { unsignedToken } = authRequest
-		const issuer = unsignedToken.collectionId
+		const { unsignedToken, issuer } = authRequest
+		const tokenIssuer = issuer ?? unsignedToken.collectionId
 
-		requiredParams(issuer && unsignedToken, 'Issuer and unsigned token required.')
+		requiredParams(tokenIssuer && unsignedToken, 'Issuer and unsigned token required.')
 
 		if (unsignedToken.signedToken) {
 			delete unsignedToken.signedToken
 		}
 
-		const config = this.tokenStore.getCurrentIssuers()[issuer]
+		const config = this.tokenStore.getCurrentIssuers()[tokenIssuer]
 
 		if (!config) errorHandler('Provided issuer was not found.', 'error', null, null, true, true)
 
@@ -936,7 +936,7 @@ export class Client {
 				600,
 				true,
 			)
-			this.enableAuthCancel(issuer)
+			this.enableAuthCancel(tokenIssuer)
 		}
 
 		let AuthType
@@ -967,7 +967,7 @@ export class Client {
 
 			logger(2, 'Ticket proof successfully validated.')
 
-			this.eventSender('token-proof', { data: res.data, error: null, issuer })
+			this.eventSender('token-proof', { data: res.data, error: null, issuer: tokenIssuer })
 		} catch (err) {
 			logger(2, err)
 
@@ -975,7 +975,7 @@ export class Client {
 				return this.handleWalletRequired(authRequest)
 			}
 
-			errorHandler(err, 'error', () => this.handleProofError(err, issuer), null, false, true)
+			errorHandler(err, 'error', () => this.handleProofError(err, tokenIssuer), null, false, true)
 		}
 
 		if (this.ui) {
