@@ -19,18 +19,6 @@
     <script>
       var theme = "light";
       function init() {
-        window.negotiator = new negotiator.Server({
-          issuers: {
-            socios: {
-              type: "oauth2",
-              consumerKey: "V6SYZtfR45fanvAPHWOQS50qfsYa",
-              consumerSecret: "...",
-              partnerTag: "smarttokenlabs",
-              redirectURI: "http://my.server.com/bar",
-            },
-          },
-        });
-
         window.negotiator = new negotiator.Client({
           type: "active",
           issuers: [
@@ -42,14 +30,20 @@
               blockchain: "socios",
               collectionID: "Socios",
               endpoints: {
-                login: {
-                  path: "/socios/login",
-                  reqiredParams: {
-                    consumerKey: "V6SYZtfR45fanvAPHWOQS50qfsYa",
-                  },
+                userLogin: {
+                  path: "/user-login",
+                  reqiredParams: {},
                 },
-                balance: {
-                  path: "/socios/getTokenBalance",
+                userBalance: {
+                  path: "/user-balance",
+                  reqiredParams: {},
+                },
+                userNfts: {
+                  path: "/user-nfts",
+                  reqiredParams: {},
+                },
+                userLogout: {
+                  path: "/user-logout",
                   reqiredParams: {},
                 },
               },
@@ -399,13 +393,13 @@
             chain: "mainnet",
             blockchain: "solana",
           },
-          {
-            onChain: true,
-            collectionID: "expansion-punks",
-            contract: "0x0d0167a823c6619d430b1a96ad85b888bcf97c37",
-            chain: "eth",
-            blockchain: "evm",
-          },
+          // {
+          //   onChain: true,
+          //   collectionID: "expansion-punks",
+          //   contract: "0x0d0167a823c6619d430b1a96ad85b888bcf97c37",
+          //   chain: "eth",
+          //   blockchain: "evm",
+          // },
           {
             onChain: true,
             collectionID: "fantom-collection-test",

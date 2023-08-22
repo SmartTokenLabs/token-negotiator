@@ -293,7 +293,7 @@ export class Client {
 		return (
 			this.config.issuers.filter((issuer: OnChainTokenConfig) => {
 				if (blockchain === 'evm' && !issuer.onChain) return true
-				if (blockchain === 'socios' && !issuer.oauth2 && !issuer.consumerKey) return false
+				if (blockchain === 'socios' && !issuer.oauth2) return false
 				if (blockchain === 'solana' && typeof window.solana === 'undefined') return false
 				if (blockchain === 'ultra' && typeof window.ultra === 'undefined') return false
 				return (issuer.blockchain ? issuer.blockchain.toLowerCase() : 'evm') === blockchain
