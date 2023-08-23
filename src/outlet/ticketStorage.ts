@@ -71,7 +71,7 @@ export interface EasFieldData {
 }
 
 interface TicketStorageSchema {
-	[collectionHash: string]: StoredTicketRecord[]
+	[collectionHash: string]: Array<StoredTicketRecord>
 }
 
 export interface FilterInterface {
@@ -165,6 +165,23 @@ export class TicketStorage {
 			secret: secretFromQuery,
 			tokenId: tokenData.tokenId,
 		})
+	}
+
+	public deleteTicketByDecodedTokenOrId(collectionId: string, decodedTokenOrId: DecodedToken | string) {
+		const hashes = createIssuerHashArray(this.config.issuers[collectionId])
+		const tokenId = typeof decodedTokenOrId === 'string' ? decodedTokenOrId : decodedTokenOrId.tokenId
+
+		for (const hash of hashes) {
+			for (let i = 0; i < this.ticketCollections[hash].length; i++) {
+				if (tokenId === this.ticketCollections[hash][0].tokenId) {
+					this.ticketCollections[hash].splice(i, 1)
+					this.storeTickets()
+					return true
+				}
+			}
+		}
+
+		return false
 	}
 
 	/**
