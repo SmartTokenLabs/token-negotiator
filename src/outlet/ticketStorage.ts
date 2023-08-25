@@ -168,7 +168,8 @@ export class TicketStorage {
 	}
 
 	public deleteTicketByDecodedTokenOrId(collectionId: string, decodedTokenOrId: DecodedToken | string) {
-		const hashes = createIssuerHashArray(this.config.issuers[collectionId])
+		const config = this.config.issuers.find((issuer) => issuer.collectionID === collectionId)
+		const hashes = createIssuerHashArray(config)
 		const tokenId = typeof decodedTokenOrId === 'string' ? decodedTokenOrId : decodedTokenOrId.tokenId
 
 		for (const hash of hashes) {
