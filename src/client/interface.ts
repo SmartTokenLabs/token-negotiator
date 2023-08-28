@@ -6,8 +6,16 @@ import { WalletConnection } from '../wallet/Web3WalletProvider'
 import { DecodedToken } from '../outlet/ticketStorage'
 import { EasSchemaConfig } from '../outlet/interfaces'
 
-export type SupportedBlockchainsParam = 'evm' | 'flow' | 'solana' | 'ultra'
-export const SignatureSupportedBlockchainsParamList = ['evm', 'flow', 'solana', 'ultra']
+export enum SupportedBlockchainsEnum {
+	EVM = 'evm',
+	SOLANA = 'solana',
+	CHILIZ = 'chiliz',
+	FLOW = 'flow',
+	ULTRA = 'ultra',
+}
+
+export type SupportedBlockchainsParam = 'evm' | 'flow' | 'solana' | 'ultra' | 'chiliz'
+export const SignatureSupportedBlockchainsParamList = ['evm', 'flow', 'solana', 'ultra', 'chiliz']
 
 export interface OffChainTokenConfig extends IssuerConfigInterface {
 	onChain: false
@@ -16,15 +24,16 @@ export interface OffChainTokenConfig extends IssuerConfigInterface {
 	base64senderPublicKeys: { [key: string]: string }
 	base64attestorPubKey: string // TODO: Remove - only required in outlet
 	eas?: EasSchemaConfig
+	oAuth2options?: any
 }
 
 export interface OnChainTokenConfig extends IssuerConfigInterface {
-	clientID: boolean
-	onChain: true
+	onChain: boolean
 	contract: string
 	chain: string
 	openSeaSlug?: string
 	blockchain?: SupportedBlockchainsParam
+	oAuth2options?: any
 }
 
 export interface UltraIssuerConfig extends OnChainTokenConfig {
@@ -41,6 +50,38 @@ export interface SolanaIssuerConfig extends OnChainTokenConfig {
 	updateAuthority?: string
 }
 
+export interface Oauth2IssuerConfig {
+	collectionID: string
+	onChain: boolean
+	contract: string
+	chain: string
+	blockchain?: SupportedBlockchainsParam
+	oAuth2options: {
+		consumerKey: string
+		redirectURI: string
+		partnerTag: string
+		returnToApplicationURL?: string
+		endpoints: {
+			userAccessToken: {
+				path: string
+				params?: object
+			}
+			userBalance: {
+				path: string
+				params?: object
+			}
+			userNfts: {
+				path: string
+				params?: object
+			}
+			userLogout: {
+				path: string
+				params?: object
+			}
+		}
+	}
+}
+
 export interface IssuerConfigInterface {
 	collectionID: string
 	onChain: boolean
@@ -51,14 +92,14 @@ export interface IssuerConfigInterface {
 	noTokenMsg?: string
 	hideToggle?: boolean
 	fungible?: boolean
-	oauth2?: boolean
 	consumerKey?: string
 	redirectURI?: string
 	partnerTag?: string
 	serverEndPoint?: string
+	oAuth2options?: string
 }
 
-export type Issuer = OffChainTokenConfig | SolanaIssuerConfig | OnChainTokenConfig | UltraIssuerConfig
+export type Issuer = OffChainTokenConfig | SolanaIssuerConfig | OnChainTokenConfig | UltraIssuerConfig | Oauth2IssuerConfig
 export type OnChainIssuer = SolanaIssuerConfig | OnChainTokenConfig | UltraIssuerConfig
 export interface NegotiationInterface {
 	type: 'active' | 'passive'

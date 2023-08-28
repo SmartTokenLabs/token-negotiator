@@ -170,6 +170,8 @@ export class SelectIssuers extends AbstractView {
 	issuerConnectMarkup(title: string, image: string | undefined, issuer: string, tokens: any[], data: Issuer) {
 		let buttonText = ''
 
+		// TODO ensure fungilbe exists on type
+		// @ts-ignore
 		if (tokens?.length) buttonText = data?.fungible ? 'Balance found' : `${tokens.length} token${tokens.length > 1 ? 's' : ''} available`
 
 		return `

@@ -20,6 +20,7 @@ import {
 	OutletTokenResult,
 	MultiTokenInterface,
 	TokenNegotiatorEventsArgs,
+	Oauth2IssuerConfig,
 } from './interface'
 import { SignedUNChallenge } from './auth/signedUNChallenge'
 import { TicketZKProof } from './auth/ticketZKProof'
@@ -160,8 +161,47 @@ export class Client {
 		if (this.urlParams) {
 			return this.urlParams.get(URLNS + itemKey)
 		}
-
 		return null
+	}
+
+	// TODO see if we can reduce the need of this function.
+	// Where in the callback.html the AccessToken is derived and sent to this view.
+	// DISNEY MODE - where the token + wallet storage is automatically managed by TKN.
+	public async getAccessToken(collectionID: string, protocol = 'oauth2') {
+		const issuerConfig = this.tokenStore.getIssuerConfig(collectionID) as OnChainTokenConfig | Oauth2IssuerConfig
+		if (protocol.toLocaleLowerCase() === 'oauth2') {
+			if (issuerConfig.blockchain.toLocaleLowerCase() === 'chiliz') {
+				const oAuthConfig = issuerConfig as Oauth2IssuerConfig
+				const params = new URLSearchParams(location.search)
+				const code = params.get('code')
+				if (code !== null) {
+					fetch(`${oAuthConfig.oAuth2options.endpoints.userAccessToken.path}?code=${code}`)
+						.then((response) => response.json())
+						.then(async (data) => {
+							if (data.error) {
+								errorHandler(data.error, 'error', null, null, true, true)
+							} else {
+								await this.getWalletProvider()
+								// TODO use types to ensure it's not typed incorrectly
+								this.web3WalletProvider.registerNewOauth2WalletAddress(
+									'socios', // address
+									'socios', // chain id
+									'Socios', // provider
+									'chiliz', // blockchain
+									null,
+								)
+								sessionStorage.setItem('tn-socios', JSON.stringify(data))
+								if (oAuthConfig.oAuth2options.returnToApplicationURL) {
+									window.location.href = oAuthConfig.oAuth2options.returnToApplicationURL
+								}
+							}
+						})
+						.catch((error) => {
+							console.error('Error:', error)
+						})
+				}
+			}
+		}
 	}
 
 	public async readProofCallback() {
@@ -289,11 +329,11 @@ export class Client {
 	}
 
 	// TODO: Move to token store OR select-wallet view - this method is very similar to getCurrentBlockchains()
-	public hasIssuerForBlockchain(blockchain: 'evm' | 'solana' | 'flow' | 'ultra' | 'socios') {
+	public hasIssuerForBlockchain(blockchain: 'evm' | 'solana' | 'flow' | 'ultra' | 'chiliz') {
 		return (
 			this.config.issuers.filter((issuer: OnChainTokenConfig) => {
 				if (blockchain === 'evm' && !issuer.onChain) return true
-				if (blockchain === 'socios' && !issuer.oauth2) return false
+				if (blockchain === 'chiliz' && !issuer.oAuth2options) return false
 				if (blockchain === 'solana' && typeof window.solana === 'undefined') return false
 				if (blockchain === 'ultra' && typeof window.ultra === 'undefined') return false
 				return (issuer.blockchain ? issuer.blockchain.toLowerCase() : 'evm') === blockchain
@@ -620,7 +660,7 @@ export class Client {
 
 			try {
 				let tokens
-				if (issuers[issuerKey].oauth2) {
+				if (issuers[issuerKey].oAuth2options) {
 					tokens = await this.loadOnChainTokensViaOauth2(issuer)
 				} else {
 					tokens = await this.loadOnChainTokens(issuer)
@@ -672,9 +712,9 @@ export class Client {
 
 		let tokens
 
-		if (config.oauth2 && config.onChain === true) {
+		if (config.oAuth2options && config.onChain === true) {
 			tokens = await this.loadOnChainTokensViaOauth2(config)
-		} else if (!config.oauth2 && config.onChain === true) {
+		} else if (!config.oAuth2options && config.onChain === true) {
 			tokens = await this.loadOnChainTokens(config)
 		} else {
 			// TODO //
@@ -692,10 +732,16 @@ export class Client {
 	}
 
 	private async loadOnChainTokensViaOauth2(issuer: OnChainIssuer): Promise<any[]> {
-		// TODO implement logic here to attempt to load the tokens with Socios config
-		// when access token is in local storage.
-		// const accessToken = getAccessToken
-		console.log('CLIENT - loadOnChainTokensViaOauth2')
+		// tn-socios
+
+		let tokens
+
+		if (issuer.fungible) {
+			// tokens = await getFungibleTokenBalances(issuer, accessToken)
+		} else {
+			// tokens = await getNftTokens(issuer, accessToken)
+		}
+
 		return []
 	}
 
