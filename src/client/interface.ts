@@ -5,6 +5,7 @@ import { BrowserDataInterface } from '../utils/support/isSupported'
 import { WalletConnection } from '../wallet/Web3WalletProvider'
 import { DecodedToken } from '../outlet/ticketStorage'
 import { EasSchemaConfig } from '../outlet/interfaces'
+import { TokenData } from './tokenStore'
 
 export type SupportedBlockchainsParam = 'evm' | 'flow' | 'solana' | 'ultra'
 export const SignatureSupportedBlockchainsParamList = ['evm', 'flow', 'solana', 'ultra']
@@ -117,7 +118,6 @@ export interface TokenNegotiatorEventsArgs {
 	'connected-wallet': EventSenderConnectedWallet
 	'disconnected-wallet': EventSenderDisconnectedWallet
 	'tokens-selected': EventSenderTokensSelected
-	tokens: EventSenderTokens
 	'tokens-loaded': EventSenderTokensLoaded
 	'network-change': string
 	error: EventSenderError
@@ -150,11 +150,11 @@ export interface EventSenderViewChanged {
 }
 
 export interface EventSenderTokensSelected {
-	selectedTokens: Object
-}
-
-export interface EventSenderTokens {
-	data: any[]
+	selectedTokens: {
+		[collectionId: string]: {
+			tokens: DecodedToken[] | TokenData[]
+		}
+	}
 }
 
 export interface EventSenderTokensLoaded {

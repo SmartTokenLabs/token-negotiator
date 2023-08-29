@@ -1094,7 +1094,7 @@ export class Client {
 	) {
 		requiredParams(type, 'Event type is not defined')
 
-		if ((type === 'tokens' || type === 'tokens-selected') && callback) {
+		if (type === 'tokens-selected' && callback) {
 			this.readTokensFromUrl()
 		}
 

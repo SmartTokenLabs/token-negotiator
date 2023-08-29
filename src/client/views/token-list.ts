@@ -110,8 +110,7 @@ export class TokenList extends AbstractView {
 
 		this.viewContainer.querySelectorAll('.mobileToggle-tn').forEach((token: any, index: number) => {
 			if (index === 0) {
-				selectedTokens[token.dataset.key] = {}
-				selectedTokens[token.dataset.key]['tokens'] = []
+				selectedTokens[token.dataset.key] = { tokens: [] }
 			}
 
 			if (token.checked === true) {

@@ -6,7 +6,7 @@ import { MultiTokenAuthRequest, MultiTokenAuthResult, OutletInterface, OutletIss
 import { OutletAction } from '../client/messaging'
 
 export class LocalOutlet {
-	protected ticketStorage: TicketStorage
+	public readonly ticketStorage: TicketStorage
 
 	constructor(config: OutletInterface) {
 		this.ticketStorage = new TicketStorage(config)

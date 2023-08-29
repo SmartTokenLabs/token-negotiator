@@ -1,6 +1,7 @@
 import { OffChainTokenConfig, OnChainIssuer, OnChainTokenConfig, SolanaIssuerConfig, UltraIssuerConfig } from './interface'
 
 import { logger } from '../utils'
+import { DecodedToken } from '../outlet/ticketStorage'
 
 interface IssuerLookup {
 	[collectionID: string]: TokenConfig & { timestamp: number }
@@ -10,13 +11,16 @@ interface TokenLookup {
 	[issuer: string]: { timestamp: number; tokens: TokenData[] | null }
 }
 
-interface TokenData {
+export interface TokenData {
+	tokenId: string | number
 	walletAddress?: string
 	// TODO: add more common fields to this interface
 	[key: string]: any
 }
 
 type TokenConfig = OnChainTokenConfig | OffChainTokenConfig | SolanaIssuerConfig | UltraIssuerConfig
+
+type SelectedTokens = { [collectionId: string]: { tokens: DecodedToken[] | TokenData[] } }
 
 export class TokenStore {
 	public static LOCAL_STORAGE_KEY = 'tn-tokenStore'
@@ -28,7 +32,7 @@ export class TokenStore {
 	private tokenLookup: IssuerLookup = {}
 
 	// TODO: change to disabled tokens
-	private selectedTokens: any = {}
+	private selectedTokens: SelectedTokens = {}
 
 	constructor(
 		private autoEnableTokens: boolean,
@@ -173,7 +177,7 @@ export class TokenStore {
 		return null
 	}
 
-	public setTokens(issuer: string, tokens: TokenData[]) {
+	public setTokens(issuer: string, tokens: TokenData[] | DecodedToken[]) {
 		this.tokenData[issuer] = { timestamp: Date.now(), tokens }
 
 		this.saveTokenStore()
@@ -185,7 +189,7 @@ export class TokenStore {
 		return this.selectedTokens
 	}
 
-	public setSelectedTokens(selectedTokens: any) {
+	public setSelectedTokens(selectedTokens: SelectedTokens) {
 		this.selectedTokens = selectedTokens
 	}
 
