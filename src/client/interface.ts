@@ -62,15 +62,11 @@ export interface Oauth2IssuerConfig {
 		partnerTag: string
 		returnToApplicationURL?: string
 		endpoints: {
+			redirectURI: {
+				path: string
+				params?: object
+			}
 			userAccessToken: {
-				path: string
-				params?: object
-			}
-			userBalance: {
-				path: string
-				params?: object
-			}
-			userNfts: {
 				path: string
 				params?: object
 			}

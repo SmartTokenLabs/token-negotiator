@@ -7,6 +7,23 @@ import { JsonRpc } from 'eosjs'
 
 export const BASE_TOKEN_DISCOVERY_URL = 'https://api.token-discovery.tokenscript.org'
 
+// blockchain
+// "chiliz"
+// chain
+// "socios"
+// collectionID
+// "socios"
+// fungile
+// true
+// oAuth2options
+// {consumerKey: 'PBK9Mx_ffFRUPHW9BLTxnGHRdywa', partnerTag: 'smarttokenlabs', endpoints: {…}}
+// onChain
+// true
+// symbol
+// "CHZ"
+// timestamp
+// 1693270793004
+
 export const getNftCollection = async (issuer: OnChainIssuer, ipfsBaseUrl?: string) => {
 	let query: string
 
@@ -15,6 +32,8 @@ export const getNftCollection = async (issuer: OnChainIssuer, ipfsBaseUrl?: stri
 		return { title: `Ultra NFT factory "${issuer['factoryId']}"` }
 	} else if ('blockchain' in issuer && issuer.blockchain === 'solana') {
 		query = getSolanaNftCollectionUrl(issuer as SolanaIssuerConfig, ipfsBaseUrl)
+	} else if ('blockchain' in issuer && issuer.blockchain === 'chiliz') {
+		query = getChilizNftCollectionUrl(issuer)
 	} else if ('blockchain' in issuer && issuer.blockchain === 'flow') {
 		query = getFlowNftCollectionUrl(issuer)
 	} else {
@@ -24,11 +43,20 @@ export const getNftCollection = async (issuer: OnChainIssuer, ipfsBaseUrl?: stri
 	return tokenRequest(query, true)
 }
 
+// TODO - update function names to TokenCollection e.g. getEvmTokenCollectionURL
+// Where they can be NFT of FT's.
+
 export const getEvmNftCollectionUrl = (issuer: OnChainTokenConfig, ipfsBaseUrl: string) => {
 	const { contract, chain, openSeaSlug } = issuer
 	let query = `${BASE_TOKEN_DISCOVERY_URL}/get-token-collection?smartContract=${contract}&chain=${chain}&blockchain=evm`
 	if (openSeaSlug) query += `&openSeaSlug=${openSeaSlug}`
 	if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`
+	return query
+}
+
+export const getChilizNftCollectionUrl = (issuer: OnChainTokenConfig) => {
+	const { contract, chain } = issuer
+	let query = `${BASE_TOKEN_DISCOVERY_URL}/get-token-collection?smartContract=${contract}&chain=${chain}&blockchain=chiliz`
 	return query
 }
 

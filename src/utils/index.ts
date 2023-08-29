@@ -278,3 +278,9 @@ export const isCookieExpired = (cookieName: string) => {
 	}
 	return true // Cookie is not found, considered expired
 }
+
+export const getCookieByName = (cookieName: string) => {
+	const value = `; ${document.cookie}`
+	const parts = value.split(`; ${cookieName}=`)
+	if (parts.length === 2) return parts.pop().split(';').shift()
+}

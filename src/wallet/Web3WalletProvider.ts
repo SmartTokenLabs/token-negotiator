@@ -1,5 +1,5 @@
 import { ethers } from 'ethers'
-import { logger, strToHexStr, strToUtfBytes } from '../utils'
+import { logger, strToHexStr, strToUtfBytes, getCookieByName } from '../utils'
 import { SafeConnectOptions } from './SafeConnectProvider'
 import { Client } from '../client'
 import {
@@ -500,20 +500,21 @@ export class Web3WalletProvider {
 		let client_id
 		let redirect_uri
 		let partner_tag
+		let collectionID
 		for (const issuer of this.client.config.issuers) {
 			const oauthIssuer = issuer as Oauth2IssuerConfig
 			if (oauthIssuer.oAuth2options.consumerKey) {
 				client_id = oauthIssuer.oAuth2options.consumerKey
-				redirect_uri = oauthIssuer.oAuth2options.redirectURI
+				redirect_uri = oauthIssuer.oAuth2options.endpoints.redirectURI.path
 				partner_tag = oauthIssuer.oAuth2options.partnerTag
+				collectionID = oauthIssuer.collectionID
 				break
 			}
 		}
 
-		// if there is an access token and TODO not expired.
-		if (sessionStorage.getItem('tn-socios')) {
+		if (getCookieByName(`tn-oauth2-ref-${collectionID}`)) {
 			this.registerNewOauth2WalletAddress(
-				'socios', // address
+				'socios', // address id
 				'socios', // chain id
 				'Socios', // provider
 				'chiliz', // blockchain

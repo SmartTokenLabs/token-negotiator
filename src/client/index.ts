@@ -20,7 +20,6 @@ import {
 	OutletTokenResult,
 	MultiTokenInterface,
 	TokenNegotiatorEventsArgs,
-	Oauth2IssuerConfig,
 } from './interface'
 import { SignedUNChallenge } from './auth/signedUNChallenge'
 import { TicketZKProof } from './auth/ticketZKProof'
@@ -31,7 +30,7 @@ import Web3WalletProvider from '../wallet/Web3WalletProvider'
 import { LocalOutlet } from '../outlet/localOutlet'
 import { shouldUseRedirectMode } from '../utils/support/getBrowserData'
 import { VERSION } from '../version'
-import { getFungibleTokenBalances, getFungibleTokensMeta } from '../utils/token/fungibleTokenProvider'
+import { getFungibleTokenBalances, getFungibleTokensMeta, getFungibleTokenBalancesViaOauth } from '../utils/token/fungibleTokenProvider'
 import { URLNS } from '../core/messaging'
 import { DecodedToken, TokenType } from '../outlet/ticketStorage'
 import { MultiTokenAuthRequest, MultiTokenAuthResult, OutletIssuerInterface, ProofResult } from '../outlet/interfaces'
@@ -162,46 +161,6 @@ export class Client {
 			return this.urlParams.get(URLNS + itemKey)
 		}
 		return null
-	}
-
-	// TODO see if we can reduce the need of this function.
-	// Where in the callback.html the AccessToken is derived and sent to this view.
-	// DISNEY MODE - where the token + wallet storage is automatically managed by TKN.
-	public async getAccessToken(collectionID: string, protocol = 'oauth2') {
-		const issuerConfig = this.tokenStore.getIssuerConfig(collectionID) as OnChainTokenConfig | Oauth2IssuerConfig
-		if (protocol.toLocaleLowerCase() === 'oauth2') {
-			if (issuerConfig.blockchain.toLocaleLowerCase() === 'chiliz') {
-				const oAuthConfig = issuerConfig as Oauth2IssuerConfig
-				const params = new URLSearchParams(location.search)
-				const code = params.get('code')
-				if (code !== null) {
-					fetch(`${oAuthConfig.oAuth2options.endpoints.userAccessToken.path}?code=${code}`)
-						.then((response) => response.json())
-						.then(async (data) => {
-							if (data.error) {
-								errorHandler(data.error, 'error', null, null, true, true)
-							} else {
-								await this.getWalletProvider()
-								// TODO use types to ensure it's not typed incorrectly
-								this.web3WalletProvider.registerNewOauth2WalletAddress(
-									'socios', // address
-									'socios', // chain id
-									'Socios', // provider
-									'chiliz', // blockchain
-									null,
-								)
-								sessionStorage.setItem('tn-socios', JSON.stringify(data))
-								if (oAuthConfig.oAuth2options.returnToApplicationURL) {
-									window.location.href = oAuthConfig.oAuth2options.returnToApplicationURL
-								}
-							}
-						})
-						.catch((error) => {
-							console.error('Error:', error)
-						})
-				}
-			}
-		}
 	}
 
 	public async readProofCallback() {
@@ -731,18 +690,19 @@ export class Client {
 		return tokens
 	}
 
-	private async loadOnChainTokensViaOauth2(issuer: OnChainIssuer): Promise<any[]> {
-		// tn-socios
-
-		let tokens
-
-		if (issuer.fungible) {
-			// tokens = await getFungibleTokenBalances(issuer, accessToken)
+	private async loadOnChainTokensViaOauth2(issuerConfig: OnChainIssuer): Promise<any[]> {
+		let tokens = []
+		if (issuerConfig.fungible === true) {
+			tokens = (await getFungibleTokenBalancesViaOauth(issuerConfig)) as any
 		} else {
+			// add more logic to identify which collection they seek.
 			// tokens = await getNftTokens(issuer, accessToken)
 		}
-
-		return []
+		tokens.forEach((token) => {
+			token.walletAddress = issuerConfig.collectionID
+		})
+		this.tokenStore.setTokens(issuerConfig.collectionID, tokens)
+		return tokens
 	}
 
 	private async loadOnChainTokens(issuer: OnChainIssuer): Promise<any[]> {

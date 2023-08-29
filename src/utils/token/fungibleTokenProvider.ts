@@ -12,9 +12,15 @@ export const getFungibleTokenBalances = async (issuer: OnChainIssuer, owner: str
 	if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`
 
 	return tokenRequest(query, true)
+	
+}
+
+export const getFungibleTokenBalancesViaOauth = (issuer: any) => {
+	// TOKEN DISCOVERY API REQUEST HERE.
 }
 
 export const getFungibleTokensMeta = async (issuer: OnChainIssuer, ipfsBaseUrl?: string) => {
+	
 	const { contract, chain } = issuer
 
 	let query = `${BASE_TOKEN_DISCOVERY_URL}/get-fungible-token?collectionAddress=${contract}&chain=${chain}&blockchain=${
