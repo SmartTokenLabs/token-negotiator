@@ -263,24 +263,47 @@ export const createCookie = (name: string, value: any, seconds: number) => {
 	document.cookie = name + '=' + value + expires + '; path=/'
 }
 
-export const isCookieExpired = (cookieName: string) => {
-	let cookies = document.cookie.split('; ')
-	for (let i = 0; i < cookies.length; i++) {
-		let cookie = cookies[i].split('=')
-		if (cookie[0] === cookieName) {
-			let expiration = cookie[1]
-			if (expiration === 'true') {
-				return false // Cookie is not expired
+export const isCookieMaxAgeExpired = (cookieName) => {
+	const cookies = document.cookie.split(';')
+	for (const cookie of cookies) {
+		const [name, value] = cookie.trim().split('=')
+		if (name === cookieName) {
+			// This cookie exists, check if it has expired
+			const cookieData = decodeURIComponent(value)
+			const expirationDate = new Date(cookieData)
+			if (expirationDate > new Date()) {
+				// The cookie is still valid
+				return false
 			} else {
-				return true // Cookie is expired
+				// The cookie has expired, you can optionally remove it
+				// document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+				return true
 			}
 		}
 	}
-	return true // Cookie is not found, considered expired
+	// The cookie with the given name was not found
+	return true
+}
+
+export const isCookieExpired = (cookieName: string) => {
+	const cookies = document.cookie.split(';')
+	for (const cookie of cookies) {
+		const [name, value] = cookie.trim().split('=')
+		if (name === cookieName) {
+			const expirationDate = new Date(value)
+			const currentDate = new Date()
+			return currentDate > expirationDate
+		}
+	}
+	return true // Cookie not found, assume expired.
 }
 
 export const getCookieByName = (cookieName: string) => {
 	const value = `; ${document.cookie}`
 	const parts = value.split(`; ${cookieName}=`)
 	if (parts.length === 2) return parts.pop().split(';').shift()
+}
+
+export const deleteCookieByName = (cookieName) => {
+	document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
 }

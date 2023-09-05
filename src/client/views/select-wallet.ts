@@ -42,7 +42,7 @@ export class SelectWallet extends AbstractView {
 			}
 		}
 
-		if (this.client.hasIssuerForBlockchain(SupportedBlockchainsEnum.CHILIZ)) {
+		if (this.client.hasIssuerForBlockchain(SupportedBlockchainsEnum.EVM, true)) {
 			const socios = getWalletInfo(SupportedWalletProviders.Socios)
 			walletButtons += this.getWalletButtonHtml(socios)
 		}

@@ -9,13 +9,12 @@ import { EasSchemaConfig } from '../outlet/interfaces'
 export enum SupportedBlockchainsEnum {
 	EVM = 'evm',
 	SOLANA = 'solana',
-	CHILIZ = 'chiliz',
 	FLOW = 'flow',
 	ULTRA = 'ultra',
 }
 
-export type SupportedBlockchainsParam = 'evm' | 'flow' | 'solana' | 'ultra' | 'chiliz'
-export const SignatureSupportedBlockchainsParamList = ['evm', 'flow', 'solana', 'ultra', 'chiliz']
+export type SupportedBlockchainsParam = 'evm' | 'flow' | 'solana' | 'ultra'
+export const SignatureSupportedBlockchainsParamList = ['evm', 'flow', 'solana', 'ultra']
 
 export interface OffChainTokenConfig extends IssuerConfigInterface {
 	onChain: false
@@ -85,6 +84,7 @@ export interface IssuerConfigInterface {
 	image?: string
 	symbol?: string
 	decimals?: number
+	shortCode?: string
 	noTokenMsg?: string
 	hideToggle?: boolean
 	fungible?: boolean

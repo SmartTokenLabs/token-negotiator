@@ -23,12 +23,11 @@
           issuers: [
             {
               onChain: true,
-              fungile: true,
-              chain: "socios",
-              blockchain: "chiliz",
+              fungible: true,
+              chain: "eth",
+              blockchain: "evm",
               collectionID: "socios",
-              smartContract: "0x3506424f91fd33084466f402d5d97f05f8e3b4af",
-              symbol: "CHZ",
+              contract: "0x3506424F91fD33084466F402d5D97f05F8e3b4AF",
               oAuth2options: {
                 consumerKey: "PBK9Mx_ffFRUPHW9BLTxnGHRdywa",
                 partnerTag: "smarttokenlabs",
@@ -47,6 +46,10 @@
                   },
                   userBalance: {
                     path: 'http://localhost:5000/user-balance',
+                    params: {}
+                  },
+                  userNfts: {
+                    path: 'http://localhost:5000/user-nfts',
                     params: {}
                   },
                 },

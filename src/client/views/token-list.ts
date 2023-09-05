@@ -146,8 +146,8 @@ export class TokenList extends AbstractView {
 				? '#' + (index.length > 15 ? index.substring(0, 5) + '...' + index.substring(index.length - 5, index.length) : index)
 				: ''
 		} else {
-			const balanceTxt = ethers.utils.formatUnits(balance, decimals)
-
+			const balanceTxt = ethers.utils.parseUnits(balance, decimals).toString()
+			// const balanceTxt = ethers.utils.formatUnits(balanceParsed, decimals)
 			detail = balanceTxt + ' ' + symbol
 			abrieviated = (balanceTxt.length > 15 ? balanceTxt.substring(0, 12) + '... ' : balanceTxt) + ' ' + symbol
 		}

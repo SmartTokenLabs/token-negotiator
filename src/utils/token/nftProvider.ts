@@ -5,26 +5,11 @@ import { validateBlockchain } from '../support/isSupported'
 
 import { JsonRpc } from 'eosjs'
 
+// export const BASE_TOKEN_DISCOVERY_URL = 'http://localhost:3000'
 export const BASE_TOKEN_DISCOVERY_URL = 'https://api.token-discovery.tokenscript.org'
+import { isCookieExpired } from './../../utils/index'
 
-// blockchain
-// "chiliz"
-// chain
-// "socios"
-// collectionID
-// "socios"
-// fungile
-// true
-// oAuth2options
-// {consumerKey: 'PBK9Mx_ffFRUPHW9BLTxnGHRdywa', partnerTag: 'smarttokenlabs', endpoints: {…}}
-// onChain
-// true
-// symbol
-// "CHZ"
-// timestamp
-// 1693270793004
-
-export const getNftCollection = async (issuer: OnChainIssuer, ipfsBaseUrl?: string) => {
+export const getNftCollection = async (issuer: OnChainIssuer, ipfsBaseUrl?: string, ui?: any) => {
 	let query: string
 
 	if ('blockchain' in issuer && issuer.blockchain === 'ultra') {
@@ -32,10 +17,14 @@ export const getNftCollection = async (issuer: OnChainIssuer, ipfsBaseUrl?: stri
 		return { title: `Ultra NFT factory "${issuer['factoryId']}"` }
 	} else if ('blockchain' in issuer && issuer.blockchain === 'solana') {
 		query = getSolanaNftCollectionUrl(issuer as SolanaIssuerConfig, ipfsBaseUrl)
-	} else if ('blockchain' in issuer && issuer.blockchain === 'chiliz') {
-		query = getChilizNftCollectionUrl(issuer)
 	} else if ('blockchain' in issuer && issuer.blockchain === 'flow') {
 		query = getFlowNftCollectionUrl(issuer)
+	} else if (issuer.oAuth2options) {
+		query = issuer.oAuth2options.endpoints.userNfts.path;
+		// TODO instead do this when the user clicks on load!!!
+		// if(isCookieExpired(`tn-oauth2-expiry-${issuer.collectionID}`)) {
+		// 	ui.updateUI('wallet', { viewName: 'wallet' }, { viewTransition: 'slide-in-left' })
+		// }
 	} else {
 		query = getEvmNftCollectionUrl(issuer, ipfsBaseUrl)
 	}
@@ -54,12 +43,6 @@ export const getEvmNftCollectionUrl = (issuer: OnChainTokenConfig, ipfsBaseUrl: 
 	return query
 }
 
-export const getChilizNftCollectionUrl = (issuer: OnChainTokenConfig) => {
-	const { contract, chain } = issuer
-	let query = `${BASE_TOKEN_DISCOVERY_URL}/get-token-collection?smartContract=${contract}&chain=${chain}&blockchain=chiliz`
-	return query
-}
-
 // TODO add ultra TOKEN_DISCOVERY service
 
 export const getSolanaNftCollectionUrl = (issuer: SolanaIssuerConfig, ipfsBaseUrl: string) => {
@@ -75,7 +58,7 @@ export const getFlowNftCollectionUrl = (issuer: OnChainTokenConfig) => {
 	return query
 }
 
-export const getNftTokens = async (issuer: OnChainIssuer, owner: string, ipfsBaseUrl?: string) => {
+export const getNftTokens = async (issuer: OnChainIssuer, owner: string, ipfsBaseUrl?: string, ui?: any) => {
 	let query: string
 	if ('blockchain' in issuer && issuer.blockchain === 'ultra') {
 		// TODO add to the Discovery Service

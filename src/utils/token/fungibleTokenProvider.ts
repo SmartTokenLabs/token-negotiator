@@ -1,22 +1,21 @@
 import { tokenRequest } from './../index'
 import { OnChainIssuer } from '../../client/interface'
 import { BASE_TOKEN_DISCOVERY_URL } from './nftProvider'
+import { isCookieExpired } from './../../utils/index'
 
-export const getFungibleTokenBalances = async (issuer: OnChainIssuer, owner: string, ipfsBaseUrl?: string) => {
+export const getFungibleTokenBalances = async (issuer: OnChainIssuer, owner: string, ipfsBaseUrl?: string, ui?: any) => {
 	const { contract, chain } = issuer
-
-	let query = `${BASE_TOKEN_DISCOVERY_URL}/get-owner-fungible-tokens?collectionAddress=${contract}&owner=${owner}&chain=${chain}&blockchain=${
-		issuer.blockchain ?? 'evm'
-	}`
+	let query = `${BASE_TOKEN_DISCOVERY_URL}/get-owner-fungible-tokens?collectionAddress=${contract}&owner=${owner}&chain=${chain}&blockchain=${issuer.blockchain ?? 'evm&'}`
 	if (issuer.symbol) query += `&symbol=${issuer.symbol}`
 	if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`
-
+	if (issuer.oAuth2options) {
+		query = issuer.oAuth2options.endpoints.userBalance.path;
+		// TODO when a user clicks load
+		// if(isCookieExpired(`tn-oauth2-expiry-${issuer.collectionID}`)) {
+		// 	ui.updateUI('wallet', { viewName: 'wallet' }, { viewTransition: 'slide-in-left' })
+		// }
+	}
 	return tokenRequest(query, true)
-	
-}
-
-export const getFungibleTokenBalancesViaOauth = (issuer: any) => {
-	// TOKEN DISCOVERY API REQUEST HERE.
 }
 
 export const getFungibleTokensMeta = async (issuer: OnChainIssuer, ipfsBaseUrl?: string) => {
@@ -28,6 +27,5 @@ export const getFungibleTokensMeta = async (issuer: OnChainIssuer, ipfsBaseUrl?:
 	}`
 	if (issuer.symbol) query += `&symbol=${issuer.symbol}`
 	if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`
-
 	return tokenRequest(query, true)
 }
