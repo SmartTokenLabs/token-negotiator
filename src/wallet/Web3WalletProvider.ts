@@ -215,15 +215,6 @@ export class Web3WalletProvider {
 		return connection.provider
 	}
 
-	// getOauthWalletProvider(provider: string) {
-	// 	let data = localStorage.getItem(Web3WalletProvider.LOCAL_STORAGE_KEY)
-	// 	if (data) {
-	// 		let state = JSON.parse(data)
-	// 		return state[provider]
-	// 	}
-	// 	return false;
-	// }
-
 	hasAnyConnection(blockchain: SupportedBlockchainsParam[]) {
 		for (const i in this.connections) {
 			if (blockchain.includes(this.connections[i].blockchain)) {
