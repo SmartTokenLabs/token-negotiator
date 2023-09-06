@@ -13,9 +13,9 @@ export const defaultConfig = {
 	whitelistDialogHeight: '350px',
 }
 
-export const attestationWindowConfig = {
-	max_width: window.innerWidth < 700 ? '400px' : '450px',
-	min_height: window.innerHeight < 600 ? '600px' : '650px',
+const attestationWindowConfig = {
+	max_width: typeof window !== 'undefined' && window.innerWidth < 700 ? '400px' : '450px',
+	min_height: typeof window !== 'undefined' && window.innerHeight < 600 ? '600px' : '650px',
 }
 
 export class Outlet extends LocalOutlet {
