@@ -669,7 +669,6 @@ export class Client {
 		if (config.onChain === true) {
 			tokens = await this.loadOnChainTokens(config)
 		} else {
-			// TODO //
 			// @ts-ignore
 			tokens = await this.loadOutletTokens(config)
 		}
