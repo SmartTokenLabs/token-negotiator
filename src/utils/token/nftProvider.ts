@@ -7,7 +7,6 @@ import { JsonRpc } from 'eosjs'
 
 // export const BASE_TOKEN_DISCOVERY_URL = 'http://localhost:3000'
 export const BASE_TOKEN_DISCOVERY_URL = 'https://api.token-discovery.tokenscript.org'
-import { isCookieExpired } from './../../utils/index'
 
 export const getNftCollection = async (issuer: OnChainIssuer, ipfsBaseUrl?: string) => {
 	let query: string
