@@ -275,13 +275,10 @@ export const isCookieMaxAgeExpired = (cookieName) => {
 				// The cookie is still valid
 				return false
 			} else {
-				// The cookie has expired, you can optionally remove it
-				// document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
 				return true
 			}
 		}
 	}
-	// The cookie with the given name was not found
 	return true
 }
 
@@ -295,7 +292,7 @@ export const isCookieExpired = (cookieName: string) => {
 			return currentDate > expirationDate
 		}
 	}
-	return true // Cookie not found, assume expired.
+	return true
 }
 
 export const getCookieByName = (cookieName: string) => {
