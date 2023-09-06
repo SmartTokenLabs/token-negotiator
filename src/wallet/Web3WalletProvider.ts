@@ -1,14 +1,8 @@
 import { ethers } from 'ethers'
-import { logger, strToHexStr, strToUtfBytes, getCookieByName, deleteCookieByName, isCookieMaxAgeExpired } from '../utils'
+import { logger, strToHexStr, strToUtfBytes, deleteCookieByName, isCookieMaxAgeExpired } from '../utils'
 import { SafeConnectOptions } from './SafeConnectProvider'
 import { Client } from '../client'
-import {
-	SupportedBlockchainsParam,
-	WalletOptionsInterface,
-	SignatureSupportedBlockchainsParamList,
-	OffChainTokenConfig,
-	OnChainTokenConfig,
-} from '../client/interface'
+import { SupportedBlockchainsParam, WalletOptionsInterface, SignatureSupportedBlockchainsParamList } from '../client/interface'
 import { DEFAULT_RPC_MAP } from '../core/constants'
 import { Oauth2IssuerConfig } from './../client/interface'
 
@@ -34,7 +28,7 @@ export interface WalletConnection {
 export interface WalletConnectionOauth2 {
 	address: string
 	chainId: number | string
-	blockchain: SupportedBlockchainsParam // TODO make this an OAuth list
+	blockchain: SupportedBlockchainsParam // TODO make this an OAuth list (when more providers exist)
 	provider: string
 	providerType: string
 	meta?: any
