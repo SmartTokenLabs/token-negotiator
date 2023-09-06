@@ -65,13 +65,13 @@ export interface Oauth2IssuerConfig {
 				path: string
 				params?: object
 			}
-			userAccessToken: {
+			userBalance?: {
 				path: string
-				params?: object
+				params: object
 			}
-			userLogout: {
+			userNfts?: {
 				path: string
-				params?: object
+				params: object
 			}
 		}
 	}

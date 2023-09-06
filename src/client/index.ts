@@ -137,11 +137,6 @@ export class Client {
 		// this.registerOutletProofEventListener()
 	}
 
-	async testSig() {
-		let res = await fetch('http://localhost:5000/user-signature?message=hola', {})
-		console.log(res)
-	}
-
 	handleRecievedRedirectMessages() {
 		const issuer = this.getDataFromQuery('issuer')
 		const error = this.getDataFromQuery('error')

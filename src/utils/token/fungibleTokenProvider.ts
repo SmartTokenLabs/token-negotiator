@@ -10,10 +10,6 @@ export const getFungibleTokenBalances = async (issuer: OnChainIssuer, owner: str
 	if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`
 	if (issuer.oAuth2options) {
 		query = issuer.oAuth2options.endpoints.userBalance.path;
-		// TODO when a user clicks load
-		// if(isCookieExpired(`tn-oauth2-expiry-${issuer.collectionID}`)) {
-		// 	ui.updateUI('wallet', { viewName: 'wallet' }, { viewTransition: 'slide-in-left' })
-		// }
 	}
 	return tokenRequest(query, true)
 }

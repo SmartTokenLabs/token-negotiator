@@ -106,8 +106,8 @@ export class Web3WalletProvider {
 			if (state) {
 				for (let item in state) {
 					let provider = state[item].providerType
-					switch (provider) {
-						case 'WalletConnectV2':
+					switch (provider.toLowerCase()) {
+						case 'walletconnectV2':
 							{
 								let walletConnect2Provider = await import('./WalletConnectV2Provider')
 
@@ -125,8 +125,7 @@ export class Web3WalletProvider {
 							}
 							break
 						case 'socios':
-							console.log('remove socios wallet from local storage')
-							// deleteCookieByName(provider.expiryCookieName);
+							deleteCookieByName(`tn-oauth2-expiry-socios`)
 							break
 					}
 				}
@@ -496,19 +495,17 @@ export class Web3WalletProvider {
 		let client_id
 		let redirect_uri
 		let partner_tag
-		let collectionID
 		for (const issuer of this.client.config.issuers) {
 			const oauthIssuer = issuer as Oauth2IssuerConfig
 			if (oauthIssuer.oAuth2options.consumerKey) {
 				client_id = oauthIssuer.oAuth2options.consumerKey
 				redirect_uri = oauthIssuer.oAuth2options.endpoints.redirectURI.path
 				partner_tag = oauthIssuer.oAuth2options.partnerTag
-				collectionID = oauthIssuer.collectionID
 				break
 			}
 		}
 
-		if (isCookieMaxAgeExpired(`tn-oauth2-expiry-${collectionID}`)) {
+		if (isCookieMaxAgeExpired(`tn-oauth2-expiry-socios`)) {
 			// @ts-ignore
 			this.client.ui.showLoaderDelayed(['<h4>Connecting to Socios...</h4>'], 600, true)
 			window.location.href = `https://partner.socios.com/oauth2/authorize?response_type=code&client_id=${client_id}&redirect_uri=${redirect_uri}&partner_tag=${partner_tag}`
