@@ -381,7 +381,7 @@ export class TicketStorage {
 				ticket.tokenId = decodedToken.tokenId
 			}
 			if (ticket.tokenId === tokenRecord.tokenId) {
-				if (JSON.stringify(tokenRecord) === JSON.stringify(ticket[index])) {
+				if (JSON.stringify(tokenRecord) === JSON.stringify(ticket)) {
 					return false
 				}
 				// collectionTickets[index] = tokenRecord
