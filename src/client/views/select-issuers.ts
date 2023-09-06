@@ -286,7 +286,6 @@ export class SelectIssuers extends AbstractView {
 		tokenBtn.style.display = 'block'
 		let issuers = this.client.getTokenStore().getCurrentIssuers()
 
-		// TODO check if this should say 'Balance not found'.
 		tokenBtn.innerHTML =
 			tokens.length && issuers[issuer].fungible ? 'Balance found' : `${tokens.length} token${tokens.length > 1 ? 's' : ''} available`
 		tokenBtn.setAttribute('aria-label', `Navigate to select from ${tokens.length} of your ${issuer} tokens`)
