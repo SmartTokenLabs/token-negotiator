@@ -891,13 +891,6 @@ export class Client {
 		else return this.authenticateToken(authRequest as AuthenticateInterface)
 	}
 
-	// TEST method to debug issue with Socios signature API.
-	// TODO Integrate this into authentication flow.
-	async testSociosSignatureAPI(message: string) {
-		const response = await fetch(`http://localhost:5000/user-signature?message=${message}`)
-		return response
-	}
-
 	async authenticateToken(authRequest: AuthenticateInterface) {
 		await this.checkUserAgentSupport('authentication')
 
