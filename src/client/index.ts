@@ -131,6 +131,7 @@ export class Client {
 		this.config = this.mergeConfig(defaultConfig, config)
 
 		this.tokenStore = new TokenStore(this.config.autoEnableTokens, this.config.tokenPersistenceTTL)
+		// @ts-ignore
 		if (this.config.issuers?.length > 0) this.tokenStore.updateIssuers(this.config.issuers)
 
 		this.messaging = new Messaging()
@@ -696,7 +697,7 @@ export class Client {
 		if (issuer.fungible) {
 			tokens = await getFungibleTokenBalances(issuer, walletAddress, null)
 		} else {
-			tokens = await getNftTokens(issuer, walletAddress)
+			tokens = await getNftTokens(issuer, walletAddress, null)
 		}
 
 		tokens.map((token) => {
