@@ -9,7 +9,7 @@ import { JsonRpc } from 'eosjs'
 export const BASE_TOKEN_DISCOVERY_URL = 'https://api.token-discovery.tokenscript.org'
 import { isCookieExpired } from './../../utils/index'
 
-export const getNftCollection = async (issuer: OnChainIssuer, ipfsBaseUrl?: string, ui?: any) => {
+export const getNftCollection = async (issuer: OnChainIssuer, ipfsBaseUrl?: string) => {
 	let query: string
 
 	if ('blockchain' in issuer && issuer.blockchain === 'ultra') {
@@ -21,10 +21,6 @@ export const getNftCollection = async (issuer: OnChainIssuer, ipfsBaseUrl?: stri
 		query = getFlowNftCollectionUrl(issuer)
 	} else if (issuer.oAuth2options) {
 		query = issuer.oAuth2options.endpoints.userNfts.path;
-		// TODO instead do this when the user clicks on load!!!
-		// if(isCookieExpired(`tn-oauth2-expiry-${issuer.collectionID}`)) {
-		// 	ui.updateUI('wallet', { viewName: 'wallet' }, { viewTransition: 'slide-in-left' })
-		// }
 	} else {
 		query = getEvmNftCollectionUrl(issuer, ipfsBaseUrl)
 	}

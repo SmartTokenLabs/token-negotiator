@@ -1,9 +1,8 @@
 import { tokenRequest } from './../index'
 import { OnChainIssuer } from '../../client/interface'
 import { BASE_TOKEN_DISCOVERY_URL } from './nftProvider'
-import { isCookieExpired } from './../../utils/index'
 
-export const getFungibleTokenBalances = async (issuer: OnChainIssuer, owner: string, ipfsBaseUrl?: string, ui?: any) => {
+export const getFungibleTokenBalances = async (issuer: OnChainIssuer, owner: string, ipfsBaseUrl?: string) => {
 	const { contract, chain } = issuer
 	let query = `${BASE_TOKEN_DISCOVERY_URL}/get-owner-fungible-tokens?collectionAddress=${contract}&owner=${owner}&chain=${chain}&blockchain=${issuer.blockchain ?? 'evm&'}`
 	if (issuer.symbol) query += `&symbol=${issuer.symbol}`
