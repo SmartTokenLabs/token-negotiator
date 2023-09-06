@@ -53,7 +53,7 @@ export const getFlowNftCollectionUrl = (issuer: OnChainTokenConfig) => {
 	return query
 }
 
-export const getNftTokens = async (issuer: OnChainIssuer, owner: string, ipfsBaseUrl?: string, ui?: any) => {
+export const getNftTokens = async (issuer: OnChainIssuer, owner: string, ipfsBaseUrl?: string) => {
 	let query: string
 	if ('blockchain' in issuer && issuer.blockchain === 'ultra') {
 		// TODO add to the Discovery Service

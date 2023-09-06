@@ -694,9 +694,9 @@ export class Client {
 		let tokens
 
 		if (issuer.fungible) {
-			tokens = await getFungibleTokenBalances(issuer, walletAddress, null, this.ui)
+			tokens = await getFungibleTokenBalances(issuer, walletAddress, null)
 		} else {
-			tokens = await getNftTokens(issuer, walletAddress, null, this.ui)
+			tokens = await getNftTokens(issuer, walletAddress)
 		}
 
 		tokens.map((token) => {
