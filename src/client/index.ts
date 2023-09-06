@@ -620,8 +620,7 @@ export class Client {
 			let issuer = issuers[issuerKey] as OnChainIssuer
 
 			try {
-				let tokens
-				tokens = await this.loadOnChainTokens(issuer)
+				const tokens = await this.loadOnChainTokens(issuer)
 				this.tokenStore.setTokens(issuerKey, tokens)
 			} catch (err) {
 				logger(2, err)
