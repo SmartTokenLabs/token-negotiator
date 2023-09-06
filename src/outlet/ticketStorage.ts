@@ -384,10 +384,10 @@ export class TicketStorage {
 				if (JSON.stringify(tokenRecord) === JSON.stringify(ticket[index])) {
 					return false
 				}
-				collectionTickets[index] = tokenRecord
-				this.ticketCollections[collectionHash] = collectionTickets
-				this.storeTickets()
-				return true
+				// collectionTickets[index] = tokenRecord
+				// this.ticketCollections[collectionHash] = collectionTickets
+				// this.storeTickets()
+				// return true
 			}
 		}
 		collectionTickets.push(tokenRecord)
