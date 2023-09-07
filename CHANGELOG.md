@@ -4,7 +4,7 @@ Patch release to support the upgrade of attestations.
 
 ### Upgrade Steps
 
-- Update NPM package to version 3.0.1
+- Update NPM package to version 3.0.2
 
 ### Breaking Changes
 
@@ -12,11 +12,12 @@ Patch release to support the upgrade of attestations.
 
 ### New Features
 
-- Ability to delete existing attestations
+[none]
 
 ### Bug Fixes
 
-- Added support for upgrading attestations for live projects (method added via TicketStorage deleteTicketByDecodedTokenOrId)
+- attestationWindowConfig check to the existence of window before usage (issue found applicable to full stack web applications)
+- updated list of attestation schema id's to be ignored for off chain attestation managment (ensuring readability of valid attestations)
 
 ### Performance Improvements
 
@@ -24,4 +25,4 @@ Patch release to support the upgrade of attestations.
 
 **Full Change log**:
 
-https://github.com/TokenScript/token-negotiator/compare/v3.0.0...v3.0.1
+https://github.com/TokenScript/token-negotiator/compare/v3.0.1...v3.0.2

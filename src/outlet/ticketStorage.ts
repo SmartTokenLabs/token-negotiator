@@ -87,6 +87,14 @@ export const DEFAULT_EAS_SCHEMA: TicketSchema = {
 	],
 }
 
+export const DEFAULT_SCHEMA_UIDS = [
+	'0x0000000000000000000000000000000000000000000000000000000000000000',
+	// string eventId,string ticketId,uint8 ticketClass,bytes commitment
+	'0x7f6fb09beb1886d0b223e9f15242961198dd360021b2c9f75ac879c0f786cafd',
+	// string devconId,string ticketIdString,uint8 ticketClass,bytes commitment
+	'0x0630f3342772bf31b669bdbc05af0e9e986cf16458f292dfd3b57564b3dc3247',
+]
+
 export class TicketStorage {
 	private ticketCollections: TicketStorageSchema = {}
 
@@ -332,13 +340,7 @@ export class TicketStorage {
 
 		let idFields: string[] | undefined
 
-		if (
-			schemaUid !== '0x0000000000000000000000000000000000000000000000000000000000000000' &&
-			// string eventId,string ticketId,uint8 ticketClass,bytes commitment
-			schemaUid !== '0x7f6fb09beb1886d0b223e9f15242961198dd360021b2c9f75ac879c0f786cafd' &&
-			// string devconId,string ticketIdString,uint8 ticketClass,bytes commitment
-			schemaUid !== '0x0630f3342772bf31b669bdbc05af0e9e986cf16458f292dfd3b57564b3dc3247'
-		) {
+		if (DEFAULT_SCHEMA_UIDS.indexOf(schemaUid) === -1) {
 			let issuerConfig
 
 			// Once we have decoded the URL, we have a schema ID
