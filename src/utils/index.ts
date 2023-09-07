@@ -3,6 +3,7 @@ import { KeyPair } from '@tokenscript/attestation/dist/libs/KeyPair'
 import { sha256 } from 'ethers/lib/utils'
 import { OffChainTokenConfig } from '../client/interface'
 import { OutletIssuerInterface } from '../outlet/interfaces'
+import { DEFAULT_SCHEMA_UIDS } from '../outlet/ticketStorage'
 
 export interface IssuerHashMap {
 	[collectionId: string]: string[]
@@ -242,12 +243,7 @@ export const createIssuerHashArray = (issuer: OffChainTokenConfig | OutletIssuer
 // output: 32 byte hash
 export const createOffChainCollectionHash = (key: KeyPair, eventId: string, schemaUid?: string) => {
 	// Only include custom schemaUids in the hash
-	const schemaPart =
-		schemaUid &&
-		schemaUid !== '0x0000000000000000000000000000000000000000000000000000000000000000' &&
-		schemaUid !== '0x7f6fb09beb1886d0b223e9f15242961198dd360021b2c9f75ac879c0f786cafd'
-			? '-' + schemaUid
-			: ''
+	const schemaPart = schemaUid && DEFAULT_SCHEMA_UIDS.indexOf(schemaUid) === -1 ? '-' + schemaUid : ''
 
 	const encoder = new TextEncoder()
 	return sha256(encoder.encode(key.getPublicKeyAsHexStr() + '-' + eventId + schemaPart))
