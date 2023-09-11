@@ -52,6 +52,10 @@ export const validateBlockchain = (blockchain: string) => {
 		return 'solana'
 	}
 
+	if (blockchain === 'socios') {
+		return 'socios'
+	}
+
 	if (blockchain === 'evm') {
 		return 'evm'
 	}
