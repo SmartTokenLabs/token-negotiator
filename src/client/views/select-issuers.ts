@@ -170,6 +170,7 @@ export class SelectIssuers extends AbstractView {
 	issuerConnectMarkup(title: string, image: string | undefined, issuer: string, tokens: any[], data: Issuer) {
 		let buttonText = ''
 
+		// @ts-ignore
 		if (tokens?.length) buttonText = data?.fungible ? 'Balance found' : `${tokens.length} token${tokens.length > 1 ? 's' : ''} available`
 
 		return `
@@ -344,8 +345,8 @@ export class SelectIssuers extends AbstractView {
 					title: t.title,
 					image: t.image ?? config.image,
 					fungible: config.fungible,
-					decimals: config.decimals,
-					symbol: config.symbol,
+					decimals: t.decimals ?? config.decimals,
+					symbol: t.symbol ?? config.symbol,
 					balance: t.balance,
 					toggleState: isSelected,
 					hideToggle: config?.hideToggle,
