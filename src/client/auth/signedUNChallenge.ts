@@ -28,11 +28,13 @@ export class SignedUNChallenge extends AbstractAuthentication implements Authent
 			let unChallenge = currentProof?.data as UNInterface
 
 			const isVerified = await UN.verifySignature(unChallenge);
-			if (unChallenge.expiration < Date.now() || isVerified) {
+			if (unChallenge.expiration < Date.now() || !isVerified) {
 				this.deleteProof(address)
 				currentProof = null
 			}
-		} else {
+		}
+
+		if (!currentProof){
 			let walletConnection = connection.provider
 
 			currentProof = {
