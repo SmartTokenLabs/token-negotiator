@@ -124,6 +124,10 @@ export class TokenStore {
 		return current
 	}
 
+	public getIssuerConfig(collectionId: string) {
+		return this.tokenLookup[collectionId]
+	}
+
 	public getCurrentBlockchains() {
 		const blockChains = []
 

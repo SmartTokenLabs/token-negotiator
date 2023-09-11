@@ -5,6 +5,7 @@ import { validateBlockchain } from '../support/isSupported'
 
 import { JsonRpc } from 'eosjs'
 
+// export const BASE_TOKEN_DISCOVERY_URL = 'http://localhost:3000'
 export const BASE_TOKEN_DISCOVERY_URL = 'https://api.token-discovery.tokenscript.org'
 
 export const getNftCollection = async (issuer: OnChainIssuer, ipfsBaseUrl?: string) => {
@@ -17,12 +18,17 @@ export const getNftCollection = async (issuer: OnChainIssuer, ipfsBaseUrl?: stri
 		query = getSolanaNftCollectionUrl(issuer as SolanaIssuerConfig, ipfsBaseUrl)
 	} else if ('blockchain' in issuer && issuer.blockchain === 'flow') {
 		query = getFlowNftCollectionUrl(issuer)
+	} else if (issuer.oAuth2options) {
+		query = issuer.oAuth2options.endpoints.userNfts.path;
 	} else {
 		query = getEvmNftCollectionUrl(issuer, ipfsBaseUrl)
 	}
 
 	return tokenRequest(query, true)
 }
+
+// TODO - update function names to TokenCollection e.g. getEvmTokenCollectionURL
+// Where they can be NFT of FT's.
 
 export const getEvmNftCollectionUrl = (issuer: OnChainTokenConfig, ipfsBaseUrl: string) => {
 	const { contract, chain, openSeaSlug } = issuer
