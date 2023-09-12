@@ -13,11 +13,11 @@ export type UItheme = 'light' | 'dark'
 export type ViewType = 'start' | 'main' | 'wallet' | string
 
 export interface UIOptionsInterface {
-	dismissAction: string
-	loadAction: string
-	noTokensFoundEvent: string
-	balancesFoundEvent: string
-	nftsFoundEvent: string
+	dismissAction?: string
+	loadAction?: string
+	noTokensFoundEvent?: string
+	balancesFoundEvent?: string
+	nftsFoundEvent?: string
 	uiType?: UIType
 	containerElement?: string
 	openingHeading?: string
