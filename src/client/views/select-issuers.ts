@@ -172,7 +172,7 @@ export class SelectIssuers extends AbstractView {
 		let buttonText = ''
 
 		// @ts-ignore
-		if (tokens?.length) buttonText = data?.fungible ? 'Balance found' : `${tokens.length} Token${tokens.length > 1 ? 's' : ''} available`
+		if (tokens?.length) buttonText = data?.fungible ? this.params.options.balanceFoundEvent ?? 'Balance found' : `${tokens.length} ${this.params.options.nftsFoundEvent ?? 'Token(s) Available'}`
 
 		return `
             <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
@@ -298,12 +298,6 @@ export class SelectIssuers extends AbstractView {
 
 		tokenBtn.style.display = 'block'
 		let issuers = this.client.getTokenStore().getCurrentIssuers()
-
-		// applyHTMLElementsInnerText(
-		// 	this.issuerListContainer,
-		// 	`[data-issuer="${issuer}"] .connect-btn-tn`,
-		// 	this.params.options.balanceFoundEvent ?? 'Balance found',
-		// )
 
 		tokenBtn.innerHTML =
 			tokens.length && issuers[issuer].fungible ? this.params.options.balanceFoundEvent ?? 'Balance found' : `${tokens.length} ${this.params.options.nftsFoundEvent ?? 'Token(s) Available'}`
