@@ -491,6 +491,13 @@ export class Web3WalletProvider {
 		}
 
 		if (isCookieMaxAgeExpired(`tn-oauth2-expiry-socios`)) {
+			// add the wallet connection.
+			this.registerNewOauth2WalletAddress(
+				'socios', // address id
+				'socios', // chain id
+				'Socios', // provider
+				'evm', // blockchain
+			)
 			// @ts-ignore
 			this.client.ui.showLoaderDelayed(['<h4>Connecting to Socios...</h4>'], 600, true)
 			window.location.href = `https://partner.socios.com/oauth2/authorize?response_type=code&client_id=${client_id}&redirect_uri=${redirect_uri}&partner_tag=${partner_tag}`

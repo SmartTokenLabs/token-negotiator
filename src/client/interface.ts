@@ -58,7 +58,6 @@ export interface Oauth2IssuerConfig {
 	blockchain?: SupportedBlockchainsParam
 	oAuth2options: {
 		consumerKey: string
-		redirectURI: string
 		partnerTag: string
 		returnToApplicationURL?: string
 		endpoints: {
@@ -90,7 +89,6 @@ export interface IssuerConfigInterface {
 	hideToggle?: boolean
 	fungible?: boolean
 	consumerKey?: string
-	redirectURI?: string
 	partnerTag?: string
 	serverEndPoint?: string
 	oAuth2options?: string
