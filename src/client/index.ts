@@ -900,10 +900,6 @@ export class Client {
 
 		requiredParams(tokenIssuer && unsignedToken, 'Issuer and unsigned token required.')
 
-		if (unsignedToken.signedToken) {
-			delete unsignedToken.signedToken
-		}
-
 		const config = this.tokenStore.getCurrentIssuers()[tokenIssuer]
 
 		if (!config) errorHandler('Provided issuer was not found.', 'error', null, null, true, true)
@@ -1134,14 +1130,13 @@ export class Client {
 			switch (originalAction) {
 				case OutletAction.GET_PROOF: {
 					const collectionId: string = this.getDataFromQuery('issuer')
-					const token: string = this.getDataFromQuery('token')
-					const decodedToken = JSON.parse(token) as DecodedToken
+					const tokenId: string = this.getDataFromQuery('tokenId')
 
 					const issuerConfig = this.tokenStore.getCurrentIssuers(false)[collectionId] as unknown as OutletIssuerInterface
 
 					const issuerHashes = createIssuerHashArray(issuerConfig)
 
-					const result = await localOutlet.authenticate(issuerConfig, issuerHashes, decodedToken)
+					const result = await localOutlet.authenticate(issuerConfig, issuerHashes, tokenId)
 
 					await TicketZKProof.validateProof(issuerConfig as unknown as OffChainTokenConfig, result.proof, result.type)
 
