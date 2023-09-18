@@ -11,7 +11,6 @@ import {
 } from '../utils'
 import { getNftCollection, getNftTokens } from '../utils/token/nftProvider'
 import { TokenStore } from './tokenStore'
-import { isCookieExpired } from './../utils'
 import {
 	OffChainTokenConfig,
 	OnChainTokenConfig,
@@ -293,11 +292,12 @@ export class Client {
 	public hasIssuerForBlockchain(blockchain: 'evm' | 'solana' | 'flow' | 'ultra', useOauth = false) {
 		return (
 			this.config.issuers.filter((issuer: OnChainTokenConfig) => {
-				if (blockchain === 'evm' && !issuer.onChain && !useOauth) return true
-				if (issuer.oAuth2options && useOauth) return true
-				if (blockchain === 'solana' && typeof window.solana === 'undefined') return false
-				if (blockchain === 'ultra' && typeof window.ultra === 'undefined') return false
-				return !issuer.oAuth2options && (issuer.blockchain ? issuer.blockchain.toLowerCase() : 'evm') === blockchain
+				const oAuthIssuerOrNotRequired = !useOauth || (useOauth && issuer.oAuth2options)
+				if (oAuthIssuerOrNotRequired && blockchain === 'evm' && !issuer.onChain) return true
+				if (oAuthIssuerOrNotRequired && blockchain === 'solana' && typeof window.solana === 'undefined') return false
+				if (oAuthIssuerOrNotRequired && blockchain === 'ultra' && typeof window.ultra === 'undefined') return false
+				const blockChainNameMatch = issuer.blockchain ? issuer.blockchain.toLowerCase() : 'evm' === blockchain
+				return oAuthIssuerOrNotRequired && blockChainNameMatch
 			}).length > 0
 		)
 	}
