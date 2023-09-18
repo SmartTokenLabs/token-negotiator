@@ -73,6 +73,10 @@ export interface Oauth2IssuerConfig {
 				path: string
 				params: object
 			}
+			userLogout?: {
+				path: string
+				params: object
+			}
 		}
 	}
 }
