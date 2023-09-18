@@ -292,12 +292,18 @@ export class Client {
 	public hasIssuerForBlockchain(blockchain: 'evm' | 'solana' | 'flow' | 'ultra', useOauth = false) {
 		return (
 			this.config.issuers.filter((issuer: OnChainTokenConfig) => {
-				const oAuthIssuerOrNotRequired = !useOauth || (useOauth && issuer.oAuth2options)
-				if (oAuthIssuerOrNotRequired && blockchain === 'evm' && !issuer.onChain) return true
-				if (oAuthIssuerOrNotRequired && blockchain === 'solana' && typeof window.solana === 'undefined') return false
-				if (oAuthIssuerOrNotRequired && blockchain === 'ultra' && typeof window.ultra === 'undefined') return false
+				const oAuthIssuer = useOauth && issuer.oAuth2options
+				if (blockchain === 'evm' && !issuer.onChain) {
+					return true
+				}
+				if (blockchain === 'solana' && typeof window.solana === 'undefined') {
+					return false
+				}
+				if (blockchain === 'ultra' && typeof window.ultra === 'undefined') {
+					return false
+				}
 				const blockChainNameMatch = issuer.blockchain ? issuer.blockchain.toLowerCase() : 'evm' === blockchain
-				return oAuthIssuerOrNotRequired && blockChainNameMatch
+				return blockChainNameMatch && (oAuthIssuer || !issuer.oAuth2options)
 			}).length > 0
 		)
 	}

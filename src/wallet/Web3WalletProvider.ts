@@ -33,6 +33,7 @@ export interface WalletConnectionOauth2 {
 	providerType: string
 	meta?: any
 	expiryCookieName?: string
+	logoutEndPoint?: string
 }
 
 export enum SupportedWalletProviders {
@@ -120,6 +121,9 @@ export class Web3WalletProvider {
 							break
 						case 'socios':
 							deleteCookieByName(`tn-oauth2-expiry-socios`)
+							if (provider.logoutEndPoint) {
+								fetch(provider.logoutEndPoint, { method: 'POST' })
+							}
 							break
 					}
 				}
@@ -271,13 +275,14 @@ export class Web3WalletProvider {
 		}
 	}
 
-	public registerNewOauth2WalletAddress(address, chainId, oAuth2Provider, blockchain: SupportedBlockchainsParam) {
+	public registerNewOauth2WalletAddress(address, chainId, oAuth2Provider, blockchain: SupportedBlockchainsParam, logoutEndPoint?: string) {
 		this.connections[address] = {
 			address: address,
 			chainId: chainId,
 			providerType: oAuth2Provider,
 			provider: oAuth2Provider,
 			blockchain: blockchain,
+			logoutEndPoint: logoutEndPoint,
 		}
 		this.saveConnections()
 		this.emitSavedConnection(address)
@@ -480,12 +485,14 @@ export class Web3WalletProvider {
 		let client_id
 		let redirect_uri
 		let partner_tag
+		let logoutEndPoint
 		for (const issuer of this.client.config.issuers) {
 			const oauthIssuer = issuer as Oauth2IssuerConfig
 			if (oauthIssuer.oAuth2options.consumerKey) {
 				client_id = oauthIssuer.oAuth2options.consumerKey
 				redirect_uri = oauthIssuer.oAuth2options.endpoints.redirectURI.path
 				partner_tag = oauthIssuer.oAuth2options.partnerTag
+				logoutEndPoint = oauthIssuer.oAuth2options.endpoints?.userLogout.path
 				break
 			}
 		}
@@ -496,7 +503,8 @@ export class Web3WalletProvider {
 				'socios', // address id
 				'socios', // chain id
 				'Socios', // provider
-				'evm', // blockchain
+				'evm', // blockchain,
+				logoutEndPoint,
 			)
 			// @ts-ignore
 			this.client.ui.showLoaderDelayed(['<h4>Connecting to Socios...</h4>'], 600, true)
@@ -507,7 +515,8 @@ export class Web3WalletProvider {
 				'socios', // address id
 				'socios', // chain id
 				'Socios', // provider
-				'evm', // blockchain
+				'evm', // blockchain,
+				logoutEndPoint,
 			)
 		}
 		return 'socios'
