@@ -30,18 +30,18 @@ export class LocalOutlet {
 	async authenticate(
 		tokenConfig: OutletIssuerInterface,
 		issuerHashes: string[],
-		decodedToken: DecodedToken,
+		tokenId: string,
 		address?: string,
 		wallet?: string,
 		redirectMode: false | string = false,
 	) {
-		const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedTokenOrId(issuerHashes, decodedToken)
+		const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedTokenOrId(issuerHashes, tokenId)
 
 		const attestIdClient = new AttestationIdClient(tokenConfig.attestationOrigin, undefined, redirectMode)
 		const idAttestation = await attestIdClient.getIdentifierAttestation(ticketRecord.id, wallet, address, {
 			action: OutletAction.GET_PROOF,
 			issuer: tokenConfig.collectionID,
-			token: JSON.stringify(decodedToken),
+			tokenId,
 		})
 
 		return await getUseToken(tokenConfig, idAttestation.attestation, idAttestation.identifierSecret, ticketRecord)
