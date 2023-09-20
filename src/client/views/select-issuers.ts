@@ -186,11 +186,10 @@ export class SelectIssuers extends AbstractView {
 					data-issuer="${issuer}"
 					${this.client.issuersLoaded === true ? '' : 'disabled'}
 				>
-				${
-					this.client.issuersLoaded === true
-						? this.params.options.loadAction ?? 'Load'
-						: '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
-				}
+				${this.client.issuersLoaded === true
+				? this.params.options.loadAction ?? 'Load'
+				: '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
+			}
 			  </button>
               <button aria-label="tokens available from token issuer ${issuer}" 
 										  aria-haspopup="true"
@@ -220,7 +219,7 @@ export class SelectIssuers extends AbstractView {
 						this.issuerListContainer,
 						`[data-issuer="${issuer}"] .connect-btn-tn`,
 						this.params.options.loadAction ?? 'Load',
-					) 
+					)
 					return
 				}
 
@@ -251,7 +250,7 @@ export class SelectIssuers extends AbstractView {
 				this.issuerListContainer,
 				`[data-issuer="${issuer}"] .connect-btn-tn`,
 				this.params.options.repeatAction ?? 'Try Again',
-			) 
+			)
 			return
 		}
 
@@ -259,7 +258,7 @@ export class SelectIssuers extends AbstractView {
 
 		if (!tokens?.length) {
 			this.ui.showError(`
-			${this.params.options.noTokensFoundEvent ?? 'No tokens found! ' }
+			${this.params.options.noTokensFoundEvent ?? 'No tokens found! '}
 			${this.client.getNoTokenMsg(issuer)}`)
 			applyHTMLElementsInnerText(
 				this.issuerListContainer,
@@ -344,11 +343,11 @@ export class SelectIssuers extends AbstractView {
 
 			if (config.onChain === false) {
 				const { title, image } = config
-
+				const tokenId = t.tokenId ?? t.ticketId ?? i.toString();
 				tokens.push(<TokenListItemInterface>{
 					data: t,
 					tokenIssuerKey: issuer,
-					index: t.ticketId,
+					index: tokenId,
 					title: title,
 					image: image,
 					toggleState: isSelected,
@@ -356,7 +355,6 @@ export class SelectIssuers extends AbstractView {
 				})
 			} else {
 				const tokenId = t.tokenId ?? i.toString()
-
 				tokens.push({
 					data: t,
 					tokenIssuerKey: issuer,
