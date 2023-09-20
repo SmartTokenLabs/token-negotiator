@@ -90,11 +90,13 @@ export const enum UIUpdateEventType {
 export enum ClientError {
 	POPUP_BLOCKED = 'POPUP_BLOCKED',
 	USER_ABORT = 'USER_ABORT',
+	ISSUER_UNAVAILABLE = 'ISSUER_UNAVAILABLE',
 }
 
 export enum ClientErrorMessage {
 	POPUP_BLOCKED = 'Please add an exception to your popup blocker before continuing.',
 	USER_ABORT = 'The user aborted the process.',
+	ISSUER_UNAVAILABLE = 'The issuer is unavailable.',
 }
 
 export class Client {

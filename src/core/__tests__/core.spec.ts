@@ -10,6 +10,14 @@ window.location = { assign: assignMock }
 describe('Redirect flow', () => {
 	const { location } = window
 
+	global.fetch = jest.fn();
+
+	const mockResponse = {
+		ok: true
+	};
+
+	global.fetch.mockResolvedValue(mockResponse);
+
 	beforeAll(() => {
 		delete window.location
 		window.location = { hash: '' }

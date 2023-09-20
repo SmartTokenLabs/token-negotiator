@@ -43,85 +43,81 @@
                   path: 'http://localhost:5000/user-nfts',
                   params: {}
                 },
-                userLogout: {
-                  path: 'http://localhost:5000/user-logout',
-                  params: {}
-                },
               },
             },
           },
-          //         {
-          //           hideToggle: true,
-          //           noTokenMsg:
-          //             "<p>If you hold a Devcon ticket, please visit your magicLink email again and open the link in this browser.</p><p>You may reload this page after and try again.</p>",
-          //           onChain: false,
-          //           tokenName: "devcon6",
-          //           collectionID: "devcon6",
-          //           title: "Devcon VI Ticket Attestation",
-          //           image: "https://devcon-vi.attest.tickets/img/nft_bg.png",
-          //           tokenOrigin: "https://devcon-vi.attest.tickets/outlet.html",
-          //           attestationOrigin: "https://test.attestation.id/",
-          //           tokenUrlName: "ticket",
-          //           cryptoVerify: "https://form.smarttokenlabs.com",
-          //           tokenSecretName: "secret",
-          //           tokenIdName: "mail",
-          //           unsignedTokenDataName: "ticket",
-          //           whitelistDialogRenderer: (permissionTxt, acceptBtn, denyBtn) => {
-          //             return `
-          // 	<div class="tn-auth-box">
-          // 		<div class="tn-auth-heading">
-          // 			<img alt="devcon" src="img/FB_OG_Image.svg" style="width: 150px;" />
-          // 		</div>
-          // 		<div class="tn-auth-content">
-          // 			<p>${permissionTxt}</p>
-          // 			${acceptBtn}
-          // 			${denyBtn}
-          // 		</div>
-          // 	</div>
-          // `;
-          //           },
-          //           signedTokenWhitelist: [
-          //             "https://devcon-vi.attest.tickets/",
-          //             "https://dev.loc",
-          //             "https://devconnect.loc/",
-          //             "https://devconnect.antopolbus.rv.ua/",
-          //             "https://perks.antopolbus.rv.ua/",
-          //             "https://stage-perks.smarttokenlabs.com/",
-          //             "http://localhost:5000/",
+          {
+            hideToggle: true,
+            noTokenMsg:
+              "<p>If you hold a Devcon ticket, please visit your magicLink email again and open the link in this browser.</p><p>You may reload this page after and try again.</p>",
+            onChain: false,
+            tokenName: "devcon6",
+            collectionID: "devcon6",
+            title: "Devcon VI Ticket Attestation",
+            image: "https://devcon-vi.attest.tickets/img/nft_bg.png",
+            tokenOrigin: "https://devcon-vi.attest.tickets/outlet.html",
+            attestationOrigin: "https://test.attestation.id/",
+            tokenUrlName: "ticket",
+            cryptoVerify: "https://form.smarttokenlabs.com",
+            tokenSecretName: "secret",
+            tokenIdName: "mail",
+            unsignedTokenDataName: "ticket",
+            whitelistDialogRenderer: (permissionTxt, acceptBtn, denyBtn) => {
+              return `
+		<div class="tn-auth-box">
+			<div class="tn-auth-heading">
+				<img alt="devcon" src="img/FB_OG_Image.svg" style="width: 150px;" />
+			</div>
+			<div class="tn-auth-content">
+				<p>${permissionTxt}</p>
+				${acceptBtn}
+				${denyBtn}
+			</div>
+		</div>
+	`;
+            },
+            signedTokenWhitelist: [
+              "https://devcon-vi.attest.tickets/",
+              "https://dev.loc",
+              "https://devconnect.loc/",
+              "https://devconnect.antopolbus.rv.ua/",
+              "https://perks.antopolbus.rv.ua/",
+              "https://stage-perks.smarttokenlabs.com/",
+              "http://localhost:5000/",
 
-          //             "https://hashkey.smarttokenlabs.com/",
-          //             "https://fayre-devcon.webflow.io/",
-          //             "https://fenbushi-devcon.webflow.io/",
-          //             "https://metasearch-devcon.webflow.io/",
-          //             "https://conspicuis-devcon.webflow.io/",
-          //             "https://devcon-vi.brandextender.io/",
-          //             "https://www.edcon.io/",
-          //           ],
-          //           itemStorageKey: "devconnectTokens",
-          //           base64senderPublicKeys: {
-          //             4: "MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEAGJAHCiHbrCNAY9fAMdom4dGD6v/KkTIgRCkwLCjXFTkXWGrCEXHaZ8kWwdqlu0oYCrNQ2vdlqOl0s26/LzO8A==|MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAE-N-jGYo1OuO77XItd3zT-oIhZEVC44uqOhtJkmBsBNDTp3Seu_vmuLB-b4whNeFNBuJTsT7AHUiUe3JOwCcegA==",
-          //           },
-          //           base64attestorPubKey:
-          //             "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ=",
-          //         },
-          //         {
-          //           collectionID: "devcon",
-          //           onChain: false,
-          //           title: "Devcon",
-          //           tokenIdName: "id",
-          //           image:
-          //             "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
-          //           tokenOrigin: "http://localhost:3002/",
-          //           attestationOrigin: "https://test.attestation.id/",
-          //           base64senderPublicKeys: {
-          //             6: "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABGMxHraqggr2keTXszIcchTjYjH5WXpDaBOYgXva82mKcGnKgGRORXSmcjWN2suUCMkLQj3UNlZCFWF10wIrrlw=",
-          //             55: "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABGMxHraqggr2keTXszIcchTjYjH5WXpDaBOYgXva82mKcGnKgGRORXSmcjWN2suUCMkLQj3UNlZCFWF10wIrrlw=",
-          //           },
-          //           base64attestorPubKey:
-          //             "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ=",
-          //           ticketIssuersUrlWebsitePrivateKey:
-          //             "MIICSwIBADCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBBIIBVTCCAVECAQEEIM/T+SzcXcdtcNIqo6ck0nJTYzKL5ywYBFNSpI7R8AuBoIHjMIHgAgEBMCwGByqGSM49AQECIQD////////////////////////////////////+///8LzBEBCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcEQQR5vmZ++dy7rFWgYpXOhwsHApv82y3OKNlZ8oFbFvgXmEg62ncmo8RlXaT7/A4RCKj9F7RIpoVUGZxH0I/7ENS4AiEA/////////////////////rqu3OavSKA7v9JejNA2QUECAQGhRANCAARjMR62qoIK9pHk17MyHHIU42Ix+Vl6Q2gTmIF72vNpinBpyoBkTkV0pnI1jdrLlAjJC0I91DZWQhVhddMCK65c",
-          //         },
+              "https://hashkey.smarttokenlabs.com/",
+              "https://fayre-devcon.webflow.io/",
+              "https://fenbushi-devcon.webflow.io/",
+              "https://metasearch-devcon.webflow.io/",
+              "https://conspicuis-devcon.webflow.io/",
+              "https://devcon-vi.brandextender.io/",
+              "https://www.edcon.io/",
+            ],
+            itemStorageKey: "devconnectTokens",
+            base64senderPublicKeys: {
+              4: "MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEAGJAHCiHbrCNAY9fAMdom4dGD6v/KkTIgRCkwLCjXFTkXWGrCEXHaZ8kWwdqlu0oYCrNQ2vdlqOl0s26/LzO8A==|MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAE-N-jGYo1OuO77XItd3zT-oIhZEVC44uqOhtJkmBsBNDTp3Seu_vmuLB-b4whNeFNBuJTsT7AHUiUe3JOwCcegA==",
+            },
+            base64attestorPubKey:
+              "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ=",
+          },
+          {
+            collectionID: "devcon",
+            onChain: false,
+            title: "Devcon",
+            tokenIdName: "id",
+            image:
+              "https://raw.githubusercontent.com/TokenScript/token-negotiator/main/mock-images/devcon.svg",
+            tokenOrigin: "http://localhost:3000/",
+            attestationOrigin: "https://test.attestation.id/",
+            base64senderPublicKeys: {
+              6: "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABGMxHraqggr2keTXszIcchTjYjH5WXpDaBOYgXva82mKcGnKgGRORXSmcjWN2suUCMkLQj3UNlZCFWF10wIrrlw=",
+              55: "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABGMxHraqggr2keTXszIcchTjYjH5WXpDaBOYgXva82mKcGnKgGRORXSmcjWN2suUCMkLQj3UNlZCFWF10wIrrlw=",
+            },
+            base64attestorPubKey:
+              "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ=",
+            ticketIssuersUrlWebsitePrivateKey:
+              "MIICSwIBADCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBBIIBVTCCAVECAQEEIM/T+SzcXcdtcNIqo6ck0nJTYzKL5ywYBFNSpI7R8AuBoIHjMIHgAgEBMCwGByqGSM49AQECIQD////////////////////////////////////+///8LzBEBCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcEQQR5vmZ++dy7rFWgYpXOhwsHApv82y3OKNlZ8oFbFvgXmEg62ncmo8RlXaT7/A4RCKj9F7RIpoVUGZxH0I/7ENS4AiEA/////////////////////rqu3OavSKA7v9JejNA2QUECAQGhRANCAARjMR62qoIK9pHk17MyHHIU42Ix+Vl6Q2gTmIF72vNpinBpyoBkTkV0pnI1jdrLlAjJC0I91DZWQhVhddMCK65c",
+          },
           // {
           //   collectionID: "devcon",
           //   onChain: false,
@@ -182,36 +178,36 @@
           //     },
           // base64attestorPubKey: "MIIBMzCB7AYHKoZIzj0CATCB4AIBATAsBgcqhkjOPQEBAiEA/////////////////////////////////////v///C8wRAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBEEEeb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIhAP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABL+y43T1OJFScEep69/yTqpqnV/jzONz9Sp4TEHyAJ7IPN9+GHweCX1hT4OFxt152sBN3jJc1s0Ymzd8pNGZNoQ="
           // },
-          {
-            collectionID: "crypto-cowboy-country",
-            tokenProgram: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
-            collectionAddress:
-              "bf0aae3dd0078a9feb975f1e3242ddcb7774d551c7fd2a3f07a89c827ed606b2",
-            updateAuthority: "CCCUzWanUNegjGby11DjujDvPaNN68jd9Rimwk2MZzqZ",
-            onChain: true,
-            symbol: "CCC",
-            chain: "mainnet",
-            blockchain: "solana",
-          },
-          {
-            collectionID: "penthouse-panther-club",
-            collectionAddress: "ff846ef2eed57e5367cf8826e63f4d53fe28d28aa67417accb6e4b48cbd19136",
-            updateAuthority: "92oYPmrr1BHznizuZmpKZ3MFRadMFYRTCxo9Pf34mZKX",
-            tokenProgram: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
-            onChain: true,
-            symbol: "PPC",
-            chain: "mainnet",
-            blockchain: "solana",
-          },
-          {
-            hideToggle: false,
-            collectionID: "pixel",
-            collectionAddress: "166424b16c4c7f40eb852f9eb2d0d6869a9ed7ac54a8e6afbd516676bfbbeb19",
-            onChain: true,
-            symbol: "PIXEL",
-            chain: "mainnet",
-            blockchain: "solana",
-          },
+          // {
+          //   collectionID: "crypto-cowboy-country",
+          //   tokenProgram: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          //   collectionAddress:
+          //     "bf0aae3dd0078a9feb975f1e3242ddcb7774d551c7fd2a3f07a89c827ed606b2",
+          //   updateAuthority: "CCCUzWanUNegjGby11DjujDvPaNN68jd9Rimwk2MZzqZ",
+          //   onChain: true,
+          //   symbol: "CCC",
+          //   chain: "mainnet",
+          //   blockchain: "solana",
+          // },
+          // {
+          //   collectionID: "penthouse-panther-club",
+          //   collectionAddress: "ff846ef2eed57e5367cf8826e63f4d53fe28d28aa67417accb6e4b48cbd19136",
+          //   updateAuthority: "92oYPmrr1BHznizuZmpKZ3MFRadMFYRTCxo9Pf34mZKX",
+          //   tokenProgram: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          //   onChain: true,
+          //   symbol: "PPC",
+          //   chain: "mainnet",
+          //   blockchain: "solana",
+          // },
+          // {
+          //   hideToggle : false,
+          //   collectionID: "pixel",
+          //   collectionAddress: "166424b16c4c7f40eb852f9eb2d0d6869a9ed7ac54a8e6afbd516676bfbbeb19",
+          //   onChain: true,
+          //   symbol: "PIXEL",
+          //   chain: "mainnet",
+          //   blockchain: "solana",
+          // },
           {
             onChain: true,
             collectionID: "expansion-punks",
@@ -219,23 +215,23 @@
             chain: "eth",
             blockchain: "evm",
           },
-          // {
-          //   onChain: true,
-          //   collectionID: "fantom-collection-test",
-          //   contract: "0x94e22c14118353651636f9af43cd0a5a08b93da3",
-          //   chain: "fantom",
-          //   blockchain: "evm",
-          // },
-          // {
-          //   hideToggle: true,
-          //   noTokenMsg:
-          //     "<p>If you have a token please:</p><p>1. Open your magic link inside this browser.<br/>2. Refresh this page.</p>",
-          //   onChain: true,
-          //   collectionID: "bsc-collection-test",
-          //   contract: "0xF5db804101d8600c26598A1Ba465166c33CdAA4b",
-          //   chain: "bsc",
-          //   blockchain: "evm",
-          // },
+          {
+            onChain: true,
+            collectionID: "fantom-collection-test",
+            contract: "0x94e22c14118353651636f9af43cd0a5a08b93da3",
+            chain: "fantom",
+            blockchain: "evm",
+          },
+          {
+            hideToggle: true,
+            noTokenMsg:
+              "<p>If you have a token please:</p><p>1. Open your magic link inside this browser.<br/>2. Refresh this page.</p>",
+            onChain: true,
+            collectionID: "bsc-collection-test",
+            contract: "0xF5db804101d8600c26598A1Ba465166c33CdAA4b",
+            chain: "bsc",
+            blockchain: "evm",
+          },
           // {
           //   onChain: true,
           //   collectionID: "tt",
@@ -299,16 +295,10 @@
           // },
         ],
         uiOptions: {
-          openingAction: "Let's Go!",
           openingHeading:
             "Open a new world of perks, benefits and opportunities with your attestation, collectible or token.",
           issuerHeading: "Get discount with Ticket",
-          repeatAction: "Try Again",
-          loadAction: "Load Tokens",
-          dismissAction: "Dismiss",
-          noTokensFoundEvent: "No Tokens Found",
-          balancesFoundEvent: "Balances Found",
-          nftsFoundEvent: "Available Token(s)",
+          repeatAction: "try again",
           theme: theme,
           position: "top-right",
         },

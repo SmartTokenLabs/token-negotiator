@@ -42,6 +42,18 @@ export class Messaging {
 	iframe: any = null
 	listenerSet = false
 
+	async isWebsiteAvailable(url) {
+		try {
+			const response = await fetch(url, {
+				method: 'HEAD',
+				cache: 'no-store',
+			})
+			return response.status === 200
+		} catch (error) {
+			throw new Error(error)
+		}
+	}
+
 	async sendMessage(
 		request: RequestInterfaceBase,
 		forceTab = false,
@@ -49,8 +61,8 @@ export class Messaging {
 	): Promise<ResponseInterfaceBase | void> {
 		logger(2, 'Send request: ')
 		logger(2, request)
-
 		if (redirectUrl) {
+			await this.isWebsiteAvailable(request.origin)
 			this.sendRedirect(request, redirectUrl)
 			return
 		}
