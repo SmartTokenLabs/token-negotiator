@@ -43,17 +43,15 @@ export class Messaging {
 	listenerSet = false
 
 	async isWebsiteAvailable(url) {
-		return fetch(url, {
-			method: 'HEAD',
-			cache: 'no-store',
-		})
-			.then((response) => {
-				console.log('response', response)
-				return response.status === 200
+		try {
+			const response = await fetch(url, {
+				method: 'HEAD',
+				cache: 'no-store',
 			})
-			.catch((error) => {
-				throw error
-			})
+			return response.status === 200
+		} catch (error) {
+			throw new Error(error)
+		}
 	}
 
 	async sendMessage(
