@@ -13,7 +13,7 @@ export class Start extends AbstractView {
               <div class="inner-content-tn">
                 <div class="inner-content-block-tn">
                   <button class="opening-btn-tn" aria-label="Start connecting your tokens">
-				  ${this.params.options.openingButtonText ?? "Let's go!"}
+				  ${this.params.options.openingButtonText ?? this.params.options.openingAction ?? "Let's go!"}
 				  </button>
                   <div class="opening-heading-tn">${this.params.options.openingHeading}</div>
                 </div>

@@ -4,6 +4,7 @@ import { IconView } from './icon-view'
 import { logger } from '../../utils'
 import { UIUpdateEventType } from '../index'
 import { Issuer } from '../interface'
+import { applyHTMLElementsInnerText } from './utils/index'
 
 export class SelectIssuers extends AbstractView {
 	issuerListContainer: any
@@ -77,7 +78,7 @@ export class SelectIssuers extends AbstractView {
                         </g>
                     </svg>
                   </button>
-                  <p class="headline-tn token-name">Token Name Here</p>
+                  <p class="headline-tn token-name"></p>
                 </div>
                 <ul class="token-list-container-tn" role="menubar"></ul>
               </div>
@@ -171,7 +172,7 @@ export class SelectIssuers extends AbstractView {
 		let buttonText = ''
 
 		// @ts-ignore
-		if (tokens?.length) buttonText = data?.fungible ? 'Balance found' : `${tokens.length} token${tokens.length > 1 ? 's' : ''} available`
+		if (tokens?.length) buttonText = data?.fungible ? this.params.options.balanceFoundEvent ?? 'Balance found' : `${tokens.length} ${this.params.options?.nftsFoundEvent ?? 'Token(s) Available'}`
 
 		return `
             <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
@@ -187,7 +188,7 @@ export class SelectIssuers extends AbstractView {
 				>
 				${
 					this.client.issuersLoaded === true
-						? 'Load'
+						? this.params.options.loadAction ?? 'Load'
 						: '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
 				}
 			  </button>
@@ -215,10 +216,11 @@ export class SelectIssuers extends AbstractView {
 			this.issuerLoading.bind(this),
 			(issuer: string, tokens: any[]) => {
 				if (!tokens?.length) {
-					const connectBtn = this.issuerListContainer.querySelector(`[data-issuer="${issuer}"] .connect-btn-tn`)
-
-					if (connectBtn) connectBtn.innerText = 'Load'
-
+					applyHTMLElementsInnerText(
+						this.issuerListContainer,
+						`[data-issuer="${issuer}"] .connect-btn-tn`,
+						this.params.options.loadAction ?? 'Load',
+					) 
 					return
 				}
 
@@ -245,13 +247,25 @@ export class SelectIssuers extends AbstractView {
 			logger(2, err)
 			this.ui.showError(err)
 			this.client.eventSender('error', { issuer, error: err })
+			applyHTMLElementsInnerText(
+				this.issuerListContainer,
+				`[data-issuer="${issuer}"] .connect-btn-tn`,
+				this.params.options.repeatAction ?? 'Try Again',
+			) 
 			return
 		}
 
 		this.ui.dismissLoader()
 
 		if (!tokens?.length) {
-			this.ui.showError(`No tokens found! ${this.client.getNoTokenMsg(issuer)}`)
+			this.ui.showError(`
+			${this.params.options.noTokensFoundEvent ?? 'No tokens found! ' }
+			${this.client.getNoTokenMsg(issuer)}`)
+			applyHTMLElementsInnerText(
+				this.issuerListContainer,
+				`[data-issuer="${issuer}"] .connect-btn-tn`,
+				this.params.options.repeatAction ?? 'Try Again',
+			)
 			return
 		}
 
@@ -286,7 +300,7 @@ export class SelectIssuers extends AbstractView {
 		let issuers = this.client.getTokenStore().getCurrentIssuers()
 
 		tokenBtn.innerHTML =
-			tokens.length && issuers[issuer].fungible ? 'Balance found' : `${tokens.length} token${tokens.length > 1 ? 's' : ''} available`
+			tokens.length && issuers[issuer].fungible ? this.params.options.balanceFoundEvent ?? 'Balance found' : `${tokens.length} ${this.params.options?.nftsFoundEvent ?? 'Token(s) Available'}`
 		tokenBtn.setAttribute('aria-label', `Navigate to select from ${tokens.length} of your ${issuer} tokens`)
 		tokenBtn.setAttribute('tabIndex', 1)
 
@@ -311,7 +325,12 @@ export class SelectIssuers extends AbstractView {
 		const config = tokenStore.getCurrentIssuers()[issuer]
 		const tokenData = tokenStore.getIssuerTokens(issuer) ?? []
 
-		if (config.title) this.viewContainer.getElementsByClassName('headline-tn token-name')[0].innerHTML = config.title
+		if (config.title) {
+			this.viewContainer.getElementsByClassName('headline-tn token-name')[0].innerHTML = config.title
+		} else {
+			this.viewContainer.getElementsByClassName('headline-tn token-name')[0].innerHTML = config.collectionID
+			console.warn(`${config.collectionID} config is missing a title.`)
+		}
 
 		let tokens: TokenListItemInterface[] = []
 

@@ -13,10 +13,16 @@ export type UItheme = 'light' | 'dark'
 export type ViewType = 'start' | 'main' | 'wallet' | string
 
 export interface UIOptionsInterface {
+	dismissAction?: string
+	loadAction?: string
+	noTokensFoundEvent?: string
+	balancesFoundEvent?: string
+	nftsFoundEvent?: string
 	uiType?: UIType
 	containerElement?: string
 	openingHeading?: string
 	openingButtonText?: string
+	openingAction?: string
 	issuerHeading?: string
 	repeatAction?: string
 	theme?: UItheme
@@ -111,7 +117,7 @@ export class Ui implements UiInterface {
 			if (this.retryCallback) {
 				this.retryCallback()
 				this.retryCallback = undefined
-				this.retryButton.innerText = 'Dismiss'
+				this.retryButton.innerText = this.options.dismissAction ?? 'Dismiss'
 			}
 		})
 
