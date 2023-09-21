@@ -1,4 +1,4 @@
-import { EasTicketAttestation, TicketSchema } from '@tokenscript/attestation/dist/eas/EasTicketAttestation'
+import { EasTicketAttestation, SchemaField, TicketSchema } from '@tokenscript/attestation/dist/eas/EasTicketAttestation'
 import { KeyPair } from '@tokenscript/attestation/dist/libs/KeyPair'
 import { base64ToUint8array, createIssuerHashArray, createOffChainCollectionHash, errorHandler, IssuerHashMap, logger } from '../utils'
 import { Ticket } from '@tokenscript/attestation/dist/Ticket'
@@ -78,12 +78,12 @@ export interface FilterInterface {
 	[key: string]: any
 }
 
-export const DEFAULT_EAS_SCHEMA: TicketSchema = {
+export const DEFAULT_EAS_SCHEMA: { fields: (SchemaField & { label?: string })[] } = {
 	fields: [
-		{ name: 'eventId', type: 'string' },
-		{ name: 'ticketId', type: 'string' },
-		{ name: 'ticketClass', type: 'uint8' },
-		{ name: 'commitment', type: 'bytes', isCommitment: true },
+		{ name: 'eventId', type: 'string', label: 'Event ID' },
+		{ name: 'ticketId', type: 'string', label: 'Ticket ID' },
+		{ name: 'ticketClass', type: 'uint8', label: 'Ticket Class' },
+		{ name: 'commitment', type: 'bytes', isCommitment: true, label: 'Email commitment' },
 	],
 }
 
