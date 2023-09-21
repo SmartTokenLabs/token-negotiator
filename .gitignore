@@ -7,5 +7,4 @@ bundles
 .idea
 dist/
 token-negotiator-dist/
-
 .sass-cache

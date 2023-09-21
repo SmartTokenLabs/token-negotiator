@@ -90,11 +90,13 @@ export const enum UIUpdateEventType {
 export enum ClientError {
 	POPUP_BLOCKED = 'POPUP_BLOCKED',
 	USER_ABORT = 'USER_ABORT',
+	ISSUER_UNAVAILABLE = 'ISSUER_UNAVAILABLE',
 }
 
 export enum ClientErrorMessage {
 	POPUP_BLOCKED = 'Please add an exception to your popup blocker before continuing.',
 	USER_ABORT = 'The user aborted the process.',
+	ISSUER_UNAVAILABLE = 'The issuer is unavailable.',
 }
 
 export class Client {
@@ -130,6 +132,7 @@ export class Client {
 		this.config = this.mergeConfig(defaultConfig, config)
 
 		this.tokenStore = new TokenStore(this.config.autoEnableTokens, this.config.tokenPersistenceTTL)
+		// @ts-ignore
 		if (this.config.issuers?.length > 0) this.tokenStore.updateIssuers(this.config.issuers)
 
 		this.messaging = new Messaging()
@@ -160,7 +163,6 @@ export class Client {
 		if (this.urlParams) {
 			return this.urlParams.get(URLNS + itemKey)
 		}
-
 		return null
 	}
 
@@ -289,20 +291,28 @@ export class Client {
 	}
 
 	// TODO: Move to token store OR select-wallet view - this method is very similar to getCurrentBlockchains()
-	public hasIssuerForBlockchain(blockchain: 'evm' | 'solana' | 'flow' | 'ultra') {
+	public hasIssuerForBlockchain(blockchain: 'evm' | 'solana' | 'flow' | 'ultra', useOauth = false) {
 		return (
 			this.config.issuers.filter((issuer: OnChainTokenConfig) => {
-				if (blockchain === 'evm' && !issuer.onChain) return true
-				if (blockchain === 'solana' && typeof window.solana === 'undefined') return false
-				if (blockchain === 'ultra' && typeof window.ultra === 'undefined') return false
-
-				return (issuer.blockchain ? issuer.blockchain.toLowerCase() : 'evm') === blockchain
+				const oAuthIssuer = useOauth && issuer.oAuth2options
+				if (blockchain === 'evm' && !issuer.onChain) {
+					return true
+				}
+				if (blockchain === 'solana' && typeof window.solana === 'undefined') {
+					return false
+				}
+				if (blockchain === 'ultra' && typeof window.ultra === 'undefined') {
+					return false
+				}
+				const blockChainNameMatch = issuer.blockchain ? issuer.blockchain.toLowerCase() : 'evm' === blockchain
+				return blockChainNameMatch && (oAuthIssuer || !issuer.oAuth2options)
 			}).length > 0
 		)
 	}
 
 	public async getWalletProvider() {
 		if (!this.web3WalletProvider) {
+			// TODO - this is already installed in the file header.
 			const { Web3WalletProvider } = await import('./../wallet/Web3WalletProvider')
 			this.web3WalletProvider = new Web3WalletProvider(this, this.config.walletOptions, this.config.safeConnectOptions)
 		}
@@ -620,7 +630,6 @@ export class Client {
 
 			try {
 				const tokens = await this.loadOnChainTokens(issuer)
-
 				this.tokenStore.setTokens(issuerKey, tokens)
 			} catch (err) {
 				logger(2, err)
@@ -665,12 +674,11 @@ export class Client {
 	async connectTokenIssuer(issuer: string): Promise<unknown[] | void> {
 		const config = this.tokenStore.getCurrentIssuers()[issuer]
 		if (!config) errorHandler('Undefined token issuer', 'error', null, null, true, true)
-
 		let tokens
-
 		if (config.onChain === true) {
 			tokens = await this.loadOnChainTokens(config)
 		} else {
+			// @ts-ignore
 			tokens = await this.loadOutletTokens(config)
 		}
 
@@ -689,15 +697,15 @@ export class Client {
 		// TODO: Collect tokens from all addresses for this blockchain
 		const walletAddress = walletProvider.getConnectedWalletAddresses(issuer.blockchain)?.[0]
 
-		requiredParams(walletAddress, 'wallet address is missing.')
+		if (!issuer.oAuth2options) requiredParams(walletAddress, 'wallet address is missing.')
 
 		// TODO: Allow API to return tokens for multiple addresses
 		let tokens
 
 		if (issuer.fungible) {
-			tokens = await getFungibleTokenBalances(issuer, walletAddress)
+			tokens = await getFungibleTokenBalances(issuer, walletAddress, null)
 		} else {
-			tokens = await getNftTokens(issuer, walletAddress)
+			tokens = await getNftTokens(issuer, walletAddress, null)
 		}
 
 		tokens.map((token) => {

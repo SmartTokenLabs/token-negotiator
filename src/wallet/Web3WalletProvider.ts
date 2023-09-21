@@ -1,12 +1,13 @@
 import { ethers } from 'ethers'
-import { logger, strToHexStr, strToUtfBytes } from '../utils'
+import { logger, strToHexStr, strToUtfBytes, deleteCookieByName, isCookieMaxAgeExpired } from '../utils'
 import { SafeConnectOptions } from './SafeConnectProvider'
 import { Client } from '../client'
 import { SupportedBlockchainsParam, WalletOptionsInterface, SignatureSupportedBlockchainsParamList } from '../client/interface'
 import { DEFAULT_RPC_MAP } from '../core/constants'
+import { Oauth2IssuerConfig } from './../client/interface'
 
 interface WalletConnectionState {
-	[index: string]: WalletConnection
+	[index: string]: WalletConnection | WalletConnectionOauth2
 }
 
 interface WalletMeta {
@@ -21,6 +22,18 @@ export interface WalletConnection {
 	provider?: ethers.providers.Web3Provider | any // solana(phantom) have different interface
 	ethers?: any
 	meta?: WalletMeta
+	expiryCookieName?: string
+}
+
+export interface WalletConnectionOauth2 {
+	address: string
+	chainId: number | string
+	blockchain: SupportedBlockchainsParam // TODO make this an OAuth list (when more providers exist)
+	provider: string
+	providerType: string
+	meta?: any
+	expiryCookieName?: string
+	logoutEndPoint?: string
 }
 
 export enum SupportedWalletProviders {
@@ -33,6 +46,7 @@ export enum SupportedWalletProviders {
 	Ultra = 'Ultra',
 	SafeConnect = 'SafeConnect',
 	AlphaWallet = 'AlphaWallet',
+	Socios = 'Socios',
 }
 
 export class Web3WalletProvider {
@@ -51,7 +65,6 @@ export class Web3WalletProvider {
 
 		for (let address in this.connections) {
 			let con = this.connections[address.toLowerCase()]
-
 			savedConnections[address] = {
 				address: con.address,
 				chainId: con.chainId,
@@ -59,11 +72,10 @@ export class Web3WalletProvider {
 				blockchain: con.blockchain,
 			}
 		}
-
 		localStorage.setItem(Web3WalletProvider.LOCAL_STORAGE_KEY, JSON.stringify(savedConnections))
 	}
 
-	emitSavedConnection(address: string): WalletConnection | null {
+	emitSavedConnection(address: string): WalletConnection | WalletConnectionOauth2 | null {
 		if (Object.keys(this.connections).length && address) {
 			this.client.eventSender('connected-wallet', this.connections[address.toLowerCase()])
 			return this.connections[address.toLowerCase()]
@@ -89,8 +101,8 @@ export class Web3WalletProvider {
 			if (state) {
 				for (let item in state) {
 					let provider = state[item].providerType
-					switch (provider) {
-						case 'WalletConnectV2':
+					switch (provider.toLowerCase()) {
+						case 'walletconnectV2':
 							{
 								let walletConnect2Provider = await import('./WalletConnectV2Provider')
 
@@ -107,8 +119,12 @@ export class Web3WalletProvider {
 								}
 							}
 							break
-
-						default:
+						case 'socios':
+							deleteCookieByName(`tn-oauth2-expiry-socios`)
+							if (provider.logoutEndPoint) {
+								fetch(provider.logoutEndPoint, { method: 'POST' })
+							}
+							break
 					}
 				}
 			}
@@ -129,7 +145,6 @@ export class Web3WalletProvider {
 
 		for (let address in state) {
 			let connection = state[address]
-
 			try {
 				await this.connectWith(connection.providerType, true)
 			} catch (e) {
@@ -216,8 +231,8 @@ export class Web3WalletProvider {
 		return Object.values(this.connections).filter((connection) => connection.blockchain === blockchain)
 	}
 
-	getSingleSignatureCompatibleConnection(): WalletConnection | false {
-		let connection: WalletConnection | false = false
+	getSingleSignatureCompatibleConnection(): WalletConnection | WalletConnectionOauth2 | false {
+		let connection: WalletConnection | WalletConnectionOauth2 | false = false
 		SignatureSupportedBlockchainsParamList.forEach((bc) => {
 			let connections = Object.values(this.connections).filter((connection) => connection.blockchain === bc)
 			if (connections.length) connection = connections[0]
@@ -233,6 +248,8 @@ export class Web3WalletProvider {
 		blockchain: SupportedBlockchainsParam,
 		walletMeta: WalletMeta = [] as WalletMeta,
 	) {
+		// TODO confirm the intention of the ethers param.
+		// should be blockchain according to params.
 		this.connections[address.toLowerCase()] = { address, chainId, providerType, provider, blockchain, ethers, meta: walletMeta }
 		switch (blockchain) {
 			case 'solana':
@@ -256,6 +273,19 @@ export class Web3WalletProvider {
 				logger(2, 'Unknown blockchain, dont attach listeners')
 				return
 		}
+	}
+
+	public registerNewOauth2WalletAddress(address, chainId, oAuth2Provider, blockchain: SupportedBlockchainsParam, logoutEndPoint?: string) {
+		this.connections[address] = {
+			address: address,
+			chainId: chainId,
+			providerType: oAuth2Provider,
+			provider: oAuth2Provider,
+			blockchain: blockchain,
+			logoutEndPoint: logoutEndPoint,
+		}
+		this.saveConnections()
+		this.emitSavedConnection(address)
 	}
 
 	private async registerEvmProvider(provider: ethers.providers.Web3Provider, providerName: string) {
@@ -447,6 +477,49 @@ export class Web3WalletProvider {
 		const provider = new ethers.providers.Web3Provider(torus.provider, 'any')
 
 		return this.registerEvmProvider(provider, 'Torus')
+	}
+
+	async Socios(checkConnectionOnly: boolean) {
+		logger(2, 'connect Socios')
+
+		let client_id
+		let redirect_uri
+		let partner_tag
+		let logoutEndPoint
+		for (const issuer of this.client.config.issuers) {
+			const oauthIssuer = issuer as Oauth2IssuerConfig
+			if (oauthIssuer.oAuth2options.consumerKey) {
+				client_id = oauthIssuer.oAuth2options.consumerKey
+				redirect_uri = oauthIssuer.oAuth2options.endpoints.redirectURI.path
+				partner_tag = oauthIssuer.oAuth2options.partnerTag
+				logoutEndPoint = oauthIssuer.oAuth2options.endpoints?.userLogout.path
+				break
+			}
+		}
+
+		if (isCookieMaxAgeExpired(`tn-oauth2-expiry-socios`)) {
+			// add the wallet connection.
+			this.registerNewOauth2WalletAddress(
+				'socios', // address id
+				'socios', // chain id
+				'Socios', // provider
+				'evm', // blockchain,
+				logoutEndPoint,
+			)
+			// @ts-ignore
+			this.client.ui.showLoaderDelayed(['<h4>Connecting to Socios...</h4>'], 600, true)
+			window.location.href = `https://partner.socios.com/oauth2/authorize?response_type=code&client_id=${client_id}&redirect_uri=${redirect_uri}&partner_tag=${partner_tag}`
+			return new Promise((resolve) => setTimeout(resolve, 10000))
+		} else {
+			this.registerNewOauth2WalletAddress(
+				'socios', // address id
+				'socios', // chain id
+				'Socios', // provider
+				'evm', // blockchain,
+				logoutEndPoint,
+			)
+		}
+		return 'socios'
 	}
 
 	async Phantom(checkConnectionOnly: boolean) {

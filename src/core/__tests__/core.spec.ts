@@ -2,10 +2,7 @@
 
 import { Messaging } from '../messaging'
 
-let assignMock = jest.fn()
-
 delete window.location
-window.location = { assign: assignMock }
 
 describe('Redirect flow', () => {
 	const { location } = window

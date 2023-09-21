@@ -49,7 +49,6 @@ export class Messaging {
 	): Promise<ResponseInterfaceBase | void> {
 		logger(2, 'Send request: ')
 		logger(2, request)
-
 		if (redirectUrl) {
 			this.sendRedirect(request, redirectUrl)
 			return

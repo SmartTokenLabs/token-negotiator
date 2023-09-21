@@ -4,6 +4,7 @@ import { IconView } from './icon-view'
 import { logger } from '../../utils'
 import { UIUpdateEventType } from '../index'
 import { Issuer } from '../interface'
+import { applyHTMLElementsInnerText } from './utils/index'
 
 export class SelectIssuers extends AbstractView {
 	issuerListContainer: any
@@ -77,7 +78,7 @@ export class SelectIssuers extends AbstractView {
                         </g>
                     </svg>
                   </button>
-                  <p class="headline-tn token-name">Token Name Here</p>
+                  <p class="headline-tn token-name"></p>
                 </div>
                 <ul class="token-list-container-tn" role="menubar"></ul>
               </div>
@@ -170,7 +171,8 @@ export class SelectIssuers extends AbstractView {
 	issuerConnectMarkup(title: string, image: string | undefined, issuer: string, tokens: any[], data: Issuer) {
 		let buttonText = ''
 
-		if (tokens?.length) buttonText = data?.fungible ? 'Balance found' : `${tokens.length} token${tokens.length > 1 ? 's' : ''} available`
+		// @ts-ignore
+		if (tokens?.length) buttonText = data?.fungible ? this.params.options.balanceFoundEvent ?? 'Balance found' : `${tokens.length} ${this.params.options?.nftsFoundEvent ?? 'Token(s) Available'}`
 
 		return `
             <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
@@ -184,11 +186,10 @@ export class SelectIssuers extends AbstractView {
 					data-issuer="${issuer}"
 					${this.client.issuersLoaded === true ? '' : 'disabled'}
 				>
-				${
-					this.client.issuersLoaded === true
-						? 'Load'
-						: '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
-				}
+				${this.client.issuersLoaded === true
+				? this.params.options.loadAction ?? 'Load'
+				: '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
+			}
 			  </button>
               <button aria-label="tokens available from token issuer ${issuer}" 
 										  aria-haspopup="true"
@@ -214,10 +215,11 @@ export class SelectIssuers extends AbstractView {
 			this.issuerLoading.bind(this),
 			(issuer: string, tokens: any[]) => {
 				if (!tokens?.length) {
-					const connectBtn = this.issuerListContainer.querySelector(`[data-issuer="${issuer}"] .connect-btn-tn`)
-
-					if (connectBtn) connectBtn.innerText = 'Load'
-
+					applyHTMLElementsInnerText(
+						this.issuerListContainer,
+						`[data-issuer="${issuer}"] .connect-btn-tn`,
+						this.params.options.loadAction ?? 'Load',
+					)
 					return
 				}
 
@@ -244,13 +246,25 @@ export class SelectIssuers extends AbstractView {
 			logger(2, err)
 			this.ui.showError(err)
 			this.client.eventSender('error', { issuer, error: err })
+			applyHTMLElementsInnerText(
+				this.issuerListContainer,
+				`[data-issuer="${issuer}"] .connect-btn-tn`,
+				this.params.options.repeatAction ?? 'Try Again',
+			)
 			return
 		}
 
 		this.ui.dismissLoader()
 
 		if (!tokens?.length) {
-			this.ui.showError(`No tokens found! ${this.client.getNoTokenMsg(issuer)}`)
+			this.ui.showError(`
+			${this.params.options.noTokensFoundEvent ?? 'No tokens found! '}
+			${this.client.getNoTokenMsg(issuer)}`)
+			applyHTMLElementsInnerText(
+				this.issuerListContainer,
+				`[data-issuer="${issuer}"] .connect-btn-tn`,
+				this.params.options.repeatAction ?? 'Try Again',
+			)
 			return
 		}
 
@@ -285,7 +299,7 @@ export class SelectIssuers extends AbstractView {
 		let issuers = this.client.getTokenStore().getCurrentIssuers()
 
 		tokenBtn.innerHTML =
-			tokens.length && issuers[issuer].fungible ? 'Balance found' : `${tokens.length} token${tokens.length > 1 ? 's' : ''} available`
+			tokens.length && issuers[issuer].fungible ? this.params.options.balanceFoundEvent ?? 'Balance found' : `${tokens.length} ${this.params.options?.nftsFoundEvent ?? 'Token(s) Available'}`
 		tokenBtn.setAttribute('aria-label', `Navigate to select from ${tokens.length} of your ${issuer} tokens`)
 		tokenBtn.setAttribute('tabIndex', 1)
 
@@ -310,7 +324,12 @@ export class SelectIssuers extends AbstractView {
 		const config = tokenStore.getCurrentIssuers()[issuer]
 		const tokenData = tokenStore.getIssuerTokens(issuer) ?? []
 
-		if (config.title) this.viewContainer.getElementsByClassName('headline-tn token-name')[0].innerHTML = config.title
+		if (config.title) {
+			this.viewContainer.getElementsByClassName('headline-tn token-name')[0].innerHTML = config.title
+		} else {
+			this.viewContainer.getElementsByClassName('headline-tn token-name')[0].innerHTML = config.collectionID
+			console.warn(`${config.collectionID} config is missing a title.`)
+		}
 
 		let tokens: TokenListItemInterface[] = []
 
@@ -324,11 +343,11 @@ export class SelectIssuers extends AbstractView {
 
 			if (config.onChain === false) {
 				const { title, image } = config
-
+				const tokenId = t.tokenId ?? t.ticketId ?? i.toString();
 				tokens.push(<TokenListItemInterface>{
 					data: t,
 					tokenIssuerKey: issuer,
-					index: t.ticketId,
+					index: tokenId,
 					title: title,
 					image: image,
 					toggleState: isSelected,
@@ -336,7 +355,6 @@ export class SelectIssuers extends AbstractView {
 				})
 			} else {
 				const tokenId = t.tokenId ?? i.toString()
-
 				tokens.push({
 					data: t,
 					tokenIssuerKey: issuer,
@@ -344,8 +362,8 @@ export class SelectIssuers extends AbstractView {
 					title: t.title,
 					image: t.image ?? config.image,
 					fungible: config.fungible,
-					decimals: config.decimals,
-					symbol: config.symbol,
+					decimals: t.decimals ?? config.decimals,
+					symbol: t.symbol ?? config.symbol,
 					balance: t.balance,
 					toggleState: isSelected,
 					hideToggle: config?.hideToggle,
