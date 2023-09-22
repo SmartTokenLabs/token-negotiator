@@ -4,7 +4,6 @@ import { IconView } from './icon-view'
 import { logger } from '../../utils'
 import { UIUpdateEventType } from '../index'
 import { Issuer } from '../interface'
-import { applyHTMLElementsInnerText } from './utils/index'
 
 export class SelectIssuers extends AbstractView {
 	issuerListContainer: any
