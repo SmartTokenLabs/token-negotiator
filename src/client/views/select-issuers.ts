@@ -161,6 +161,7 @@ export class SelectIssuers extends AbstractView {
 		this.issuerListContainer.addEventListener('click', (e: any) => {
 			if (e.target.classList.contains('connect-btn-tn')) {
 				this.connectTokenIssuer(e)
+				this.client.getTokenStore().setIncrementCollectionLoadAttempts(e.target.dataset.issuer);
 			} else if (e.target.classList.contains('tokens-btn-tn')) {
 				const issuer = e.target.parentNode.dataset.issuer
 				this.navigateToTokensView(issuer)
@@ -170,10 +171,11 @@ export class SelectIssuers extends AbstractView {
 
 	issuerConnectMarkup(title: string, image: string | undefined, issuer: string, tokens: any[], data: Issuer) {
 		let buttonText = ''
-
+		const collectLoadAttempts = this.client.getTokenStore().getCollectionLoadAttempts(issuer);
+		let issuerButtonText = this.params.options.loadAction ?? "Load Collection";
+		if (collectLoadAttempts >= 1) issuerButtonText = this.params.options.repeatAction ?? 'Retry';
 		// @ts-ignore
 		if (tokens?.length) buttonText = data?.fungible ? this.params.options.balanceFoundEvent ?? 'Balance found' : `${tokens.length} ${this.params.options?.nftsFoundEvent ?? 'Token(s) Available'}`
-
 		return `
             <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
               <div tabindex="0" style="display: flex; align-items: center;">
@@ -187,7 +189,7 @@ export class SelectIssuers extends AbstractView {
 					${this.client.issuersLoaded === true ? '' : 'disabled'}
 				>
 				${this.client.issuersLoaded === true
-				? this.params.options.loadAction ?? 'Load'
+				? issuerButtonText
 				: '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
 			}
 			  </button>
@@ -215,14 +217,8 @@ export class SelectIssuers extends AbstractView {
 			this.issuerLoading.bind(this),
 			(issuer: string, tokens: any[]) => {
 				if (!tokens?.length) {
-					applyHTMLElementsInnerText(
-						this.issuerListContainer,
-						`[data-issuer="${issuer}"] .connect-btn-tn`,
-						this.params.options.loadAction ?? 'Load',
-					)
 					return
 				}
-
 				this.issuerConnected(issuer, tokens, false)
 			},
 			refresh,
@@ -240,17 +236,11 @@ export class SelectIssuers extends AbstractView {
 
 		try {
 			tokens = await this.client.connectTokenIssuer(issuer)
-
 			if (!tokens) return // Site is redirecting
 		} catch (err) {
 			logger(2, err)
 			this.ui.showError(err)
 			this.client.eventSender('error', { issuer, error: err })
-			applyHTMLElementsInnerText(
-				this.issuerListContainer,
-				`[data-issuer="${issuer}"] .connect-btn-tn`,
-				this.params.options.repeatAction ?? 'Try Again',
-			)
 			return
 		}
 
@@ -260,11 +250,6 @@ export class SelectIssuers extends AbstractView {
 			this.ui.showError(`
 			${this.params.options.noTokensFoundEvent ?? 'No tokens found! '}
 			${this.client.getNoTokenMsg(issuer)}`)
-			applyHTMLElementsInnerText(
-				this.issuerListContainer,
-				`[data-issuer="${issuer}"] .connect-btn-tn`,
-				this.params.options.repeatAction ?? 'Try Again',
-			)
 			return
 		}
 
