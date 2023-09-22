@@ -1,10 +1,10 @@
 > Description
 
-Feature release to support Socios OAuth2 Wallet Provider, additional configuration options and improvments.
+Minor release for off chain token attestations
 
 ### Upgrade Steps
 
-- Update NPM package to version 3.1.0
+- Update NPM package to version 3.1.1
 
 ### Breaking Changes
 
@@ -12,15 +12,14 @@ Feature release to support Socios OAuth2 Wallet Provider, additional configurati
 
 ### New Features
 
-- Added new configuration text to active mode ui options
-- Off chain Token user flows now default to re-direct mode, due to all major browsers by default denying to cross origin local storage access via Iframes.
-- Added Socios OAuth2 Wallet Provider support via compatbility with a new NPM package (https://www.npmjs.com/package/@tokenscript/token-negotiator-server)
+- Upgrade attestation lib to support validation of new EAS off-chain attestation version
+- Prevent delete of signedToken property on token object
+- Change single token auth to use tokenId instead of sending the entire token object in URL
+- Add labels to default ticket schema
 
 ### Bug Fixes
 
-- Fix to ensure the validity of attestations when expired
-- Show retry for on chain tokens when they fail to resolve the first time
-- Off Chain Attestation Toggle button UX fix (for custom EAS tokens)
+[none]
 
 ### Performance Improvements
 
@@ -28,4 +27,4 @@ Feature release to support Socios OAuth2 Wallet Provider, additional configurati
 
 **Full Change log**:
 
-https://github.com/TokenScript/token-negotiator/compare/v3.0.2...v3.1.0
+https://github.com/TokenScript/token-negotiator/compare/v3.1.0....v3.1.1
