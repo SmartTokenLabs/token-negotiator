@@ -4,7 +4,7 @@ import { logger } from '../utils'
 import { DecodedToken } from '../outlet/ticketStorage'
 
 interface IssuerLookup {
-	[collectionID: string]: TokenConfig & { timestamp: number; status?: string }
+	[collectionID: string]: TokenConfig & { timestamp: number }
 }
 
 interface TokenLookup {
