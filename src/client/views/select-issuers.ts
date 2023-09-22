@@ -171,10 +171,10 @@ export class SelectIssuers extends AbstractView {
 	issuerConnectMarkup(title: string, image: string | undefined, issuer: string, tokens: any[], data: Issuer) {
 		let buttonText = ''
 		const collectLoadAttempts = this.client.getTokenStore().getCollectionLoadAttempts(issuer);
-		let issuerButtonText = this.params.options.loadAction ?? "Load Collection";
-		if (collectLoadAttempts >= 1) issuerButtonText = this.params.options.repeatAction ?? 'Retry';
+		let issuerButtonText = this.params.options?.loadAction ?? "Load Collection";
+		if (collectLoadAttempts >= 1) issuerButtonText = this.params.options?.repeatAction ?? 'Retry';
 		// @ts-ignore
-		if (tokens?.length) buttonText = data?.fungible ? this.params.options.balanceFoundEvent ?? 'Balance found' : `${tokens.length} ${this.params.options?.nftsFoundEvent ?? 'Token(s) Available'}`
+		if (tokens?.length) buttonText = data?.fungible ? this.params.options?.balanceFoundEvent ?? 'Balance found' : `${tokens.length} ${this.params.options?.nftsFoundEvent ?? 'Token(s) Available'}`
 		return `
             <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
               <div tabindex="0" style="display: flex; align-items: center;">
