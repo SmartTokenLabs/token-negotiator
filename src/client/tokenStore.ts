@@ -8,7 +8,7 @@ interface IssuerLookup {
 }
 
 interface TokenLookup {
-	[issuer: string]: { timestamp: number; tokens: TokenData[] | null }
+	[issuer: string]: { loadAttempts: number; timestamp: number; tokens: TokenData[] | null }
 }
 
 export interface TokenData {
@@ -59,7 +59,7 @@ export class TokenStore {
 		}
 
 		for (let collectionId in tokenStoreData.tokenData) {
-			const tokenData = tokenStoreData.tokenData[collectionId] as { timestamp: number; tokens: [] }
+			const tokenData = tokenStoreData.tokenData[collectionId] as { timestamp: number; tokens: []; loadAttempts: number }
 
 			if (tokenData.timestamp + this.tokenPersistenceTTL * 1000 > Date.now()) {
 				this.tokenData[collectionId] = tokenData
@@ -182,11 +182,18 @@ export class TokenStore {
 	}
 
 	public setTokens(issuer: string, tokens: TokenData[] | DecodedToken[]) {
-		this.tokenData[issuer] = { timestamp: Date.now(), tokens }
-
+		this.tokenData[issuer] = { timestamp: Date.now(), tokens, loadAttempts: this.getCollectionLoadAttempts(issuer) }
 		this.saveTokenStore()
-
 		if (this.autoEnableTokens) this.selectedTokens[issuer] = { tokens: tokens }
+	}
+
+	public setIncrementCollectionLoadAttempts(issuer: string) {
+		this.tokenData[issuer].loadAttempts = this.tokenData[issuer]?.loadAttempts >= 0 ? (this.tokenData[issuer].loadAttempts += 1) : 0
+		this.saveTokenStore()
+	}
+
+	public getCollectionLoadAttempts(issuer: string) {
+		return this.tokenData[issuer]?.loadAttempts ?? 0
 	}
 
 	public getSelectedTokens() {

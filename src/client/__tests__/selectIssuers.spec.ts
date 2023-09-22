@@ -22,7 +22,19 @@ describe('select issuers spec', () => {
 					blockchain: 'evm',
 				},
 			],
-			options: {},
+			uiOptions: {
+				openingHeading:
+					"Open a new world of perks, benefits and opportunities with your attestation, collectible or token.",
+				issuerHeading: "Get discount with Ticket",
+				repeatAction: "Retry",
+				dismissAction: 'Dismiss',
+				loadAction: 'Load Collection',
+				noTokensFoundEvent: 'No Tokens Found',
+				balancesFoundEvent: 'Balance Found',
+				nftsFoundEvent: 'Token(s) Found',
+				openingAction: "Let's Go!",
+				position: "top-right",
+			},
 		})
 	}
 
