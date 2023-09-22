@@ -210,19 +210,17 @@ export class Outlet extends LocalOutlet {
 
 	async sendTokenProof(evtid: string) {
 		const collectionId: string = this.getDataFromQuery('issuer')
-		const token: string = this.getDataFromQuery('token')
+		const tokenId: string = this.getDataFromQuery('tokenId')
 		const wallet: string = this.getDataFromQuery('wallet')
 		const address: string = this.getDataFromQuery('address')
-		requiredParams(token, 'unsigned token is missing')
-
-		const decodedToken = JSON.parse(token) as DecodedToken
+		requiredParams(tokenId, 'tokenId is missing')
 
 		const redirect = this.getDataFromQuery('redirect') === 'true' ? window.location.href : false
 
 		try {
 			const issuer = this.getIssuerConfigById(collectionId)
 
-			const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedTokenOrId(createIssuerHashArray(issuer), decodedToken)
+			const ticketRecord = await this.ticketStorage.getStoredTicketFromDecodedTokenOrId(createIssuerHashArray(issuer), tokenId)
 
 			const attestIdClient = new AttestationIdClient(
 				issuer.attestationOrigin,
@@ -240,7 +238,7 @@ export class Outlet extends LocalOutlet {
 			const idAttestation = await attestIdClient.getIdentifierAttestation(ticketRecord.id, wallet, address, {
 				action: OutletAction.GET_PROOF,
 				issuer: collectionId,
-				token: JSON.stringify(decodedToken),
+				tokenId,
 			})
 
 			const tokenProof = await getUseToken(issuer, idAttestation.attestation, idAttestation.identifierSecret, ticketRecord)
@@ -253,7 +251,7 @@ export class Outlet extends LocalOutlet {
 				params.set(this.getCallbackUrlKey('issuer'), collectionId)
 				params.set(this.getCallbackUrlKey('attestation'), tokenProof.proof as string)
 				params.set(this.getCallbackUrlKey('type'), ticketRecord.type)
-				params.set(this.getCallbackUrlKey('token'), token)
+				params.set(this.getCallbackUrlKey('tokenId'), tokenId)
 
 				requesterURL.hash = params.toString()
 				window.location.href = requesterURL.href

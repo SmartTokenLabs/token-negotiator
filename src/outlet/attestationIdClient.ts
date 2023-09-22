@@ -241,10 +241,6 @@ export class AttestationIdClient {
 				callbackParams.set('email', email) // TODO: return with attestation.id callback
 				callbackParams.set(URLNS + 'action', OutletAction.EMAIL_ATTEST_CALLBACK)
 
-				// console.log('attestation.id callback params: ', callbackParams.toString())
-				// callbackParams.set(URLNS + 'issuer', this.tokenConfig.collectionID)
-				// callbackParams.set(URLNS + 'token', JSON.stringify(this.decodedToken))
-
 				const requestor = curParams.get(URLNS + 'requestor')
 				if (requestor) {
 					callbackParams.set(URLNS + 'requestor', requestor)
