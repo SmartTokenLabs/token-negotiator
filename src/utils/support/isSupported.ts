@@ -1,8 +1,7 @@
 import { logger } from '..'
 import { getBrowserData } from './getBrowserData'
 import { errorHandler } from '../index'
-
-export const SUPPORTED_EVM_BLOCKCHAINS = ['evm', 'polygon', 'optimism', 'bsc', 'avalanche', 'fantom', 'goerli', 'mumbai', 'arbitrum']
+import { SUPPORTED_EVM_BLOCKCHAINS } from '../../constants';
 
 export interface BrowserDataInterface {
 	iE?: boolean
@@ -26,7 +25,6 @@ export interface BrowserDataInterface {
 	status?: boolean
 	imToken?: boolean
 	brave?: boolean
-
 	metaMaskAndroid?: boolean
 	alphaWalletAndroid?: boolean
 	mewAndroid?: boolean

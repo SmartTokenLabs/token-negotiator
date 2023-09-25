@@ -10,7 +10,7 @@ import { shouldUseRedirectMode } from '../../utils/support/getBrowserData'
 import { EasZkProof } from '@tokenscript/attestation/dist/eas/EasZkProof'
 import { DEFAULT_EAS_SCHEMA, TokenType } from '../../outlet/ticketStorage'
 import { OutletIssuerInterface } from '../../outlet/interfaces'
-import { DEFAULT_RPC_MAP } from '../../core/constants'
+import { DEFAULT_RPC_MAP } from '../../constants'
 
 export class TicketZKProof extends AbstractAuthentication implements AuthenticationMethod {
 	TYPE = 'ticketZKProof'

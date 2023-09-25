@@ -1,4 +1,4 @@
-import { logger, removeUrlSearchParams } from '../utils'
+import { logger } from '../utils'
 import { isBrave } from '../utils/support/getBrowserData'
 import { OutletAction } from '../client/messaging'
 import { URLNS } from '../core/messaging'
