@@ -1,12 +1,11 @@
 import { createIssuerHashArray, IssuerHashMap, logger, removeUrlSearchParams, requiredParams } from '../utils'
 import { ResponseActionBase, ResponseInterfaceBase, URLNS } from '../core/messaging'
 import { OutletAction, OutletResponseAction } from '../client/messaging'
-import { DecodedToken } from './ticketStorage'
 import { Whitelist } from './whitelist'
 import { LocalOutlet } from './localOutlet'
 import { AttestationIdClient } from './attestationIdClient'
 import { getUseToken } from './getUseToken'
-import { MultiTokenAuthRequest, MultiTokenAuthResult, OutletInterface, OutletIssuerInterface, ProofResult } from './interfaces'
+import { MultiTokenAuthRequest, OutletInterface, OutletIssuerInterface } from './interfaces'
 
 export const defaultConfig = {
 	whitelistDialogWidth: '450px',

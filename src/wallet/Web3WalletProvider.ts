@@ -3,7 +3,7 @@ import { logger, strToHexStr, strToUtfBytes, deleteCookieByName, isCookieMaxAgeE
 import { SafeConnectOptions } from './SafeConnectProvider'
 import { Client } from '../client'
 import { SupportedBlockchainsParam, WalletOptionsInterface, SignatureSupportedBlockchainsParamList } from '../client/interface'
-import { DEFAULT_RPC_MAP } from '../core/constants'
+import { DEFAULT_RPC_MAP } from '../constants'
 import { Oauth2IssuerConfig } from './../client/interface'
 
 interface WalletConnectionState {

@@ -1,6 +1,7 @@
 import { KeyStore } from '@tokenscript/attestation/dist/safe-connect/KeyStore'
 import { uint8tohex } from '@tokenscript/attestation/dist/libs/utils'
 import { EthereumKeyLinkingAttestation } from '@tokenscript/attestation/dist/safe-connect/EthereumKeyLinkingAttestation'
+import { HOLDING_KEY_ALGORITHM } from '../../../constants'
 
 export interface ChallengeInterface {
 	expiry: number
@@ -24,17 +25,16 @@ export interface ProofResponseInterface {
 }
 
 export class SafeConnect {
-	public static HOLDING_KEY_ALGORITHM = 'RSASSA-PKCS1-v1_5'
 
 	public static keyStore = new KeyStore()
 
 	public static async getLinkPrivateKey() {
-		let keys = await SafeConnect.keyStore.getOrCreateKey(SafeConnect.HOLDING_KEY_ALGORITHM)
+		let keys = await SafeConnect.keyStore.getOrCreateKey(HOLDING_KEY_ALGORITHM)
 		return keys.attestHoldingKey.privateKey
 	}
 
 	public static async getLinkPublicKey() {
-		let keys = await SafeConnect.keyStore.getOrCreateKey(SafeConnect.HOLDING_KEY_ALGORITHM)
+		let keys = await SafeConnect.keyStore.getOrCreateKey(HOLDING_KEY_ALGORITHM)
 		return uint8tohex(keys.holdingPubKey)
 	}
 

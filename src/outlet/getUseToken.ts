@@ -3,7 +3,7 @@ import { EasZkProof } from '@tokenscript/attestation/dist/eas/EasZkProof'
 import { Authenticator } from '@tokenscript/attestation'
 import { logger } from '../utils'
 import { OutletIssuerInterface, ProofResult } from './interfaces'
-import { DEFAULT_RPC_MAP } from '../core/constants'
+import { DEFAULT_RPC_MAP } from '../constants'
 import { EthRPCMap } from '../client/interface'
 
 export const getUseToken = async (

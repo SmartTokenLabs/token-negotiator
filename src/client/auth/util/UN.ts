@@ -3,6 +3,7 @@ import { sign } from 'tweetnacl'
 import { base58ToUint8Array, hexStringToUint8Array, strToHexStr, strToUtfBytes } from '../../../utils'
 import * as flowTypes from '@onflow/types'
 import { ecc } from 'eosjs/dist/eosjs-ecc-migration'
+import { DEFAULT_UN_ENDPOINT, COMMON_UN_API_KEY } from '../../../constants';
 
 export interface UNInterface {
 	expiration: number
@@ -17,21 +18,17 @@ export interface UNInterface {
 }
 
 export class UN {
-	private static DEFAULT_ENDPOINT = 'https://api.smarttokenlabs.com/un'
-	private static COMMON_API_KEY =
-		'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9qZWN0IjoidG9rZW4tbmVnb3RpYXRvciIsImlhdCI6MTY4OTc1NzQ4Nn0.ELE1OVvVFY1yrWlbnxtQur6dgeVxmKlPb9LZ_8cMOs8'
-
 	public static async getNewUN(endPoint: string): Promise<UNInterface> {
 		try {
 			let response
 			if (endPoint) {
 				response = await fetch(endPoint)
 			} else {
-				response = await fetch(this.DEFAULT_ENDPOINT, {
+				response = await fetch(DEFAULT_UN_ENDPOINT, {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
-						'x-stl-key': this.COMMON_API_KEY,
+						'x-stl-key': COMMON_UN_API_KEY,
 					},
 					body: JSON.stringify({ targetDomain: window.location.origin }),
 				})
