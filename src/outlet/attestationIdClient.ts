@@ -2,6 +2,7 @@ import { logger } from '../utils'
 import { isBrave } from '../utils/support/getBrowserData'
 import { OutletAction } from '../client/messaging'
 import { URLNS } from '../core/messaging'
+import { LOCAL_STORAGE_ATTESTATION_KEY } from '../constants'
 
 interface PostMessageData {
 	force?: boolean
@@ -37,7 +38,6 @@ export class AttestationIdClient {
 	private interval = null
 	private rejectHandler: Function
 
-	private LOCAL_STORAGE_KEY = 'tn-id-attestations'
 	private attestations: StoredIdAttestations
 
 	constructor(
@@ -45,7 +45,7 @@ export class AttestationIdClient {
 		private showIframeCallback?: () => void,
 		private redirectUrl?: false | string,
 	) {
-		this.attestations = JSON.parse(localStorage.getItem(this.LOCAL_STORAGE_KEY)) ?? ({} as StoredIdAttestations)
+		this.attestations = JSON.parse(localStorage.getItem(LOCAL_STORAGE_ATTESTATION_KEY)) ?? ({} as StoredIdAttestations)
 	}
 
 	private getExistingAttestation(id: string, idType = 'email') {
@@ -66,7 +66,7 @@ export class AttestationIdClient {
 
 	private saveAttestation(attestation: IdAttestationRecord) {
 		this.attestations[attestation.identifierType + '/' + attestation.identifier] = attestation
-		localStorage.setItem(this.LOCAL_STORAGE_KEY, JSON.stringify(this.attestations))
+		localStorage.setItem(LOCAL_STORAGE_ATTESTATION_KEY, JSON.stringify(this.attestations))
 	}
 
 	openAttestationApp() {

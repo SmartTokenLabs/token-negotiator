@@ -1,7 +1,12 @@
 export const HOLDING_KEY_ALGORITHM = 'RSASSA-PKCS1-v1_5'
 export const DEFAULT_UN_ENDPOINT = 'https://api.smarttokenlabs.com/un'
 export const COMMON_UN_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9qZWN0IjoidG9rZW4tbmVnb3RpYXRvciIsImlhdCI6MTY4OTc1NzQ4Nn0.ELE1OVvVFY1yrWlbnxtQur6dgeVxmKlPb9LZ_8cMOs8'
-export const PROOF_STORAGE_KEY = 'tn-proof'
+export const LOCAL_STORAGE_PROOF_KEY = 'tn-proof'
+export const LOCAL_STORAGE_TOKEN_STORE_KEY = 'tn-tokenStore'
+export const LOCAL_STORAGE_TOKEN_KEY = 'tn-tokens'
+export const LOCAL_STORAGE_WALLET_KEY = 'tn-wallet-connections'
+export const LOCAL_STORAGE_KEY_WHITELIST_KEY = 'tn-whitelist'
+export const LOCAL_STORAGE_ATTESTATION_KEY = 'tn-id-attestations'
 export const BASE_TOKEN_DISCOVERY_URL = 'https://api.token-discovery.tokenscript.org'
 export const SUPPORTED_EVM_BLOCKCHAINS = ['evm', 'polygon', 'optimism', 'bsc', 'avalanche', 'fantom', 'goerli', 'mumbai', 'arbitrum']
 export const DEFAULT_RPC_MAP = {

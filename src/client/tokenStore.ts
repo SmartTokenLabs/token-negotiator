@@ -1,4 +1,5 @@
-import { OffChainTokenConfig, OnChainIssuer, OnChainTokenConfig, SolanaIssuerConfig, UltraIssuerConfig } from './interface'
+import { OffChainTokenConfig, OnChainTokenConfig, SolanaIssuerConfig, UltraIssuerConfig } from './interface'
+import { LOCAL_STORAGE_TOKEN_STORE_KEY } from './../constants'
 
 import { logger } from '../utils'
 import { DecodedToken } from '../outlet/ticketStorage'
@@ -23,8 +24,6 @@ type TokenConfig = OnChainTokenConfig | OffChainTokenConfig | SolanaIssuerConfig
 type SelectedTokens = { [collectionId: string]: { tokens: DecodedToken[] | TokenData[] } }
 
 export class TokenStore {
-	public static LOCAL_STORAGE_KEY = 'tn-tokenStore'
-
 	private currentIssuers: { [issuer: string]: boolean } = {} // mapping of issuer to on/off chain
 
 	private tokenData: TokenLookup = {}
@@ -42,11 +41,11 @@ export class TokenStore {
 	}
 
 	public clearTokenStore() {
-		localStorage.removeItem(TokenStore.LOCAL_STORAGE_KEY)
+		localStorage.removeItem(LOCAL_STORAGE_TOKEN_STORE_KEY)
 	}
 
 	private loadTokenStore() {
-		const tokenStoreData = JSON.parse(localStorage.getItem(TokenStore.LOCAL_STORAGE_KEY))
+		const tokenStoreData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_TOKEN_STORE_KEY))
 
 		if (!tokenStoreData) return
 
@@ -72,7 +71,7 @@ export class TokenStore {
 	private saveTokenStore() {
 		if (this.tokenPersistenceTTL > 0)
 			localStorage.setItem(
-				TokenStore.LOCAL_STORAGE_KEY,
+				LOCAL_STORAGE_TOKEN_STORE_KEY,
 				JSON.stringify({
 					tokenLookup: this.tokenLookup,
 					tokenData: this.tokenData,
