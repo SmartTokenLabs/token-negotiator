@@ -121,8 +121,6 @@ export class Ui implements UiInterface {
 			}
 		})
 
-		console.log('...Start the TKN by loading the start screen...')
-
 		this.updateUI(await this.getStartScreen(), { viewName: 'start' })
 	}
 
