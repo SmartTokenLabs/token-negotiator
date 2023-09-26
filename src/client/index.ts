@@ -292,20 +292,16 @@ export class Client {
 
 	// TODO: Move to token store OR select-wallet view - this method is very similar to getCurrentBlockchains()
 	public hasIssuerForBlockchain(blockchain: 'evm' | 'solana' | 'flow' | 'ultra', useOauth = false) {
+		const _blockchain = blockchain.toLocaleLowerCase()
 		return (
 			this.config.issuers.filter((issuer: OnChainTokenConfig) => {
-				const oAuthIssuer = useOauth && issuer.oAuth2options
-				if (blockchain === 'evm' && !issuer.onChain) {
-					return true
-				}
-				if (blockchain === 'solana' && typeof window.solana === 'undefined') {
-					return false
-				}
-				if (blockchain === 'ultra' && typeof window.ultra === 'undefined') {
-					return false
-				}
-				const blockChainNameMatch = issuer.blockchain ? issuer.blockchain.toLowerCase() : 'evm' === blockchain
-				return blockChainNameMatch && (oAuthIssuer || !issuer.oAuth2options)
+				const issuerBlockChain = issuer.blockchain?.toLocaleLowerCase()
+				const blockChainUsed = issuerBlockChain === blockchain
+				const solanaEnabled = blockChainUsed && _blockchain === 'solana' && typeof window.solana !== 'undefined'
+				const ultraEnabled = blockChainUsed && _blockchain === 'ultra' && typeof window.ultra !== 'undefined'
+				const evmEnabled = blockChainUsed && _blockchain === 'evm' && !issuer.oAuth2options && !useOauth
+				const sociosEnabled = blockChainUsed && _blockchain === 'evm' && issuer.oAuth2options && useOauth
+				return solanaEnabled || ultraEnabled || evmEnabled || sociosEnabled
 			}).length > 0
 		)
 	}
