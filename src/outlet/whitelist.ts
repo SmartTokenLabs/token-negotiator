@@ -1,5 +1,6 @@
 import { OutletInterface, OutletIssuerInterface } from './interfaces'
-import { logger, createCookie, isCookieExpired } from '../utils'
+import { logger } from '../utils'
+import { LOCAL_STORAGE_KEY_WHITELIST_KEY } from '../constants'
 
 export interface StoredWhitelist {
 	[origin: string]: {
@@ -12,8 +13,6 @@ export interface StaticWhitelist {
 }
 
 export class Whitelist {
-	private static STORAGE_KEY = 'tn-whitelist'
-
 	private storedWhitelist: StoredWhitelist = {}
 	private staticWhitelist: StaticWhitelist = {}
 
@@ -49,14 +48,14 @@ export class Whitelist {
 
 	private loadStoredWhitelist() {
 		try {
-			this.storedWhitelist = JSON.parse(localStorage.getItem(Whitelist.STORAGE_KEY)) ?? ({} as StoredWhitelist)
+			this.storedWhitelist = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY_WHITELIST_KEY)) ?? ({} as StoredWhitelist)
 		} catch (e) {
 			// no-op
 		}
 	}
 
 	private saveWhitelist() {
-		localStorage.setItem(Whitelist.STORAGE_KEY, JSON.stringify(this.storedWhitelist))
+		localStorage.setItem(LOCAL_STORAGE_KEY_WHITELIST_KEY, JSON.stringify(this.storedWhitelist))
 	}
 
 	public getWhitelistedIssuers(origin: string) {

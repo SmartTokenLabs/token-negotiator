@@ -3,7 +3,7 @@ import { logger, strToHexStr, strToUtfBytes, deleteCookieByName, isCookieMaxAgeE
 import { SafeConnectOptions } from './SafeConnectProvider'
 import { Client } from '../client'
 import { SupportedBlockchainsParam, WalletOptionsInterface, SignatureSupportedBlockchainsParamList } from '../client/interface'
-import { DEFAULT_RPC_MAP } from '../constants'
+import { DEFAULT_RPC_MAP, LOCAL_STORAGE_WALLET_KEY } from '../constants'
 import { Oauth2IssuerConfig } from './../client/interface'
 
 interface WalletConnectionState {
@@ -50,8 +50,6 @@ export enum SupportedWalletProviders {
 }
 
 export class Web3WalletProvider {
-	private static LOCAL_STORAGE_KEY = 'tn-wallet-connections'
-
 	connections: WalletConnectionState = {}
 
 	constructor(
@@ -72,7 +70,7 @@ export class Web3WalletProvider {
 				blockchain: con.blockchain,
 			}
 		}
-		localStorage.setItem(Web3WalletProvider.LOCAL_STORAGE_KEY, JSON.stringify(savedConnections))
+		localStorage.setItem(LOCAL_STORAGE_WALLET_KEY, JSON.stringify(savedConnections))
 	}
 
 	emitSavedConnection(address: string): WalletConnection | WalletConnectionOauth2 | null {
@@ -95,7 +93,7 @@ export class Web3WalletProvider {
 	async deleteConnections() {
 		this.connections = {}
 
-		let data = localStorage.getItem(Web3WalletProvider.LOCAL_STORAGE_KEY)
+		let data = localStorage.getItem(LOCAL_STORAGE_WALLET_KEY)
 		if (data) {
 			let state = JSON.parse(data)
 			if (state) {
@@ -130,12 +128,12 @@ export class Web3WalletProvider {
 			}
 		}
 
-		localStorage.removeItem(Web3WalletProvider.LOCAL_STORAGE_KEY)
+		localStorage.removeItem(LOCAL_STORAGE_WALLET_KEY)
 		sessionStorage.removeItem('CURRENT_USER')
 	}
 
 	async loadConnections() {
-		let data = localStorage.getItem(Web3WalletProvider.LOCAL_STORAGE_KEY)
+		let data = localStorage.getItem(LOCAL_STORAGE_WALLET_KEY)
 
 		if (!data) return
 

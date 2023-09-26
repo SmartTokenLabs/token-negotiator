@@ -1,6 +1,6 @@
 import { AuthenticateInterface, MultiTokenInterface, OffChainTokenConfig, OnChainTokenConfig } from '../interface'
 import { Client } from '../index'
-import { PROOF_STORAGE_KEY } from '../../constants'
+import { LOCAL_STORAGE_PROOF_KEY } from '../../constants'
 
 export interface AuthenticationResult {
 	type: string
@@ -57,7 +57,7 @@ export abstract class AbstractAuthentication {
 
 		challenges[this.getFullKey(key)] = proof
 
-		localStorage.setItem(PROOF_STORAGE_KEY, JSON.stringify(challenges))
+		localStorage.setItem(LOCAL_STORAGE_PROOF_KEY, JSON.stringify(challenges))
 	}
 
 	protected getSavedProof(key: string) {
@@ -77,7 +77,7 @@ export abstract class AbstractAuthentication {
 
 		if (challenges[fullKey]) delete challenges[fullKey]
 
-		localStorage.setItem(PROOF_STORAGE_KEY, JSON.stringify(challenges))
+		localStorage.setItem(LOCAL_STORAGE_PROOF_KEY, JSON.stringify(challenges))
 	}
 
 	private getFullKey(key: string) {
@@ -85,7 +85,7 @@ export abstract class AbstractAuthentication {
 	}
 
 	private getProofs(): { [key: string]: AuthenticationResult } {
-		const data = localStorage.getItem(PROOF_STORAGE_KEY)
+		const data = localStorage.getItem(LOCAL_STORAGE_PROOF_KEY)
 		return data?.length ? JSON.parse(data) : {}
 	}
 }
