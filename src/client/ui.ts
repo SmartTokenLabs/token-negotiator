@@ -26,10 +26,12 @@ export interface UIOptionsInterface {
 	issuerHeading?: string
 	repeatAction?: string
 	cancelAction?: string
+	walletDidntConnectAction?: string
 	authenticationHeadingEvent?: string
 	authenticationBodyEvent?: string
 	reDirectIssuerEventHeading?: string
 	reDirectIssuerBodyEvent?: string
+
 	theme?: UItheme
 	position?: PopupPosition
 	autoPopup?: boolean

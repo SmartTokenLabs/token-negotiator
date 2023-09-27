@@ -749,14 +749,14 @@ export class Client {
 	private async loadRemoteOutletTokens(issuer: OffChainTokenConfig): Promise<OutletTokenResult | void> {
 		this.tokenStore.setTokens(issuer.collectionID, [])
 		this.ui.showLoader(
-			`<h4>${this.config.uiOptions.reDirectIssuerEventHeading ?? 'Connecting to Issuers...'}</h4>`,
-			`<small>${this.config.uiOptions.reDirectIssuerBodyEvent ?? 'Your browser will re-direct shortly'}</small>`,
+			`<h4>${this.config.uiOptions?.reDirectIssuerEventHeading ?? 'Connecting to Issuers...'}</h4>`,
+			`<small>${this.config.uiOptions?.reDirectIssuerBodyEvent ?? 'Your browser will re-direct shortly'}</small>`,
 			`<button class='cancel-autoload-btn btn-tn' aria-label='Cancel page re-direct'>${
-				this.config.uiOptions.cancelAction ?? 'Cancel'
+				this.config.uiOptions?.cancelAction ?? 'Cancel'
 			}</button>`,
 		)
 		this.enableTokenAutoLoadCancel()
-		if (this.config.uiOptions?.userCancelIssuerAutoRedirectTimer) await sleep(this.config.uiOptions.userCancelIssuerAutoRedirectTimer)
+		if (this.config.uiOptions?.userCancelIssuerAutoRedirectTimer) await sleep(this.config.uiOptions?.userCancelIssuerAutoRedirectTimer)
 		if (this.userCancelTokenAutoload) {
 			return {}
 		}
@@ -852,10 +852,10 @@ export class Client {
 			if (this.ui) {
 				this.ui.showLoaderDelayed(
 					[
-						`<h4>${this.config.uiOptions.authenticationHeadingEvent ?? 'Authenticating...'}</h4>`,
-						`<small>${this.config.uiOptions.authenticationBodyEvent ?? 'You may need to sign a new challenge in your wallet'}</small>`,
+						`<h4>${this.config.uiOptions?.authenticationHeadingEvent ?? 'Authenticating...'}</h4>`,
+						`<small>${this.config.uiOptions?.authenticationBodyEvent ?? 'You may need to sign a new challenge in your wallet'}</small>`,
 						`<button class='cancel-auth-btn btn-tn' aria-label='Cancel authentication'>${
-							this.config.uiOptions.cancelAction ?? 'Cancel'
+							this.config.uiOptions?.cancelAction ?? 'Cancel'
 						}</button>`,
 					],
 					600,
@@ -927,10 +927,10 @@ export class Client {
 		if (this.ui) {
 			this.ui.showLoaderDelayed(
 				[
-					`<h4>${this.config.uiOptions.authenticationHeadingEvent ?? 'Authenticating...'}</h4>`,
-					`<small>${this.config.uiOptions.authenticationBodyEvent ?? 'You may need to sign a new challenge in your wallet'}</small>`,
+					`<h4>${this.config.uiOptions?.authenticationHeadingEvent ?? 'Authenticating...'}</h4>`,
+					`<small>${this.config.uiOptions?.authenticationBodyEvent ?? 'You may need to sign a new challenge in your wallet'}</small>`,
 					`<button class='cancel-auth-btn btn-tn' aria-label='Cancel authentication'>${
-						this.config.uiOptions.cancelAction ?? 'Cancel'
+						this.config.uiOptions?.cancelAction ?? 'Cancel'
 					}</button>`,
 				],
 				600,
