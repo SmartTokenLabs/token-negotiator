@@ -756,7 +756,7 @@ export class Client {
 			}</button>`,
 		)
 		this.enableTokenAutoLoadCancel()
-		if (this.config.uiOptions?.userCancelIssuerAutoRedirectTimer) await sleep(this.config.uiOptions?.userCancelIssuerAutoRedirectTimer)
+		if (this.config.uiOptions?.userCancelIssuerAutoRedirectTimer) await sleep(this.config.uiOptions.userCancelIssuerAutoRedirectTimer)
 		if (this.userCancelTokenAutoload) {
 			return {}
 		}
