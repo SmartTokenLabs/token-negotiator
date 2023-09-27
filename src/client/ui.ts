@@ -25,6 +25,11 @@ export interface UIOptionsInterface {
 	openingAction?: string
 	issuerHeading?: string
 	repeatAction?: string
+	cancelAction?: string
+	authenticationHeadingEvent?: string
+	authenticationBodyEvent?: string
+	reDirectIssuerEventHeading?: string
+	reDirectIssuerBodyEvent?: string
 	theme?: UItheme
 	position?: PopupPosition
 	autoPopup?: boolean
