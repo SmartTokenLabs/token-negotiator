@@ -302,3 +302,7 @@ export const getCookieByName = (cookieName: string) => {
 export const deleteCookieByName = (cookieName) => {
 	document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
 }
+
+export const sleep = async (ms: number) => {
+	await new Promise((resolve) => setTimeout(resolve, ms))
+}
