@@ -29,6 +29,7 @@ export interface UIOptionsInterface {
 	position?: PopupPosition
 	autoPopup?: boolean
 	alwaysShowStartScreen?: boolean
+	userCancelIssuerAutoRedirectTimer?: number
 	viewOverrides?: {
 		[type: string]: {
 			component?: ViewComponent
@@ -393,9 +394,7 @@ export class Ui implements UiInterface {
 		loader.style.display = 'block'
 		const dismissBtn = this.loadContainer.querySelector('.dismiss-error-tn') as HTMLDivElement
 		dismissBtn.style.display = 'none'
-
 		this.loadContainer.querySelector('.loader-msg-tn').innerHTML = message.join('\n')
-
 		this.loadContainer.style.display = 'flex'
 	}
 

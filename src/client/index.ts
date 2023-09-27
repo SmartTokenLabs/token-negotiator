@@ -8,6 +8,7 @@ import {
 	removeUrlSearchParams,
 	createIssuerHashMap,
 	createIssuerHashArray,
+	sleep,
 } from '../utils'
 import { getNftCollection, getNftTokens } from '../utils/token/nftProvider'
 import { TokenStore } from './tokenStore'
@@ -112,6 +113,7 @@ export class Client {
 		[UIUpdateEventType.ISSUERS_LOADED]: undefined,
 		[UIUpdateEventType.WALLET_DISCONNECTED]: undefined,
 	}
+	private userCancelTokenAutoload: boolean
 
 	private urlParams: URLSearchParams
 
@@ -745,10 +747,17 @@ export class Client {
 	}
 
 	private async loadRemoteOutletTokens(issuer: OffChainTokenConfig): Promise<OutletTokenResult | void> {
-		const redirectRequired = shouldUseRedirectMode(this.config.offChainRedirectMode)
-
-		if (redirectRequired) this.tokenStore.setTokens(issuer.collectionID, [])
-
+		this.tokenStore.setTokens(issuer.collectionID, [])
+		this.ui.showLoader(
+			'<h4>Connecting to issuers...</h4>',
+			'<small>Your browser will re-direct shortly</small>',
+			"<button class='cancel-autoload-btn btn-tn' aria-label='Cancel authentication'>Cancel</button>",
+		)
+		this.enableTokenAutoLoadCancel()
+		if (this.config.uiOptions?.userCancelIssuerAutoRedirectTimer) await sleep(this.config.uiOptions.userCancelIssuerAutoRedirectTimer)
+		if (this.userCancelTokenAutoload) {
+			return {}
+		}
 		const res = await this.messaging.sendMessage(
 			{
 				action: OutletAction.GET_ISSUER_TOKENS,
@@ -759,7 +768,7 @@ export class Client {
 			},
 			this.config.messagingForceTab,
 			this.config.type === 'active' ? this.ui : null,
-			redirectRequired ? window.location.href : false,
+			window.location.href,
 		)
 
 		if (!res) return // Site is redirecting
@@ -848,6 +857,7 @@ export class Client {
 					600,
 					true,
 				)
+				this.enableAuthCancel(authRequests)
 			}
 
 			const authRequestBatch = await this.getMultiRequestBatch(authRequests)
@@ -977,6 +987,19 @@ export class Client {
 					const err = 'User cancelled authentication'
 					this.ui.showError(err)
 					this.eventSender('token-proof', { issuer, error: err, data: null })
+				}
+			})
+			.catch((err) => {
+				logger(2, err)
+			})
+	}
+
+	public enableTokenAutoLoadCancel(): void {
+		waitForElementToExist('.cancel-autoload-btn')
+			.then((cancelAuthButton: HTMLElement) => {
+				cancelAuthButton.onclick = () => {
+					this.userCancelTokenAutoload = true
+					this.ui.dismissLoader()
 				}
 			})
 			.catch((err) => {
