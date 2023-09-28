@@ -56,7 +56,7 @@
     "@walletconnect/universal-provider": "^2.4.5",
     "eosjs": "^22.1.0",
     "eosjs-ecc": "^4.0.7",
-    "ethers": "^5.4.0",
+    "ethers": "^6.7.1",
     "pvutils": "^1.0.17",
     "text-encoding": "^0.7.0",
     "tweetnacl": "^1.0.3",
