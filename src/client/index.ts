@@ -133,6 +133,8 @@ export class Client {
 
 		this.config = this.mergeConfig(defaultConfig, config)
 
+		this.config.autoLoadTokens = localStorage.getItem('tn-autoload-tokens') === 'false' ? false : this.config.autoLoadTokens
+
 		this.tokenStore = new TokenStore(this.config.autoEnableTokens, this.config.tokenPersistenceTTL)
 		// @ts-ignore
 		if (this.config.issuers?.length > 0) this.tokenStore.updateIssuers(this.config.issuers)
@@ -517,6 +519,7 @@ export class Client {
 
 	cancelTokenAutoload() {
 		this.cancelAutoload = true
+		localStorage.setItem('tn-autoload-tokens', 'false')
 	}
 
 	async setPassiveNegotiationWebTokens(): Promise<void> {
@@ -759,6 +762,7 @@ export class Client {
 		this.enableTokenAutoLoadCancel()
 		if (this.config.uiOptions?.userCancelIssuerAutoRedirectTimer) await sleep(this.config.uiOptions.userCancelIssuerAutoRedirectTimer)
 		if (this.userCancelTokenAutoload) {
+			this.userCancelTokenAutoload = false
 			return {}
 		}
 		const res = await this.messaging.sendMessage(
@@ -1004,6 +1008,7 @@ export class Client {
 			.then((cancelAuthButton: HTMLElement) => {
 				cancelAuthButton.onclick = () => {
 					this.userCancelTokenAutoload = true
+					this.cancelTokenAutoload()
 					this.ui.dismissLoader()
 				}
 			})
