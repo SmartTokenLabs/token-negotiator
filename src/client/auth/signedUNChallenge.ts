@@ -34,7 +34,7 @@ export class SignedUNChallenge extends AbstractAuthentication implements Authent
 			}
 		}
 
-		if (!currentProof){
+		if (!currentProof) {
 			let walletConnection = connection.provider
 
 			currentProof = {

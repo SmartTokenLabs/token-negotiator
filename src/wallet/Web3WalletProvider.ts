@@ -161,7 +161,7 @@ export class Web3WalletProvider {
 		// @ts-ignore
 		let address = await this[walletType as keyof Web3WalletProvider](checkConnectionOnly)
 
-		if (!address) throw new Error("Wallet didn't connect")
+		if (!address) throw new Error(this.client.config.uiOptions?.walletDidntConnectAction ?? "Wallet didn't connect")
 
 		this.saveConnections()
 		this.emitSavedConnection(address)

@@ -747,11 +747,14 @@ export class Client {
 	}
 
 	private async loadRemoteOutletTokens(issuer: OffChainTokenConfig): Promise<OutletTokenResult | void> {
-		this.tokenStore.setTokens(issuer.collectionID, [])
+		const redirectRequired = shouldUseRedirectMode(this.config.offChainRedirectMode)
+		if (redirectRequired) this.tokenStore.setTokens(issuer.collectionID, [])
 		this.ui.showLoader(
-			'<h4>Connecting to issuers...</h4>',
-			'<small>Your browser will re-direct shortly</small>',
-			"<button class='cancel-autoload-btn btn-tn' aria-label='Cancel authentication'>Cancel</button>",
+			`<h4>${this.config.uiOptions?.reDirectIssuerEventHeading ?? 'Connecting to Issuers...'}</h4>`,
+			`<small>${this.config.uiOptions?.reDirectIssuerBodyEvent ?? 'Your browser will re-direct shortly'}</small>`,
+			`<button class='cancel-autoload-btn btn-tn' aria-label='Cancel page re-direct'>${
+				this.config.uiOptions?.cancelAction ?? 'Cancel'
+			}</button>`,
 		)
 		this.enableTokenAutoLoadCancel()
 		if (this.config.uiOptions?.userCancelIssuerAutoRedirectTimer) await sleep(this.config.uiOptions.userCancelIssuerAutoRedirectTimer)
@@ -768,11 +771,9 @@ export class Client {
 			},
 			this.config.messagingForceTab,
 			this.config.type === 'active' ? this.ui : null,
-			window.location.href,
+			redirectRequired ? window.location.href : false,
 		)
-
 		if (!res) return // Site is redirecting
-
 		return res.data?.tokens ?? {}
 	}
 
@@ -850,9 +851,11 @@ export class Client {
 			if (this.ui) {
 				this.ui.showLoaderDelayed(
 					[
-						'<h4>Authenticating...</h4>',
-						'<small>You may need to sign a new challenge in your wallet</small>',
-						"<button class='cancel-auth-btn btn-tn' aria-label='Cancel authentication'>Cancel</button>",
+						`<h4>${this.config.uiOptions?.authenticationHeadingEvent ?? 'Authenticating...'}</h4>`,
+						`<small>${this.config.uiOptions?.authenticationBodyEvent ?? 'You may need to sign a new challenge in your wallet'}</small>`,
+						`<button class='cancel-auth-btn btn-tn' aria-label='Cancel authentication'>${
+							this.config.uiOptions?.cancelAction ?? 'Cancel'
+						}</button>`,
 					],
 					600,
 					true,
@@ -881,7 +884,7 @@ export class Client {
 					if (err.message === 'WALLET_REQUIRED') {
 						return this.handleWalletRequired(authRequest)
 					}
-					// errorHandler(err, 'error', () => this.handleProofError(err, `multi issuer authentication via ${tokenOrigin}`), null, false, true)
+					// errorHandler(err, 'error', () => this.handleProofError(err, `multi issuer authentication via ${ tokenOrigin }`), null, false, true)
 					console.error(err)
 					throw err
 				}
@@ -923,9 +926,11 @@ export class Client {
 		if (this.ui) {
 			this.ui.showLoaderDelayed(
 				[
-					'<h4>Authenticating...</h4>',
-					'<small>You may need to sign a new challenge in your wallet</small>',
-					"<button class='cancel-auth-btn btn-tn' aria-label='Cancel authentication'>Cancel</button>",
+					`<h4>${this.config.uiOptions?.authenticationHeadingEvent ?? 'Authenticating...'}</h4>`,
+					`<small>${this.config.uiOptions?.authenticationBodyEvent ?? 'You may need to sign a new challenge in your wallet'}</small>`,
+					`<button class='cancel-auth-btn btn-tn' aria-label='Cancel authentication'>${
+						this.config.uiOptions?.cancelAction ?? 'Cancel'
+					}</button>`,
 				],
 				600,
 				true,
