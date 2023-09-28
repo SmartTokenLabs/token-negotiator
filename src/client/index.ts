@@ -747,7 +747,8 @@ export class Client {
 	}
 
 	private async loadRemoteOutletTokens(issuer: OffChainTokenConfig): Promise<OutletTokenResult | void> {
-		this.tokenStore.setTokens(issuer.collectionID, [])
+		const redirectRequired = shouldUseRedirectMode(this.config.offChainRedirectMode)
+		if (redirectRequired) this.tokenStore.setTokens(issuer.collectionID, [])
 		this.ui.showLoader(
 			`<h4>${this.config.uiOptions?.reDirectIssuerEventHeading ?? 'Connecting to Issuers...'}</h4>`,
 			`<small>${this.config.uiOptions?.reDirectIssuerBodyEvent ?? 'Your browser will re-direct shortly'}</small>`,
@@ -770,11 +771,9 @@ export class Client {
 			},
 			this.config.messagingForceTab,
 			this.config.type === 'active' ? this.ui : null,
-			window.location.href,
+			redirectRequired ? window.location.href : false,
 		)
-
 		if (!res) return // Site is redirecting
-
 		return res.data?.tokens ?? {}
 	}
 
