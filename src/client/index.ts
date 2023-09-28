@@ -294,8 +294,6 @@ export class Client {
 		return this.config.safeConnectOptions !== undefined
 	}
 
-	// TODO look to add EVM when no blockchain is specified.
-
 	// TODO: Move to token store OR select-wallet view - this method is very similar to getCurrentBlockchains()
 	public hasIssuerForBlockchain(blockchain: 'evm' | 'solana' | 'flow' | 'ultra', useOauth = false) {
 		const _blockchain = blockchain.toLocaleLowerCase()
