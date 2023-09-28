@@ -294,6 +294,8 @@ export class Client {
 		return this.config.safeConnectOptions !== undefined
 	}
 
+	// TODO look to add EVM when no blockchain is specified.
+
 	// TODO: Move to token store OR select-wallet view - this method is very similar to getCurrentBlockchains()
 	public hasIssuerForBlockchain(blockchain: 'evm' | 'solana' | 'flow' | 'ultra', useOauth = false) {
 		const _blockchain = blockchain.toLocaleLowerCase()
@@ -305,8 +307,8 @@ export class Client {
 				const ultraEnabled = blockChainUsed && _blockchain === 'ultra' && typeof window.ultra !== 'undefined'
 				const evmEnabled = blockChainUsed && _blockchain === 'evm' && !issuer.oAuth2options && !useOauth
 				const sociosEnabled = blockChainUsed && _blockchain === 'evm' && issuer.oAuth2options && useOauth
-				const defaultToEVMWhenNoBlockChainDefined = blockchain === 'evm' && issuer.onChain && !_blockchain
-				return solanaEnabled || ultraEnabled || evmEnabled || sociosEnabled || defaultToEVMWhenNoBlockChainDefined
+				const fallBackToEVM = _blockchain === 'evm' && !issuerBlockChain && !useOauth
+				return solanaEnabled || ultraEnabled || evmEnabled || sociosEnabled || fallBackToEVM
 			}).length > 0
 		)
 	}
