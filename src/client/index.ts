@@ -327,6 +327,7 @@ export class Client {
 			this.tokenStore.clearCachedTokens()
 			this.eventSender('connected-wallet', null)
 			this.eventSender('disconnected-wallet', null)
+			localStorage.removeItem('tn-autoload-tokens')
 			this.triggerUiUpdateCallback(UIUpdateEventType.WALLET_DISCONNECTED)
 		} catch (e) {
 			logger(2, 'Failed to disconnect wallet', e)
@@ -518,7 +519,7 @@ export class Client {
 		this.eventSender('tokens-loaded', { loadedCollections: Object.keys(this.tokenStore.getCurrentIssuers()).length })
 	}
 
-	cancelTokenAutoload() {
+	public cancelTokenAutoload() {
 		this.cancelAutoload = true
 		localStorage.setItem('tn-autoload-tokens', 'false')
 	}
@@ -1011,6 +1012,11 @@ export class Client {
 					this.userCancelTokenAutoload = true
 					this.cancelTokenAutoload()
 					this.ui.dismissLoader()
+					// TODO implement communication (pub/sub events)
+					// to de-couple this logic for default and custom views to utilise.
+					document.querySelectorAll('.connect-btn-tn .lds-ellipsis').forEach((el) => {
+						el.parentElement.innerHTML = this.config.uiOptions?.loadAction ?? 'Load Collection'
+					})
 				}
 			})
 			.catch((err) => {
