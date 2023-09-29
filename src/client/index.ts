@@ -301,8 +301,8 @@ export class Client {
 			this.config.issuers.filter((issuer: OnChainTokenConfig) => {
 				const issuerBlockChain = issuer.blockchain?.toLocaleLowerCase()
 				const blockChainUsed = issuerBlockChain === blockchain
-				const solanaEnabled = blockChainUsed && _blockchain === 'solana' && typeof window.solana !== 'undefined'
-				const ultraEnabled = blockChainUsed && _blockchain === 'ultra' && typeof window.ultra !== 'undefined'
+				const solanaEnabled = blockChainUsed && _blockchain === 'solana' // && typeof window.solana !== 'undefined'
+				const ultraEnabled = blockChainUsed && _blockchain === 'ultra' // && typeof window.ultra !== 'undefined'
 				const evmEnabled = blockChainUsed && _blockchain === 'evm' && !issuer.oAuth2options && !useOauth
 				const sociosEnabled = blockChainUsed && _blockchain === 'evm' && issuer.oAuth2options && useOauth
 				const fallBackToEVM = _blockchain === 'evm' && !issuerBlockChain && !useOauth
