@@ -313,21 +313,21 @@ describe('client spec', () => {
 	})
 
 	test('tokenNegotiatorClient on callback with event type tokens-selected ', () => {
+		const mockCallback = jest.fn();
 		const tokenNegotiatorClient = getOffChainConfigClient()
 		const event = 'tokens-selected'
-		tokenNegotiatorClient.on(event, () => {
-			logger(2, event)
-		})
-		expect(tokenNegotiatorClient.clientCallBackEvents[event]).toBeDefined()
+		tokenNegotiatorClient.on(event, mockCallback)
+		tokenNegotiatorClient.eventSender(event, { selectedTokens: {} });
+		expect(mockCallback).toHaveBeenCalled();
 	})
 
 	test('tokenNegotiatorClient on callback with event type tokens-loaded', () => {
+		const mockCallback = jest.fn();
 		const tokenNegotiatorClient = getOffChainConfigClient()
 		const event = 'tokens-loaded'
-		tokenNegotiatorClient.on(event, () => {
-			logger(2, event)
-		})
-		expect(tokenNegotiatorClient.clientCallBackEvents[event]).toBeDefined()
+		tokenNegotiatorClient.on(event, mockCallback);
+		tokenNegotiatorClient.eventSender(event, null);
+		expect(mockCallback).toHaveBeenCalled();
 	})
 
 	test('tokenNegotiatorClient on callback must have an event type', () => {
@@ -494,6 +494,7 @@ describe('client spec', () => {
 		const error = tokenNegotiatorClient.handleRecievedRedirectMessages()
 		expect(error).toEqual(null)
 	})
+
 })
 
 // TODO: Reimplement cross-version test for version 3.1
