@@ -50,6 +50,7 @@ export type DecodedToken = DecodedTokenData & {
 	type: TokenType
 	tokenId: string
 	signedToken: string
+	image?: string
 }
 
 export interface DecodedTokenData {
@@ -60,6 +61,7 @@ export interface DecodedTokenData {
 	commitment?: Uint8Array
 	easAttestation?: SignedOffchainAttestation
 	easData?: EasFieldData
+	image?: string
 }
 
 export interface EasFieldData {

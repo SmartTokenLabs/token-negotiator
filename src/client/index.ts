@@ -36,6 +36,7 @@ import { URLNS } from '../core/messaging'
 import { DecodedToken, TokenType } from '../outlet/ticketStorage'
 import { MultiTokenAuthRequest, MultiTokenAuthResult, OutletIssuerInterface, ProofResult } from '../outlet/interfaces'
 import { AttestationIdClient } from '../outlet/attestationIdClient'
+import { EventHookHandler } from './eventHookHandler'
 
 if (typeof window !== 'undefined') window.tn = { VERSION }
 
@@ -105,8 +106,8 @@ export class Client {
 	public config: NegotiationInterface
 	private web3WalletProvider: Web3WalletProvider
 	private messaging: Messaging
+	private eventHookHandler: EventHookHandler
 	protected ui: UiInterface
-	private clientCallBackEvents: { [key: string]: (data: any) => Promise<void> | void } = {}
 	protected tokenStore: TokenStore
 	private uiUpdateCallbacks: { [type in UIUpdateEventType] } = {
 		[UIUpdateEventType.ISSUERS_LOADING]: undefined,
@@ -122,6 +123,8 @@ export class Client {
 	}*/
 
 	constructor(config: NegotiationInterface) {
+		this.eventHookHandler = new EventHookHandler()
+
 		if (window.location.hash) {
 			this.urlParams = new URLSearchParams(window.location.hash.substring(1))
 			let action = this.getDataFromQuery('action')
@@ -1151,12 +1154,11 @@ export class Client {
 			}
 		}
 
+		// callback defined when hook added.
 		if (callback) {
-			this.clientCallBackEvents[type] = callback
+			this.eventHookHandler.subscribe(type, callback)
 		} else {
-			if (this.clientCallBackEvents[type]) {
-				return this.clientCallBackEvents[type].call(type, data)
-			}
+			this.eventHookHandler.trigger(type, data)
 		}
 	}
 
