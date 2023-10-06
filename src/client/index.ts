@@ -768,19 +768,21 @@ export class Client {
 	private async loadRemoteOutletTokens(issuer: OffChainTokenConfig): Promise<OutletTokenResult | void> {
 		const redirectRequired = shouldUseRedirectMode(this.config.offChainRedirectMode)
 		if (redirectRequired) this.tokenStore.setTokens(issuer.collectionID, [])
-		this.ui?.showLoader(
-			`<h4>${this.config.uiOptions?.reDirectIssuerEventHeading ?? 'Connecting to Issuers...'}</h4>`,
-			`<small>${this.config.uiOptions?.reDirectIssuerBodyEvent ?? 'Your browser will re-direct shortly'}</small>`,
-			`<button class='cancel-autoload-btn btn-tn' aria-label='Cancel page re-direct'>${
-				this.config.uiOptions?.cancelAction ?? 'Cancel'
-			}</button>`,
-		)
-		if (!issuer.onChain) {
-			this.enableTokenAutoLoadCancel()
-			await sleep(this.config.uiOptions.userCancelIssuerAutoRedirectTimer ?? 2500)
-			if (this.userCancelTokenAutoload) {
-				this.userCancelTokenAutoload = false
-				return {}
+		if (this.ui) {
+			this.ui.showLoader(
+				`<h4>${this.config.uiOptions?.reDirectIssuerEventHeading ?? 'Connecting to Issuers...'}</h4>`,
+				`<small>${this.config.uiOptions?.reDirectIssuerBodyEvent ?? 'Your browser will re-direct shortly'}</small>`,
+				`<button class='cancel-autoload-btn btn-tn' aria-label='Cancel page re-direct'>${
+					this.config.uiOptions?.cancelAction ?? 'Cancel'
+				}</button>`,
+			)
+			if (!issuer.onChain) {
+				this.enableTokenAutoLoadCancel()
+				await sleep(this.config.uiOptions.userCancelIssuerAutoRedirectTimer ?? 2500)
+				if (this.userCancelTokenAutoload) {
+					this.userCancelTokenAutoload = false
+					return {}
+				}
 			}
 		}
 		const res = await this.messaging.sendMessage(
