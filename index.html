@@ -283,27 +283,27 @@
           //   // Add fungible as a boolean
           //   // symbol: 'USX'
           // },
-          // {
-          //   contract: "0x107065a122f92636a1358a70a0efe0f1a080a7e5",
-          //   onChain: true,
-          //   fungible: true,
-          //   collectionID: "USX",
-          //   chain: "matic",
-          // },
-          // {
-          //   contract: "0x429f49faec3d568ef83ec803e02df78e25d5ee7d",
-          //   onChain: true,
-          //   fungible: true,
-          //   collectionID: "Ella",
-          //   chain: "matic",
-          // },
-          // {
-          //   contract: "0xaaa5b9e6c589642f98a1cda99b9d024b8407285a",
-          //   onChain: true,
-          //   fungible: true,
-          //   collectionID: "TITAN",
-          //   chain: "matic",
-          // },
+          {
+            contract: "0x107065a122f92636a1358a70a0efe0f1a080a7e5",
+            onChain: true,
+            fungible: true,
+            collectionID: "USX",
+            chain: "matic",
+          },
+          {
+            contract: "0x429f49faec3d568ef83ec803e02df78e25d5ee7d",
+            onChain: true,
+            fungible: true,
+            collectionID: "Ella",
+            chain: "matic",
+          },
+          {
+            contract: "0xaaa5b9e6c589642f98a1cda99b9d024b8407285a",
+            onChain: true,
+            fungible: true,
+            collectionID: "TITAN",
+            chain: "matic",
+          },
         ],
         uiOptions: {
           openingHeading:
@@ -354,7 +354,13 @@
       });
 
       window.negotiator.on("tokens-selected", (tokens) => {
-        console.log("tokens-selected", tokens);
+        console.log("tokens-selected 1", tokens);
+      });
+      window.negotiator.on("tokens-selected", (tokens) => {
+        console.log("tokens-selected 2", tokens);
+      });
+      window.negotiator.on("tokens-selected", (tokens) => {
+        console.log("tokens-selected 3", tokens);
       });
       window.negotiator.on("connected-wallet", (wallet) => {
         console.log("connected wallet", wallet);

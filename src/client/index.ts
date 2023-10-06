@@ -136,6 +136,7 @@ export class Client {
 
 		this.config = this.mergeConfig(defaultConfig, config)
 
+		// TODO investigate if this works correctly.
 		this.config.autoLoadTokens = localStorage.getItem('tn-autoload-tokens') === 'false' ? false : this.config.autoLoadTokens
 
 		this.tokenStore = new TokenStore(this.config.autoEnableTokens, this.config.tokenPersistenceTTL)
@@ -521,6 +522,11 @@ export class Client {
 		}
 
 		this.eventSender('tokens-loaded', { loadedCollections: Object.keys(this.tokenStore.getCurrentIssuers()).length })
+
+		// use retry logic here too
+		// document.querySelectorAll('.connect-btn-tn .lds-ellipsis').forEach((el) => {
+		// 	el.parentElement.innerHTML = this.config.uiOptions?.loadAction ?? 'Load Collection'
+		// })
 	}
 
 	public cancelTokenAutoload() {
@@ -758,18 +764,22 @@ export class Client {
 	private async loadRemoteOutletTokens(issuer: OffChainTokenConfig): Promise<OutletTokenResult | void> {
 		const redirectRequired = shouldUseRedirectMode(this.config.offChainRedirectMode)
 		if (redirectRequired) this.tokenStore.setTokens(issuer.collectionID, [])
-		this.ui.showLoader(
-			`<h4>${this.config.uiOptions?.reDirectIssuerEventHeading ?? 'Connecting to Issuers...'}</h4>`,
-			`<small>${this.config.uiOptions?.reDirectIssuerBodyEvent ?? 'Your browser will re-direct shortly'}</small>`,
-			`<button class='cancel-autoload-btn btn-tn' aria-label='Cancel page re-direct'>${
-				this.config.uiOptions?.cancelAction ?? 'Cancel'
-			}</button>`,
-		)
-		this.enableTokenAutoLoadCancel()
-		if (this.config.uiOptions?.userCancelIssuerAutoRedirectTimer) await sleep(this.config.uiOptions.userCancelIssuerAutoRedirectTimer)
-		if (this.userCancelTokenAutoload) {
-			this.userCancelTokenAutoload = false
-			return {}
+		if (this.ui) {
+			this.ui.showLoader(
+				`<h4>${this.config.uiOptions?.reDirectIssuerEventHeading ?? 'Connecting to Issuers...'}</h4>`,
+				`<small>${this.config.uiOptions?.reDirectIssuerBodyEvent ?? 'Your browser will re-direct shortly'}</small>`,
+				`<button class='cancel-autoload-btn btn-tn' aria-label='Cancel page re-direct'>${
+					this.config.uiOptions?.cancelAction ?? 'Cancel'
+				}</button>`,
+			)
+			if (!issuer.onChain) {
+				this.enableTokenAutoLoadCancel()
+				await sleep(this.config.uiOptions.userCancelIssuerAutoRedirectTimer ?? 2500)
+				if (this.userCancelTokenAutoload) {
+					this.userCancelTokenAutoload = false
+					return {}
+				}
+			}
 		}
 		const res = await this.messaging.sendMessage(
 			{
