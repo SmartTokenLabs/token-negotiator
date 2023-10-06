@@ -354,7 +354,13 @@
       });
 
       window.negotiator.on("tokens-selected", (tokens) => {
-        console.log("tokens-selected", tokens);
+        console.log("tokens-selected 1", tokens);
+      });
+      window.negotiator.on("tokens-selected", (tokens) => {
+        console.log("tokens-selected 2", tokens);
+      });
+      window.negotiator.on("tokens-selected", (tokens) => {
+        console.log("tokens-selected 3", tokens);
       });
       window.negotiator.on("connected-wallet", (wallet) => {
         console.log("connected wallet", wallet);

@@ -110,7 +110,9 @@ export class SelectIssuers extends AbstractView {
 
 	protected afterRender() {
 		if (this.client.issuersLoaded) {
-			if (this.client.getTokenStore().hasUnloadedTokens()) this.autoLoadTokens()
+			if (this.client.getTokenStore().hasUnloadedTokens()) {
+				this.autoLoadTokens()
+			}
 		} else {
 			this.issuersLoading()
 		}
