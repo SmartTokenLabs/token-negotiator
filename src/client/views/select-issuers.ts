@@ -159,7 +159,6 @@ export class SelectIssuers extends AbstractView {
 		}
 
 		this.issuerListContainer.addEventListener('click', (e: any) => {
-			console.log('yolo', e.target.dataset.issuer);
 			if (e.target.classList.contains('connect-btn-tn')) {
 				this.connectTokenIssuer(e)
 				this.client.getTokenStore().setIncrementCollectionLoadAttempts(e.target.dataset.issuer);
