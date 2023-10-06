@@ -765,6 +765,7 @@ export class Client {
 		const redirectRequired = shouldUseRedirectMode(this.config.offChainRedirectMode)
 		if (redirectRequired) this.tokenStore.setTokens(issuer.collectionID, [])
 		if (this.ui) {
+			await waitForElementToExist('.load-container-tn')
 			this.ui.showLoader(
 				`<h4>${this.config.uiOptions?.reDirectIssuerEventHeading ?? 'Connecting to Issuers...'}</h4>`,
 				`<small>${this.config.uiOptions?.reDirectIssuerBodyEvent ?? 'Your browser will re-direct shortly'}</small>`,
