@@ -17,7 +17,6 @@ export class SelectIssuers extends AbstractView {
 
 		this.client.registerUiUpdateCallback(UIUpdateEventType.ISSUERS_LOADED, () => {
 			this.ui.dismissLoader()
-			this.client.cancelTokenAutoload()
 			this.render()
 		})
 
@@ -160,6 +159,7 @@ export class SelectIssuers extends AbstractView {
 		}
 
 		this.issuerListContainer.addEventListener('click', (e: any) => {
+			console.log('yolo', e.target.dataset.issuer);
 			if (e.target.classList.contains('connect-btn-tn')) {
 				this.connectTokenIssuer(e)
 				this.client.getTokenStore().setIncrementCollectionLoadAttempts(e.target.dataset.issuer);
@@ -216,14 +216,33 @@ export class SelectIssuers extends AbstractView {
 	async autoLoadTokens(refresh = false) {
 		await this.client.tokenAutoLoad(
 			this.issuerLoading.bind(this),
-			(issuer: string, tokens: any[]) => {
-				if (!tokens?.length) {
-					return
-				}
-				this.issuerConnected(issuer, tokens, false)
-			},
+			this.issuerLoadingComplete.bind(this),
 			refresh,
 		)
+	}
+
+	issuerLoadingComplete(issuer: string, tokens: any[]) {
+		if (!tokens?.length) {
+			this.issuerDidntConnect(issuer);
+		} else {
+			this.issuerConnected(issuer, tokens, false)
+		}
+	}
+
+	issuerDidntConnect(issuer: string, showNotification = false) {
+		const collectLoadAttempts = this.client.getTokenStore().getCollectionLoadAttempts(issuer);
+		let issuerButtonText = this.params.options?.loadAction ?? "Load Collection";
+		if (collectLoadAttempts >= 1) issuerButtonText = this.params.options?.repeatAction ?? 'Retry';
+		const connectBtn = this.issuerListContainer.querySelector(`[data-issuer="${issuer}"] .connect-btn-tn`)
+		if (connectBtn) {
+			connectBtn.innerHTML = issuerButtonText;
+			connectBtn.style.display = 'block'
+		}
+		if (showNotification) {
+			this.ui.showError(`
+			${this.params.options.noTokensFoundEvent ?? 'No tokens found! '}
+			${this.client.getNoTokenMsg(issuer)}`)
+		}
 	}
 
 	async connectTokenIssuer(event: any) {
@@ -248,9 +267,7 @@ export class SelectIssuers extends AbstractView {
 		this.ui.dismissLoader()
 
 		if (!tokens?.length) {
-			this.ui.showError(`
-			${this.params.options.noTokensFoundEvent ?? 'No tokens found! '}
-			${this.client.getNoTokenMsg(issuer)}`)
+			this.issuerDidntConnect(issuer, true);
 			return
 		}
 
@@ -268,6 +285,7 @@ export class SelectIssuers extends AbstractView {
 			connectBtn.innerHTML = '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
 			connectBtn.style.display = 'block'
 		}
+
 	}
 
 	issuerConnected(issuer: string, tokens: any[], showTokens = true) {

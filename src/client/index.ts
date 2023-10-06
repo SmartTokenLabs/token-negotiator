@@ -136,6 +136,7 @@ export class Client {
 
 		this.config = this.mergeConfig(defaultConfig, config)
 
+		// TODO investigate if this works correctly.
 		this.config.autoLoadTokens = localStorage.getItem('tn-autoload-tokens') === 'false' ? false : this.config.autoLoadTokens
 
 		this.tokenStore = new TokenStore(this.config.autoEnableTokens, this.config.tokenPersistenceTTL)
@@ -673,11 +674,6 @@ export class Client {
 
 		this.eventSender('tokens-selected', { selectedTokens: tokens })
 		this.eventSender('tokens-loaded', { loadedCollections: Object.keys(tokens).length })
-
-		// use retry logic here too
-		// document.querySelectorAll('.connect-btn-tn .lds-ellipsis').forEach((el) => {
-		// 	el.parentElement.innerHTML = this.config.uiOptions?.loadAction ?? 'Load Collection'
-		// })
 
 		// Feature not supported when an end users third party cookies are disabled
 		// because the use of a tab requires a user gesture.
