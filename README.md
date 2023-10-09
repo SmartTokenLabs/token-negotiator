@@ -1,8 +1,6 @@
 
 # `token-negotiator`
 
-The token gateway for any web application.
-
 Token Negotiator enables you build web experiences for users around the tokens they hold.
 
 ## Usage
