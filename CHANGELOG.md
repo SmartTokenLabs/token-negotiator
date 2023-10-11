@@ -1,6 +1,6 @@
 > Description
 
-Feature release including multi-hook support and improved UX for off chain token holders.
+Feature release including multi-hook support, improved UX for off chain token holders and general improvements.
 
 ### Upgrade Steps
 
@@ -17,10 +17,11 @@ Feature release including multi-hook support and improved UX for off chain token
 - Re-direct view state UX improvements for 'active' mode
 - Re-direct accept / deny options given to end user (to cancel the loading of tokens)
 - Multi-Hook support added
+- Added selected token issuer keys to 'tokens-selected' event hook
 
 ### Bug Fixes
 
-- TS interface custom views
+- TS interface custom view
 
 ### Performance Improvements
 
