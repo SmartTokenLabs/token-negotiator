@@ -15,6 +15,7 @@ interface TokenLookup {
 export interface TokenData {
 	tokenId: string | number
 	walletAddress?: string
+	image?: string
 	// TODO: add more common fields to this interface
 	[key: string]: any
 }
