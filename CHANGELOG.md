@@ -1,6 +1,6 @@
 > Description
 
-Feature release including multi-hook support, improved UX for off chain token holders and minor general improvements.
+Feature release including multi-hook support, improved UX for off chain token holders and general improvements.
 
 ### Upgrade Steps
 
