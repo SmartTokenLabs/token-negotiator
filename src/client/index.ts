@@ -472,12 +472,15 @@ export class Client {
 			autoOpenPopup = true
 		}
 
-		if (this.config.autoEnableTokens && Object.keys(this.tokenStore.getSelectedTokens()).length)
-			this.eventSender('tokens-selected', {
-				selectedTokens: this.tokenStore.getSelectedTokens(),
-			})
-
+		if (this.config.autoEnableTokens && Object.keys(this.tokenStore.getSelectedTokens()).length) this.tokensSelectedCallBackHandler()
 		if (openPopup || (this.config.uiOptions.autoPopup === true && autoOpenPopup)) this.ui.openOverlay()
+	}
+
+	private tokensSelectedCallBackHandler = () => {
+		this.eventSender('tokens-selected', {
+			selectedTokens: this.tokenStore.getSelectedTokens(),
+			selectedTokenKeys: Object.keys(this.tokenStore.getSelectedTokens()),
+		})
 	}
 
 	private cancelAutoload = true
@@ -668,12 +671,8 @@ export class Client {
 		logger(2, 'Emit tokens')
 		logger(2, tokens)
 
-		for (let issuer in tokens) {
-			tokens[issuer] = { tokens: tokens[issuer] }
-		}
-
-		this.eventSender('tokens-selected', { selectedTokens: tokens })
-		this.eventSender('tokens-loaded', { loadedCollections: Object.keys(tokens).length })
+		this.tokensSelectedCallBackHandler()
+		this.eventSender('tokens-loaded', { loadedCollections: Object.keys(this.tokenStore.getCurrentTokens()).length })
 
 		// Feature not supported when an end users third party cookies are disabled
 		// because the use of a tab requires a user gesture.
@@ -696,9 +695,7 @@ export class Client {
 		}
 
 		if (this.config.autoEnableTokens) {
-			this.eventSender('tokens-selected', {
-				selectedTokens: this.tokenStore.getSelectedTokens(),
-			})
+			this.tokensSelectedCallBackHandler()
 		}
 
 		return tokens
@@ -809,7 +806,7 @@ export class Client {
 
 	updateSelectedTokens(selectedTokens) {
 		this.tokenStore.setSelectedTokens(selectedTokens)
-		this.eventSender('tokens-selected', { selectedTokens })
+		this.tokensSelectedCallBackHandler()
 	}
 
 	async prepareToAuthenticateToken(authRequest: AuthenticateInterface) {
