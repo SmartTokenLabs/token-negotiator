@@ -1,7 +1,7 @@
 {
   "name": "@tokenscript/token-negotiator",
   "version": "3.2.0",
-  "description": "Token-negotiator a token attestation bridge between web 2.0 and 3.0.",
+  "description": "Token Negotiator is an open source technology that enables you build web experiences for users around the tokens they hold.",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
