@@ -1,7 +1,7 @@
 
 # `token-negotiator`
 
-Token Negotiator enables you build web experiences for users around the tokens they hold.
+Open source technology that enables you build web experiences for users around the tokens they hold.
 
 ## Usage
 
