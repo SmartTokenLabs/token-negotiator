@@ -23,9 +23,10 @@ Feature release including multi-hook support, improved UX for off chain token ho
 
 - TS interface custom view
 
-### Performance Improvements
+### Performance / Quality Improvements 
 
 - Reduced the duplication of variable definitions (moved to a common constants file).
+- Increased unit test coverage
 
 **Full Change log**:
 
