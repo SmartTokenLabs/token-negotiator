@@ -18,6 +18,7 @@ Feature release including multi-hook support, improved UX for off chain token ho
 - Re-direct accept / deny options given to end user (to cancel the loading of tokens)
 - Multi-Hook support added
 - Added selected token issuer keys to 'tokens-selected' event hook
+- Explicitly include ethers library availabilty via Token Negotiator library interface via `client.externalUtils.evm.ethers`
 
 ### Bug Fixes
 

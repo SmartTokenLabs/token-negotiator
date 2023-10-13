@@ -33,10 +33,11 @@ import { shouldUseRedirectMode } from '../utils/support/getBrowserData'
 import { VERSION } from '../version'
 import { getFungibleTokenBalances, getFungibleTokensMeta } from '../utils/token/fungibleTokenProvider'
 import { URLNS } from '../core/messaging'
-import { DecodedToken, TokenType } from '../outlet/ticketStorage'
+import { TokenType } from '../outlet/ticketStorage'
 import { MultiTokenAuthRequest, MultiTokenAuthResult, OutletIssuerInterface, ProofResult } from '../outlet/interfaces'
 import { AttestationIdClient } from '../outlet/attestationIdClient'
 import { EventHookHandler } from './eventHookHandler'
+import { ethers } from 'ethers'
 
 if (typeof window !== 'undefined') window.tn = { VERSION }
 
@@ -109,6 +110,11 @@ export class Client {
 	private eventHookHandler: EventHookHandler
 	protected ui: UiInterface
 	protected tokenStore: TokenStore
+	public externalUtils = {
+		evm: {
+			ethers,
+		},
+	}
 	private uiUpdateCallbacks: { [type in UIUpdateEventType] } = {
 		[UIUpdateEventType.ISSUERS_LOADING]: undefined,
 		[UIUpdateEventType.ISSUERS_LOADED]: undefined,
