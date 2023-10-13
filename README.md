@@ -1,7 +1,7 @@
 
 # `token-negotiator`
 
-Open source technology that enables you build web experiences for users around the tokens they hold.
+Token Negotiator is an open source technology that enables you build web experiences for users around the tokens, collectibles, coins and attestations they hold. Enabled across EVM, Solana, Flow, Chiliz and EOS (Ultra). Create logic flows to enable personalized web experiences.
 
 ## Usage
 
