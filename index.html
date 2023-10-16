@@ -10,12 +10,17 @@
   <link rel="stylesheet" href="./token-negotiator-dist/theme/style.css" />
 </head>
 
-<body onload="init()">
+<body onload="init()" style="background: rgb(14, 14, 14);">
   <button onclick="switchTheme()">Switch theme</button>
   <button onclick="reloadIssuers()">Reload</button>
   <div class="overlay-tn"></div>
+
+  <button onClick="negotiator.pageActions.triggerWeb3Event()">
+    Mint NFT
+  </button>
+
   <script>
-    var theme = "light";
+    var theme = "dark";
     function init() {
       window.negotiator = new negotiator.Client({
         type: "active",
@@ -353,6 +358,10 @@
         experimentalFeatures: ["magicLinkWallet"],
       });
 
+      // additional hook required for TKN to listen for web3 events
+      negotiator.on('web3-event', (event) => {
+        console.log('web3-event', event);
+      });
       window.negotiator.on("tokens-selected", (tokens) => {
         console.log("tokens-selected 1", tokens);
       });
@@ -391,11 +400,9 @@
       window.negotiator.on("token-proof", (proof) => {
         console.log(proof);
       });
-
       window.negotiator.on("tokens-loaded", (data) => {
         console.log(`${data.loadedCollections} tokens were loaded`);
       });
-
       window.negotiator.negotiate();
     }
 

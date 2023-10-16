@@ -34,6 +34,7 @@ export interface OnChainTokenConfig extends IssuerConfigInterface {
 	openSeaSlug?: string
 	blockchain?: SupportedBlockchainsParam
 	oAuth2options?: any
+	abiURL?: string
 }
 
 export interface UltraIssuerConfig extends OnChainTokenConfig {
@@ -165,6 +166,7 @@ export interface TokenNegotiatorEventsArgs {
 	'tokens-selected': EventSenderTokensSelected
 	'tokens-loaded': EventSenderTokensLoaded
 	'network-change': string
+	'web3-event': any
 	error: EventSenderError
 }
 

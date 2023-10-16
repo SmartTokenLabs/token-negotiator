@@ -153,6 +153,81 @@ export class Client {
 		// this.registerOutletProofEventListener()
 	}
 
+	async evmEventTrigger({
+		collectionID,
+		methodName,
+		params,
+		uiOptions: {
+			userEventPromptTitle,
+			userEventPromptBody,
+			eventTitle,
+			eventBody,
+			eventSuccessTitle,
+			eventSuccessBody,
+			eventFailedTitle,
+			eventFailedMessage,
+			eventInProgressElement,
+			eventSuccessElement,
+			eventFailElement,
+		},
+	}) {
+		//
+		if (this.ui) {
+			this.ui.showLoaderDelayed([`<h4>${eventTitle}</h4>`, `<small>${eventBody}</small>`], 600, true)
+		}
+		//
+		try {
+			//
+			const issuerConfig = this.tokenStore.getIssuerCollectionConfig(collectionID)
+			const { blockchain, contract, abiURL, chain } = issuerConfig as OnChainTokenConfig
+			//
+			if (!blockchain || !contract || !abiURL) {
+				// throw message to user
+				console.error('Could not trigger web3 event: Missing blockchain, contract or abi')
+				// show user message.
+				return {
+					error: true,
+					status: 'Could not trigger web3 event: Missing blockchain, contract or abi',
+				}
+			}
+			const abiRequest = await fetch(abiURL)
+			const abi = await abiRequest.json()
+			// throw error if abi is not loaded
+			if (!abi) {
+				return {
+					success: false,
+					status: 'Something went wrong',
+				}
+			}
+			const walletConnection = this.web3WalletProvider.getConnectedWalletData(blockchain)[0]
+			const smartContractInstance = new ethers.Contract(contract, abi, walletConnection.provider.getSigner())
+			const tx = await smartContractInstance[methodName](...params)
+			this.ui.showLoaderDelayed([`<h4>${userEventPromptTitle}</h4>`, `<small>${userEventPromptBody}</small>`], 0, true)
+			await tx.wait()
+			this.ui.dismissLoader()
+			setTimeout(() => {
+				this.negotiate()
+			}, 20000)
+			this.eventSender('web3-event', {
+				error: false,
+				state: 'in progress',
+				status: 'success',
+				txInProgress: tx,
+			})
+			return {
+				success: true,
+				status: '✅ Check out your transaction: ' + chain + ' ' + tx?.hash,
+			}
+		} catch (error) {
+			this.ui.showError(eventFailedMessage)
+			console.warn(error.message)
+			return {
+				success: false,
+				status: 'Something went wrong: ' + error.message,
+			}
+		}
+	}
+
 	handleRecievedRedirectMessages() {
 		const issuer = this.getDataFromQuery('issuer')
 		const error = this.getDataFromQuery('error')
@@ -1170,8 +1245,10 @@ export class Client {
 
 		// callback defined when hook added.
 		if (callback) {
+			console.log('hook added', type, callback)
 			this.eventHookHandler.subscribe(type, callback)
 		} else {
+			console.log('cb trigger', type, callback)
 			this.eventHookHandler.trigger(type, data)
 		}
 	}

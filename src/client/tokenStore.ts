@@ -87,6 +87,10 @@ export class TokenStore {
 		this.prePopulateTokenLookupStore(issuers)
 	}
 
+	public getIssuerCollectionConfig(collectionId: string) {
+		return this.tokenLookup[collectionId]
+	}
+
 	public clearCachedTokens(onChain?: boolean, walletAddress?: string) {
 		for (let i in this.tokenData) {
 			if (onChain !== undefined && onChain !== this.tokenLookup[i].onChain) continue

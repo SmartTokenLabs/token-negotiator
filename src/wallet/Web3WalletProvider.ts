@@ -29,7 +29,7 @@ export interface WalletConnectionOauth2 {
 	address: string
 	chainId: number | string
 	blockchain: SupportedBlockchainsParam // TODO make this an OAuth list (when more providers exist)
-	provider: string
+	provider?: ethers.providers.Web3Provider | any // solana(phantom) have different interface
 	providerType: string
 	meta?: any
 	expiryCookieName?: string
@@ -168,10 +168,10 @@ export class Web3WalletProvider {
 		return address
 	}
 
+	// TODO add Socios Oauth2 signature capability.
 	async signMessage(address: string, message: string) {
 		let provider = this.getWalletProvider(address)
 		let connection = this.getConnectionByAddress(address)
-
 		if (!connection.blockchain || connection.blockchain === 'evm') {
 			let signer = provider.getSigner(address)
 			return await signer.signMessage(message)
@@ -184,7 +184,6 @@ export class Web3WalletProvider {
 			return response.data.signature
 		} else if (connection.blockchain === 'flow') {
 			let signatureObj = await provider.currentUser.signUserMessage(strToHexStr(message))
-
 			if (signatureObj.length > 0) {
 				console.log(signatureObj[0].signature)
 				return signatureObj[0].signature
