@@ -29,8 +29,8 @@ const negotiator = new Client({
 ​​
 negotiator.negotiate();
 ​	​
-negotiator.on("tokens-selected", (tokens) => {
-	console.log('owner tokens found: ', tokens);
+negotiator.on("tokens-selected", ({ selectedTokens, selectedIssuerKeys }) => {
+	console.log('user selected tokens: ', selectedTokens);
 });
 ​
 ```

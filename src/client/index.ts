@@ -38,6 +38,7 @@ import { MultiTokenAuthRequest, MultiTokenAuthResult, OutletIssuerInterface, Pro
 import { AttestationIdClient } from '../outlet/attestationIdClient'
 import { EventHookHandler } from './eventHookHandler'
 import { ethers } from 'ethers'
+import { TokenListItemInterface } from './views/token-list'
 
 if (typeof window !== 'undefined') window.tn = { VERSION }
 
@@ -485,7 +486,7 @@ export class Client {
 	private tokensSelectedCallBackHandler = () => {
 		this.eventSender('tokens-selected', {
 			selectedTokens: this.tokenStore.getSelectedTokens(),
-			selectedTokenKeys: Object.keys(this.tokenStore.getSelectedTokens()),
+			selectedIssuerKeys: Object.keys(this.tokenStore.getSelectedTokens()),
 		})
 	}
 
@@ -726,6 +727,7 @@ export class Client {
 
 		tokens.map((token) => {
 			token.walletAddress = walletAddress
+			token.collectionId = issuer.collectionID
 			return token
 		})
 
@@ -817,12 +819,15 @@ export class Client {
 
 	async prepareToAuthenticateToken(authRequest: AuthenticateInterface) {
 		await this.checkUserAgentSupport('authentication')
-		const { unsignedToken, tokenId } = authRequest
-		if (!authRequest.issuer) authRequest.issuer = unsignedToken?.collectionId
-		requiredParams(authRequest.issuer && (unsignedToken || tokenId), 'Issuer and unsigned token required.')
-		const config = this.tokenStore.getCurrentIssuers()[authRequest.issuer]
+		let unsignedToken = authRequest?.unsignedToken
+		if (!unsignedToken && authRequest.collectionId) unsignedToken = authRequest
+		const issuer = authRequest?.issuer ?? unsignedToken?.collectionId ?? authRequest?.collectionId
+		const tokenId = authRequest?.tokenId
+		console.log('tokenIssuer', issuer, 'unsignedToken', unsignedToken)
+		requiredParams(issuer && (unsignedToken || tokenId), 'Issuer and unsigned token required MUTLI.')
+		const config = this.tokenStore.getCurrentIssuers()[issuer]
 		if (!config) errorHandler('Provided issuer was not found.', 'error', null, null, true, true)
-		return authRequest
+		return { unsignedToken, issuer, tokenId }
 	}
 
 	async getMultiRequestBatch(authRequests: AuthenticateInterface[]) {
@@ -830,41 +835,29 @@ export class Client {
 			onChain: {},
 			offChain: {},
 		}
-		// build a list of the batches for each token origin. At this point when this loop is complete
-		// we will have a list of all the tokens that need to be authenticated and the origin they need to be authenticated against.
 		await Promise.all(
 			authRequests.map(async (authRequestItem) => {
 				const reqItem = await this.prepareToAuthenticateToken(authRequestItem)
-
-				if (!reqItem.tokenId && reqItem.unsignedToken?.tokenId) reqItem.tokenId = reqItem.unsignedToken?.tokenId
-
 				const issuerConfig = this.tokenStore.getCurrentIssuers()[reqItem.issuer] as OffChainTokenConfig
-				// Off Chain
-				// Setup for Token Collection. e.g. authRequestBatch.offChain['https://mywebsite.com']['devcon']
-				/**
-				 * Always generate a batch
-				 */
 				if (issuerConfig.onChain === false) {
 					if (!authRequestBatch.offChain[issuerConfig.tokenOrigin]) authRequestBatch.offChain[issuerConfig.tokenOrigin] = {}
-
 					if (!authRequestBatch.offChain[issuerConfig.tokenOrigin][reqItem.issuer]) {
 						authRequestBatch.offChain[issuerConfig.tokenOrigin][reqItem.issuer] = {
 							tokenIds: [],
 							issuerConfig: issuerConfig,
 						}
 					}
-					// Push token into the request batch
-					authRequestBatch.offChain[issuerConfig.tokenOrigin][reqItem.issuer].tokenIds.push(reqItem.tokenId)
+					authRequestBatch.offChain[issuerConfig.tokenOrigin][reqItem.issuer].tokenIds.push(
+						reqItem.tokenId ?? reqItem.unsignedToken.tokenId,
+					)
 					return
 				}
-
 				throw new Error('On-chain token are not supported by batch authentication at this time.')
 			}),
 		)
-
-		if (Object.keys(authRequestBatch.offChain).length > 1)
+		if (Object.keys(authRequestBatch.offChain).length > 1) {
 			throw new Error('Only a single token origin is supported by batch authentication at this time.')
-
+		}
 		return authRequestBatch
 	}
 
@@ -890,7 +883,6 @@ export class Client {
 			const authRequestBatch = await this.getMultiRequestBatch(authRequests)
 			let issuerProofs = {}
 
-			// Send the request batches to each token origin:
 			// Off Chain: // ['https://devcon.com']['issuer'][list of tokenIds]
 			for (const tokenOrigin in authRequestBatch.offChain) {
 				let AuthType = TicketZKProofMulti
@@ -933,13 +925,15 @@ export class Client {
 		else return this.authenticateToken(authRequest as AuthenticateInterface)
 	}
 
-	async authenticateToken(authRequest: AuthenticateInterface) {
+	async authenticateToken(authRequest: AuthenticateInterface | any) {
 		await this.checkUserAgentSupport('authentication')
 
-		const { unsignedToken, issuer } = authRequest
-		const tokenIssuer = issuer ?? unsignedToken.collectionId
+		const tokenIssuer = authRequest.issuer ?? authRequest.unsignedToken?.collectionId ?? authRequest.collectionId
+		let unsignedToken = authRequest.unsignedToken
+		if (!unsignedToken && authRequest.collectionId) unsignedToken = authRequest
 
-		requiredParams(tokenIssuer && unsignedToken, 'Issuer and unsigned token required.')
+		console.log('tokenIssuer', tokenIssuer, 'unsignedToken', unsignedToken)
+		requiredParams(tokenIssuer && unsignedToken, 'Issuer and unsigned token required. SINGLE')
 
 		const config = this.tokenStore.getCurrentIssuers()[tokenIssuer]
 
@@ -1137,6 +1131,7 @@ export class Client {
 				if (issuerConfig) this.storeOutletTokenResponse(res.data.tokens)
 				this.eventSender('tokens-selected', {
 					selectedTokens: this.tokenStore.getSelectedTokens(),
+					selectedIssuerKeys: Object.keys(this.tokenStore.getSelectedTokens()),
 				})
 				return res.data.tokens
 			}

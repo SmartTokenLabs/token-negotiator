@@ -34,6 +34,7 @@ export interface OnChainTokenConfig extends IssuerConfigInterface {
 	openSeaSlug?: string
 	blockchain?: SupportedBlockchainsParam
 	oAuth2options?: any
+	abi?: string
 }
 
 export interface UltraIssuerConfig extends OnChainTokenConfig {
@@ -143,6 +144,7 @@ export interface MultiTokenInterface {
 }
 
 export interface AuthenticateInterface {
+	collectionId?: string
 	issuer: string
 	tokenId?: number | string
 	unsignedToken: any

@@ -19,10 +19,12 @@ Feature release including multi-hook support, improved UX for off chain token ho
 - Multi-Hook support added
 - Added selected token issuer keys to 'tokens-selected' event hook
 - Explicitly include ethers library availabilty via Token Negotiator library interface `client.externalUtils.evm.ethers`
+- Aligned on chain authentication with off chain user interface (for single token authentication on the client side). Multi token on chain authentication is not yet supported (via the current library features). 
 
 ### Bug Fixes
 
 - TS interface custom view
+- Single token off chain authentication incompatibility interface fix
 
 ### Performance / Quality Improvements 
 
