@@ -212,8 +212,8 @@ export class Outlet extends LocalOutlet {
 		const token: string = this.getDataFromQuery('tn-token')
 		const wallet: string = this.getDataFromQuery('wallet')
 		const address: string = this.getDataFromQuery('address')
-		const tokenParsed = JSON.parse(token)
-		const tokenId = tokenParsed.tokenId
+		const tokenParsed = token ? JSON.parse(token) : undefined
+		const tokenId = tokenParsed.tokenId ?? this.getDataFromQuery('tokenId')
 		requiredParams(tokenId, 'tokenId is missing')
 		const redirect = this.getDataFromQuery('redirect') === 'true' ? window.location.href : false
 		try {
