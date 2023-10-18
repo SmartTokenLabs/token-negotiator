@@ -38,6 +38,7 @@ import { MultiTokenAuthRequest, MultiTokenAuthResult, OutletIssuerInterface, Pro
 import { AttestationIdClient } from '../outlet/attestationIdClient'
 import { EventHookHandler } from './eventHookHandler'
 import { ethers } from 'ethers'
+import { TokenListItemInterface } from './views/token-list'
 
 if (typeof window !== 'undefined') window.tn = { VERSION }
 
@@ -726,6 +727,7 @@ export class Client {
 
 		tokens.map((token) => {
 			token.walletAddress = walletAddress
+			token.collectionId = issuer.collectionID
 			return token
 		})
 
@@ -817,10 +819,12 @@ export class Client {
 
 	async prepareToAuthenticateToken(authRequest: AuthenticateInterface) {
 		await this.checkUserAgentSupport('authentication')
-		const unsignedToken = authRequest?.unsignedToken ?? authRequest
+		let unsignedToken = authRequest?.unsignedToken
+		if (!unsignedToken && authRequest.collectionId) unsignedToken = authRequest
 		const issuer = authRequest?.issuer ?? unsignedToken?.collectionId ?? authRequest?.collectionId
 		const tokenId = authRequest?.tokenId
-		requiredParams(issuer && (unsignedToken || tokenId), 'Issuer and unsigned token required.')
+		console.log('tokenIssuer', issuer, 'unsignedToken', unsignedToken)
+		requiredParams(issuer && (unsignedToken || tokenId), 'Issuer and unsigned token required MUTLI.')
 		const config = this.tokenStore.getCurrentIssuers()[issuer]
 		if (!config) errorHandler('Provided issuer was not found.', 'error', null, null, true, true)
 		return { unsignedToken, issuer, tokenId }
@@ -921,13 +925,15 @@ export class Client {
 		else return this.authenticateToken(authRequest as AuthenticateInterface)
 	}
 
-	async authenticateToken(authRequest: AuthenticateInterface) {
+	async authenticateToken(authRequest: AuthenticateInterface | any) {
 		await this.checkUserAgentSupport('authentication')
 
-		const { unsignedToken, issuer } = authRequest
-		const tokenIssuer = issuer ?? unsignedToken.collectionId
+		const tokenIssuer = authRequest.issuer ?? authRequest.unsignedToken?.collectionId ?? authRequest.collectionId
+		let unsignedToken = authRequest.unsignedToken
+		if (!unsignedToken && authRequest.collectionId) unsignedToken = authRequest
 
-		requiredParams(tokenIssuer && unsignedToken, 'Issuer and unsigned token required.')
+		console.log('tokenIssuer', tokenIssuer, 'unsignedToken', unsignedToken)
+		requiredParams(tokenIssuer && unsignedToken, 'Issuer and unsigned token required. SINGLE')
 
 		const config = this.tokenStore.getCurrentIssuers()[tokenIssuer]
 
