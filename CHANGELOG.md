@@ -23,6 +23,7 @@ Feature release including multi-hook support, improved UX for off chain token ho
 ### Bug Fixes
 
 - TS interface custom view
+- Single token off chain authentication incompatibility interface fix
 
 ### Performance / Quality Improvements 
 

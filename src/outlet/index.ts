@@ -209,13 +209,13 @@ export class Outlet extends LocalOutlet {
 
 	async sendTokenProof(evtid: string) {
 		const collectionId: string = this.getDataFromQuery('issuer')
-		const tokenId: string = this.getDataFromQuery('tokenId')
+		const token: string = this.getDataFromQuery('tn-token')
 		const wallet: string = this.getDataFromQuery('wallet')
 		const address: string = this.getDataFromQuery('address')
+		const tokenParsed = JSON.parse(token)
+		const tokenId = tokenParsed.tokenId
 		requiredParams(tokenId, 'tokenId is missing')
-
 		const redirect = this.getDataFromQuery('redirect') === 'true' ? window.location.href : false
-
 		try {
 			const issuer = this.getIssuerConfigById(collectionId)
 

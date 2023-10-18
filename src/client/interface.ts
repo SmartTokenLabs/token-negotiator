@@ -143,6 +143,7 @@ export interface MultiTokenInterface {
 }
 
 export interface AuthenticateInterface {
+	collectionId?: string
 	issuer: string
 	tokenId?: number | string
 	unsignedToken: any
