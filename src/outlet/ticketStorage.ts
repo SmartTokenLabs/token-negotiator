@@ -1,12 +1,15 @@
-import { EasTicketAttestation, SchemaField } from '@tokenscript/attestation/dist/eas/EasTicketAttestation'
+import {
+	EasTicketAttestation,
+	SchemaField,
+	SignedOffchainAttestation,
+	decodeBase64ZippedBase64,
+} from '@tokenscript/attestation/dist/eas/EasTicketAttestation'
 import { KeyPair } from '@tokenscript/attestation/dist/libs/KeyPair'
 import { base64ToUint8array, createIssuerHashArray, createOffChainCollectionHash, errorHandler, IssuerHashMap, logger } from '../utils'
 import { Ticket } from '@tokenscript/attestation/dist/Ticket'
 import { EasFieldDefinition, OutletInterface, OutletIssuerInterface } from './interfaces'
 import { DevconTicket, SignedDevconTicket } from '@tokenscript/attestation/dist/asn1/shemas/SignedDevconTicket'
 import { AsnParser } from '@peculiar/asn1-schema'
-import { decodeBase64ZippedBase64 } from '@ethereum-attestation-service/eas-sdk'
-import { SignedOffchainAttestation } from '@ethereum-attestation-service/eas-sdk/dist/offchain/offchain'
 import { DEFAULT_RPC_MAP, LOCAL_STORAGE_TOKEN_KEY } from '../constants'
 import { TokenStore } from '../client/tokenStore'
 export type TokenType = 'asn' | 'eas'

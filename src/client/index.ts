@@ -579,7 +579,7 @@ export class Client {
 					}
 				}
 			} catch (error) {
-				errorHandler('popup error', 'error', () => this.eventSender('error', { issuer, error }), null, true, false)
+				errorHandler(error, 'error', () => this.eventSender('error', { issuer, error }), null, true, false)
 				continue
 			}
 

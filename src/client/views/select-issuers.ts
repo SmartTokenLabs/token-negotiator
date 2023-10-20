@@ -158,10 +158,10 @@ export class SelectIssuers extends AbstractView {
 			new IconView(elem, params).render()
 		}
 
-		this.issuerListContainer.addEventListener('click', (e: any) => {
+		this.issuerListContainer.addEventListener('click', async (e: any) => {
 			if (e.target.classList.contains('connect-btn-tn')) {
-				this.connectTokenIssuer(e)
-				this.client.getTokenStore().setIncrementCollectionLoadAttempts(e.target.dataset.issuer);
+				await this.connectTokenIssuer(e)
+				this.client.getTokenStore().setIncrementCollectionLoadAttempts(e.target.dataset.issuer)
 			} else if (e.target.classList.contains('tokens-btn-tn')) {
 				const issuer = e.target.parentNode.dataset.issuer
 				this.navigateToTokensView(issuer)
@@ -171,11 +171,14 @@ export class SelectIssuers extends AbstractView {
 
 	issuerConnectMarkup(title: string, image: string | undefined, issuer: string, tokens: any[], data: Issuer) {
 		let buttonText = ''
-		const collectLoadAttempts = this.client.getTokenStore().getCollectionLoadAttempts(issuer);
-		let issuerButtonText = this.params.options?.loadAction ?? "Load Collection";
-		if (collectLoadAttempts >= 1) issuerButtonText = this.params.options?.repeatAction ?? 'Retry';
+		const collectLoadAttempts = this.client.getTokenStore().getCollectionLoadAttempts(issuer)
+		let issuerButtonText = this.params.options?.loadAction ?? 'Load Collection'
+		if (collectLoadAttempts >= 1) issuerButtonText = this.params.options?.repeatAction ?? 'Retry'
 		// @ts-ignore
-		if (tokens?.length) buttonText = data?.fungible ? this.params.options?.balanceFoundEvent ?? 'Balance found' : `${tokens.length} ${this.params.options?.nftsFoundEvent ?? 'Token(s) Available'}`
+		if (tokens?.length)
+			buttonText = data?.fungible
+				? this.params.options?.balanceFoundEvent ?? 'Balance found'
+				: `${tokens.length} ${this.params.options?.nftsFoundEvent ?? 'Token(s) Available'}`
 		return `
             <li class="issuer-connect-banner-tn" data-issuer="${issuer}" role="menuitem">
               <div tabindex="0" style="display: flex; align-items: center;">
@@ -188,10 +191,11 @@ export class SelectIssuers extends AbstractView {
 					data-issuer="${issuer}"
 					${this.client.issuersLoaded === true ? '' : 'disabled'}
 				>
-				${this.client.issuersLoaded === true
-				? issuerButtonText
-				: '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
-			}
+				${
+					this.client.issuersLoaded === true
+						? issuerButtonText
+						: '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
+				}
 			  </button>
               <button aria-label="tokens available from token issuer ${issuer}" 
 										  aria-haspopup="true"
@@ -213,28 +217,24 @@ export class SelectIssuers extends AbstractView {
 	}
 
 	async autoLoadTokens(refresh = false) {
-		await this.client.tokenAutoLoad(
-			this.issuerLoading.bind(this),
-			this.issuerLoadingComplete.bind(this),
-			refresh,
-		)
+		await this.client.tokenAutoLoad(this.issuerLoading.bind(this), this.issuerLoadingComplete.bind(this), refresh)
 	}
 
 	issuerLoadingComplete(issuer: string, tokens: any[]) {
 		if (!tokens?.length) {
-			this.issuerDidntConnect(issuer);
+			this.issuerDidntConnect(issuer)
 		} else {
 			this.issuerConnected(issuer, tokens, false)
 		}
 	}
 
 	issuerDidntConnect(issuer: string, showNotification = false) {
-		const collectLoadAttempts = this.client.getTokenStore().getCollectionLoadAttempts(issuer);
-		let issuerButtonText = this.params.options?.loadAction ?? "Load Collection";
-		if (collectLoadAttempts >= 1) issuerButtonText = this.params.options?.repeatAction ?? 'Retry';
+		const collectLoadAttempts = this.client.getTokenStore().getCollectionLoadAttempts(issuer)
+		let issuerButtonText = this.params.options?.loadAction ?? 'Load Collection'
+		if (collectLoadAttempts >= 1) issuerButtonText = this.params.options?.repeatAction ?? 'Retry'
 		const connectBtn = this.issuerListContainer.querySelector(`[data-issuer="${issuer}"] .connect-btn-tn`)
 		if (connectBtn) {
-			connectBtn.innerHTML = issuerButtonText;
+			connectBtn.innerHTML = issuerButtonText
 			connectBtn.style.display = 'block'
 		}
 		if (showNotification) {
@@ -266,7 +266,7 @@ export class SelectIssuers extends AbstractView {
 		this.ui.dismissLoader()
 
 		if (!tokens?.length) {
-			this.issuerDidntConnect(issuer, true);
+			this.issuerDidntConnect(issuer, true)
 			return
 		}
 
@@ -284,7 +284,6 @@ export class SelectIssuers extends AbstractView {
 			connectBtn.innerHTML = '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
 			connectBtn.style.display = 'block'
 		}
-
 	}
 
 	issuerConnected(issuer: string, tokens: any[], showTokens = true) {
@@ -302,7 +301,9 @@ export class SelectIssuers extends AbstractView {
 		let issuers = this.client.getTokenStore().getCurrentIssuers()
 
 		tokenBtn.innerHTML =
-			tokens.length && issuers[issuer].fungible ? this.params.options.balanceFoundEvent ?? 'Balance found' : `${tokens.length} ${this.params.options?.nftsFoundEvent ?? 'Token(s) Available'}`
+			tokens.length && issuers[issuer].fungible
+				? this.params.options.balanceFoundEvent ?? 'Balance found'
+				: `${tokens.length} ${this.params.options?.nftsFoundEvent ?? 'Token(s) Available'}`
 		tokenBtn.setAttribute('aria-label', `Navigate to select from ${tokens.length} of your ${issuer} tokens`)
 		tokenBtn.setAttribute('tabIndex', 1)
 
@@ -346,7 +347,7 @@ export class SelectIssuers extends AbstractView {
 
 			if (config.onChain === false) {
 				const { title, image } = config
-				const tokenId = t.tokenId ?? t.ticketId ?? i.toString();
+				const tokenId = t.tokenId ?? t.ticketId ?? i.toString()
 				tokens.push(<TokenListItemInterface>{
 					data: t,
 					tokenIssuerKey: issuer,

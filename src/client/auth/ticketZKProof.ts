@@ -123,7 +123,14 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 		if (type === 'eas') {
 			const schema = issuerConfig.eas ? { fields: issuerConfig.eas.fields } : DEFAULT_EAS_SCHEMA
 			const easZkProof = new EasZkProof(schema, { ...DEFAULT_RPC_MAP, ...ethRPCMap })
-			await easZkProof.validateUseTicket(proof, issuerConfig.base64attestorPubKey, issuerConfig.base64senderPublicKeys, ethAddress)
+			await easZkProof.validateUseTicket(
+				proof,
+				issuerConfig.base64attestorPubKey,
+				issuerConfig.base64senderPublicKeys,
+				ethAddress,
+				'asn',
+				'asn',
+			)
 		} else {
 			Authenticator.validateUseTicket(proof, issuerConfig.base64attestorPubKey, issuerConfig.base64senderPublicKeys, ethAddress)
 		}
