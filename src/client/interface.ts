@@ -51,12 +51,7 @@ export interface SolanaIssuerConfig extends OnChainTokenConfig {
 	updateAuthority?: string
 }
 
-export interface Oauth2IssuerConfig {
-	collectionID: string
-	onChain: boolean
-	contract: string
-	chain: string
-	blockchain?: SupportedBlockchainsParam
+export interface Oauth2IssuerConfig extends OnChainTokenConfig {
 	oAuth2options: {
 		consumerKey: string
 		partnerTag: string
