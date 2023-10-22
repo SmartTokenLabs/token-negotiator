@@ -769,7 +769,7 @@ export class Client {
 	private async loadRemoteOutletTokens(issuer: OffChainTokenConfig): Promise<OutletTokenResult | void> {
 		const redirectRequired = shouldUseRedirectMode(this.config.offChainRedirectMode)
 		if (redirectRequired) this.tokenStore.setTokens(issuer.collectionID, [])
-		if (this.ui) {
+		if (this.ui && !issuer.onChain) {
 			await waitForElementToExist('.load-container-tn')
 			this.ui.showLoader(
 				`<h4>${this.config.uiOptions?.reDirectIssuerEventHeading ?? 'Connecting to Issuers...'}</h4>`,
@@ -778,13 +778,12 @@ export class Client {
 					this.config.uiOptions?.cancelAction ?? 'Cancel'
 				}</button>`,
 			)
-			if (!issuer.onChain) {
-				this.enableTokenAutoLoadCancel()
-				await sleep(this.config.uiOptions.userCancelIssuerAutoRedirectTimer ?? 2500)
-				if (this.userCancelTokenAutoload) {
-					this.userCancelTokenAutoload = false
-					return {}
-				}
+			this.enableTokenAutoLoadCancel()
+			this.eventSender('page-redirecting', { collectionId: issuer.collectionID, tokenOrigin: issuer.tokenOrigin })
+			await sleep(this.config.uiOptions.userCancelIssuerAutoRedirectTimer ?? 2500)
+			if (this.userCancelTokenAutoload) {
+				this.userCancelTokenAutoload = false
+				return {}
 			}
 		}
 		const res = await this.messaging.sendMessage(
@@ -1009,6 +1008,7 @@ export class Client {
 				cancelAuthButton.onclick = () => {
 					const err = 'User cancelled authentication'
 					this.ui.showError(err)
+					this.eventSender('user-cancel', { eventType: 'authentication' })
 					this.eventSender('token-proof', { issuer, error: err, data: null })
 				}
 			})
@@ -1029,6 +1029,7 @@ export class Client {
 					document.querySelectorAll('.connect-btn-tn .lds-ellipsis').forEach((el) => {
 						el.parentElement.innerHTML = this.config.uiOptions?.loadAction ?? 'Load Collection'
 					})
+					this.eventSender('user-cancel', { eventType: 'page-redirect' })
 				}
 			})
 			.catch((err) => {
