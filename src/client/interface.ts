@@ -156,15 +156,21 @@ export interface TokenNegotiatorEventsArgs {
 	'opened-overlay': EventSenderOpenedOverlay
 	'closed-overlay': EventSenderClosedOverlay
 	loaded: EventSenderViewLoaded
-	'token-proof': any // EventSenderTokenProof // TODO: Update this
+	'token-proof': any
 	'connected-wallet': EventSenderConnectedWallet
 	'disconnected-wallet': EventSenderDisconnectedWallet
 	'tokens-selected': EventSenderTokensSelected
 	'tokens-loaded': EventSenderTokensLoaded
 	'network-change': string
+	'page-redirecting': PageRedirecting
+	'user-cancel': { eventType: string }
 	error: EventSenderError
 }
 
+export interface PageRedirecting {
+	collectionId: string
+	tokenOrigin: string
+}
 export interface EventSenderViewLoaded {
 	data: any
 }
