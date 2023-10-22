@@ -1008,7 +1008,7 @@ export class Client {
 				cancelAuthButton.onclick = () => {
 					const err = 'User cancelled authentication'
 					this.ui.showError(err)
-					this.eventSender('user-cancel', { eventType: 'Authentication' })
+					this.eventSender('user-cancel', { eventType: 'authentication' })
 					this.eventSender('token-proof', { issuer, error: err, data: null })
 				}
 			})
