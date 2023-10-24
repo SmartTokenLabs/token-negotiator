@@ -25,6 +25,7 @@ Feature release including multi-hook support, improved UX for off chain token ho
 
 - TS interface custom view
 - Single token off chain authentication incompatibility interface fix
+- EAS authentication fixed via attestation.id updated dependency @tokenscript/attestation to version "0.7.0-rc.2"
 
 ### Performance / Quality Improvements 
 
