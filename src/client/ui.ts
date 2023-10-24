@@ -2,11 +2,10 @@ import { Start } from './views/start'
 
 import { logger, requiredParams } from '../utils'
 import { Client, ClientError } from './index'
-import { ViewInterface, ViewComponent, ViewFactory, ViewConstructor } from './views/view-interface'
-import { TokenStore } from './tokenStore'
+import { ViewInterface, ViewComponent, ViewFactory, ViewConstructor, AbstractView } from './views/view-interface'
 import { SelectIssuers } from './views/select-issuers'
 import { SelectWallet } from './views/select-wallet'
-
+import { LOCAL_STORAGE_TOKEN_STORE_KEY } from '../constants'
 export type UIType = 'popup' | 'inline' // TODO: implement modal too
 export type PopupPosition = 'bottom-right' | 'bottom-left' | 'top-left' | 'top-right'
 export type UItheme = 'light' | 'dark'
@@ -25,10 +24,18 @@ export interface UIOptionsInterface {
 	openingAction?: string
 	issuerHeading?: string
 	repeatAction?: string
+	cancelAction?: string
+	walletDidntConnectAction?: string
+	authenticationHeadingEvent?: string
+	authenticationBodyEvent?: string
+	reDirectIssuerEventHeading?: string
+	reDirectIssuerBodyEvent?: string
+
 	theme?: UItheme
 	position?: PopupPosition
 	autoPopup?: boolean
 	alwaysShowStartScreen?: boolean
+	userCancelIssuerAutoRedirectTimer?: number
 	viewOverrides?: {
 		[type: string]: {
 			component?: ViewComponent
@@ -148,13 +155,9 @@ export class Ui implements UiInterface {
 	}
 
 	public async getStartScreen() {
-		if (
-			this.options.alwaysShowStartScreen ||
-			!localStorage.getItem(TokenStore.LOCAL_STORAGE_KEY) ||
-			!this.client.getTokenStore().getTotalTokenCount()
-		)
+		if (this.options.alwaysShowStartScreen || !localStorage.getItem(LOCAL_STORAGE_TOKEN_STORE_KEY)) {
 			return 'start'
-
+		}
 		if (await this.canSkipWalletSelection()) {
 			this.client.enrichTokenLookupDataOnChainTokens()
 			return 'main'
@@ -397,9 +400,7 @@ export class Ui implements UiInterface {
 		loader.style.display = 'block'
 		const dismissBtn = this.loadContainer.querySelector('.dismiss-error-tn') as HTMLDivElement
 		dismissBtn.style.display = 'none'
-
 		this.loadContainer.querySelector('.loader-msg-tn').innerHTML = message.join('\n')
-
 		this.loadContainer.style.display = 'flex'
 	}
 

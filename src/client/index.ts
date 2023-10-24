@@ -8,6 +8,7 @@ import {
 	removeUrlSearchParams,
 	createIssuerHashMap,
 	createIssuerHashArray,
+	sleep,
 } from '../utils'
 import { getNftCollection, getNftTokens } from '../utils/token/nftProvider'
 import { TokenStore } from './tokenStore'
@@ -32,9 +33,12 @@ import { shouldUseRedirectMode } from '../utils/support/getBrowserData'
 import { VERSION } from '../version'
 import { getFungibleTokenBalances, getFungibleTokensMeta } from '../utils/token/fungibleTokenProvider'
 import { URLNS } from '../core/messaging'
-import { DecodedToken, TokenType } from '../outlet/ticketStorage'
+import { TokenType } from '../outlet/ticketStorage'
 import { MultiTokenAuthRequest, MultiTokenAuthResult, OutletIssuerInterface, ProofResult } from '../outlet/interfaces'
 import { AttestationIdClient } from '../outlet/attestationIdClient'
+import { EventHookHandler } from './eventHookHandler'
+import { ethers } from 'ethers'
+import { TokenListItemInterface } from './views/token-list'
 
 if (typeof window !== 'undefined') window.tn = { VERSION }
 
@@ -104,14 +108,20 @@ export class Client {
 	public config: NegotiationInterface
 	private web3WalletProvider: Web3WalletProvider
 	private messaging: Messaging
+	private eventHookHandler: EventHookHandler
 	protected ui: UiInterface
-	private clientCallBackEvents: { [key: string]: (data: any) => Promise<void> | void } = {}
 	protected tokenStore: TokenStore
+	public externalUtils = {
+		evm: {
+			ethers,
+		},
+	}
 	private uiUpdateCallbacks: { [type in UIUpdateEventType] } = {
 		[UIUpdateEventType.ISSUERS_LOADING]: undefined,
 		[UIUpdateEventType.ISSUERS_LOADED]: undefined,
 		[UIUpdateEventType.WALLET_DISCONNECTED]: undefined,
 	}
+	private userCancelTokenAutoload: boolean
 
 	private urlParams: URLSearchParams
 
@@ -120,6 +130,8 @@ export class Client {
 	}*/
 
 	constructor(config: NegotiationInterface) {
+		this.eventHookHandler = new EventHookHandler()
+
 		if (window.location.hash) {
 			this.urlParams = new URLSearchParams(window.location.hash.substring(1))
 			let action = this.getDataFromQuery('action')
@@ -130,6 +142,9 @@ export class Client {
 		}
 
 		this.config = this.mergeConfig(defaultConfig, config)
+
+		// TODO investigate if this works correctly.
+		this.config.autoLoadTokens = localStorage.getItem('tn-autoload-tokens') === 'false' ? false : this.config.autoLoadTokens
 
 		this.tokenStore = new TokenStore(this.config.autoEnableTokens, this.config.tokenPersistenceTTL)
 		// @ts-ignore
@@ -292,20 +307,18 @@ export class Client {
 
 	// TODO: Move to token store OR select-wallet view - this method is very similar to getCurrentBlockchains()
 	public hasIssuerForBlockchain(blockchain: 'evm' | 'solana' | 'flow' | 'ultra', useOauth = false) {
+		const _blockchain = blockchain.toLocaleLowerCase()
 		return (
 			this.config.issuers.filter((issuer: OnChainTokenConfig) => {
-				const oAuthIssuer = useOauth && issuer.oAuth2options
-				if (blockchain === 'evm' && !issuer.onChain) {
-					return true
-				}
-				if (blockchain === 'solana' && typeof window.solana === 'undefined') {
-					return false
-				}
-				if (blockchain === 'ultra' && typeof window.ultra === 'undefined') {
-					return false
-				}
-				const blockChainNameMatch = issuer.blockchain ? issuer.blockchain.toLowerCase() : 'evm' === blockchain
-				return blockChainNameMatch && (oAuthIssuer || !issuer.oAuth2options)
+				const issuerBlockChain = issuer.blockchain?.toLocaleLowerCase()
+				const blockChainUsed = issuerBlockChain === blockchain
+				const solanaEnabled = blockChainUsed && _blockchain === 'solana' && typeof window.solana !== 'undefined'
+				const ultraEnabled = blockChainUsed && _blockchain === 'ultra' && typeof window.ultra !== 'undefined'
+				const flowEnabled = blockChainUsed && _blockchain === 'flow'
+				const evmEnabled = blockChainUsed && _blockchain === 'evm' && !issuer.oAuth2options && !useOauth
+				const sociosEnabled = blockChainUsed && _blockchain === 'evm' && issuer.oAuth2options && useOauth
+				const fallBackToEVM = _blockchain === 'evm' && !issuerBlockChain && !useOauth
+				return solanaEnabled || ultraEnabled || evmEnabled || sociosEnabled || flowEnabled || fallBackToEVM
 			}).length > 0
 		)
 	}
@@ -326,6 +339,7 @@ export class Client {
 			this.tokenStore.clearCachedTokens()
 			this.eventSender('connected-wallet', null)
 			this.eventSender('disconnected-wallet', null)
+			localStorage.removeItem('tn-autoload-tokens')
 			this.triggerUiUpdateCallback(UIUpdateEventType.WALLET_DISCONNECTED)
 		} catch (e) {
 			logger(2, 'Failed to disconnect wallet', e)
@@ -465,12 +479,15 @@ export class Client {
 			autoOpenPopup = true
 		}
 
-		if (this.config.autoEnableTokens && Object.keys(this.tokenStore.getSelectedTokens()).length)
-			this.eventSender('tokens-selected', {
-				selectedTokens: this.tokenStore.getSelectedTokens(),
-			})
-
+		if (this.config.autoEnableTokens && Object.keys(this.tokenStore.getSelectedTokens()).length) this.tokensSelectedCallBackHandler()
 		if (openPopup || (this.config.uiOptions.autoPopup === true && autoOpenPopup)) this.ui.openOverlay()
+	}
+
+	private tokensSelectedCallBackHandler = () => {
+		this.eventSender('tokens-selected', {
+			selectedTokens: this.tokenStore.getSelectedTokens(),
+			selectedIssuerKeys: Object.keys(this.tokenStore.getSelectedTokens()),
+		})
 	}
 
 	private cancelAutoload = true
@@ -515,10 +532,16 @@ export class Client {
 		}
 
 		this.eventSender('tokens-loaded', { loadedCollections: Object.keys(this.tokenStore.getCurrentIssuers()).length })
+
+		// use retry logic here too
+		// document.querySelectorAll('.connect-btn-tn .lds-ellipsis').forEach((el) => {
+		// 	el.parentElement.innerHTML = this.config.uiOptions?.loadAction ?? 'Load Collection'
+		// })
 	}
 
-	cancelTokenAutoload() {
+	public cancelTokenAutoload() {
 		this.cancelAutoload = true
+		localStorage.setItem('tn-autoload-tokens', 'false')
 	}
 
 	async setPassiveNegotiationWebTokens(): Promise<void> {
@@ -556,7 +579,7 @@ export class Client {
 					}
 				}
 			} catch (error) {
-				errorHandler('popup error', 'error', () => this.eventSender('error', { issuer, error }), null, true, false)
+				errorHandler(error, 'error', () => this.eventSender('error', { issuer, error }), null, true, false)
 				continue
 			}
 
@@ -655,12 +678,8 @@ export class Client {
 		logger(2, 'Emit tokens')
 		logger(2, tokens)
 
-		for (let issuer in tokens) {
-			tokens[issuer] = { tokens: tokens[issuer] }
-		}
-
-		this.eventSender('tokens-selected', { selectedTokens: tokens })
-		this.eventSender('tokens-loaded', { loadedCollections: Object.keys(tokens).length })
+		this.tokensSelectedCallBackHandler()
+		this.eventSender('tokens-loaded', { loadedCollections: Object.keys(this.tokenStore.getCurrentTokens()).length })
 
 		// Feature not supported when an end users third party cookies are disabled
 		// because the use of a tab requires a user gesture.
@@ -683,9 +702,7 @@ export class Client {
 		}
 
 		if (this.config.autoEnableTokens) {
-			this.eventSender('tokens-selected', {
-				selectedTokens: this.tokenStore.getSelectedTokens(),
-			})
+			this.tokensSelectedCallBackHandler()
 		}
 
 		return tokens
@@ -710,6 +727,7 @@ export class Client {
 
 		tokens.map((token) => {
 			token.walletAddress = walletAddress
+			token.collectionId = issuer.collectionID
 			return token
 		})
 
@@ -750,9 +768,24 @@ export class Client {
 
 	private async loadRemoteOutletTokens(issuer: OffChainTokenConfig): Promise<OutletTokenResult | void> {
 		const redirectRequired = shouldUseRedirectMode(this.config.offChainRedirectMode)
-
 		if (redirectRequired) this.tokenStore.setTokens(issuer.collectionID, [])
-
+		if (this.ui && !issuer.onChain) {
+			await waitForElementToExist('.load-container-tn')
+			this.ui.showLoader(
+				`<h4>${this.config.uiOptions?.reDirectIssuerEventHeading ?? 'Connecting to Issuers...'}</h4>`,
+				`<small>${this.config.uiOptions?.reDirectIssuerBodyEvent ?? 'Your browser will re-direct shortly'}</small>`,
+				`<button class='cancel-autoload-btn btn-tn' aria-label='Cancel page re-direct'>${
+					this.config.uiOptions?.cancelAction ?? 'Cancel'
+				}</button>`,
+			)
+			this.enableTokenAutoLoadCancel()
+			this.eventSender('page-redirecting', { collectionId: issuer.collectionID, tokenOrigin: issuer.tokenOrigin })
+			await sleep(this.config.uiOptions.userCancelIssuerAutoRedirectTimer ?? 2500)
+			if (this.userCancelTokenAutoload) {
+				this.userCancelTokenAutoload = false
+				return {}
+			}
+		}
 		const res = await this.messaging.sendMessage(
 			{
 				action: OutletAction.GET_ISSUER_TOKENS,
@@ -765,9 +798,7 @@ export class Client {
 			this.config.type === 'active' ? this.ui : null,
 			redirectRequired ? window.location.href : false,
 		)
-
 		if (!res) return // Site is redirecting
-
 		return res.data?.tokens ?? {}
 	}
 
@@ -782,17 +813,20 @@ export class Client {
 
 	updateSelectedTokens(selectedTokens) {
 		this.tokenStore.setSelectedTokens(selectedTokens)
-		this.eventSender('tokens-selected', { selectedTokens })
+		this.tokensSelectedCallBackHandler()
 	}
 
 	async prepareToAuthenticateToken(authRequest: AuthenticateInterface) {
 		await this.checkUserAgentSupport('authentication')
-		const { unsignedToken, tokenId } = authRequest
-		if (!authRequest.issuer) authRequest.issuer = unsignedToken?.collectionId
-		requiredParams(authRequest.issuer && (unsignedToken || tokenId), 'Issuer and unsigned token required.')
-		const config = this.tokenStore.getCurrentIssuers()[authRequest.issuer]
+		let unsignedToken = authRequest?.unsignedToken
+		if (!unsignedToken && authRequest.collectionId) unsignedToken = authRequest
+		const issuer = authRequest?.issuer ?? unsignedToken?.collectionId ?? authRequest?.collectionId
+		const tokenId = authRequest?.tokenId
+		console.log('tokenIssuer', issuer, 'unsignedToken', unsignedToken)
+		requiredParams(issuer && (unsignedToken || tokenId), 'Issuer and unsigned token required MUTLI.')
+		const config = this.tokenStore.getCurrentIssuers()[issuer]
 		if (!config) errorHandler('Provided issuer was not found.', 'error', null, null, true, true)
-		return authRequest
+		return { unsignedToken, issuer, tokenId }
 	}
 
 	async getMultiRequestBatch(authRequests: AuthenticateInterface[]) {
@@ -800,41 +834,29 @@ export class Client {
 			onChain: {},
 			offChain: {},
 		}
-		// build a list of the batches for each token origin. At this point when this loop is complete
-		// we will have a list of all the tokens that need to be authenticated and the origin they need to be authenticated against.
 		await Promise.all(
 			authRequests.map(async (authRequestItem) => {
 				const reqItem = await this.prepareToAuthenticateToken(authRequestItem)
-
-				if (!reqItem.tokenId && reqItem.unsignedToken?.tokenId) reqItem.tokenId = reqItem.unsignedToken?.tokenId
-
 				const issuerConfig = this.tokenStore.getCurrentIssuers()[reqItem.issuer] as OffChainTokenConfig
-				// Off Chain
-				// Setup for Token Collection. e.g. authRequestBatch.offChain['https://mywebsite.com']['devcon']
-				/**
-				 * Always generate a batch
-				 */
 				if (issuerConfig.onChain === false) {
 					if (!authRequestBatch.offChain[issuerConfig.tokenOrigin]) authRequestBatch.offChain[issuerConfig.tokenOrigin] = {}
-
 					if (!authRequestBatch.offChain[issuerConfig.tokenOrigin][reqItem.issuer]) {
 						authRequestBatch.offChain[issuerConfig.tokenOrigin][reqItem.issuer] = {
 							tokenIds: [],
 							issuerConfig: issuerConfig,
 						}
 					}
-					// Push token into the request batch
-					authRequestBatch.offChain[issuerConfig.tokenOrigin][reqItem.issuer].tokenIds.push(reqItem.tokenId)
+					authRequestBatch.offChain[issuerConfig.tokenOrigin][reqItem.issuer].tokenIds.push(
+						reqItem.tokenId ?? reqItem.unsignedToken.tokenId,
+					)
 					return
 				}
-
 				throw new Error('On-chain token are not supported by batch authentication at this time.')
 			}),
 		)
-
-		if (Object.keys(authRequestBatch.offChain).length > 1)
+		if (Object.keys(authRequestBatch.offChain).length > 1) {
 			throw new Error('Only a single token origin is supported by batch authentication at this time.')
-
+		}
 		return authRequestBatch
 	}
 
@@ -845,19 +867,21 @@ export class Client {
 			if (this.ui) {
 				this.ui.showLoaderDelayed(
 					[
-						'<h4>Authenticating...</h4>',
-						'<small>You may need to sign a new challenge in your wallet</small>',
-						"<button class='cancel-auth-btn btn-tn' aria-label='Cancel authentication'>Cancel</button>",
+						`<h4>${this.config.uiOptions?.authenticationHeadingEvent ?? 'Authenticating...'}</h4>`,
+						`<small>${this.config.uiOptions?.authenticationBodyEvent ?? 'You may need to sign a new challenge in your wallet'}</small>`,
+						`<button class='cancel-auth-btn btn-tn' aria-label='Cancel authentication'>${
+							this.config.uiOptions?.cancelAction ?? 'Cancel'
+						}</button>`,
 					],
 					600,
 					true,
 				)
+				this.enableAuthCancel(authRequests)
 			}
 
 			const authRequestBatch = await this.getMultiRequestBatch(authRequests)
 			let issuerProofs = {}
 
-			// Send the request batches to each token origin:
 			// Off Chain: // ['https://devcon.com']['issuer'][list of tokenIds]
 			for (const tokenOrigin in authRequestBatch.offChain) {
 				let AuthType = TicketZKProofMulti
@@ -875,7 +899,7 @@ export class Client {
 					if (err.message === 'WALLET_REQUIRED') {
 						return this.handleWalletRequired(authRequest)
 					}
-					// errorHandler(err, 'error', () => this.handleProofError(err, `multi issuer authentication via ${tokenOrigin}`), null, false, true)
+					// errorHandler(err, 'error', () => this.handleProofError(err, `multi issuer authentication via ${ tokenOrigin }`), null, false, true)
 					console.error(err)
 					throw err
 				}
@@ -900,13 +924,15 @@ export class Client {
 		else return this.authenticateToken(authRequest as AuthenticateInterface)
 	}
 
-	async authenticateToken(authRequest: AuthenticateInterface) {
+	async authenticateToken(authRequest: AuthenticateInterface | any) {
 		await this.checkUserAgentSupport('authentication')
 
-		const { unsignedToken, issuer } = authRequest
-		const tokenIssuer = issuer ?? unsignedToken.collectionId
+		const tokenIssuer = authRequest.issuer ?? authRequest.unsignedToken?.collectionId ?? authRequest.collectionId
+		let unsignedToken = authRequest.unsignedToken
+		if (!unsignedToken && authRequest.collectionId) unsignedToken = authRequest
 
-		requiredParams(tokenIssuer && unsignedToken, 'Issuer and unsigned token required.')
+		console.log('tokenIssuer', tokenIssuer, 'unsignedToken', unsignedToken)
+		requiredParams(tokenIssuer && unsignedToken, 'Issuer and unsigned token required. SINGLE')
 
 		const config = this.tokenStore.getCurrentIssuers()[tokenIssuer]
 
@@ -917,9 +943,11 @@ export class Client {
 		if (this.ui) {
 			this.ui.showLoaderDelayed(
 				[
-					'<h4>Authenticating...</h4>',
-					'<small>You may need to sign a new challenge in your wallet</small>',
-					"<button class='cancel-auth-btn btn-tn' aria-label='Cancel authentication'>Cancel</button>",
+					`<h4>${this.config.uiOptions?.authenticationHeadingEvent ?? 'Authenticating...'}</h4>`,
+					`<small>${this.config.uiOptions?.authenticationBodyEvent ?? 'You may need to sign a new challenge in your wallet'}</small>`,
+					`<button class='cancel-auth-btn btn-tn' aria-label='Cancel authentication'>${
+						this.config.uiOptions?.cancelAction ?? 'Cancel'
+					}</button>`,
 				],
 				600,
 				true,
@@ -980,7 +1008,28 @@ export class Client {
 				cancelAuthButton.onclick = () => {
 					const err = 'User cancelled authentication'
 					this.ui.showError(err)
+					this.eventSender('user-cancel', { eventType: 'authentication' })
 					this.eventSender('token-proof', { issuer, error: err, data: null })
+				}
+			})
+			.catch((err) => {
+				logger(2, err)
+			})
+	}
+
+	public enableTokenAutoLoadCancel(): void {
+		waitForElementToExist('.cancel-autoload-btn')
+			.then((cancelAuthButton: HTMLElement) => {
+				cancelAuthButton.onclick = () => {
+					this.userCancelTokenAutoload = true
+					this.cancelTokenAutoload()
+					this.ui.dismissLoader()
+					// TODO implement communication (pub/sub events)
+					// to de-couple this logic for default and custom views to utilise.
+					document.querySelectorAll('.connect-btn-tn .lds-ellipsis').forEach((el) => {
+						el.parentElement.innerHTML = this.config.uiOptions?.loadAction ?? 'Load Collection'
+					})
+					this.eventSender('user-cancel', { eventType: 'page-redirect' })
 				}
 			})
 			.catch((err) => {
@@ -1083,6 +1132,7 @@ export class Client {
 				if (issuerConfig) this.storeOutletTokenResponse(res.data.tokens)
 				this.eventSender('tokens-selected', {
 					selectedTokens: this.tokenStore.getSelectedTokens(),
+					selectedIssuerKeys: Object.keys(this.tokenStore.getSelectedTokens()),
 				})
 				return res.data.tokens
 			}
@@ -1114,12 +1164,11 @@ export class Client {
 			}
 		}
 
+		// callback defined when hook added.
 		if (callback) {
-			this.clientCallBackEvents[type] = callback
+			this.eventHookHandler.subscribe(type, callback)
 		} else {
-			if (this.clientCallBackEvents[type]) {
-				return this.clientCallBackEvents[type].call(type, data)
-			}
+			this.eventHookHandler.trigger(type, data)
 		}
 	}
 

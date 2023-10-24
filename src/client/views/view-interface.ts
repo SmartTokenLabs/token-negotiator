@@ -2,7 +2,7 @@ import { Client } from '../index'
 import { Ui, UIOptionsInterface } from '../ui'
 
 export interface ViewConstructor<T> {
-	new (client: Client, popup: Ui, viewContainer: any, params: any): T
+	new(client: Client, popup: Ui, viewContainer: any, params: any): T
 }
 
 export type ViewFactory = (client: Client, popup: Ui, viewContainer: any, params: any) => ViewInterface
@@ -16,7 +16,7 @@ export interface ViewInterface {
 	params: IViewParameters
 	render(): void
 	init(): void
-	update(params: IViewParameters): void
+	update?(params: IViewParameters): void
 }
 
 export interface IViewParameters {
@@ -40,7 +40,7 @@ export abstract class AbstractView implements ViewInterface {
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-empty-function
-	public init(): void {}
+	public init(): void { }
 
 	abstract render(): void
 

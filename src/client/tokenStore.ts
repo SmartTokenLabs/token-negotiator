@@ -1,4 +1,5 @@
-import { OffChainTokenConfig, OnChainIssuer, OnChainTokenConfig, SolanaIssuerConfig, UltraIssuerConfig } from './interface'
+import { OffChainTokenConfig, OnChainTokenConfig, SolanaIssuerConfig, UltraIssuerConfig } from './interface'
+import { LOCAL_STORAGE_TOKEN_STORE_KEY } from './../constants'
 
 import { logger } from '../utils'
 import { DecodedToken } from '../outlet/ticketStorage'
@@ -8,12 +9,13 @@ interface IssuerLookup {
 }
 
 interface TokenLookup {
-	[issuer: string]: { timestamp: number; tokens: TokenData[] | null }
+	[issuer: string]: { loadAttempts: number; timestamp: number; tokens: TokenData[] | null }
 }
 
 export interface TokenData {
 	tokenId: string | number
 	walletAddress?: string
+	image?: string
 	// TODO: add more common fields to this interface
 	[key: string]: any
 }
@@ -23,8 +25,6 @@ type TokenConfig = OnChainTokenConfig | OffChainTokenConfig | SolanaIssuerConfig
 type SelectedTokens = { [collectionId: string]: { tokens: DecodedToken[] | TokenData[] } }
 
 export class TokenStore {
-	public static LOCAL_STORAGE_KEY = 'tn-tokenStore'
-
 	private currentIssuers: { [issuer: string]: boolean } = {} // mapping of issuer to on/off chain
 
 	private tokenData: TokenLookup = {}
@@ -42,11 +42,11 @@ export class TokenStore {
 	}
 
 	public clearTokenStore() {
-		localStorage.removeItem(TokenStore.LOCAL_STORAGE_KEY)
+		localStorage.removeItem(LOCAL_STORAGE_TOKEN_STORE_KEY)
 	}
 
 	private loadTokenStore() {
-		const tokenStoreData = JSON.parse(localStorage.getItem(TokenStore.LOCAL_STORAGE_KEY))
+		const tokenStoreData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_TOKEN_STORE_KEY))
 
 		if (!tokenStoreData) return
 
@@ -59,7 +59,7 @@ export class TokenStore {
 		}
 
 		for (let collectionId in tokenStoreData.tokenData) {
-			const tokenData = tokenStoreData.tokenData[collectionId] as { timestamp: number; tokens: [] }
+			const tokenData = tokenStoreData.tokenData[collectionId] as { timestamp: number; tokens: []; loadAttempts: number }
 
 			if (tokenData.timestamp + this.tokenPersistenceTTL * 1000 > Date.now()) {
 				this.tokenData[collectionId] = tokenData
@@ -72,7 +72,7 @@ export class TokenStore {
 	private saveTokenStore() {
 		if (this.tokenPersistenceTTL > 0)
 			localStorage.setItem(
-				TokenStore.LOCAL_STORAGE_KEY,
+				LOCAL_STORAGE_TOKEN_STORE_KEY,
 				JSON.stringify({
 					tokenLookup: this.tokenLookup,
 					tokenData: this.tokenData,
@@ -182,11 +182,18 @@ export class TokenStore {
 	}
 
 	public setTokens(issuer: string, tokens: TokenData[] | DecodedToken[]) {
-		this.tokenData[issuer] = { timestamp: Date.now(), tokens }
-
+		this.tokenData[issuer] = { timestamp: Date.now(), tokens, loadAttempts: this.getCollectionLoadAttempts(issuer) }
 		this.saveTokenStore()
-
 		if (this.autoEnableTokens) this.selectedTokens[issuer] = { tokens: tokens }
+	}
+
+	public setIncrementCollectionLoadAttempts(issuer: string) {
+		this.tokenData[issuer].loadAttempts = this.tokenData[issuer]?.loadAttempts >= 0 ? (this.tokenData[issuer].loadAttempts += 1) : 0
+		this.saveTokenStore()
+	}
+
+	public getCollectionLoadAttempts(issuer: string) {
+		return this.tokenData[issuer]?.loadAttempts ?? 0
 	}
 
 	public getSelectedTokens() {

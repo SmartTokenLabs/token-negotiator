@@ -34,6 +34,7 @@ export interface OnChainTokenConfig extends IssuerConfigInterface {
 	openSeaSlug?: string
 	blockchain?: SupportedBlockchainsParam
 	oAuth2options?: any
+	abi?: string
 }
 
 export interface UltraIssuerConfig extends OnChainTokenConfig {
@@ -50,12 +51,7 @@ export interface SolanaIssuerConfig extends OnChainTokenConfig {
 	updateAuthority?: string
 }
 
-export interface Oauth2IssuerConfig {
-	collectionID: string
-	onChain: boolean
-	contract: string
-	chain: string
-	blockchain?: SupportedBlockchainsParam
+export interface Oauth2IssuerConfig extends OnChainTokenConfig {
 	oAuth2options: {
 		consumerKey: string
 		partnerTag: string
@@ -143,6 +139,7 @@ export interface MultiTokenInterface {
 }
 
 export interface AuthenticateInterface {
+	collectionId?: string
 	issuer: string
 	tokenId?: number | string
 	unsignedToken: any
@@ -159,15 +156,21 @@ export interface TokenNegotiatorEventsArgs {
 	'opened-overlay': EventSenderOpenedOverlay
 	'closed-overlay': EventSenderClosedOverlay
 	loaded: EventSenderViewLoaded
-	'token-proof': any // EventSenderTokenProof // TODO: Update this
+	'token-proof': any
 	'connected-wallet': EventSenderConnectedWallet
 	'disconnected-wallet': EventSenderDisconnectedWallet
 	'tokens-selected': EventSenderTokensSelected
 	'tokens-loaded': EventSenderTokensLoaded
 	'network-change': string
+	'page-redirecting': PageRedirecting
+	'user-cancel': { eventType: string }
 	error: EventSenderError
 }
 
+export interface PageRedirecting {
+	collectionId: string
+	tokenOrigin: string
+}
 export interface EventSenderViewLoaded {
 	data: any
 }

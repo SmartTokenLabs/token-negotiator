@@ -1,4 +1,4 @@
-import { DecodedToken, TicketStorage } from './ticketStorage'
+import { TicketStorage } from './ticketStorage'
 import { IssuerHashMap, logger } from '../utils'
 import { AttestationIdClient } from './attestationIdClient'
 import { getUseToken } from './getUseToken'

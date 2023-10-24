@@ -1,7 +1,7 @@
 
 # `token-negotiator`
 
-The Token Negotiator provides the client gateway to connect user digital tokens from on or off chain sources, enabling developers to create bespoke tokenised web experiences. 
+Token Negotiator is an open source technology that enables you build web experiences for users around the tokens, collectibles, coins and attestations they hold. Enabled across EVM, Solana, Flow, Chiliz and EOS (Ultra). Create logic flows to enable personalized web experiences.
 
 ## Usage
 
@@ -29,8 +29,8 @@ const negotiator = new Client({
 ​​
 negotiator.negotiate();
 ​	​
-negotiator.on("tokens-selected", (tokens) => {
-	console.log('owner tokens found: ', tokens);
+negotiator.on("tokens-selected", ({ selectedTokens, selectedIssuerKeys }) => {
+	console.log('user selected tokens: ', selectedTokens);
 });
 ​
 ```

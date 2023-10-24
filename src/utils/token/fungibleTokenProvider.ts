@@ -1,6 +1,6 @@
 import { tokenRequest } from './../index'
 import { OnChainIssuer } from '../../client/interface'
-import { BASE_TOKEN_DISCOVERY_URL } from './nftProvider'
+import { BASE_TOKEN_DISCOVERY_URL } from './../../constants'
 
 export const getFungibleTokenBalances = async (issuer: OnChainIssuer, owner: string, ipfsBaseUrl?: string) => {
 	const { contract, chain } = issuer
@@ -14,12 +14,11 @@ export const getFungibleTokenBalances = async (issuer: OnChainIssuer, owner: str
 }
 
 export const getFungibleTokensMeta = async (issuer: OnChainIssuer, ipfsBaseUrl?: string) => {
-	
+
 	const { contract, chain } = issuer
 
-	let query = `${BASE_TOKEN_DISCOVERY_URL}/get-fungible-token?collectionAddress=${contract}&chain=${chain}&blockchain=${
-		issuer.blockchain ?? 'evm'
-	}`
+	let query = `${BASE_TOKEN_DISCOVERY_URL}/get-fungible-token?collectionAddress=${contract}&chain=${chain}&blockchain=${issuer.blockchain ?? 'evm'
+		}`
 	if (issuer.symbol) query += `&symbol=${issuer.symbol}`
 	if (ipfsBaseUrl) query += `&ipfsBaseUrl=${ipfsBaseUrl}`
 	return tokenRequest(query, true)

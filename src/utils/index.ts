@@ -4,6 +4,8 @@ import { sha256 } from 'ethers/lib/utils'
 import { OffChainTokenConfig } from '../client/interface'
 import { OutletIssuerInterface } from '../outlet/interfaces'
 import { DEFAULT_SCHEMA_UIDS } from '../outlet/ticketStorage'
+import { DecodedToken } from '../outlet/ticketStorage'
+import { TokenData } from '../client/tokenStore'
 
 export interface IssuerHashMap {
 	[collectionId: string]: string[]
@@ -299,4 +301,8 @@ export const getCookieByName = (cookieName: string) => {
 
 export const deleteCookieByName = (cookieName) => {
 	document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
+}
+
+export const sleep = async (ms: number) => {
+	await new Promise((resolve) => setTimeout(resolve, ms))
 }

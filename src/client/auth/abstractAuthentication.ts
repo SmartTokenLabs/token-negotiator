@@ -1,5 +1,6 @@
 import { AuthenticateInterface, MultiTokenInterface, OffChainTokenConfig, OnChainTokenConfig } from '../interface'
 import { Client } from '../index'
+import { LOCAL_STORAGE_PROOF_KEY } from '../../constants'
 
 export interface AuthenticationResult {
 	type: string
@@ -40,8 +41,6 @@ export interface AuthenticationMethodMulti {
 export abstract class AbstractAuthentication {
 	public abstract TYPE: string
 
-	public static STORAGE_KEY = 'tn-proof'
-
 	protected client: Client
 
 	constructor(client?: Client) {
@@ -58,7 +57,7 @@ export abstract class AbstractAuthentication {
 
 		challenges[this.getFullKey(key)] = proof
 
-		localStorage.setItem(AbstractAuthentication.STORAGE_KEY, JSON.stringify(challenges))
+		localStorage.setItem(LOCAL_STORAGE_PROOF_KEY, JSON.stringify(challenges))
 	}
 
 	protected getSavedProof(key: string) {
@@ -78,7 +77,7 @@ export abstract class AbstractAuthentication {
 
 		if (challenges[fullKey]) delete challenges[fullKey]
 
-		localStorage.setItem(AbstractAuthentication.STORAGE_KEY, JSON.stringify(challenges))
+		localStorage.setItem(LOCAL_STORAGE_PROOF_KEY, JSON.stringify(challenges))
 	}
 
 	private getFullKey(key: string) {
@@ -86,8 +85,7 @@ export abstract class AbstractAuthentication {
 	}
 
 	private getProofs(): { [key: string]: AuthenticationResult } {
-		const data = localStorage.getItem(AbstractAuthentication.STORAGE_KEY)
-
-		return data && data.length ? JSON.parse(data) : {}
+		const data = localStorage.getItem(LOCAL_STORAGE_PROOF_KEY)
+		return data?.length ? JSON.parse(data) : {}
 	}
 }

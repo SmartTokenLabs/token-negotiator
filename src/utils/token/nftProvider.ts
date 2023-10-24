@@ -1,12 +1,8 @@
 import { tokenRequest } from './../index'
-
 import { OnChainTokenConfig, SolanaIssuerConfig, OnChainIssuer, UltraIssuerConfig } from '../../client/interface'
 import { validateBlockchain } from '../support/isSupported'
-
+import { BASE_TOKEN_DISCOVERY_URL } from './../../constants'
 import { JsonRpc } from 'eosjs'
-
-// export const BASE_TOKEN_DISCOVERY_URL = 'http://localhost:3000'
-export const BASE_TOKEN_DISCOVERY_URL = 'https://api.token-discovery.tokenscript.org'
 
 export const getNftCollection = async (issuer: OnChainIssuer, ipfsBaseUrl?: string) => {
 	let query: string
@@ -77,12 +73,12 @@ export const getNftTokens = async (issuer: OnChainIssuer, owner: string, ipfsBas
 				],
 			}
 			currentEndpoints = ultraEndpoints[issuer.chain]
-		} catch(e){
+		} catch (e) {
 			throw new Error("Cant find endpoint")
 		}
-		
+
 		let currentEndpointId = 0;
-		
+
 		try {
 
 			// TODO add Ultra to the NFT monitoring service
@@ -99,26 +95,26 @@ export const getNftTokens = async (issuer: OnChainIssuer, owner: string, ipfsBas
 					lower_bound,
 				}
 				let is_catched
-				
+
 				do {
-					try{
+					try {
 						let currentEndpoint = currentEndpoints[currentEndpointId]
 						let rpc = new JsonRpc(currentEndpoint, { fetch })
-						
+
 						result = await rpc.get_table_rows(params)
 						is_catched = false
-					} catch (e){
+					} catch (e) {
 						is_catched = true
 						currentEndpointId++
 					}
-				} while (is_catched && currentEndpointId < currentEndpoints.length) 
-				
+				} while (is_catched && currentEndpointId < currentEndpoints.length)
+
 				lower_bound = result.next_key
 				console.log(result.rows)
-				if (result.rows.length){
+				if (result.rows.length) {
 					for (let i = 0; i < result.rows.length; i++) {
 						let row = result.rows[i]
-						if (row.token_factory_id.toString() === (issuer as UltraIssuerConfig).factoryId.toString()){
+						if (row.token_factory_id.toString() === (issuer as UltraIssuerConfig).factoryId.toString()) {
 							nfts.push({
 								blockchain: "ultra",
 								collection: issuer.contract,
@@ -136,9 +132,9 @@ export const getNftTokens = async (issuer: OnChainIssuer, owner: string, ipfsBas
 			} while (result.more)
 			return nfts
 		} catch (e) {
-			console.log( e )
+			console.log(e)
 			throw new Error("NFT read error")
- 		}
+		}
 	} else if ('blockchain' in issuer && issuer.blockchain === 'solana') {
 		query = getSolanaNftTokensUrl(issuer as SolanaIssuerConfig, owner, ipfsBaseUrl)
 	} else if ('blockchain' in issuer && issuer.blockchain === 'flow') {

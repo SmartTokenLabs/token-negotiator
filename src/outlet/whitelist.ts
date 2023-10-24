@@ -1,6 +1,6 @@
-import { logger } from '../utils'
 import { OutletInterface, OutletIssuerInterface } from './interfaces'
-import { createCookie, isCookieExpired } from '../utils'
+import { logger } from '../utils'
+import { LOCAL_STORAGE_KEY_WHITELIST_KEY } from '../constants'
 
 export interface StoredWhitelist {
 	[origin: string]: {
@@ -13,8 +13,6 @@ export interface StaticWhitelist {
 }
 
 export class Whitelist {
-	private static STORAGE_KEY = 'tn-whitelist'
-
 	private storedWhitelist: StoredWhitelist = {}
 	private staticWhitelist: StaticWhitelist = {}
 
@@ -35,12 +33,12 @@ export class Whitelist {
 			if (whitelist)
 				for (let origin of whitelist) {
 					try {
-						origin = new URL(origin).origin
-						if (!this.staticWhitelist[origin]) {
-							this.staticWhitelist[origin] = [collectionID]
+						let _origin = new URL(origin).origin
+						if (!this.staticWhitelist[_origin]) {
+							this.staticWhitelist[_origin] = [collectionID]
 							continue
 						}
-						this.staticWhitelist[origin].push(collectionID)
+						this.staticWhitelist[_origin].push(collectionID)
 					} catch (e) {
 						logger(2, 'Failed to validate whitelist origin: ' + e.message)
 					}
@@ -50,14 +48,14 @@ export class Whitelist {
 
 	private loadStoredWhitelist() {
 		try {
-			this.storedWhitelist = JSON.parse(localStorage.getItem(Whitelist.STORAGE_KEY)) ?? ({} as StoredWhitelist)
+			this.storedWhitelist = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY_WHITELIST_KEY)) ?? ({} as StoredWhitelist)
 		} catch (e) {
 			// no-op
 		}
 	}
 
 	private saveWhitelist() {
-		localStorage.setItem(Whitelist.STORAGE_KEY, JSON.stringify(this.storedWhitelist))
+		localStorage.setItem(LOCAL_STORAGE_KEY_WHITELIST_KEY, JSON.stringify(this.storedWhitelist))
 	}
 
 	public getWhitelistedIssuers(origin: string) {
@@ -99,7 +97,7 @@ export class Whitelist {
 
 		const collectionIds = issuers.map((issuer) => issuer.collectionID)
 
-		if (force || (!this.isWhitelisted(origin, collectionIds) && isCookieExpired('tn-user-denied-access-to-connection'))) {
+		if (force || !this.isWhitelisted(origin, collectionIds)) {
 			await this.showWhitelistDialog(origin, issuers)
 		}
 
@@ -177,13 +175,6 @@ export class Whitelist {
 			const updateWhistList = () => {
 				if (this.storedWhitelist[origin]) delete this.storedWhitelist[origin]
 				this.saveWhitelist()
-				// set for 10 seconds so the following send token requests don't re-open
-				// the dialog multiple times when the user has declined connection.
-				// adjust if needed to find the best timing, which should be the approx duration of
-				// the time needed to ignore request for same site issuer dialog requests
-				// and the time a user would come back to load the tokens again should
-				// the decline by accident.
-				createCookie('tn-user-denied-access-to-connection', true, 10)
 			}
 
 			document.getElementById('tn-access-deny').addEventListener('click', () => {

@@ -1,5 +1,6 @@
 export { Client } from './client/index'
 export { AbstractView, type ViewInterface } from './client/views/view-interface'
+export { Ui, UIOptionsInterface } from './client/ui'
 export { Outlet } from './outlet/index'
 export { Start } from './client/views/start'
 export { SelectWallet } from './client/views/select-wallet'
