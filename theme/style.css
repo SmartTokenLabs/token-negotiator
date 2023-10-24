@@ -21,7 +21,8 @@
   margin-right: 10px;
 }
 
-.overlay-tn .cancel-auth-btn {
+.overlay-tn .cancel-auth-btn,
+.overlay-tn .cancel-autoload-btn {
   display: block;
   margin: 10px auto;
   cursor: pointer;
@@ -95,10 +96,18 @@
 }
 .overlay-tn .wallet-button-tn.WalletConnectV2 svg {
   width: 57px;
+  margin-top: -5px;
+}
+.overlay-tn .wallet-button-tn.WalletConnectV2 p {
+  padding-top: 10px;
 }
 .overlay-tn .wallet-button-tn.Flow svg, .overlay-tn .wallet-button-tn.Phantom_Brave svg {
+  margin-top: 5px;
   height: 52px;
   width: auto;
+}
+.overlay-tn .wallet-button-tn.Flow p, .overlay-tn .wallet-button-tn.Phantom_Brave p {
+  padding-top: 5px;
 }
 
 .overlay-tn .no-tokens-tn {
@@ -813,18 +822,6 @@ li.issuer-connect-banner-tn .fungible-token-btn {
   flex-direction: column;
   align-items: center;
 }
-.overlay-tn .wallet-button-tn.WalletConnectV2 svg {
-  margin-top: -5px;
-}
-.overlay-tn .wallet-button-tn.WalletConnectV2 p {
-  padding-top: 10px;
-}
-.overlay-tn .wallet-button-tn.Flow svg, .overlay-tn .wallet-button-tn.Phantom_Brave svg {
-  margin-top: 5px;
-}
-.overlay-tn .wallet-button-tn.Flow p, .overlay-tn .wallet-button-tn.Phantom_Brave p {
-  padding-top: 5px;
-}
 
 .overlay-tn .skeleton-box {
   display: inline-block;
@@ -979,7 +976,7 @@ li.issuer-connect-banner-tn .fungible-token-btn {
 .overlay-tn.dark-tn .overlay-content-tn {
   box-shadow: 0 2px 4px 0 rgba(103, 103, 103, 0.5);
   background-color: black;
-  border-top: 4px solid white;
+  border-top: 4px solid #011aff;
   border-bottom-left-radius: 10px;
   border-bottom-right-radius: 4px;
   border-top-left-radius: 3px;
