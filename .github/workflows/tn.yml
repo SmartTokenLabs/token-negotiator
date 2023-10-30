@@ -26,7 +26,7 @@ jobs:
     # dependabot created branch has a very long name, which will cause issue for SonarCloud
     if: "!startsWith(github.head_ref, 'dependabot/')"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
       - uses: actions/download-artifact@v3
@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && (contains(fromJson('["main", "ci-testing"]'), github.ref_name) || github.ref_type == 'tag' )
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v3
         with:
           name: token-negotiator-dist
