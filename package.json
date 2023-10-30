@@ -70,7 +70,7 @@
     "@types/jest": "^28.1.5",
     "@types/keccak": "^3.0.1",
     "@types/readable-stream": "^2.3.13",
-    "@typescript-eslint/eslint-plugin": "^5.30.0",
+    "@typescript-eslint/eslint-plugin": "^6.9.0",
     "@typescript-eslint/parser": "^5.20.0",
     "assert": "^2.0.0",
     "babel-jest": "^28.1.2",
