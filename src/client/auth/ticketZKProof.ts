@@ -1,15 +1,11 @@
 import { AbstractAuthentication, AuthenticationMethod, AuthenticationResult } from './abstractAuthentication'
 import { AuthenticateInterface, EthRPCMap, OffChainTokenConfig, OnChainTokenConfig } from '../interface'
 import { OutletAction, Messaging } from '../messaging'
-import { Authenticator } from '@tokenscript/attestation'
-import { SignedUNChallenge } from './signedUNChallenge'
 import { UNInterface } from './util/UN'
-import { LocalOutlet } from '../../outlet/localOutlet'
 import { createIssuerHashArray, logger } from '../../utils'
 import { shouldUseRedirectMode } from '../../utils/support/getBrowserData'
-import { EasZkProof } from '@tokenscript/attestation/dist/eas/EasZkProof'
-import { DEFAULT_EAS_SCHEMA, TokenType } from '../../outlet/ticketStorage'
 import { OutletIssuerInterface } from '../../outlet/interfaces'
+import { DEFAULT_EAS_SCHEMA, TokenType } from '../../outlet/ticketStorage'
 import { DEFAULT_RPC_MAP } from '../../constants'
 
 export class TicketZKProof extends AbstractAuthentication implements AuthenticationMethod {
@@ -34,6 +30,7 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 		let useEthKey: UNInterface | null = null
 
 		if (issuerConfig.unEndPoint) {
+			const SignedUNChallenge = (await import('./signedUNChallenge')).SignedUNChallenge;
 			let unChallenge = new SignedUNChallenge(this.client)
 			request.options = {
 				...request.options,
@@ -50,7 +47,7 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 		let data
 
 		if (new URL(issuerConfig.tokenOrigin).origin === window.location.origin) {
-			const localOutlet = new LocalOutlet({
+			const localOutlet = new (await import('../../outlet/localOutlet')).LocalOutlet({
 				issuers: Object.values(this.client.getTokenStore().getCurrentIssuers(false)) as unknown as OutletIssuerInterface[],
 				ethRpcMap: this.client.config.ethRpcMap,
 				skipEasRevokeCheck: this.client.config.skipEasRevokeCheck,
@@ -122,6 +119,7 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 	) {
 		if (type === 'eas') {
 			const schema = issuerConfig.eas ? { fields: issuerConfig.eas.fields } : DEFAULT_EAS_SCHEMA
+			const EasZkProof = (await import('@tokenscript/attestation/dist/eas/EasZkProof')).EasZkProof;
 			const easZkProof = new EasZkProof(schema, { ...DEFAULT_RPC_MAP, ...ethRPCMap })
 			await easZkProof.validateUseTicket(
 				proof,
@@ -132,6 +130,7 @@ export class TicketZKProof extends AbstractAuthentication implements Authenticat
 				'asn',
 			)
 		} else {
+			const Authenticator = (await import('@tokenscript/attestation')).Authenticator;
 			Authenticator.validateUseTicket(proof, issuerConfig.base64attestorPubKey, issuerConfig.base64senderPublicKeys, ethAddress)
 		}
 	}

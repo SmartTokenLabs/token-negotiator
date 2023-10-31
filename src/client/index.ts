@@ -38,7 +38,6 @@ import { MultiTokenAuthRequest, MultiTokenAuthResult, OutletIssuerInterface, Pro
 import { AttestationIdClient } from '../outlet/attestationIdClient'
 import { EventHookHandler } from './eventHookHandler'
 import { ethers } from 'ethers'
-import { TokenListItemInterface } from './views/token-list'
 
 if (typeof window !== 'undefined') window.tn = { VERSION }
 
