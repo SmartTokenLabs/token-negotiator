@@ -1,6 +1,6 @@
 {
   "name": "@tokenscript/token-negotiator",
-  "version": "3.2.0",
+  "version": "3.2.12",
   "description": "Token Negotiator is an open source technology that enables you build web experiences for users around the tokens, collectibles, coins and attestations they hold. Enabled across EVM, Solana, Flow, Chiliz and EOS (Ultra). Create logic flows to enable personalized web experiences.",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -70,8 +70,8 @@
     "@types/jest": "^28.1.5",
     "@types/keccak": "^3.0.1",
     "@types/readable-stream": "^2.3.13",
-    "@typescript-eslint/eslint-plugin": "^5.30.0",
-    "@typescript-eslint/parser": "^5.20.0",
+    "@typescript-eslint/eslint-plugin": "6.9.0",
+    "@typescript-eslint/parser": "^6.0.0",
     "assert": "^2.0.0",
     "babel-jest": "^28.1.2",
     "buffer": "^6.0.3",

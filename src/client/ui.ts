@@ -2,11 +2,11 @@ import { Start } from './views/start'
 
 import { logger, requiredParams } from '../utils'
 import { Client, ClientError } from './index'
-import { ViewInterface, ViewComponent, ViewFactory, ViewConstructor, AbstractView } from './views/view-interface'
+import { ViewInterface, ViewComponent, ViewFactory, ViewConstructor } from './views/view-interface'
 import { SelectIssuers } from './views/select-issuers'
 import { SelectWallet } from './views/select-wallet'
 import { LOCAL_STORAGE_TOKEN_STORE_KEY } from '../constants'
-export type UIType = 'popup' | 'inline' // TODO: implement modal too
+export type UIType = 'popup' | 'inline'
 export type PopupPosition = 'bottom-right' | 'bottom-left' | 'top-left' | 'top-right'
 export type UItheme = 'light' | 'dark'
 export type ViewType = 'start' | 'main' | 'wallet' | string
@@ -348,7 +348,7 @@ export class Ui implements UiInterface {
 			if (error === ClientError.USER_ABORT) return this.dismissLoader()
 		}
 
-		const loader = this.loadContainer.querySelector('.loader-tn') as HTMLDivElement
+		const loader: HTMLElement = this.loadContainer.querySelector('.loader-tn')
 		loader.style.display = 'none'
 
 		this.retryButton.style.display = 'block'
@@ -360,7 +360,7 @@ export class Ui implements UiInterface {
 		this.loadContainer.style.display = 'flex'
 
 		if (!canDismiss) {
-			const dismissBtn = this.loadContainer.querySelector('.dismiss-error-tn') as HTMLDivElement
+			const dismissBtn: HTMLElement = this.loadContainer.querySelector('.dismiss-error-tn')
 			dismissBtn.style.display = 'none'
 		}
 

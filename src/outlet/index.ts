@@ -93,7 +93,7 @@ export class Outlet extends LocalOutlet {
 					if (this.getDataFromQuery('localClient') === 'true') {
 						return
 					}
-					await this.processAttestationIdCallback(evtid)
+					this.processAttestationIdCallback(evtid)
 					break
 				}
 				case OutletAction.GET_PROOF: {
@@ -274,47 +274,60 @@ export class Outlet extends LocalOutlet {
 		}
 	}
 
-	// TODO: Consolidate redirect callback for tokens, proof & errors into the sendMessageResponse function to remove duplication
-	private async sendTokens(evtid: any) {
-		const requestHashes = JSON.parse(this.getDataFromQuery('request')) as IssuerHashMap
+	getRequestHashes() {
+		return JSON.parse(this.getDataFromQuery('request')) as IssuerHashMap
+	}
 
-		if (!requestHashes) return
-
-		// Create a map of outlet hashes to issuer config
-		const hashToConfigMap = {}
-
+	getHashToConfigMap() {
+		let hashToConfigMap = {}
 		for (const issuer of this.tokenConfig.issuers) {
 			const hashes = createIssuerHashArray(issuer)
 			for (const hash of hashes) {
 				hashToConfigMap[hash] = issuer
 			}
 		}
+		return hashToConfigMap
+	}
 
+	getRequestIssuerList(requestHashes, hashToConfigMap) {
 		const reqIssuers: OutletIssuerInterface[] = []
-
-		// Loop through client request hashes & create an array of issuers for whitelist processing
 		for (const issuer in requestHashes) {
 			for (const hash of requestHashes[issuer]) {
-				if (hashToConfigMap[hash]) {
-					if (reqIssuers.indexOf(hashToConfigMap[hash]) === -1) reqIssuers.push(hashToConfigMap[hash])
+				if (hashToConfigMap[hash] && reqIssuers.indexOf(hashToConfigMap[hash]) === -1) {
+					reqIssuers.push(hashToConfigMap[hash])
 				}
 			}
 		}
+		return reqIssuers
+	}
+
+	getFilteredRequestHashes(requestHashes, hashToConfigMap, whitelistedIssuers) {
+		for (const issuer in requestHashes) {
+			const configAndWhiteListHashes = []
+			for (const hash of requestHashes[issuer]) {
+				if (hashToConfigMap[hash] && whitelistedIssuers.indexOf(hashToConfigMap[hash].collectionID) > -1) {
+					configAndWhiteListHashes.push(hash)
+				}
+			}
+			requestHashes[issuer] = configAndWhiteListHashes
+		}
+		return requestHashes
+	}
+
+	private async sendTokens(evtid: any) {
+		const requestHashes = this.getRequestHashes()
+
+		if (!requestHashes) return
+
+		const hashToConfigMap = this.getHashToConfigMap()
+
+		const reqIssuers = this.getRequestIssuerList(requestHashes, hashToConfigMap)
 
 		const whitelistedIssuers = await this.whitelist.whitelistCheck(reqIssuers, false)
 
-		// Remove hashes that don't exist in outlets own config and non-whitelisted issuers
-		for (const issuer in requestHashes) {
-			const filteredHashes = []
-			for (const hash of requestHashes[issuer]) {
-				if (hashToConfigMap[hash] && whitelistedIssuers.indexOf(hashToConfigMap[hash].collectionID) > -1) {
-					filteredHashes.push(hash)
-				}
-			}
-			requestHashes[issuer] = filteredHashes
-		}
+		const filteredRequestHashes = this.getFilteredRequestHashes(requestHashes, hashToConfigMap, whitelistedIssuers)
 
-		let issuerTokens = await this.ticketStorage.getDecodedTokens(requestHashes)
+		let issuerTokens = await this.ticketStorage.getDecodedTokens(filteredRequestHashes)
 
 		logger(2, 'issuerTokens: (Outlet.sendTokens)', issuerTokens)
 
@@ -324,7 +337,6 @@ export class Outlet extends LocalOutlet {
 
 				const params = new URLSearchParams(url.hash.substring(1))
 				params.set(this.getCallbackUrlKey('action'), OutletAction.GET_ISSUER_TOKENS + '-response')
-				// params.set(this.getCallbackUrlKey('issuer'), this.tokenConfig.collectionID)
 				params.set(this.getCallbackUrlKey('tokens'), JSON.stringify(issuerTokens))
 
 				url.hash = '#' + params.toString()
@@ -345,7 +357,6 @@ export class Outlet extends LocalOutlet {
 			evtid: evtid,
 			evt: OutletResponseAction.ISSUER_TOKENS,
 			data: {
-				// issuer: this.tokenConfig.collectionID,
 				tokens: issuerTokens,
 			},
 		})

@@ -1,5 +1,5 @@
-import { AbstractAuthentication, AuthenticationMethod, AuthenticationResult, AuthenticationMethodUN } from './abstractAuthentication'
-import { AuthenticateInterface, OffChainTokenConfig, OnChainTokenConfig } from '../interface'
+import { AbstractAuthentication, AuthenticationResult, AuthenticationMethodUN } from './abstractAuthentication'
+import { AuthenticateInterface } from '../interface'
 import { SafeConnectProvider } from '../../wallet/SafeConnectProvider'
 import { UN, UNInterface } from './util/UN'
 import { logger } from '../../utils'

@@ -2,9 +2,6 @@
 window.DISPLAY_DEBUG_LEVEL = 1
 
 import { TextEncoder, TextDecoder } from 'util'
-Object.assign(global, { TextDecoder, TextEncoder })
-
-import { hasUncaughtExceptionCaptureCallback } from 'process'
 import {
 	createIssuerHashMap,
 	createIssuerHashArray,
@@ -17,10 +14,8 @@ import {
 	removeUrlSearchParams,
 } from './../index'
 import { errorHandler } from '../index'
-import { toExpression } from '@babel/types'
 
-// TODO: add unit tests for the following functions:
-// logger, requiredParams, asyncHandle, attachPostMessageListener.
+Object.assign(global, { TextDecoder, TextEncoder })
 
 describe('util Spec object comparison', () => {
 	test('expect a to be b shallow comparison', () => {

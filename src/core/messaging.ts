@@ -1,9 +1,6 @@
 import { attachPostMessageListener, logger, removePostMessageListener } from '../utils'
 import { ClientError } from '../client'
 import { browserBlocksIframeStorage } from '../utils/support/getBrowserData'
-import { VERSION } from '../version'
-
-// TODO move Message related interfaces/enum in to shared location /core
 
 export interface RequestInterfaceBase {
 	action: string
@@ -55,10 +52,6 @@ export class Messaging {
 		}
 
 		if (!forceTab && this.iframeStorageSupport === null) {
-			// TODO: temp to test safari top level context access.
-			// TODO do we need this verificaton?
-			// if (window.location.hash !== "#safari-iframe-test")
-
 			this.iframeStorageSupport = !browserBlocksIframeStorage()
 		}
 
@@ -154,19 +147,6 @@ export class Messaging {
 					logger(2, event.data)
 
 					received = true
-
-					// TODO: revert to tab when requestStorageAccess error is encountered in outlet - but only for browsers that support new tabs (no wallet dapp browsers)
-					/* if (response.evt === ResponseActionBase.COOKIE_CHECK){
-						if (!this.iframe || this.iframeStorageSupport === true)
-							return;
-
-						this.iframeStorageSupport = !!response?.data?.thirdPartyCookies;
-						if (!this.iframeStorageSupport){
-							afterResolveOrError();
-							reject("IFRAME_STORAGE");
-						}
-						return;
-					}*/
 
 					if (response.evt === ResponseActionBase.ERROR) {
 						if (response.errors[0] === 'IFRAME_STORAGE') {

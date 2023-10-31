@@ -1,11 +1,11 @@
 /* eslint-disable no-mixed-spaces-and-tabs */
-import { ethers } from 'ethers'
 import { TextDecoder, TextEncoder } from 'text-encoding'
+import { Client } from '../../client/index'
+import { SafeConnectProvider } from '../SafeConnectProvider'
+import { Web3WalletProvider } from '../Web3WalletProvider'
+
 global.TextEncoder = TextEncoder
 global.TextDecoder = TextDecoder
-import { Client } from '../../client/index'
-import { SafeConnectOptions, SafeConnectProvider } from '../SafeConnectProvider'
-import { Web3WalletProvider } from '../Web3WalletProvider'
 
 let tokenNegotiatorClient = new Client({
 	type: 'active',
@@ -98,14 +98,7 @@ describe('Provider tests', () => {
 	test('web3WalletProvider connect with void method for ETH connnection register wallet address', async () => {
 		web3WalletProvider = new Web3WalletProvider(tokenNegotiatorClient, null, null)
 		window.ethereum = {
-			enable: () => ['0x1263b90F4e1DFe89A8f9E623FF57adb252851fC3'],
-			// provider: {
-			// 	events: {
-			// 		accountsChanged: () => {},
-			// 		chainChanged: () => {},
-			// 		disconnect: () => {},
-			// 	},
-			// },
+			enable: () => ['0x1263b90F4e1DFe89A8f9E623FF57adb252851fC3']
 		}
 		web3WalletProvider.registerNewWalletAddress(
 			'0x1263b90F4e1DFe89A8f9E623FF57adb252851fC3'.toLocaleLowerCase(),

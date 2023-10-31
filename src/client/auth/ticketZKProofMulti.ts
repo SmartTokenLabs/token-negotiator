@@ -52,7 +52,7 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 
 		let output
 		if (new URL(tokenOrigin).origin === window.location.origin) {
-			output = await this.authenticateLocally(authRequest, address, wallet, redirectMode, request)
+			output = await this.authenticateLocally(authRequest, address, wallet, redirectMode)
 		} else {
 			output = await this.authenticateCrossOrigin(tokenOrigin, authRequest, address, wallet, redirectMode, request)
 		}
@@ -137,8 +137,7 @@ export class TicketZKProofMulti extends AbstractAuthentication implements Authen
 		authRequest: MultiTokenAuthRequest,
 		address: string,
 		wallet: string,
-		redirectMode: false | string,
-		_request?: any,
+		redirectMode: false | string
 	) {
 		const localOutlet = new LocalOutlet({
 			issuers: Object.values(this.client.getTokenStore().getCurrentIssuers(false)) as unknown as OutletIssuerInterface[],
