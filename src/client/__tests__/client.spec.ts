@@ -22,12 +22,6 @@ let tokenIssuer: OffChainTokenConfig = {
 	base64attestorPubKey: '',
 }
 
-const config = {
-	type: 'passive',
-	enableOffChainRedirectMode: true,
-	issuers: [tokenIssuer],
-}
-
 function getOffChainConfigClient() {
 	return new Client({
 		type: 'active',

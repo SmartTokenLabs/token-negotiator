@@ -38,40 +38,6 @@ describe('select issuers spec', () => {
 		})
 	}
 
-	function getOnChainSolanaConfigClient() {
-		return new Client({
-			type: 'active',
-			issuers: [
-				{
-					collectionID: 'penthouse-panther-club',
-					collectionAddress: 'ff846ef2eed57e5367cf8826e63f4d53fe28d28aa67417accb6e4b48cbd19136',
-					onChain: true,
-					symbol: 'PPC',
-					chain: 'mainnet',
-					blockchain: 'solana',
-				},
-			],
-			options: {},
-		})
-	}
-
-	// TODO
-	// test('selectIssuers render list issuers', async () => {
-	// 	document.body.innerHTML =  `
-	//   <div class="overlay-tn">
-	//   </div>
-	//   `
-	// 	const client = getOnChainConfigClient()
-	// 	await client.negotiate();
-
-	// 	const selectIssuers = new SelectIssuers(client, client.getUi(), client.getUi().viewContainer, {options: {issuerHeading: "issuerHeading"}})
-
-	// 	selectIssuers.render();
-
-	// 	expect(selectIssuers.viewContainer.innerHTML).not.toEqual("")
-
-	// });
-
 	test('selectIssuers generating token list markup', async () => {
 		const client = getOnChainConfigClient()
 		await client.negotiate()
@@ -85,6 +51,27 @@ describe('select issuers spec', () => {
 
 	test('get ui container', async () => {
 		const client = getOnChainConfigClient()
+		await client.negotiate()
+		expect(client.getUi().getUIContainer()).toContain('overlay-content-tn')
+	})
+	test('get ui container', async () => {
+		function getOnChainSolanaConfigClient() {
+			return new Client({
+				type: 'active',
+				issuers: [
+					{
+						collectionID: 'penthouse-panther-club',
+						collectionAddress: 'ff846ef2eed57e5367cf8826e63f4d53fe28d28aa67417accb6e4b48cbd19136',
+						onChain: true,
+						symbol: 'PPC',
+						chain: 'mainnet',
+						blockchain: 'solana',
+					},
+				],
+				options: {},
+			})
+		}
+		const client = getOnChainSolanaConfigClient()
 		await client.negotiate()
 		expect(client.getUi().getUIContainer()).toContain('overlay-content-tn')
 	})

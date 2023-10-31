@@ -206,7 +206,7 @@ export class TokenStore {
 
 	private prePopulateTokenLookupStore(issuers: TokenConfig[]) {
 		let collectionIds: { [issuer: string]: boolean } = {}
-		issuers.forEach((issuer: TokenConfig, i) => {
+		issuers.forEach((issuer: TokenConfig) => {
 			if (!issuer.collectionID) return
 
 			if (issuer.onChain === undefined) issuer.onChain = true

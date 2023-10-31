@@ -14,11 +14,11 @@ export class IconView {
 		if (src && src !== 'undefined') {
 			image = document.createElement('img')
 			image.loading = 'lazy'
-			image.addEventListener('load', (e: Event) => {
-				this.onLoad(e)
+			image.addEventListener('load', () => {
+				this.onLoad()
 			})
-			image.addEventListener('error', (e: Event) => {
-				this.onError(e)
+			image.addEventListener('error', () => {
+				this.onError()
 			})
 			image.src = src
 		} else {
@@ -29,11 +29,11 @@ export class IconView {
 		this.viewContainer.appendChild(image)
 	}
 
-	onLoad(_e: Event) {
+	onLoad() {
 		this.viewContainer.classList.remove('shimmer-tn')
 	}
 
-	onError(_e: Event) {
+	onError() {
 		this.viewContainer.innerHTML = ''
 		this.viewContainer.appendChild(this.createAvatar())
 		this.viewContainer.classList.remove('shimmer-tn')

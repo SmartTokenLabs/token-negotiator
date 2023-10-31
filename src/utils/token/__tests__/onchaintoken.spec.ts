@@ -266,36 +266,6 @@ it('get evm Nft Collection Url', async () => {
 	)
 })
 
-/* it('get evm fungible tokens', async () => {
-	global.fetch = jest.fn(() =>
-		Promise.resolve({ status: 200, json: () => Promise.resolve(mockFungibleTokensResponse) }),
-	)
-	const evmtokens = await getEvmFungibleTokensBalance({
-		contract: '0xe0ad1806fd3e7edf6ff52fdb822432e847411033',
-		chain: 'eth',
-		erc: 200,
-	}, "0x52459834ca561cb55411699e9c2143683bcf865f")
-	expect(evmtokens).toEqual(
-		'https://api.token-discovery.tokenscript.org/get-owner-fungible-tokens?addresses=0x52459834ca561cb55411699e9c2143683bcf865f&chain=eth&blockchain=evm',
-	)
-})
-
-it('get  solana fungible tokens', async () => {
-	global.fetch = jest.fn(() =>
-		Promise.resolve({ status: 200, json: () => Promise.resolve(mockFungibleTokensResponse) }),
-	)
-	const solanatokens = await getSolanaFungibleTokensBalance({
-		collectionAddress: '0x52459834ca561cb55411699e9c2143683bcf865f',
-		chain: 'eth',
-		blockchain: 'solana',
-		erc: 200,
-	})
-	expect(solanatokens).toEqual(
-		'https://api.token-discovery.tokenscript.org/get-owner-fungible-tokens?addresses=0x52459834ca561cb55411699e9c2143683bcf865f&chain=eth&blockchain=solana',
-	)
-})*/
-
-// TODO: This test doesn't test anything since fetch is hardcoded to return the exact result the test expects
 it('get fungible tokens', async () => {
 	global.fetch = jest.fn(() => Promise.resolve({ status: 200, json: () => Promise.resolve(mockFungibleTokensResponse) }))
 	const tokens = await getFungibleTokenBalances(

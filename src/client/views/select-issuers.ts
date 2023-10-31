@@ -191,11 +191,10 @@ export class SelectIssuers extends AbstractView {
 					data-issuer="${issuer}"
 					${this.client.issuersLoaded === true ? '' : 'disabled'}
 				>
-				${
-					this.client.issuersLoaded === true
-						? issuerButtonText
-						: '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
-				}
+				${this.client.issuersLoaded === true
+				? issuerButtonText
+				: '<div class="lds-ellipsis lds-ellipsis-sm" style=""><div></div><div></div><div></div><div></div></div>'
+			}
 			  </button>
               <button aria-label="tokens available from token issuer ${issuer}" 
 										  aria-haspopup="true"
@@ -315,8 +314,7 @@ export class SelectIssuers extends AbstractView {
 
 	navigateToTokensView(issuer: string) {
 		this.updateTokensView(issuer)
-
-		this.showTokenView(issuer)
+		this.showTokenView()
 	}
 
 	updateTokensView(issuer: string) {
@@ -378,9 +376,7 @@ export class SelectIssuers extends AbstractView {
 		this.tokenListView?.update({ data: { issuer: issuer, tokens: tokens } })
 	}
 
-	showTokenView(issuer: string) {
+	showTokenView() {
 		this.viewContainer.querySelector('.issuer-slider-tn').classList.toggle('open')
-
-		// TODO review and uplift this code, its not working as expected.
 	}
 }

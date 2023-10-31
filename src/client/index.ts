@@ -119,10 +119,6 @@ export class Client {
 
 	private urlParams: URLSearchParams
 
-	/* static getKey(file: string) {
-		return Authenticator.decodePublicKey(file)
-	}*/
-
 	constructor(config: NegotiationInterface) {
 		this.eventHookHandler = new EventHookHandler()
 
@@ -137,15 +133,13 @@ export class Client {
 
 		this.config = this.mergeConfig(defaultConfig, config)
 
-		// TODO investigate if this works correctly.
 		this.config.autoLoadTokens = localStorage.getItem('tn-autoload-tokens') === 'false' ? false : this.config.autoLoadTokens
 
 		this.tokenStore = new TokenStore(this.config.autoEnableTokens, this.config.tokenPersistenceTTL)
-		// @ts-ignore
+
 		if (this.config.issuers?.length > 0) this.tokenStore.updateIssuers(this.config.issuers)
 
 		this.messaging = new Messaging()
-		// this.registerOutletProofEventListener()
 	}
 
 	handleRecievedRedirectMessages() {
@@ -219,15 +213,7 @@ export class Client {
 		window.location.hash = '#' + params.toString()
 	}
 
-	/* private registerOutletProofEventListener() {
-		window.addEventListener('auth-callback', (e: CustomEvent) => {
-			this.emitRedirectProofEvent(e.detail.issuer, e.detail.proof, e.detail.error)
-		})
-	}*/
-
-	// TODO: Merge these proof events
 	private emitRedirectProofEvent(issuer: string, proof?: ProofResult, error?: string) {
-		// Wait to ensure UI is initialized
 		setTimeout(() => {
 			if (error) {
 				this.handleProofError(new Error(error), issuer)
@@ -242,7 +228,6 @@ export class Client {
 	}
 
 	private emitMultiRedirectProofEvent(proofs?: MultiTokenAuthResult, error?: string) {
-		// Wait to ensure UI is initialized
 		setTimeout(() => {
 			if (error) {
 				this.handleProofError(new Error(error), 'multi token authentication error')
@@ -262,9 +247,6 @@ export class Client {
 				defaultConfig[key] = config[key]
 			}
 		}
-
-		// Check if blockchain is supported one
-		// TODO: Put in separate method - issuers can also be specified via negotiate()
 		if (defaultConfig.issuers?.length) {
 			for (const issuer of defaultConfig.issuers) {
 				if (issuer.onChain === true) {
@@ -351,14 +333,9 @@ export class Client {
 				} else {
 					lookupData = await getNftCollection(tokenData)
 				}
-
 				if (lookupData) {
-					// TODO: this might be redundant
 					lookupData.onChain = true
-
 					if (!lookupData.title) lookupData.title = tokenData.collectionID
-
-					// enrich the tokenLookup store with contract meta data
 					this.tokenStore.updateTokenLookupStore(issuer, lookupData)
 				}
 			} catch (e) {
@@ -372,9 +349,7 @@ export class Client {
 
 	public async checkUserAgentSupport(type: string) {
 		if (!isUserAgentSupported(this.config.unSupportedUserAgent?.[type]?.config)) {
-			// TODO do we check browser support in passive mode? looks like we just save "errorMessage"
 			let err = this.config.unSupportedUserAgent[type].errorMessage
-
 			if (this.activeNegotiateRequired()) {
 				this.createUiInstance()
 				await this.ui.initialize()
@@ -382,8 +357,6 @@ export class Client {
 				this.ui.showError(err, false)
 				this.ui.viewContainer.style.display = 'none'
 			}
-
-			// TODO what the sense of this handler?
 			errorHandler(err, 'error', null, null, true, true)
 		}
 	}
@@ -1099,7 +1072,7 @@ export class Client {
 			)
 
 			if (!res)
-				return new Promise((_resolve) => {
+				return new Promise(() => {
 					return
 				}) // Site is redirecting
 			if (res.evt === OutletResponseAction.ISSUER_TOKENS) {

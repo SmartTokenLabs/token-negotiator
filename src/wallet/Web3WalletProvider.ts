@@ -417,7 +417,7 @@ export class Web3WalletProvider {
 			})
 		})
 
-		universalWalletConnect.on('session_delete', ({ id, topic }: { id: number; topic: string }) => {
+		universalWalletConnect.on('session_delete', () => {
 			// TODO: There is currently a bug in the universal provider that prevents this handler from being called.
 			//  After this is fixed, this should handle the event correctly
 			//  https://github.com/WalletConnect/walletconnect-monorepo/issues/1772
