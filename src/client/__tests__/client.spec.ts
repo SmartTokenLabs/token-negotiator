@@ -4,6 +4,7 @@ import { Client } from '../index'
 import { TicketZKProof } from '../auth/ticketZKProof'
 import { OffChainTokenConfig } from '../interface'
 import { TextEncoder, TextDecoder } from 'util';
+import { hasIssuerForBlockchain } from './../views/utils/issuers'
 
 Object.assign(global, { TextDecoder, TextEncoder });
 
@@ -235,19 +236,19 @@ describe('client spec', () => {
 
 	test('tokenNegotiatorClient method solanaAvailable will return false with no window.solana instance', () => {
 		const tokenNegotiatorClient = getOnChainSolanaConfigClient()
-		expect(tokenNegotiatorClient.hasIssuerForBlockchain('solana')).toBe(false)
+		expect(hasIssuerForBlockchain(tokenNegotiatorClient.config, 'solana')).toBe(false)
 	})
 
 	test('tokenNegotiatorClient method solanaAvailable should show Solana', () => {
 		const tokenNegotiatorClient = getOnChainSolanaConfigClient()
 		window.solana = jest.fn({ instance: true })
-		expect(tokenNegotiatorClient.hasIssuerForBlockchain('solana')).toBe(true)
+		expect(hasIssuerForBlockchain(tokenNegotiatorClient.config, 'solana')).toBe(true)
 	})
 
 	test('tokenNegotiatorClient method solanaAvailable should not show Solana with no required issuer tokens', () => {
 		const tokenNegotiatorClient = getOnChainConfigClient()
 		window.solana = jest.fn({ instance: true }) //
-		expect(tokenNegotiatorClient.hasIssuerForBlockchain('solana')).toBe(false)
+		expect(hasIssuerForBlockchain(tokenNegotiatorClient.config, 'solana')).toBe(false)
 	})
 
 	test('tokenNegotiatorClient method getWalletProvider', async () => {

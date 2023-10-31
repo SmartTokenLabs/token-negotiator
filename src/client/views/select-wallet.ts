@@ -5,6 +5,7 @@ import { getWalletInfo, WalletInfo } from './utils/wallet-info'
 import { SupportedWalletProviders } from '../../wallet/Web3WalletProvider'
 import { getBrowserData } from '../../utils/support/getBrowserData'
 import { SupportedBlockchainsEnum } from './../interface';
+import { hasIssuerForBlockchain } from './utils/issuers'
 
 export class SelectWallet extends AbstractView {
 	init() {
@@ -14,7 +15,7 @@ export class SelectWallet extends AbstractView {
 	render() {
 		let walletButtons = ''
 
-		if (this.client.hasIssuerForBlockchain(SupportedBlockchainsEnum.EVM)) {
+		if (hasIssuerForBlockchain(this.client.config, SupportedBlockchainsEnum.EVM)) {
 			if (this.client.safeConnectAvailable()) {
 				const safeConnect = getWalletInfo(SupportedWalletProviders.SafeConnect)
 				walletButtons += this.getWalletButtonHtml(safeConnect)
@@ -42,22 +43,22 @@ export class SelectWallet extends AbstractView {
 			}
 		}
 
-		if (this.client.hasIssuerForBlockchain(SupportedBlockchainsEnum.EVM, true)) {
+		if (hasIssuerForBlockchain(this.client.config, SupportedBlockchainsEnum.EVM, true)) {
 			const socios = getWalletInfo(SupportedWalletProviders.Socios)
 			walletButtons += this.getWalletButtonHtml(socios)
 		}
 
-		if (this.client.hasIssuerForBlockchain(SupportedBlockchainsEnum.SOLANA)) {
+		if (hasIssuerForBlockchain(this.client.config, SupportedBlockchainsEnum.SOLANA)) {
 			const phantom = getWalletInfo(SupportedWalletProviders.Phantom)
 			walletButtons += this.getWalletButtonHtml(phantom)
 		}
 
-		if (this.client.hasIssuerForBlockchain(SupportedBlockchainsEnum.FLOW)) {
+		if (hasIssuerForBlockchain(this.client.config, SupportedBlockchainsEnum.FLOW)) {
 			const flow = getWalletInfo(SupportedWalletProviders.Flow)
 			walletButtons += this.getWalletButtonHtml(flow)
 		}
 
-		if (this.client.hasIssuerForBlockchain(SupportedBlockchainsEnum.ULTRA)) {
+		if (hasIssuerForBlockchain(this.client.config, SupportedBlockchainsEnum.ULTRA)) {
 			const ultra = getWalletInfo(SupportedWalletProviders.Ultra)
 			walletButtons += this.getWalletButtonHtml(ultra)
 		}
@@ -67,9 +68,8 @@ export class SelectWallet extends AbstractView {
               <div class="wallet-selection-view-tn">
                 <div class="issuer-view-tn">
                   <div class="brand-tn">
-                  	${
-											this.params.viewOptions.backButtonView
-												? `
+                  	${this.params.viewOptions.backButtonView
+				? `
                   		<button aria-label="back to token issuer menu" class="back-to-menu-tn" style="float: left; position: absolute;">
 							<svg style="position: relative; top: 1px;" width="20" height="20" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
 								<g fill="none" fill-rule="evenodd">
@@ -78,8 +78,8 @@ export class SelectWallet extends AbstractView {
 							</svg>
 						</button>
                   	`
-												: ''
-										}
+				: ''
+			}
 				  </div>
                   <div class="headline-container-tn">
                     <p style="text-align: center;">Select Wallet</p>

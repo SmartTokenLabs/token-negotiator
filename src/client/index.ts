@@ -22,22 +22,17 @@ import {
 	MultiTokenInterface,
 	TokenNegotiatorEventsArgs,
 } from './interface'
-import { SignedUNChallenge } from './auth/signedUNChallenge'
 import { TicketZKProof } from './auth/ticketZKProof'
-import { TicketZKProofMulti } from './auth/ticketZKProofMulti'
 import { AuthenticationMethod, AuthenticationMethodMulti } from './auth/abstractAuthentication'
 import { isUserAgentSupported, validateBlockchain } from '../utils/support/isSupported'
-import Web3WalletProvider from '../wallet/Web3WalletProvider'
-import { LocalOutlet } from '../outlet/localOutlet'
 import { shouldUseRedirectMode } from '../utils/support/getBrowserData'
-import { VERSION } from '../version'
 import { getFungibleTokenBalances, getFungibleTokensMeta } from '../utils/token/fungibleTokenProvider'
 import { URLNS } from '../core/messaging'
 import { TokenType } from '../outlet/ticketStorage'
 import { MultiTokenAuthRequest, MultiTokenAuthResult, OutletIssuerInterface, ProofResult } from '../outlet/interfaces'
-import { AttestationIdClient } from '../outlet/attestationIdClient'
 import { EventHookHandler } from './eventHookHandler'
 import { ethers } from 'ethers'
+import { VERSION } from '../version'
 
 if (typeof window !== 'undefined') window.tn = { VERSION }
 
@@ -105,7 +100,7 @@ export enum ClientErrorMessage {
 export class Client {
 	public issuersLoaded: boolean
 	public config: NegotiationInterface
-	private web3WalletProvider: Web3WalletProvider
+	private web3WalletProvider: any
 	private messaging: Messaging
 	private eventHookHandler: EventHookHandler
 	protected ui: UiInterface
@@ -304,27 +299,8 @@ export class Client {
 		return this.config.safeConnectOptions !== undefined
 	}
 
-	// TODO: Move to token store OR select-wallet view - this method is very similar to getCurrentBlockchains()
-	public hasIssuerForBlockchain(blockchain: 'evm' | 'solana' | 'flow' | 'ultra', useOauth = false) {
-		const _blockchain = blockchain.toLocaleLowerCase()
-		return (
-			this.config.issuers.filter((issuer: OnChainTokenConfig) => {
-				const issuerBlockChain = issuer.blockchain?.toLocaleLowerCase()
-				const blockChainUsed = issuerBlockChain === blockchain
-				const solanaEnabled = blockChainUsed && _blockchain === 'solana' && typeof window.solana !== 'undefined'
-				const ultraEnabled = blockChainUsed && _blockchain === 'ultra' && typeof window.ultra !== 'undefined'
-				const flowEnabled = blockChainUsed && _blockchain === 'flow'
-				const evmEnabled = blockChainUsed && _blockchain === 'evm' && !issuer.oAuth2options && !useOauth
-				const sociosEnabled = blockChainUsed && _blockchain === 'evm' && issuer.oAuth2options && useOauth
-				const fallBackToEVM = _blockchain === 'evm' && !issuerBlockChain && !useOauth
-				return solanaEnabled || ultraEnabled || evmEnabled || sociosEnabled || flowEnabled || fallBackToEVM
-			}).length > 0
-		)
-	}
-
 	public async getWalletProvider() {
 		if (!this.web3WalletProvider) {
-			// TODO - this is already installed in the file header.
 			const { Web3WalletProvider } = await import('./../wallet/Web3WalletProvider')
 			this.web3WalletProvider = new Web3WalletProvider(this, this.config.walletOptions, this.config.safeConnectOptions)
 		}
@@ -427,7 +403,7 @@ export class Client {
 
 		if (currentIssuer) {
 			logger(2, 'Sync Outlet fired in Client to read MagicLink before negotiate().')
-			let outlet = new LocalOutlet({
+			let outlet = new (await import('../outlet/localOutlet')).LocalOutlet({
 				issuers: Object.values(this.tokenStore.getCurrentIssuers(false)) as unknown as OutletIssuerInterface[],
 				ethRpcMap: this.config.ethRpcMap,
 				skipEasRevokeCheck: this.config.skipEasRevokeCheck,
@@ -802,7 +778,7 @@ export class Client {
 	}
 
 	private async loadLocalOutletTokens(issuer: OffChainTokenConfig) {
-		const localOutlet = new LocalOutlet({
+		let localOutlet = new (await import('../outlet/localOutlet')).LocalOutlet({
 			issuers: Object.values(this.tokenStore.getCurrentIssuers(false)) as unknown as OutletIssuerInterface[],
 			ethRpcMap: this.config.ethRpcMap,
 			skipEasRevokeCheck: this.config.skipEasRevokeCheck,
@@ -883,7 +859,7 @@ export class Client {
 
 			// Off Chain: // ['https://devcon.com']['issuer'][list of tokenIds]
 			for (const tokenOrigin in authRequestBatch.offChain) {
-				let AuthType = TicketZKProofMulti
+				let AuthType = (await import('./auth/ticketZKProofMulti')).TicketZKProofMulti
 				let authenticator: AuthenticationMethodMulti = new AuthType(this)
 				const authRequest = {
 					options: {
@@ -937,8 +913,6 @@ export class Client {
 
 		if (!config) errorHandler('Provided issuer was not found.', 'error', null, null, true, true)
 
-		// TODO: How to handle error display in passive negotiation? Use optional UI or emit errors to listener?
-
 		if (this.ui) {
 			this.ui.showLoaderDelayed(
 				[
@@ -959,7 +933,9 @@ export class Client {
 		if (authRequest.type) {
 			AuthType = authRequest.type
 		} else {
-			AuthType = config.onChain ? SignedUNChallenge : TicketZKProof
+			AuthType = config.onChain
+				? (await import('./auth/signedUNChallenge')).SignedUNChallenge
+				: (await import('./auth/ticketZKProof')).TicketZKProof
 		}
 
 		let authenticator: AuthenticationMethod = new AuthType(this)
@@ -1173,11 +1149,10 @@ export class Client {
 
 	private async processAttestationIdCallback() {
 		try {
-			const attestIdClient = new AttestationIdClient()
+			const attestIdClient = new (await import('../outlet/attestationIdClient')).AttestationIdClient()
 			attestIdClient.captureAttestationIdCallback(this.urlParams)
 			const originalAction = this.getDataFromQuery('orig-action')
-
-			const localOutlet = new LocalOutlet({
+			const localOutlet = new (await import('../outlet/localOutlet')).LocalOutlet({
 				issuers: Object.values(this.tokenStore.getCurrentIssuers(false)) as unknown as OutletIssuerInterface[],
 				ethRpcMap: this.config.ethRpcMap,
 				skipEasRevokeCheck: this.config.skipEasRevokeCheck,
@@ -1205,13 +1180,11 @@ export class Client {
 				}
 				case OutletAction.GET_MUTLI_PROOF: {
 					const authRequest = JSON.parse(this.getDataFromQuery('tokens')) ?? ({} as MultiTokenAuthRequest)
-
 					const result = await localOutlet.authenticateMany(authRequest)
 
-					await TicketZKProofMulti.validateProofResult(
-						result,
-						this.getTokenStore().getCurrentIssuers(false) as unknown as OffChainTokenConfig[],
-					)
+					let AuthType = (await import('./auth/ticketZKProofMulti')).TicketZKProofMulti
+
+					await AuthType.validateProofResult(result, this.getTokenStore().getCurrentIssuers(false) as unknown as OffChainTokenConfig[])
 
 					this.eventSender('token-proof', {
 						issuers: result,

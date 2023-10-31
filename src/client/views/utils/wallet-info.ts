@@ -228,13 +228,13 @@ function getEvmInjectedProviderInfo() {
 function getSolanaInjectedProviderInfo() {
 	return window.solana?.isBraveWallet
 		? {
-				name: SupportedWalletProviders.Phantom_Brave,
-				label: 'Phantom (Brave)',
-				imgBig: braveWallet.imgBig,
-		  }
+			name: SupportedWalletProviders.Phantom_Brave,
+			label: 'Phantom (Brave)',
+			imgBig: braveWallet.imgBig,
+		}
 		: {
-				name: SupportedWalletProviders.Phantom,
-				label: 'Phantom',
-				imgBig: phantomSVG,
-		  }
+			name: SupportedWalletProviders.Phantom,
+			label: 'Phantom',
+			imgBig: phantomSVG,
+		}
 }
