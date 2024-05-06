@@ -37,4 +37,5 @@ negotiator.on("tokens-selected", ({ selectedTokens, selectedIssuerKeys }) => {
 
 ## Documentation
 
-See https://tokenscript.gitbook.io/token-negotiator/
+
+See [token-negotiator/](https://raw.githack.com/SmartTokenLabs/token-negotiator/main/index.html)
