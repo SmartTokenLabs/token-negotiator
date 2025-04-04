@@ -72,12 +72,12 @@ jobs:
         if: github.event_name == 'push'
         run: npm run test
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: test-report
           path: reports/
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: github.event_name == 'push'
         with:
           name: token-negotiator-dist
